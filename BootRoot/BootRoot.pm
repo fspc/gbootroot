@@ -1898,6 +1898,18 @@ sub save_as {
     $save_as->border_width(12);
     $save_as->set_position('center');
 
+    # If compression was on we will use that compression
+    if (!$compression_off->active) {
+	if ( $gz_toggle_root->active ) {
+	    $template  = "$template.gz";
+	}
+	elsif ( $bz2_toggle_root->active ) {
+	    $template  = "$template.bz2";
+	}
+
+    }
+
+
     my $new_template = $template;
     my $entry = Gtk::Entry->new();
     $entry->set_editable( $true );

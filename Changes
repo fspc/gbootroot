@@ -1,3 +1,8 @@
+Changed the behavior of save_as so that when compression is chosen, the
+entry won't be the same as that found in Root Filename, but instead reflects
+the newly compressed file.  This change was precipitated by the previous 
+change to the Accept behavior.
+
 1.3.2 - 01/11/2002
 ------------------
 
