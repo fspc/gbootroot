@@ -1,16 +1,41 @@
 #!/usr/bin/perl -w
 
 #    gBootRoot Copyright (C) 2000, 2001
+#
+#    AUTHOR
+#    ------
 #    Lead Developer and Project Coordinator
 #    Jonathan Rosenbaum <freesource@users.sourceforge.net>
 #
-#    Developer
+#    CONTRIBUTORS
+#    ------------
+#
+#    [ Developers ]
 #    Cristian Ionescu-Idbohrn <cii@axis.com>
+#    - Submitted gdkbirdaao() "Guess Default Kernel Boot Image Root Device 
+#      And Append Options", mount directory suggestion, bug reports, lots of 
+#      good conversations.
 #
-#    Tester
+#    [ Testers ]
 #    Magnus Holmberg <pucko@lysator.liu.se>
+#    - Suggestions, BootRoot (predecessor of gBootRoot) FAQ question, 
+#      discovered a sizing discrepancy in boot_root.   
 #
-#    Helper
+#    Zas <zas@metaconcept.com>
+#    - Discovered a Gtk versioning problem, and unnecessary defined variable.
+#
+#    Cameron Caffee <Cameron_C_Caffee@AtlanticMutual.com>
+#    - Bug reports and data submission which lead to important solutions for 
+#      the Boot.
+#
+#    [ Supporters and Users ]
+#    Ben Carrell <ben@xmission.com>
+#    - Great compliments.
+#
+#    Wim Vinckier <WimPunk@linuxfan.com>
+#    - Sent alert about bad BootRoot site link.
+#
+#    [ Helper ]
 #    Yahshua Mashiyach
 #
 #    http://gbootroot.sourceforge.net
@@ -58,6 +83,35 @@ $main::editor = "emacs --font 6x13";
 $main::makefs = "mke2fs -F -m0 -i8192";
 
 # CHANGES
+#
+#       1.2.13 - 09/28/2001
+#                * Renamed "lilo" Boot method to "2 disk compression." 
+#                * Advanced Section is now Advanced Boot Section (ABS).
+#                * Advanced Root Section (ARS) added. Includes root device and
+#                  size, root filesystem name with Save or Save As, filesystem
+#                  size, gzip/bzip2/none compression, user-mode-linux kernel
+#                  selection, Root Method and optional associated Template.
+#                * Yard Incorporation Tasks closed: 19556, 22668, 22496.
+#                * Yard Method added to ARS which generates the new well
+#                  featured Yard Box.
+#                * Yard Box includes alterable staging behavior for root
+#                  filesystem creation, template text search, adjustable
+#                  stripping behavior, editable filesystem and replacements,
+#                  $PATH appending, testing choices, Save and Save As.    
+#                * Seamlessly integrated Verbosity Box and slider bar
+#                  to control the verbosity level added to the main box.
+#                * Several bug fixes and enhancements to the original Yard 
+#                  scripts, including a choice of stripping features for
+#                  libraries, binaries, modules with corresponding sizing
+#                  checks, link -> file is  now literal, and testing
+#                  improvements.
+#                * Localized directories provided for users under 
+#                  $HOME/.gbootroot
+#                * UML button added to ARS.  UML (user-mode-linux) Box
+#                  provides a testing bed for root filesystems.  Previous
+#                  Options are remembered to save typing, Abort button 
+#                  provides excellent process clean-up.       
+#                * Bugs closed: 422436, 225252
 #
 #       1.2.2 - 09/03/2000
 #                * Development is now at sourceforge.net/projects/gbootroot.
@@ -3004,6 +3058,7 @@ sub help {
 << "HELP";
 
 gBootRoot $version $date GNU GPL
+
 email contact -> Jonathan Rosenbaum <freesource\@users.sourceforge.net>
 Homepage -> http://gbootroot.sourceforge.net
 Submit a Bug -> http://sourceforge.net/bugs/?group_id=9513
