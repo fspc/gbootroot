@@ -2133,7 +2133,11 @@ sub create_fstab {
     print NEWFSTAB <<BLARD;
 # DEVICE	MOUNTPOINT	TYPE	OPTIONS	DUMP	FSCKORDER
 #----------------------------------------------------------------
+## Choose an appropriate root mount.
 # /dev/ram0       /               ext2    defaults
+#/dev/ubd/0       /               ext2    defaults   1    1
+# If you have this, uncomment it.
+#devpts           /dev/pts        devpts  mode=0622  0    0
 /proc           /proc           proc    defaults
 # Entries adapted from existing fstab:
 BLARD
@@ -2160,9 +2164,11 @@ BLARD
 	    ##  - Put mountpoint under oldroot
 	    $options .= ',noauto' unless $options =~ /\bnoauto\b/;
 	    if ($mpt eq '/') {
-		$mpt = "/"; # limitation of mount cmd
+		#$mpt = "/"; # limitation of mount cmd
+		$mpt = $main::oldroot; # limitation of mount cmd
 	    } else {
-		$mpt =  $mpt;
+		#$mpt =  $mpt;
+		$mpt =  $main::oldroot . $mpt;
 	    }
 	}
 	
