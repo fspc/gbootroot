@@ -2689,6 +2689,21 @@ sub lilo_put_it_together {
       $entry5->set_text("$remain_boot k");
   }
 
+
+  # If genext2fs is being used clean $tmp/bootdisk if any garbage is found,
+  # and temporarily rename $mnt to that directory.
+  my $old_mount;
+  if ( $fs_type eq "genext2fs" ) {
+      if (-d "$tmp/bootdisk") {
+	  sys("rm -rf $tmp/bootdisk");
+      }    
+      if (!-d "$tmp/bootdisk") {
+	  return if errmk(sys("mkdir $tmp/bootdisk")) == 2;
+      }
+      $old_mount = $mnt;
+      $mnt = "$tmp/bootdisk/";
+  }
+
   # Here everything is copied over either to the device or the the $mnt
   # directory if genext2fs is used. 
   info(0, "Copy over initrd ramdisk\n");
@@ -2703,7 +2718,6 @@ sub lilo_put_it_together {
 	  err_custom("rm -rf $mnt/lost+found; cp $container[KERNEL] $mnt/kernel", "gBootRoot: ERROR: Could not copy over the kernel") == 2;
   }
   else {
-      sys("rm -rf $mnt/*");
       return if
 	  err_custom("cp $container[KERNEL] $mnt/kernel", "gBootRoot: ERROR: Could not copy over the kernel") == 2;
   }
@@ -2811,31 +2825,41 @@ sub lilo_put_it_together {
   }
   pb($B,6);
   
-  # Real device
-  if ( $fs_type ne "genext2fs" ) {
-      if ( $> == 0 ) {
-	  return if errm(sys("mount -t ext2 $entry_advanced[0] $mnt")) == 2;
-      }
-      else {
-	  return if errm(sys("mount $mnt")) == 2;
-      }
-  }
-  else {
+
+  if ( $fs_type eq "genext2fs" ) {
 
       my $error;
-
-#
+=pod
       if (
 	  sys("/usr/lib/bootroot/$main::makefs -b $device_size -d  $mnt -D $device_table $entry_advanced[0]") !~ 
 	  /^0$/ ) {
 	  $error = error("Cannot $fs_type filesystem.\n");
 	  return "ERROR" if $error && $error eq "ERROR";
       }
-
-#
-
+=cut
   }
 
+
+  if ( $fs_type eq "genext2fs" ) {
+      $mnt = $old_mount;
+  }
+
+  # Real device
+  if ( $> == 0 ) {
+      return if errm(sys("mount -t ext2 $entry_advanced[0] $mnt")) == 2;
+  }
+  else {
+      my $errm_value = errm(sys("mount $mnt"));
+      if ( $errm_value == 2 && $fs_type eq "genext2fs" ) {
+	  info(0, "Ask your administrator to add this line to the" . 
+	       " fstab file:\n");
+	  info(0, "\n$entry_advanced[0]\t$mnt\tauto\tdefaults,noauto," .
+	       "user\t0\t0\n\n");
+	}
+      else {
+	  return if $errm_value  == 2;
+      }
+  }
 
   info(0, "Configuring lilo\n");
   pb($B,7);
@@ -2844,22 +2868,14 @@ sub lilo_put_it_together {
   # This enforces that lilo is only ran on a bootable drive,
   # otherwise the user has to do it manually.
   if ($container[BOOT_DEVICE] eq $entry_advanced[0]) {
-
-#
-    if ( err_custom("lilo -v -C brlilo.conf -r $mnt",
-                   "gBootRoot: ERROR: lilo failed") == 2 ) {
-        chdir($pwd); 
-
-	if ( $fs_type eq "genext2fs" && $> != 0 ) {
-	    info(0, "Ask your administrator to add this line to the" . 
-		 " fstab file:\n");
-	    info(0, "\n/dev/fd0\t$mnt\tauto\tdefaults,noauto,user\t0\t0\n\n");
-	}
-	else {
-	    return;
-	}
-    }
-#
+      
+=pod
+      if ( err_custom("lilo -v -C brlilo.conf -r $mnt",
+		    "gBootRoot: ERROR: lilo failed") == 2 ) {
+	  chdir($pwd); 
+	  return;
+      }
+=cut
 
   }
 
@@ -2870,15 +2886,9 @@ sub lilo_put_it_together {
 
   chdir($pwd); # or die "boot_root: ERROR: Could not change directories\n";
 
-  my $um;
-  if ( $fs_type ne "genext2fs" ) {
-      info(0, "Umounting $mnt\n");
-      $um = errum(sys("umount $mnt"));
-      pb($B,10);
-  }
-  else {
-      $um = 0;
-  }
+  info(0, "Umounting $mnt\n");
+  my $um = errum(sys("umount $mnt"));
+  pb($B,10);
 
   if ($ok == 1 || $ok == 2) {
       if ( $fs_type ne "genext2fs" ) {
@@ -3852,7 +3862,7 @@ sub mtab_check {
 	if  ($count == 1) {
 
 	    # ROOT_DEVICE
-	    if ( m,$entry_advanced[3], && $fs_type ne "genext2fs" ) {
+	    if ( m,$entry_advanced[3], ) {
 		# Safety Check:
 		$dialog = 
 	       "Please umount the device first.\nPress OK when you are ready.";
@@ -3861,7 +3871,7 @@ sub mtab_check {
 	    
 	}
 
-	elsif ( $count == 0 && $fs_type ne "genext2fs" ) {
+	elsif ( $count == 0  ) {
 
 	    # BOOT_DEVICE
 	    if (m,$entry_advanced[0],) {
@@ -3928,8 +3938,9 @@ sub mtab_check {
 
     } # if $error == 1
 
-    if ( $fs_type eq "genext2fs" ) {
+    if ( $fs_type eq "genext2fs" && $error == 1 ) {
 
+	destroy $mtab;
 	lilo_put_it_together() if $count == 0;  # mtab(1) runs from here
 	device2() if $count == 1;
 
