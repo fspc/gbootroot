@@ -33,6 +33,27 @@ if ( !$ARGV[0] ) {
 }
 
 
+BEGIN {
+
+    my $fhs = grep(/\/usr\/share\/perl5/,@INC);
+
+    if ($fhs == 0) {
+	unshift(@INC,"/usr/share/perl5");
+    }
+
+
+    my $sbin = grep(/\/sbin/,$ENV{'PATH'});
+    if ($sbin == 0) {
+	$ENV{'PATH'} = "/sbin:" . $ENV{'PATH'};
+    }
+
+    $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
+    if ($sbin == 0) {
+	$ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
+    }
+
+}
+
 my $arguments = "$ARGV[0] $ARGV[1] $ARGV[2]"; 
 my $mount_point = "$ARGV[3]";
 my $preserve_ownership = "$ARGV[4]";
