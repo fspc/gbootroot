@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.42 2001/12/08 07:10:32 freesource Exp $</center>
+<center>$Id: index.html,v 1.43 2001/12/08 23:05:20 freesource Exp $</center>
 
 <p>
 
@@ -612,22 +612,27 @@ This allows developers who create add-ons (ex: make-debian-x11) to remain
 confident that any changes made to
 add-on replacements will remain available to all users.&nbsp;&nbsp;
 Replacements
-from add-ons are placed in the 
-/usr/share/gbootroot/yard/Replacements directory.&nbsp;&nbsp;
+from add-ons are placed in the archictecture-independent 
+/usr/share/gbootroot/yard/Replacements directory, and the
+archictecture-dependent /usr/lib/bootroot/yard/Replacements 
+directory.&nbsp;&nbsp;
 When a user opens up gBootRoot, the program checks to see if there are any
 new replacements and then creates symlinks from the 
 $HOME/.gbootroot/yard/Replacements directory to the 
-replacements repository.&nbsp;&nbsp;
-In general the repository for replacements is owned by root, so normal 
+replacement repositories.&nbsp;&nbsp;
+In general the repositories for replacements are owned by root, so normal 
 users can't make changes to these files; however, when root is 
 editing replacements in the $HOME Replacements location, it should be the 
-administrator's  policy to use an editor which respects versioned files (i.e. Emacs).&nbsp;&nbsp;Then the 
+administrator's policy to use an editor which respects versioned files (i.e. Emacs).&nbsp;&nbsp;Then the 
 administrator will not be able to 
 make any changes to the replacements repository because the CVS directories 
 keep date information which prevents the editing of these
-files.&nbsp;&nbsp;It is highly recommended to follow this procedure, and
-not to delete the CVS directories because /usr/share is meant to be used
-for data which shouldn't be modified directly by any user 
+files.&nbsp;&nbsp;The files kept in /usr/lib are usually binary files
+specific to the host architecture, 
+where as the files linked from /usr/share are often text files compatible
+with any architecture; however,
+this directory is meant to be used for data which shouldn't be modified 
+directly by any user 
 (see <a href="http://www.pathname.com/fhs/">FHS</a>).</p>
 
 <p>
