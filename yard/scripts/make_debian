@@ -580,7 +580,7 @@ sub start_up {
     # existence of dpkg
     if (!-f "/usr/bin/dpkg") {
 	die "You are not using a Debian system, in the future this " .
-	   "may be supported, but for now you need living Debian\n";
+	   "may be supported, but for now you need living Debian.\n";
     }
 
     # Swim has never been installed before?
@@ -640,6 +640,10 @@ sub start_up {
 	    die "The script requires that file-rc be installed. " .
 		"Please install it first.\n";
 	    }
+	}
+	else {
+	    die "The script requires that file-rc be installed. " .
+		"Please install it first.\n";
 	}
     }
     close(DPKG);
