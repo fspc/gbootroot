@@ -133,7 +133,7 @@ my $separator_advanced;
 
 my @entry_advanced;
 my ($ea1,$ea2,$ea3,$ea4,$ea5,$ea6); # entry advanced boot  
-my ($ear1,$ear2,$ear3,$ear4); # entry advanced root
+my ($ear1,$ear2,$ear2_save,$ear3,$ear4); # entry advanced root
 my ($eab1,$eab2,$eab3,$eab4); # entry advanced uml
 my $uml_window;
 my $table_advanced;
@@ -1039,8 +1039,10 @@ sub advanced_root_section {
        ars($ars);       
        $tooltips->set_tip( $ear2, "Give the Root Filesystem file a name.", 
                            "" );
-       my $ear2_save = Gtk::CheckButton->new("save");
-       $ear2_save->set_active($true);
+	!defined $ear2_save  ? ($boolean = 1) 
+	    : ($boolean = $ear2_save->get_active());
+	$ear2_save = Gtk::CheckButton->new("save");
+	$ear2_save->set_active($boolean);
 
 #                           "Save Root File.  Press right button to change" .
 #                           " the Directory the file is saved in.",
@@ -1117,11 +1119,13 @@ sub advanced_root_section {
        $rbutton->show();
 
        # compression off
+	!defined $compression_off  ? ($boolean = 1) 
+	    : ($boolean = $compression_off->get_active());
        $compression_off = Gtk::CheckButton->new( "off");
        $tooltips->set_tip( $compression_off, 
                            "Turn Compression off.", "" );
        $hbox_between->pack_start( $compression_off, $true, $false, 0 );
-       $compression_off->set_active($true);
+       $compression_off->set_active($boolean);
        $compression_off->show();
        
        #_______________________________________ 
