@@ -261,7 +261,7 @@ symlink_builder("/usr/bin/linux","$home_uml_kernel/linux");
 if (!-e "$home_uml_kernel/.options") {
     open(OPTIONS,">$home_uml_kernel/.options") 
 	or die "Couldn't write $home_uml_kernel/.options at $?\n";
-    print OPTIONS "root=/dev/ubd0\n";
+    print OPTIONS "root=/dev/ubd0 mem=16M\n";
     close(OPTIONS);
 }
 
@@ -1159,7 +1159,7 @@ sub uml_box {
 	$eab3 = entry_advanced(1,2,2,3,10,$table_uml);
 	button_fileselect_advanced(2,3,2,3,"Selection",$eab3,"Selection",14,
 				   $table_uml,$home_rootfs);
-	$eab3->set_text("ubd0=$tmp/$entry_advanced[4] mem=16M") 
+	$eab3->set_text("ubd0=$tmp/$entry_advanced[4]") 
 	    if -e "$tmp/$entry_advanced[4]";
 	$tooltips->set_tip( $eab3, 
                            "Choose an uncompressed root filesystem." .
