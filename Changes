@@ -15,8 +15,7 @@ tweaking they should run well on an x86 MTD.
 If a fs is being made with mkcramfs, genromfs, mkfs.jffs or mkfs.jffs2 and
 the directories /dev or /initrd don't exist, they are automatically are
 created during the create stage.  Initrd dir is needed for mtd emulation 
-testing, and dev is also required.  Devfs will always be used on /dev, and 
-won't be an option.
+testing, and dev is also required.
 
 Added cad "Ctrl-Alt-Del" to mconsole interface, and documented it.
 
