@@ -511,14 +511,14 @@ else {
 		"mkdir $tmp1/gboot_non_root_$user",
 		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
     }
-    $tmp = "$tmp1/gboot_non_root_" . $user;
+    $tmp = "$tmp1/gboot_non_root_$user";
 
     if (!-d "$tmp1/gboot_non_root_mnt_$user") {
 	$mnt = "$tmp1/gboot_non_root_mnt_$user" if err_custom_perl(
 	       "mkdir $tmp1/gboot_non_root_mnt_$user",
                "gBootRoot: ERROR: Could not make mount directory") != 2;
     }
-    $mnt = "$tmp1/gboot_non_root_mnt" . $user;
+    $mnt = "$tmp1/gboot_non_root_mnt_$user";
 
 }
 
@@ -2665,9 +2665,18 @@ sub lilo {
 sub lilo_put_it_together {
 
   my $B = "boot";
+  my $fs_type = (split(/\s/,$main::makefs))[0];
+
   # Time to do a little calculations
-  my $device_size = (split(/\s+/,`df $mnt`))[8];
-  my $boot_size = (stat($container[KERNEL]))[12]/2 + (stat("$tmp/$initrd"))[12]/2;
+  my $device_size;
+  if ( $fs_type ne "genext2fs" ) {
+      $device_size = (split(/\s+/,`df $mnt`))[8];
+  }
+  else {
+      $device_size = $container[SIZE];
+  }
+  my $boot_size = (stat($container[KERNEL]))[12]/2 + 
+      (stat("$tmp/$initrd"))[12]/2;
   my $remain_boot = $device_size - $boot_size;
   pb($B,1);
 
@@ -2680,38 +2689,99 @@ sub lilo_put_it_together {
       $entry5->set_text("$remain_boot k");
   }
 
-   # Better do this first
+  # Here everything is copied over either to the device or the the $mnt
+  # directory if genext2fs is used. 
   info(0, "Copy over initrd ramdisk\n");
+  info(0, "Copy over initrd ramdisk .. $tmp/$initrd $mnt/$initrd\n");
   return if err_custom("cp $tmp/$initrd $mnt/$initrd",
 		       "gBootRoot: ERROR: Could not copy over initrd") == 2;
   pb($B,2);
 
   info(0, "Copying over kernel\n");
-  return if
-  err_custom("rm -rf $mnt/lost+found; cp $container[KERNEL] $mnt/kernel",
-               "gBootRoot: ERROR: Could not copy over the kernel") == 2;
+  if ( $fs_type ne "genext2fs" ) {
+      return if
+	  err_custom("rm -rf $mnt/lost+found; cp $container[KERNEL] $mnt/kernel", "gBootRoot: ERROR: Could not copy over the kernel") == 2;
+  }
+  else {
+      sys("rm -rf $mnt/*");
+      return if
+	  err_custom("cp $container[KERNEL] $mnt/kernel", "gBootRoot: ERROR: Could not copy over the kernel") == 2;
+  }
   pb($B,3);
 
   info(0, "Making stuff for lilo\n");
    # will be 0 if mkdir fails, but 0 if cp succeeds ?
   return if err(sys("mkdir $mnt/{boot,dev}")) == 2; 
-  return if err(sys("cp -a /dev/{null,fd?,hda1} $mnt/dev")) == 2;
 
-  # Hopefully, this works, but have never tested it -- o.k I did
-  if ($container[BOOT_DEVICE] !~ m,/dev/fd\d{1}$,) {
-     return if err(sys("cp -a $container[BOOT_DEVICE] $mnt/dev")) == 2;
-  }
+  # DEVICES SECTION
+  my @devices;
+  my $device_table  = "$tmp/boot_device_table.txt";
+  my $norm_root_dev;
+  if ( $fs_type eq "genext2fs" ) {
 
-  # This adds that next device
-  ($norm_root_device) = gdkbirdaao();
-  if (!-e "$mnt/dev/$norm_root_device") {
-    return if err(sys("cp -a /dev/$norm_root_device $mnt/dev")) == 2;
-  }
+	info(0, "Making $device_table for genext2fs\n");
+	my $error;
+	unlink( $device_table ) if -e $device_table;
 
-  # For frame buffer devices and the like.
-  if ($entry_advanced[1]) {
-      return if errcp(sys("cp -a $entry_advanced[1] $mnt/dev")) == 2;
+	#<path> <type> <mode> <uid> <gid> <major> <minor> <start><inc><count> 
+	# /dev is always needs to be made automatically
+	open(BootRoot::Yard::DEVICE_TABLE, ">$device_table") or
+	    ($error = error("$device_table: $!"));
+	return "ERROR"if $error && $error eq "ERROR";
+	
+	print BootRoot::Yard::DEVICE_TABLE 
+	    "# <path>\t<type>\t<mode>\t<uid>\t<gid>\t<major>\t<minor>" .
+		"\t<start>\t<inc>\t<count>\n"; 
+	print BootRoot::Yard::DEVICE_TABLE "/dev\t\td\t0755\t-\t-\t-\t-\t-\t-\t-\n";
+
+	# Keep a record of the devices required
+	@devices = qw(/dev/null /dev/fd0 /dev/fd1 /dev/hda1);
+	for ( split(" ", $container[BOOT_DEVICE] ) ) {
+	    push(@devices, $_ ) if $_;
+	}
+
+	# This adds that next device if found in lilo.conf
+	($norm_root_device) = gdkbirdaao();
+	if ( $norm_root_device ) {
+	    my @existing_device_test = 
+		grep ( /\/dev\/$norm_root_dev/, @devices );
+	    if ( !@existing_device_test ) {
+		push( @devices, "/dev/$norm_root_device" );
+	    }
+	}
+
+	# For frame buffer devices and the like.
+	for ( split(" ", $entry_advanced[1] ) ) {
+	    push(@devices, $_ ) if $_;
+	}
+
+	device_table( @devices );
+	close(BootRoot::Yard::DEVICE_TABLE);
+
   }
+  else {
+
+      info(0, "Copying over devices to $mnt/dev\n");
+
+      return if err(sys("cp -a /dev/{null,fd?,hda1} $mnt/dev")) == 2;
+
+      # Hopefully, this works, but have never tested it -- o.k I did
+      if ($container[BOOT_DEVICE] !~ m,/dev/fd\d{1}$,) {
+	  return if err(sys("cp -a $container[BOOT_DEVICE] $mnt/dev")) == 2;
+      }
+
+      # This adds that next device if found in lilo.conf
+      ($norm_root_device) = gdkbirdaao();
+      if (!-e "$mnt/dev/$norm_root_device") {
+	  return if err(sys("cp -a /dev/$norm_root_device $mnt/dev")) == 2;
+      }
+
+      # For frame buffer devices and the like.
+      if ($entry_advanced[1]) {
+	  return if errcp(sys("cp -a $entry_advanced[1] $mnt/dev")) == 2;
+      }
+
+  } # end DEVICES SECTION
 
   info(0, "Copy over important lilo stuff\n");
   return if
@@ -2733,19 +2803,39 @@ sub lilo_put_it_together {
   $entry5->set_text("$remain_boot k");
 
   # Got to umount,mount, and umount again to make sure everything is
-  # copied over before doing lilo
-  return if errum(sys("umount $mnt")) == 2;
-  info(0, "Umount device\n");
-  info(0, "Remount device\n");
+  # copied over before doing lilo unless genext2fs in being used.
+  if ( $fs_type ne "genext2fs" ) {
+      return if errum(sys("umount $mnt")) == 2;
+      info(0, "Umount device\n");
+      info(0, "Remount device\n");
+  }
   pb($B,6);
   
   # Real device
-  if ( $> == 0 ) {
-      return if errm(sys("mount -t ext2 $entry_advanced[0] $mnt")) == 2;
+  if ( $fs_type ne "genext2fs" ) {
+      if ( $> == 0 ) {
+	  return if errm(sys("mount -t ext2 $entry_advanced[0] $mnt")) == 2;
+      }
+      else {
+	  return if errm(sys("mount $mnt")) == 2;
+      }
   }
   else {
-      return if errm(sys("mount $mnt")) == 2;
+
+      my $error;
+
+#
+      if (
+	  sys("/usr/lib/bootroot/$main::makefs -b $device_size -d  $mnt -D $device_table $entry_advanced[0]") !~ 
+	  /^0$/ ) {
+	  $error = error("Cannot $fs_type filesystem.\n");
+	  return "ERROR" if $error && $error eq "ERROR";
+      }
+
+#
+
   }
+
 
   info(0, "Configuring lilo\n");
   pb($B,7);
@@ -2754,11 +2844,25 @@ sub lilo_put_it_together {
   # This enforces that lilo is only ran on a bootable drive,
   # otherwise the user has to do it manually.
   if ($container[BOOT_DEVICE] eq $entry_advanced[0]) {
-    if (err_custom("lilo -v -C brlilo.conf -r $mnt",
-                   "gBootRoot: ERROR: lilo failed") == 2) {
-        chdir($pwd); return;
+
+#
+    if ( err_custom("lilo -v -C brlilo.conf -r $mnt",
+                   "gBootRoot: ERROR: lilo failed") == 2 ) {
+        chdir($pwd); 
+
+	if ( $fs_type eq "genext2fs" && $> != 0 ) {
+	    info(0, "Ask your administrator to add this line to the" . 
+		 " fstab file:\n");
+	    info(0, "\n/dev/fd0\t$mnt\tauto\tdefaults,noauto,user\t0\t0\n\n");
+	}
+	else {
+	    return;
+	}
     }
+#
+
   }
+
 
   $remain_boot = $remain_boot - (stat("$mnt/boot/map"))[12]/2;
   $entry5->set_text("$remain_boot k");
@@ -2766,13 +2870,21 @@ sub lilo_put_it_together {
 
   chdir($pwd); # or die "boot_root: ERROR: Could not change directories\n";
 
-  info(0, "Umounting $mnt\n");
-  my $um = errum(sys("umount $mnt"));
-  pb($B,10);
+  my $um;
+  if ( $fs_type ne "genext2fs" ) {
+      info(0, "Umounting $mnt\n");
+      $um = errum(sys("umount $mnt"));
+      pb($B,10);
+  }
+  else {
+      $um = 0;
+  }
 
   if ($ok == 1 || $ok == 2) {
-   return if
-   errrm(sys("rmdir $tmp/initrd_mnt")) == 2;
+      if ( $fs_type ne "genext2fs" ) {
+	  return if
+	      errrm(sys("rmdir $tmp/initrd_mnt")) == 2;
+      }
   }
 
 # Here's where we copy over that compressed filesystem
@@ -3334,7 +3446,6 @@ sub initrd {
 
     else {
 
-
 	if ( $> == 0 ) {
 	    info(0, "Copying over devices to $tmp/initrd_mnt/dev\n");
 	    return if errcp(		    
@@ -3354,7 +3465,7 @@ sub initrd {
 	    sys("$main::sudo mknod b 2 0 $tmp/initrd_mnt/dev/fd0");
 	}
 
-    }
+    } # end DEVICES SECTION
 
     pb($I,7);
 
@@ -3510,16 +3621,18 @@ sub initrd {
 	if (
 	    sys("/usr/lib/bootroot/$main::makefs -b $size_needed -d  $tmp/initrd_mnt -D $device_table $tmp/$initrd") !~ 
 	    /^0$/ ) {
-	    $error = error("Cannot $fs_type filesystem.");
+	    $error = error("Cannot $fs_type filesystem.\n");
 	    return "ERROR" if $error && $error eq "ERROR";
 	}
 	
-	info(0, "Compressing initrd\n");
     }
+
     else {
 	info(0, "Umounting loop device, and compressing initrd\n");
 	return if errum(sys("umount $tmp/initrd_mnt")) == 2;    
     }
+
+    info(0, "Compressing initrd\n");
     sys("gzip -f9 $tmp/$initrd");
 
     pb($I,10); # This takes the longest.
@@ -3729,6 +3842,8 @@ sub mtab_check {
 
     my $dialog;
     my $error = 1;
+    
+    my $fs_type = (split(/\s/,$main::makefs))[0];
 
 # Check to see if $device is mounted
     open (MTAB, "/etc/mtab") or die "no mtab!\n";
@@ -3737,7 +3852,7 @@ sub mtab_check {
 	if  ($count == 1) {
 
 	    # ROOT_DEVICE
-	    if (m,$entry_advanced[3],) {
+	    if ( m,$entry_advanced[3], && $fs_type ne "genext2fs" ) {
 		# Safety Check:
 		$dialog = 
 	       "Please umount the device first.\nPress OK when you are ready.";
@@ -3746,7 +3861,7 @@ sub mtab_check {
 	    
 	}
 
-	elsif ($count == 0) {
+	elsif ( $count == 0 && $fs_type ne "genext2fs" ) {
 
 	    # BOOT_DEVICE
 	    if (m,$entry_advanced[0],) {
@@ -3765,7 +3880,7 @@ sub mtab_check {
 
     # Make sure the drive and storage medium are accessible
     # Keep asking until they are.
-    if ($error == 1) {
+    if ( $error == 1 && $fs_type ne "genext2fs" ) {
 	destroy $mtab;
 
 	# $size has to be determined by boot disk or root disk
@@ -3812,6 +3927,13 @@ sub mtab_check {
 	device2() if $count == 1;
 
     } # if $error == 1
+
+    if ( $fs_type eq "genext2fs" ) {
+
+	lilo_put_it_together() if $count == 0;  # mtab(1) runs from here
+	device2() if $count == 1;
+
+    }
 
 } # end sub mtab_check
 
