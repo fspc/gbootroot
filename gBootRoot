@@ -114,6 +114,7 @@ my ($tmp,$mnt);
 my $norm_root_device;
 my ($hbox_advanced,$ha1,$ha2); 
 my $separator_advanced;
+my $table_advanced;
 my $button_count = 0;
 my $obj_count = 0;
 my ($lib_strip_check,$bin_strip_check);
@@ -1661,12 +1662,6 @@ Clicking on the menu on the right selects the method.
 The second row allows you to select the kernel for the Boot/Root set.  You
 may either use the file selector button on the right hand side, or you may
 type in the location on the left hand side.
-
-NOTE:
-Presently you need to press [Enter] on your keyboard to select what you
-typed in, but one advantage of this is that gBootRoot understands shell
-notation like ../twobelow/kernel.  The only disadvantage of this is that my
-program may be written up as an example in a GUI blooper book. :)
 
 The third row allows you to select the compressed filesystem you are
 providing, using either of the two ways mentioned before.
