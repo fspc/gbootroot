@@ -28,7 +28,7 @@ use Exporter;
 use strict;
 use BootRoot::Yard;
 use BootRoot::Error;
-use lsMode;
+use BootRoot::lsMode;
 
 my $yard_window;
 my $item_factory;
