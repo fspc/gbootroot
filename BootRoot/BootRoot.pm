@@ -135,6 +135,7 @@ my @entry_advanced;
 my ($ea1,$ea2,$ea3,$ea4,$ea5,$ea6); # entry advanced boot  
 my ($ear1,$ear2,$ear2_save,$ear3,$ear4); # entry advanced root
 my ($eab1,$eab2,$eab3,$eab4); # entry advanced uml
+my ($mtd_radio, $mtd_fs_type, $mtd_fs_type_combo, @fs_types); # entry advanced uml
 my $uml_window;
 my $table_advanced;
 my $table_advanced_root;
@@ -1571,13 +1572,66 @@ sub uml_box {
 
 
         #_______________________________________
-	# MTD
-	#label_advanced("MTD:",0,1,3,4,$table_uml);
-	#label_advanced("MTD:",0,1,4,5,$table_uml);
+	# MTD device emulation - mtdram or blkmtd
+
+        # Which?
+	label_advanced("MTD:",0,1,3,4,$table_uml);
+        my $mtd_check = Gtk::CheckButton->new("On or Off");
+	$tooltips->set_tip( $mtd_check, 
+                           "Turn MTD emulation on or off.",
+                           "" );
+        #$mtd_check->set_active($boolean);
+        $table_uml->attach($mtd_check,1,2,3,4, 
+			  ['expand','fill'],['fill','shrink'],0,0);
+        $mtd_check->show();
+
+        # mtdram
+        $mtd_radio = Gtk::RadioButton->new("mtdram");
+	$tooltips->set_tip( $mtd_radio, 
+                           "Use memory to emulate test mtd device.",
+                           "" );
+        $table_uml->attach($mtd_radio,2,3,3,4, 
+			  ['shrink','expand','fill'],['fill','shrink'],0,0);       
+        $mtd_radio->show();
+
+        # blkmtd
+        $mtd_radio = Gtk::RadioButton->new("blkmtd", $mtd_radio);
+	$tooltips->set_tip( $mtd_radio, 
+                           "Use block device to emulate test mtd device.",
+                           "" );
+        $table_uml->attach($mtd_radio,3,4,3,4, 
+			  ['shrink','expand','fill'],['fill','shrink'],0,0);   
+        $mtd_radio->show();
+
+        # fs_type - users can define their own, but this won't be remembered.
+        $mtd_fs_type_combo = Gtk::Combo->new();
+	$tooltips->set_tip( Gtk::Combo::entry($mtd_fs_type_combo), 
+                           "Choose filesystem type used by root filesystem.",
+                           "" );
+        $table_uml->attach($mtd_fs_type_combo,4,5,3,4, 
+			  ['shrink','expand','fill'],['fill','shrink'],20,0);
+        if ( !$mtd_fs_type ) {
+            @fs_types = qw(jffs2 jffs ext2 ext3 minix cramfs romfs reisers);
+            $mtd_fs_type_combo->entry->set_text( $fs_types[0] );
+            $mtd_fs_type_combo->set_popdown_strings( @fs_types );
+        }
+        else {
+            $mtd_fs_type_combo->entry->set_text( $mtd_fs_type );
+            $mtd_fs_type_combo->set_popdown_strings( @fs_types );
+        }
+        $mtd_fs_type_combo->entry->signal_connect("changed", sub {
+	            $mtd_fs_type = $mtd_fs_type_combo->entry->get_text();
+		    if ( $mtd_fs_type =~ /$fs_types[0]/ || 
+			 $fs_types[0] =~ /$mtd_fs_type/ ) {
+			shift(@fs_types);
+		    } 
+		    unshift(@fs_types,$mtd_fs_type);
+	} );
+        $mtd_fs_type_combo->show();
 
 
+        $table_uml->set_row_spacing( 4, 6);       
 
-        $table_uml->set_row_spacing( 2, 4);       
 
 	#_______________________________________
 	# Submit Button
