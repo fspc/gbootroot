@@ -52,8 +52,8 @@ my $uml_xterm = "xterm -e";
 # and to update scripts/Debian.yard if
 # make_debian has been changed,
 # and to install -s linux.
-my $version = "1.3.4";
-my $date = "02.08.2002";
+my $version = "1.3.5";
+my $date = "02.13.2002";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
@@ -1341,7 +1341,7 @@ sub uml_box {
 	$tooltips->set_tip( $eab4, 
                            "Pass commands to the mconsole.\n" .
 			    "1.  sysrq [0-9|b|e|i|l|m|p|r|s|t|u]  \n" . 
-			    "2.  reboot   halt   \n" .
+			    "2.  cad   reboot   halt   \n" .
 			    "3.  config <dev>=<config>\n4.  remove <dev>\n" .
 			    "5.  switch <umid>\n6.  version   help",
                            "" );
@@ -1356,6 +1356,38 @@ sub uml_box {
 						[14]);
 		      
 
+		      # Figure out whether it's an old mconsole location
+		      # or new.
+
+		      my $umid_location = "/tmp/uml//mconsole";
+		      if ( -S "/tmp/uml/$umid/mconsole" ) {
+			  $umid_location = "/tmp/uml/$umid/mconsole";
+		      }
+		      elsif ( -S "$ENV{HOME}/.uml/$umid/mconsole" ) {
+			  $umid_location = "$ENV{HOME}/.uml/$umid/mconsole";
+		      }
+
+
+ 		      # cad
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,cad, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "cad"
+				   ) 
+			      {
+				  sys( 
+				       "uml_mconsole " .
+				      $umid_location .
+				       " cad");
+				  
+			      }
+			      
+			  }
+			  
+		      }
+
+
  		      # help
 		      if ( $entry_advanced[14] && 
 			   $entry_advanced[14] =~ m,help, ) {
@@ -1366,7 +1398,7 @@ sub uml_box {
 			      {
 				  sys( 
 				       "uml_mconsole " .
-				       "/tmp/uml/$umid/mconsole" .
+				      $umid_location .
 				       " help");
 				  
 			      }
@@ -1387,7 +1419,7 @@ sub uml_box {
 			      {
 				  sys( 
 				       "uml_mconsole " .
-				       "/tmp/uml/$umid/mconsole" .
+				      $umid_location .
 				       " version");
 				  
 			      }
@@ -1408,7 +1440,7 @@ sub uml_box {
 			      {
 				  system
 				       "uml_mconsole " .
-				       "/tmp/uml/$umid/mconsole" .
+				      $umid_location .
 				       " reboot&";
 				  
 			      }
@@ -1427,7 +1459,7 @@ sub uml_box {
 			      {
 				  system
 				       "uml_mconsole " .
-				       "/tmp/uml/$umid/mconsole" .
+				      $umid_location .
 				       " halt&";
 				  
 			      }
@@ -1450,13 +1482,13 @@ sub uml_box {
 				       ^m$ | ^p$ | ^r$ | ^s$ | ^t$ | ^u$,x ) {
 				      system
 					  "uml_mconsole " . 
-					      "/tmp/uml/$umid/mconsole" .
+					     $umid_location .
 					  " sysrq $command_parts[$co + 1]&";
 				  }
 				  else {
 				      system
 					  "uml_mconsole " . 
-					      "/tmp/uml/$umid/mconsole" .
+					     $umid_location .
 					  " sysrq&";
 				  }
 			  
@@ -1478,7 +1510,7 @@ sub uml_box {
 
 				  sys(
 				      "uml_mconsole " . 
-					  "/tmp/uml/$umid/mconsole" .
+					 $umid_location .
 					  " switch $command_parts[$co + 1]");
 			  
 				  $umid = $command_parts[$co + 1];
@@ -1501,7 +1533,7 @@ sub uml_box {
 			      {
 				  system
 				      "uml_mconsole " .
-					  "/tmp/uml/$umid/mconsole" .
+					 $umid_location .
 					      " config " .
 						  "$command_parts[$co + 1]&";
  
@@ -1522,7 +1554,7 @@ sub uml_box {
 			      {
 				  system 
 				      "uml_mconsole " .
-					  "/tmp/uml/$umid/mconsole" .
+					 $umid_location .
 					      " remove " .
 						  "$command_parts[$co + 1]&";
 				  
