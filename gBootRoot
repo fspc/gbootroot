@@ -2402,7 +2402,6 @@ sub err_custom_perl {
 # This monster needs different behavior than create_text.
 sub verbosity_box {
 
-       my ($red,$blue);
     
        $verbosity_window = new Gtk::Window "toplevel";
        $verbosity_window->signal_connect("destroy", \&destroy_window,
@@ -2439,14 +2438,8 @@ sub verbosity_box {
                        0, 0 );
        $text->grab_focus();
        $text->show();
-       my $colormap = Gtk::Gdk::Colormap->get_system();
-       $red->{ 'red' } = 65000;
-       $blue->{ 'blue' } =  65000;
-       #$blue->{'red'} = 0;
-       #$blue->{'green'} = 0;
-       # Not a fatal problem
-       error( "Couldn't allocate color\n" ) 
-         unless ( defined( $colormap->color_alloc( $blue ) ) );
+       my $red  = Gtk::Gdk::Color->parse_color("red");
+       my $blue  = Gtk::Gdk::Color->parse_color("blue");
        text_insert($text,$red,$blue); # yard thing
 
        # Add a vertical scrollbar to the GtkText widget
