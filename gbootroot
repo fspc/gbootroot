@@ -545,10 +545,12 @@ start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name"
 # While on the subject of error output:
 #
 # info($verbosity setting can be {0=blue,1=red}, "text") writes to verbosity
-# box.
+# box and to the LOGFILE $tmp/verbosity.   Realative to the slider 1 == 2 and 
+# 0 == 1.
 #
-# error("text") returns ERROR, writes to verbosity box, and produces 
-# "gBootRoot: ERROR: "text" in error_window() .. used to report an error
+# error("text") returns ERROR, writes to verbosity box (Error: "text"), and 
+# produces "gBootRoot: ERROR: "text" in error_window(), and writes to the
+# LOGFILE $tmp/verbosity .. used to report an error
 #
 # sys("command action",TESTING) is like system(), if the command fails to open 
 # it calls error() and returns ERROR, if the command succeeds it writes the
@@ -562,6 +564,7 @@ start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name"
 # The next commands are wrapped around sys() and produce pre-defined text for
 # the error_window if an error occurs which returns 2, ofcourse because sys
 # is called the output is sent to the verbosity box if the command succeeds.
+# function(sys())
 #
 # errmk() "gBootRoot: ERROR: Could not make important directories" if $? != 0;
 #
