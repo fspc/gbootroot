@@ -1724,10 +1724,13 @@ sub make_link_absolute {
   my $link;
 
   if ($target =~ m|^/|) {
-    $target;			# Target is absolute, just return it
-  } else {
-    $link  =cleanup_link(dirname($file) . "/$target");
+    return $target;		 # Target is absolute, just return it
+  } else {                       ## and use return --freesource
+
+    $link  = cleanup_link(dirname($file) . "/$target");
+
   }
+
 
   $link =~ s,^\.,,;  # When there is one file dir eq .  --freesource
 
