@@ -833,6 +833,8 @@ sub space_check {
 			    info(1, 
                             "Counting bytes of replacement $replacement", 
 			     " (STRIPPED DEBUG)\n"); 
+			    my $rep_size = bytes_allocated($replacement);
+			    info(1, "$replacement size $rep_size\n");
 			    $total_bytes += bytes_allocated($tmp_strip);
 			    unlink($tmp_strip);
 			    next;
@@ -845,6 +847,8 @@ sub space_check {
 			    info(1, 
                             "Counting bytes of replacement $replacement",
 			    " (STRIPPED ALL)\n"); 
+			    my $rep_size = bytes_allocated($replacement);
+			    info(1, "$replacement size $rep_size\n");
 			    $total_bytes += bytes_allocated($tmp_strip);
 			    unlink($tmp_strip);
 			    next;
@@ -862,6 +866,8 @@ sub space_check {
 			    info(1, 
                             "Counting bytes of replacement $replacement",
 			    " (STRIPPED DEBUG)\n"); 
+			    my $rep_size = bytes_allocated($replacement);
+			    info(1, "$replacement size $rep_size\n");
 			    $total_bytes += bytes_allocated($tmp_strip);
 			    unlink($tmp_strip);
 			    next;
@@ -876,12 +882,16 @@ sub space_check {
 		    sys("objcopy --strip-all $replacement $tmp_strip");
 		    info(1, "Counting bytes of replacement $replacement",
 		    " (STRIPPED ALL)\n"); 
+		    my $rep_size = bytes_allocated($replacement);
+		    info(1, "$replacement size $rep_size\n");
 		    $total_bytes += bytes_allocated($tmp_strip);
 		    unlink($tmp_strip);
 		    next;
 	        }
 	    }
 	    info(1, "Counting bytes of replacement $replacement\n");
+	    my $rep_size = bytes_allocated($replacement);
+	    info(1, "$replacement size $rep_size\n");
 	    $total_bytes += bytes_allocated($replacement);
 
 	} elsif (-l $file or $links_to{$file}) { ## no strip
