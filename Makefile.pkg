@@ -19,7 +19,7 @@ KERNEL_1_SITE=http://www.uk.kernel.org/pub/linux/kernel/v2.4 http://www.us.kerne
 PATCH_1_SITE=http://jdike.stearns.org/mirror http://uml-pub.ists.dartmouth.edu/uml http://ftp.nl.linux.org/pub/uml http://mirror.math.leidenuniv.nl/uml-pub.ists.dartmouth.edu
 PATCH_1=uml-patch-$(VERSION)-$(PATCH_VERSION).bz2
 PATCH_2=$(BASE_DIR)/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch
-#MODE=tt
+MODE=tt
 KCONFIG_FILE=config
 KCONFIG=$(BASE_DIR)/user-mode-linux/usr/lib/uml/$(KCONFIG_FILE)
 
@@ -94,18 +94,18 @@ kernel:
 root_fs_helper: genext2fs
 
 	@if [ ! -f $(ROOT_FS_DIR)/root_fs_helper ] ; then \
-		perl -I . ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command "genext2fs -z -r0" --genext2fs-dir genext2fs/ ; \
+		perl -I . ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command "genext2fs -z -r0" --genext2fs-dir genext2fs/ --uml-options mode=$(MODE); \
 		cp -fa $(TMP)/root_fs_helper $(ROOT_FS_DIR) ; \
 	fi;
 	@if [ -f $(ROOT_FS_DIR)/root_fs_helper ] ; then \
-		perl -I. ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command mkcramfs  --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper; \
+		perl -I. ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command mkcramfs  --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper --uml-options mode=$(MODE); \
 		cp -fa $(TMP)/root_fs_helper_cramfs $(ROOT_FS_DIR)/root_fs_helper; \
 	fi;
 
 initrd: modules root_fs_helper
 
 	@if [ ! -f $(ROOT_FS_DIR)/Initrd.gz ] ; then \
-		perl -I. ./gbootroot --home . --template Initrd.yard --root-filename Initrd --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper --filesystem-size 4096; \
+		perl -I. ./gbootroot --home . --template Initrd.yard --root-filename Initrd --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper --filesystem-size 4096 --uml-options mode=$(MODE); \
 		gzip -c9 $(TMP)/Initrd > $(ROOT_FS_DIR)/Initrd.gz; \
 	fi;
 
@@ -176,7 +176,7 @@ install:
 	cp -fa yard/replacements/* $(DESTDIR)/usr/share/gbootroot/yard/Replacements
 	install -d $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/modules* $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules
-	cp -fa user-mode-linux/usr/lib/uml/config $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules
+	cp -fa user-mode-linux/usr/lib/uml/$(KCONFIG_FILE) $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/CVS $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules/CVS
 	install -d $(DESTDIR)/usr/lib/uml
 	cp -fa user-mode-linux/usr/lib/uml/port-helper $(DESTDIR)/usr/lib/uml/port-helper

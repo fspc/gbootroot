@@ -20,7 +20,7 @@ build-stamp:
 	dh_testdir
 
 	# Add here commands to compile the package.
-	$(MAKE) KCONFIG_FILE=config-nest1
+	$(MAKE)
 	#/usr/bin/docbook-to-man debian/gbootroot.sgml > gbootroot.1
 
 	touch build-stamp

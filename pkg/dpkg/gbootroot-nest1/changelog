@@ -1,4 +1,32 @@
-gbootroot (1.3.6-1) unstable; urgency=low
+gbootroot-nest1 (1.4.0-1) unstable; urgency=low
+
+  * The MTD Emulator doesn't work as nicely as before.  Blkmtd seems
+    mostly broken, and mtdram needs more careful tweaking for total
+    size, though mtdram definitely still works.  This is due to changes
+    in uml which will have to be addressed since the code for the mtd
+    modules didn't change.
+  * Had to add user-mode-linux/usr/lib/uml to the PATH to allow --home
+    to find port-helper, or otherwise root_fs complain.  Have no idea
+    why this change exists with the new port-helper because wasn't the
+    case before.  Also, added path for user-mode-linux/usr/bin to find
+    the other tools.
+  * The biggest change is the command-line interface with the yard root
+    method.  Now distribute your template and let others easily recreate
+    your root_fs without entering the gui by running "gbootroot --
+    template your_template" and this is a nice way to manage a
+    distribution you are developing.  This all means the source packages
+    are completely automated now, and vastly improved, which is quite
+    awesome.
+  * When root_fs_helper was running with the newer Expect.pm, and
+    consequentially the newer uml kernel it became necessary to get out
+    when the kernel shuts down with a last function right when it says
+    "Power down."
+  * Checks for the proper version for newer libc6 linkers.  Hopefully,
+    should work properly with libc6 > 2.3.1, too.
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Thu, 26 Dec 2002 13:01:23 -0500
+
+gbootroot-nest1 (1.3.6-1) unstable; urgency=low
 
   * Updated to 2.4.18-2um and the latest uml tools 20020212, including
     tunctl from CVS, because it was missing from the uml_utilities
@@ -31,7 +59,7 @@ gbootroot (1.3.6-1) unstable; urgency=low
 
  -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Mon, 11 Mar 2002 00:43:24 -0500
 
-gbootroot (1.3.5-1) unstable; urgency=low
+gbootroot-nest1 (1.3.5-1) unstable; urgency=low
 
   * Now the template called Helper.yard used to create the
     root_fs_helper is included with root_fs_helper.
@@ -65,7 +93,7 @@ gbootroot (1.3.5-1) unstable; urgency=low
 
  -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Wed, 13 Feb 2002 15:11:41 -0500
 
-gbootroot (1.3.4-1) unstable; urgency=low
+gbootroot-nest1 (1.3.4-1) unstable; urgency=low
 
   * Updated to 2.4.17-10um and added Jeff's initrd fix.
   * Updated to 20020125 uml tools.
@@ -97,7 +125,7 @@ gbootroot (1.3.4-1) unstable; urgency=low
 
  -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Fri,  8 Feb 2002 19:33:13 -0500
 
-gbootroot (1.3.3-1) unstable; urgency=low
+gbootroot-nest1 (1.3.3-1) unstable; urgency=low
 
   * During the boot stage the filsystem type was used to determine
     whether to use the genext2fs (non-root) method or the normal method
@@ -134,7 +162,7 @@ gbootroot (1.3.3-1) unstable; urgency=low
 
  -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Tue, 15 Jan 2002 13:50:08 -0500
 
-gbootroot (1.3.2-1) unstable; urgency=low
+gbootroot-nest1 (1.3.2-1) unstable; urgency=low
 
   * Updated linux and modules to 2.4.17-4um.  Made jffs and jffs2 part
     of the  kernel, and had to comment out the get_mtd_device function
@@ -173,7 +201,7 @@ gbootroot (1.3.2-1) unstable; urgency=low
 
  -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Fri, 11 Jan 2002 13:03:13 -0500
 
-gbootroot (1.3.1-1) unstable; urgency=low
+gbootroot-nest1 (1.3.1-1) unstable; urgency=low
 
   * Added a complete interface to the mconsole in the UML Box.  Multiple
     options  can be entered at one time.  Options include: switch so
@@ -225,7 +253,7 @@ gbootroot (1.3.1-1) unstable; urgency=low
 
  -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Mon, 24 Dec 2001 14:21:49 -0500
 
-gbootroot (1.3.0-1) unstable; urgency=low
+gbootroot-nest1 (1.3.0-1) unstable; urgency=low
 
   * Added a README for users installing from the source package.
   * Removed the enforcement of the yard suffix rule for templates,
@@ -368,7 +396,7 @@ gbootroot (1.3.0-1) unstable; urgency=low
 
  -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Wed, 12 Dec 2001 15:07:54 -0500
 
-gbootroot (1.2.14-1) unstable; urgency=low
+gbootroot-nest1 (1.2.14-1) unstable; urgency=low
 
   * Append field in the ABS now saves state for non-root users.  Before it only
     remembered state if lilo.conf could actually be read, ofcourse, this wasn't
@@ -398,7 +426,7 @@ gbootroot (1.2.14-1) unstable; urgency=low
 
  -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Wed, 24 Oct 2001 13:03:32 -0400
 
-gbootroot (1.2.13-1) unstable; urgency=low
+gbootroot-nest1 (1.2.13-1) unstable; urgency=low
 
   * Initial Release.
 

@@ -1538,7 +1538,7 @@ sub create_expect_uml {
 	    }
 
 	    my $ubd1 = "ubd1=$device";
-	    my $options = "root=/dev/ubd0"; # need to keep this 1
+	    my $options = "root=/dev/ubd0 " . $option{"uml-options"};
 	    my $filesystem;
 	    if ( $fs_type eq "genext2fs" ) {
 		$filesystem = "mke2fs -m0";
@@ -1552,12 +1552,12 @@ sub create_expect_uml {
 	    my $command_line;
 
 	    if ( $option{"uml-kernel"} ) {
-		$command_line = "$expect_program $ubd0 $ubd1 $options " .
+		$command_line = "$expect_program $ubd0 $ubd1 \"$options\" " .
 		    "$mount_point $preserve_ownership " . 
 		    $option{"uml-kernel"} . " $filesystem";
 	    }
 	    else {
-		$command_line = "$expect_program $ubd0 $ubd1 $options " .
+		$command_line = "$expect_program $ubd0 $ubd1 \"$options\" " .
 		    "$mount_point $preserve_ownership " . 
 		    BootRoot::BootRoot::uml_kernel() . " $filesystem";
 	    }

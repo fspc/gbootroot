@@ -10,6 +10,7 @@ Architecture: i386
 Depends:  ${perl:Depends}, perl-modules, libgtk-perl (>= 0.7002), libc6 (>= 2.1.2), libexpect-perl, ash, file, binutils, bzip2
 Recommends: dswim, lilo
 Suggests: make-debian-x11
+Conflicts: gbootroot
 Description: Boot/Root Filesystem Distribution testing and creation.
  BootRoot makes the construction and development of distributions fun and 
  simple with its Root Methods (Yard) and user-mode-linux test bed.  Finish 
@@ -26,7 +27,7 @@ Description: Boot/Root Filesystem Distribution testing and creation.
  .
  See manual in /usr/share/doc/gbootroot-nest1/html for instructions on how
  to add the proper lines to your sources.list.  Both binary and source
- packages are available.  This package should be installed under a Debian
+ packages are available.  This package should be installed within a Debian
  root_fs;  make_debian or the make_debian_x11 script from make-debian-x11
  can be used to make Debian root_fs.
 

@@ -48,9 +48,10 @@ sub option {
 		"kernel-version=s",
 		"genext2fs-dir=s",            #  /usr/lib/bootroot/
 		"no-stdout",
+		"uml-options=s",
 
-		# hidden options for package making or for people who
-		# read the source Luke.  Path's relative to `pwd`.
+		# hidden options - well, sort of -  for package making or for 
+		# people who read the source Luke.  Path's relative to `pwd`.
 
 		# home by itself allows the GUI to be tested in it's 
 		# immediate directory, this overcomes the need to always

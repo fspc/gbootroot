@@ -379,7 +379,7 @@ if ( !%option ) {
 	# I removed mem=16M to make sure the optimal mem size was being 
 	# chosen for the MTD Emulator
 	# in case the user didn't know any better.
-	print OPTIONS "umid=bootroot root=/dev/ubd0\n";
+	print OPTIONS "umid=bootroot root=/dev/ubd0 mode=tt\n";
 	close(OPTIONS);
     }
 
@@ -821,6 +821,7 @@ else {
 	print "  --uml-exclusively=on|off  off\n";
 	print "  --uml-kernel=path         $ENV{HOME}/.gbootroot/" . 
 					   "uml_kernel/linuxbr\n";
+	print "  --uml-options=\"list\"      \"\"\n";
 	print "  --preserve-ownership=y|n  n\n";
 	print "  --genext2fs-dir=dir       /usr/lib/bootroot/\n";
 	print "  --expect-program=path     /usr/lib/bootroot/expect_uml\n";

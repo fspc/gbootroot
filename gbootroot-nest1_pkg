@@ -188,7 +188,12 @@ foreach (@make_lines) {
 		home_builder("$packaging_place/$base");
 		}
          if ( $_ =~ /cp/ ) {
-	       system "cp -fa $dir $packaging_place/$base";
+               if ( $dir =~ /config$/ ) {
+	           system "cp -fa user-mode-linux/usr/lib/uml/config-nest1 $packaging_place/$base/config";
+               }
+               else {
+	           system "cp -fa $dir $packaging_place/$base";
+               }
          }
          else {
 	       system "install -d $packaging_place/$dir";

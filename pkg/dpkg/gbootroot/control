@@ -10,6 +10,7 @@ Architecture: i386
 Depends:  ${perl:Depends}, perl-modules, libgtk-perl (>= 0.7002), libc6 (>= 2.1.2), libexpect-perl, ash, file, binutils, bzip2
 Recommends: dswim, lilo
 Suggests: make-debian-x11
+Conflicts: gbootroot-nest1
 Description: Boot/Root Filesystem Distribution testing and creation.
  BootRoot makes the construction and development of distributions fun and 
  simple with its Root Methods (Yard) and user-mode-linux test bed.  Finish 
@@ -26,5 +27,6 @@ Description: Boot/Root Filesystem Distribution testing and creation.
  .
  See manual in /usr/share/doc/gbootroot/html for instructions on how
  to add the proper lines to your sources.list.  Both binary and source
- packages are available.
+ packages are available.  If you want to run this program within a running 
+ uml, install gbootroot-nest1 instead.
 
