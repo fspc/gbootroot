@@ -37,6 +37,9 @@ use File::Find;
 my $login_binary;
 my $mount_point = $ARGV[0];
 
+my %checked;
+my $checked_for_getty_files;
+
 which_test();
 
 sub which_test {
@@ -44,7 +47,6 @@ sub which_test {
     my $test_fstab   = $ARGV[1];
     my $test_inittab = $ARGV[2];
     my $test_scripts = $ARGV[3];
-
 
     if ( $test_fstab   == 1 ) {
 	print "\nTEST: fstab";
@@ -221,6 +223,67 @@ sub check_scripts {
 
   find(\&check_interpreter, "/");
 }
+
+#####  This could be made much more complete, but for typical rc type
+#####  files it seems to catch the common problems.
+sub scan_command_file {
+  my($cmdfile, @args) = @_;
+  my(%warned, $line);
+
+  return if $checked{$cmdfile};
+  print "\nScanning $cmdfile\n";
+  open(CMDFILE, "<$cmdfile")			or error "$cmdfile: $!";
+
+  while ($line = <CMDFILE>) {
+    chomp($line);
+    next if $line =~ /^\#/ or /^\s*$/;
+
+    next if $line =~ /^\w+=/;
+
+    while ($line =~ m!(/(usr|var|bin|sbin|etc|dev)/\S+)(\s|$)!g) {
+	my($abs_file) = $1;
+	# next if $abs_file =~ m/[*?]/; # Skip meta chars - we don't trust glob
+	next if $warned{$abs_file}; # Only warn once per file
+	if (!-e $abs_file) {
+	    warning ("$cmdfile($.): $line\n\t$1: missing on root filesystem\n");
+	    $warned{$abs_file} = 1;
+	}
+    }
+  }
+  close(CMDFILE)				or error "close($cmdfile): $!";
+
+  $checked{$cmdfile} = 1;
+  print "Done scanning $cmdfile\n";
+
+} # end sub scan_command_file
+
+sub check_getty_type_call {
+  my($prog, @args) = @_;
+
+  if ($prog eq 'getty') {
+    my($tty, $speed, $type) = @args;
+
+    if (!-e "$mount_point/dev/$tty") {
+      warning ("\tLine $.: $prog for $tty, but /dev/$tty doesn't exist.\n");
+    }
+    ##if (!defined($Termcap{$type})) {
+    ##  warning ("\tLine $.: Type $type not defined in termcap\n");
+    ##}
+  }
+  ##  If getty or getty_ps, look for /etc/gettydefs, /etc/issue
+  ##  Check that term type matches one in termcap db.
+
+  if ($prog =~ /^getty/) {
+    if (!$checked_for_getty_files) {
+      warning ("\tLine $.: $prog expects /etc/gettydefs, which is missing.\n")
+	unless -e "$mount_point/etc/gettydefs";
+      warning ("\tLine $.: $prog expects /etc/issue, which is missing.\n")
+	unless -e "$mount_point/etc/issue";
+      $checked_for_getty_files = 1;
+    }
+  }
+
+} # end sub check_getty_type_call
 
 sub warning {
     print "\n", @_;                                                   
