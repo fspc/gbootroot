@@ -501,8 +501,16 @@ sub space_check {
     my($total_bytes) = 0;
     my(%counted);
 
+    # %Included synopsis
+    # /path/file (1|symlink)
+    # %replaced_by /path/file /path/file .. <= 
+    # %links_to    /path/file-symnlink   actual-file
+    # %hardlinked  /path/file  dev/inode -> stat()
+
     my ($file);
     foreach $file (keys %Included) {
+      
+	print "$file -> $Included{$file} ... $hardlinked{$file}\n";
 
 	my($replacement, $devino);
 	if ($replacement = $replaced_by{$file}) {
