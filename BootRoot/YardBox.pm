@@ -1,7 +1,9 @@
 ###########################################################################
 ##
 ##  YardBox.pm 
-##  Copyright (C) 2000, 2001 by Jonathan Rosenbaum
+##  Copyright (C) 2000, 2001 by Jonathan Rosenbaum 
+##                              <freesource@users.sourceforge.net>
+
 ##
 ##  This program is free software; you may redistribute it and/or modify
 ##  it under the terms of the GNU General Public License as published by
