@@ -187,17 +187,31 @@ if (!$stop) {
     my $save_doc;
     $save_doc = "  * ";
     $count = 0;
+    my $mc = 0;
     while (<STDIN>) {
 	my $doc_reply = $_;
-	if ($doc_reply) {
+	if ($doc_reply ne "\n") {
 	    print "    ";
-	    $doc_reply = "    $doc_reply" if $count != 0;
+	    $doc_reply = "$doc_reply" if $count != 0 && $mc == 1;
+	    $doc_reply = "    $doc_reply" if $count != 0 && $mc != 1;
+	    $mc = 0;
+	}
+	else {
+	    print "  * ";
+	    if ( $count != 0 && $doc_reply eq "\n" ) {
+		$mc = 0;
+		$doc_reply = "\n  * "; 
+		$mc++;
+	    }
+	    $doc_reply = "$doc_reply" if $count != 0 && $mc == 1;
+	    $doc_reply = "    $doc_reply" if $count != 0 && $mc != 1;
 	}
 	last if $doc_reply =~ /^\s*\.\s*$/;
 	if ($doc_reply) {
 	    $save_doc = $save_doc . $doc_reply;
 	}
-	$count++;
+	$count++;	
+
     }
 
 
