@@ -133,10 +133,13 @@ system "cp -a $packaging_place/user-mode-linux/usr/lib/uml/port-helper $gbootroo
 system "cp -a $packaging_place/user-mode-linux/usr/bin/* $gbootroot_cvs/user-mode-linux/usr/bin/";
 
 # kernel config
- system "cp -a $packaging_place/user-mode-linux/usr/lib/uml/config $gbootroot_cvs/user-mode-linux/usr/lib/uml/";
+ system "cp -a $packaging_place/user-mode-linux/usr/lib/uml/config $gbootroot_cvs/user-mode-linux/usr/lib/uml/config-nest1";
 
 # genext2fs
 system "cp -a $packaging_place/genext2fs/genext2fs $gbootroot_cvs/genext2fs/genext2fs";
+
+# skas-or-tt
+system "cp -a $packaging_place/skas-or-tt/skas-or-tt $gbootroot_cvs/skas-or-tt/skas-or-tt";
 
 # root_fs_helper & Initrd.gz
 system "cp -a $packaging_place/root_filesystem/root_fs_helper $gbootroot_cvs/root_filesystem/root_fs_helper";

@@ -138,6 +138,9 @@ system "cp -a $packaging_place/user-mode-linux/usr/bin/* $gbootroot_cvs/user-mod
 # genext2fs
 system "cp -a $packaging_place/genext2fs/genext2fs $gbootroot_cvs/genext2fs/genext2fs";
 
+# skas-or-tt
+system "cp -a $packaging_place/skas-or-tt/skas-or-tt $gbootroot_cvs/skas-or-tt/skas-or-tt";
+
 # root_fs_helper & Initrd.gz
 system "cp -a $packaging_place/root_filesystem/root_fs_helper $gbootroot_cvs/root_filesystem/root_fs_helper";
 system "cp -a $packaging_place/root_filesystem/Initrd.gz $gbootroot_cvs/root_filesystem/Initrd.gz";

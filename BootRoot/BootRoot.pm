@@ -377,7 +377,7 @@ if ( !( $option{home} || $option{help} || $option{h} ) ) {
 	# I removed mem=16M to make sure the optimal mem size was being 
 	# chosen for the MTD Emulator
 	# in case the user didn't know any better.
-	print OPTIONS "umid=bootroot root=/dev/ubd0 mode=tt\n";
+	print OPTIONS "umid=bootroot root=/dev/ubd0\n";
 	close(OPTIONS);
     }
 
@@ -2201,8 +2201,7 @@ sub uml_box {
 						  # Order does matter because it's used by linuxrc
 						  $entry_advanced[9] = 
 						      "mtd=mtdram,$fs_type,$total_size,$erasure_size,$init, " .
-							  "$mem $ramdisk_size $initrd " . "mode=" . skas_or_tt() . " " .
-							      $entry_advanced[9]; 
+							  "$mem $ramdisk_size $initrd " . $entry_advanced[9]; 
 
 					      }
 
@@ -2216,8 +2215,7 @@ sub uml_box {
 						  # Order does matter because it's used by linuxrc
 						  $entry_advanced[9] = 
 						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size,$init, " .
-							  "$mem $initrd " . "mode=" . skas_or_tt() . " " .
-							  $entry_advanced[9]; 
+							  "$mem $initrd " . $entry_advanced[9]; 
 
 					      }
 
@@ -2226,6 +2224,9 @@ sub uml_box {
 					  } # mtd preparations
 					  #############
 
+					  if ( $entry_advanced[9] !~ m,mode=, ) {
+					      $entry_advanced[9] = "mode=" . skas_or_tt() . " " . $entry_advanced[9];
+					  }
 
 					  unless ($pid = fork) {
 					      unless (fork) {
@@ -5309,17 +5310,19 @@ HELP
 
 sub skas_or_tt {
 
-    my $ret;
+    my ($ret, $error);
 
     # CLI is never appended, but it could be.
     if ( !$option{gui_mode} ) {
-	open(SKAS_OR_TT,"/usr/lib/bootroot/skas-or-tt|") or
-	    die "Couldn't open /usr/lib/bootroot/skas-or-tt\n";
+	open(SKAS_OR_TT,"/usr/lib/bootroot/skas-or-tt|") or  
+	    ($error = error("/usr/lib/bootroot/skas-or-tt: $!"));
+	return "ERROR"if $error && $error eq "ERROR";
     }
     else {
 	my $skas_or_tt = $option{home} . "/skas-or-tt/skas-or-tt";
 	open(SKAS_OR_TT,"$skas_or_tt|") or
-	    die "Couldn't open $skas_or_tt\n";
+	    ($error = error("/usr/lib/bootroot/skas-or-tt: $!"));
+	return "ERROR"if $error && $error eq "ERROR";
     }
 
     while (<SKAS_OR_TT>) {
