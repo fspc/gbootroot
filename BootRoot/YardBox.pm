@@ -1190,7 +1190,7 @@ sub search {
 	    if ($search_backwards->active) {
 
 		if (!$offset) {
-		    if($case_sensitive->active) {
+		    if(!$case_sensitive->active) {
 			my ($tmp_ct, $tmp_k);
 			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
 			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
@@ -1211,7 +1211,7 @@ sub search {
 		else {
 		    $offset = $offset - 1;
 
-		    if($case_sensitive->active) {
+		    if(!$case_sensitive->active) {
 			my ($tmp_ct, $tmp_k);
 			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
 			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
@@ -1239,7 +1239,7 @@ sub search {
 	    # index
 	    else {
 		if (!$offset) {
-		    if($case_sensitive->active) {
+		    if(!$case_sensitive->active) {
 			my ($tmp_ct, $tmp_k);
 			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
 			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
@@ -1264,7 +1264,7 @@ sub search {
 		else {
 		    $offset = $offset + 1;
 
-		    if($case_sensitive->active) {
+		    if(!$case_sensitive->active) {
 			my ($tmp_ct, $tmp_k);
 			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
 			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
