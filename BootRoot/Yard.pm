@@ -167,8 +167,8 @@ sub read_contents_file {
 
     my ( $contents_file, $mnt, $fs_size) = @_;
     my $error;
-
-
+    my %control_structure;
+    
     # It's a good idea to clear the text buffer in the verbosity box
     if ( $text_insert ) {
 	$text_insert->backward_delete($text_insert->get_length());
@@ -245,6 +245,319 @@ sub read_contents_file {
       $line =~ s/^\s+//;		# Delete leading/trailing whitespace
       $line =~ s/\s+$//;
 
+      # --freesource
+      # Here we get to decide which files to filter out and which
+      # to send on based on the 
+      #  \ if ( condition ) \n  statement  \n elsif (condition) \n  statement  
+      #   \n else \n  statement \ 
+      # control structure.  \ is chosen as the beginning deliminator
+      # then the structure is parsed until the ending deliminator \ is
+      # found. The fun part is check the logic, all () need to be closed
+      # Otherwise we report an invalid template.
+
+      # We test only for absolute and relative files in conditionals.
+      # For logic simplicity conditionals must be on the same line and
+      # if any condition is found to be true the statements will be evaluated.
+      # Statements can be grouped on a line or several lines .. normal Yard beh
+      # but not on the same line as conditionals, deliminators can be on the
+      # same line as the if condition, preceeding it, at the end of the last
+      # statement or a line or so afterwards
+      #
+      # This is non-strict checking .. junk can be after conditionals (maybe) -
+      # or last delimiter - which will be ignored - and else can preceed 
+      # an elsif :-)
+      # The most important check is to avoid never finding a final delimiter
+      # 
+      # Error conditions in order - all these things need to exist or there
+      #                             is an ERROR.
+      #  ( remember outer parens )
+      #  1. if && ( && ) && statments
+      #  2. elsif && ( && ) && statements || else && statements
+      #  3. end deliminator \ has to be found before EOF
+      # 
+      # Example (not practical ofcourse):
+      #
+      #  \ if ( ifconfig netstat )
+      #        ifconfig
+      #        netstat
+      #    elsif ( perl )
+      #        cc
+      #    else
+      #      ls cd bash 
+      #       echo \
+
+      # First line found with \ &&  may be an if ()
+      if ( $line =~ /\s*\\/  ) {
+
+	  # Keep checking for logic
+	  $control_structure{WATCH}++;
+
+
+	  if ( $line !~ /\s*if\s*/  ) {
+	      next LINE;
+	  }
+	  else {
+##########
+	      $control_structure{if}++;
+
+	      
+	      # Complete if conditional
+	      if ( $line =~ /\s*if\s*\((.*)\)/ ) {
+
+		  my $conditional = $1;
+
+
+		  # Check condition
+		  my ($expr, @globbed);
+		  for $expr (split(' ', $conditional)) {
+		      @globbed = yard_glob($expr);
+		      if ($#globbed == -1) {
+			  cf_warn($contents_file, $line, 
+				  "Error: Can't test a null value");
+			  return "ERROR";
+		      } 
+		      else {
+
+			  # Lets check whether anything is real
+
+			  if ( file_exists( $globbed[0] ) eq "TRUE" ) {
+			      $control_structure{if_true} = 1;
+			      next LINE;
+			  }
+
+		      }
+		      
+		  } # end for glob condition
+		  
+		  # Couldn't find a condition
+		  if ( !@globbed ) {
+		      cf_warn($contents_file, $line, 
+			      "Error: Can't test a null condition");
+		      return "ERROR";
+		  }
+
+		  
+	      }  # end complete conditional  
+
+	      # Incomplete if conditional structure - stop
+	      else {
+
+		  cf_warn($contents_file, $line, 
+			  "Error: Conditions must be surrounded with ( )");
+		  return "ERROR";
+		  
+	      }
+	      
+	      # not going to worry about garbage at the end if the conditional
+	      # is proper .. this isn't a new computer language :-)
+	      
+###################
+
+	  }  # line equaled if
+	      	
+      }
+
+
+      # Next line if it exists between \ \
+      elsif ( %control_structure && $control_structure{WATCH} < 2 ) {
+
+	  # if condition is true because on same line as \ or now true
+	  if ( $control_structure{if_true} ) {
+
+
+	      # -> Better check for bad structure for else and elsif
+	      if ( $line =~ m,^\s*else\s*$|\s*elsif\s*\(.*\)\s*, ) {
+		  $control_structure{else_false} = 1;
+		  next LINE;
+	      }
+	      elsif ( $control_structure{else_false} && 
+		      $control_structure{WATCH} < 2 ) {
+		  next LINE;
+	      }
+
+	  }  # true if condition
+
+	  # elsif condition is true because on same line as \ or now true
+	  if ( $control_structure{elsif_true} ) {
+
+
+	      # -> Better check for bad structure for else and elsif
+	      if ( $line =~ m,^\s*else\s*$|\s*elsif\s*\(.*\)\s*, ) {
+		  $control_structure{else_false} = 1;
+		  next LINE;
+	      }
+	      elsif ( $control_structure{else_false} && 
+		      $control_structure{WATCH} < 2 ) {
+		  next LINE;
+	      }
+
+	  }  # true elsif condition
+
+
+	  # Check for if again if it wasn't alread true
+	  # if must exist before elsif or else or there is an error
+
+	  if ( ! $control_structure{if} ) {
+
+	      if ( $line !~ /\s*if/ ) {
+		  next LINE;
+	      }
+	      else {
+
+		  $control_structure{if}++;
+
+		  # Complete if conditional
+		  if ( $line =~ /\s*if\s*\((.*)\)/ ) {
+
+		      my $conditional = $1;		      
+
+		      # Check condition
+		      my ($expr, @globbed);
+		      for $expr (split(' ', $conditional)) {
+			  @globbed = yard_glob($expr);
+			  if ($#globbed == -1) {
+			      cf_warn($contents_file, $line, 
+				      "Error: Can't test a null value");
+			      return "ERROR";
+			  } 
+			  else {
+
+			      # Lets check whether anything is real
+
+			      if ( file_exists( $globbed[0] ) eq "TRUE" ) {
+				  $control_structure{if_true} = 1;
+				  next LINE;
+			      }
+
+
+			  }
+		      
+		      } # end for glob condition
+		  
+		      # Couldn't find a condition
+		      if ( !@globbed ) {
+			  cf_warn($contents_file, $line, 
+				  "Error: Can't test a null condition");
+			  return "ERROR";
+		      }
+
+		  
+		  }  # end complete conditional  
+
+	      # Incomplete if conditional structure - stop
+		  else {
+
+		      cf_warn($contents_file, $line, 
+			      "Error: Conditions must be surrounded with ( )");
+		      return "ERROR";
+		  
+		  }
+	      
+		  # not going to worry about garbage at the end if the 
+		  # conditional is proper .. this isn't a new computer 
+		  # language :-)
+	      
+
+	      }  # line equaled if
+	  }
+
+
+	  # ELSIF && ELSE
+	  # if if didn't have anything we come here
+	  # This is weird it just skips over this logic
+	  if ( !$control_structure{if_true} &&
+	       !$control_structure{elsif_true} ) {
+
+
+	      if ( $line =~ m,\s*else\s*|\s*elsif\s*, ) {
+
+#########
+		  if ( $line =~ m,\s*elsif\s*\(.*\)\s*, ) {
+
+
+		      $control_structure{elsif}++;
+
+	      
+		      # Complete if conditional
+		      if ( $line =~ /\s*elsif\s*\((.*)\)/ ) {
+			  
+			  my $conditional = $1;
+
+
+			  # Check condition
+			  my ($expr, @globbed);
+			  for $expr (split(' ', $conditional)) {
+			      @globbed = yard_glob($expr);
+			      if ($#globbed == -1) {
+				  cf_warn($contents_file, $line, 
+					  "Error: Can't test a null value");
+				  return "ERROR";
+			      } 
+			      else {
+				  
+				  # Lets check whether anything is real
+				  
+				  if ( file_exists( $globbed[0] ) eq "TRUE" ) {
+				      $control_structure{elsif_true} = 1;
+				      next LINE;
+				  }
+				  
+			      }
+		      
+			  } # end for glob condition
+			  
+			  # Couldn't find a condition
+			  if ( !@globbed ) {
+			      cf_warn($contents_file, $line, 
+				      "Error: Can't test a null condition");
+			      return "ERROR";
+			  }
+
+		  
+		      }  # end complete conditional  
+
+		      # Incomplete if conditional structure - stop
+		      else {
+
+			  cf_warn($contents_file, $line, 
+				  "Error: Conditions must be surrounded with ( )");
+			  return "ERROR";
+		  
+		      }
+	      
+		      
+		  }  # end elsif
+
+###########
+
+
+
+	      }
+
+
+	      else {
+		  next LINE;
+	      }
+
+
+	  }
+
+
+
+      }
+
+      # last line found with ending \ can be besides a statement or by itself
+      elsif ( %control_structure && $control_structure{WATCH} == 2 ) {
+	  
+	  # Better make sure we actually get here
+
+	  undef %control_structure;
+
+      }
+  
+    
+
+
       # If genext2fs is being used we want to grab the values for 
       # devices and process them individually, globbing if necessary,
       # and appending the changes to the device table. --freesource
@@ -305,6 +618,7 @@ sub read_contents_file {
 	  }
 
       }  # genext2fs
+
 
       if ($line =~ /->/) {	#####  EXPLICIT LINK
 	  if ($line =~ /[\*\?\[]/) {
@@ -528,6 +842,53 @@ sub read_contents_file {
 } # end read_contents_file
 
 
+sub file_exists {
+
+    my ($file) = @_;
+
+    if ($file =~ m|^/|) {	#####  Absolute filename
+	    
+	# This complains for non-existent $files for some reason.
+	# like /dev/pilot, but can't replicate
+	if (-l $file and readlink($file) =~ m|^/proc/|) {
+
+		return "TRUE";
+		
+	    } elsif (-e $file) {
+		
+		return "TRUE";
+
+	    } elsif ($file =~ m|^$::oldroot/(.*)$|o and -e "/$1") {
+
+		return "FALSE";
+
+	    } else {
+
+		return "FALSE";
+
+	    }
+
+    } else {		##### Relative filename
+
+	my($abs_file) = find_file_in_path($file);
+
+	if ($abs_file) {
+
+	    return "TRUE";
+
+	} else {
+		
+	    return "FALSE";
+
+	}
+    }
+    
+    return "FALSE";
+
+} # end sub file_exists
+
+
+
 # Uses include_file
 sub extra_links {
 
@@ -612,6 +973,9 @@ sub extra_links {
     %Included = (%Included, %user_defined_link); # --freesource
 
     info(0, "Done.\n\n");
+
+    exit;
+
 }
 
 
