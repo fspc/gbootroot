@@ -1,4 +1,4 @@
-# $Id$
+# $Id: Helper.yard,v 1.2 2002/12/12 01:10:23 freesource Exp $
 #  Helper.yard
 #
 #############################################################################
@@ -79,6 +79,9 @@ telinit
 #   PROVISIONS FOR PAM: 
 /etc/pam.d/other
 /etc/pam.d/login
+\ if ( /etc/pam.d/system-auth )
+	# RedHat uses this
+	/etc/pam.d/system-auth \
 # /etc/pam.conf
 
 #   PROVISIONS FOR NSS
@@ -99,9 +102,30 @@ telinit
 #===== DEBIAN uses a program called "getty" which is actually agetty in 
 #===== disguise:
 
-## The only difference here is that there is only one getty.
-/etc/inittab	<= Replacements/etc/inittab.example-helper
-/sbin/getty
+\
+if ( getty )
+	/etc/inittab	<= Replacements/etc/inittab.example-helper
+	/sbin/getty
+
+#
+#===== MANDRAKE, REDHAT  and many other modern RH based DISTS use mingetty:
+
+elsif ( mingetty )
+
+	/etc/inittab	<= Replacements/etc/inittab.example-mingetty-helper
+	/sbin/mingetty
+	/etc/gettydefs
+
+#
+#===== SLACKWARE uses agetty:
+
+elsif ( agetty )
+
+	/etc/inittab	<= Replacements/etc/inittab.example-agetty-helper
+	/sbin/agetty
+	/etc/gettydefs
+\
+
 
 #####  utmp and wtmp.  
 # Made by rcS if they don't exist.

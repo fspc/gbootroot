@@ -1,4 +1,4 @@
-#  $Id: Example.yard,v 1.16 2001/12/14 04:34:46 freesource Exp $
+#  $Id: Example.yard,v 1.17 2002/02/08 04:15:23 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with getty.  
@@ -148,6 +148,10 @@ telinit
 #   PROVISIONS FOR PAM: 
 /etc/pam.d/other
 /etc/pam.d/login
+\ if ( /etc/pam.d/system-auth )
+	# RedHat uses this
+	/etc/pam.d/system-auth \
+
 # /etc/pam.conf
 
 #   PROVISIONS FOR NSS
@@ -167,21 +171,34 @@ telinit
 #
 #===== DEBIAN uses a program called "getty" which is actually agetty in 
 #===== disguise:
-/etc/inittab	<= Replacements/etc/inittab.example-deb
-#/etc/inittab	<= Replacements/etc/inittab.example-deb-nodevfs
-/sbin/getty
+
+\
+if ( getty )
+
+	/etc/inittab	<= Replacements/etc/inittab.example-deb
+	#/etc/inittab	<= Replacements/etc/inittab.example-deb-nodevfs
+	/sbin/getty
+
 #
 #===== MANDRAKE, REDHAT  and many other modern RH based DISTS use mingetty:
-#/etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm
-#/etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm-nodevfs
-#/sbin/mingetty
-#/etc/gettydefs
+
+elsif ( mingetty )
+
+	/etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm
+	#/etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm-nodevfs
+	/sbin/mingetty
+	/etc/gettydefs
+
 #
 #===== SLACKWARE uses agetty:
-#/etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
-#/etc/inittab	<= Replacements/etc/inittab.example.agetty-slack-nodevfs
-#/sbin/agetty
-#/etc/gettydefs
+
+elsif ( agetty )
+
+	/etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
+	#/etc/inittab	<= Replacements/etc/inittab.example.agetty-slack-nodevfs
+	/sbin/agetty
+	/etc/gettydefs
+\
 
 # Devices - If devfs isn't desired use the kernel option devfs=nomount 
 /dev/console
