@@ -9,7 +9,8 @@
 #                    Can now set password to "" to allow no password.     
 #
 #     02/18/2003     Now  login isn't mandatory which allows login-free 
-#                    inits like /bin/bash.
+#                    inits like /bin/bash.  Added a new method so that
+#                    the last line can be discerned before halting.
 
 package BootRoot::UML;
 
@@ -177,6 +178,14 @@ sub halt {
 
     $me->{expect_handle}->print("$me->{halt}\n");
     $me->{expect_handle}->expect(undef);
+}
+
+sub close_no_init {
+    my $me = shift;
+
+    $me->{expect_handle}->print("Shutting down\s\s\n");
+    $me->{expect_handle}->expect(undef, "-re", "Shutting down");
+
 }
 
 sub kill {

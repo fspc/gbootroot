@@ -84,21 +84,6 @@ for ( 6 .. $#ARGV ) {
 }
 
 
-
-=pod
-my $uml  = 
-  BootRoot::UML->new( login_prompt    =>  "bootroot login: ",
-		      kernel          =>  $uml_kernel,
-		      arguments       =>  $arguments,
-		      login           =>  "root",
-		      password_prompt =>  "Password: ",
-		      password        =>  "",
-		      prompt          =>  "bootroot:.*# ",
-		      halt            =>  "shutdown -h now"
-		      );
-=cut
-
-
 my $uml  = 
   BootRoot::UML->new( login_prompt    =>  "",
 		      kernel          =>  $uml_kernel,
@@ -107,10 +92,16 @@ my $uml  =
 		      password_prompt =>  "Password: ",
 		      password        =>  "",
 		      prompt          =>  ".*# ",
-		      halt            =>  "shutdown -h now"
+		      halt            =>  "exit"
 		      );
 
 $uml->boot();
+
+# Establish PATH, some compilations of bash ignore some important paths
+$uml->command("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:.");
+
+$uml->command("mount -t proc proc /proc");
+
 # Make the GID/UID 0 FS
 if ( $filesystem =~ /^mkcramfs/ || $filesystem =~ /^genromfs/ || 
      $filesystem =~ /^mkfs\.jffs/ ) {
@@ -173,7 +164,9 @@ elsif ( $filesystem =~ /^mkfs\.jffs/ ) {
 }
 
 $uml->command("umount /mnt1; umount /mnt2");   
-# The fast way
-system "uml_mconsole $umid halt";
+
 # Fall through
-$uml->halt()
+$uml->close_no_init();
+
+# Wait until the last line
+system "uml_mconsole $umid halt";
