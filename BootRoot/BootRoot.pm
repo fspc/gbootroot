@@ -2224,8 +2224,11 @@ sub uml_box {
 					  } # mtd preparations
 					  #############
 
+					  # The first argument is important
+					  # to linuxrc, so just append new
+					  # arguments.
 					  if ( $entry_advanced[9] !~ m,mode=, ) {
-					      $entry_advanced[9] = "mode=" . skas_or_tt() . " " . $entry_advanced[9];
+					      $entry_advanced[9] = $entry_advanced[9] . " mode=" . skas_or_tt();
 					  }
 
 					  unless ($pid = fork) {
