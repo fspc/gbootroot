@@ -279,13 +279,13 @@ if ( -d $global_yard_templates ) {
     }
 }
 
-# $HOME/.gbootroot/yard/replacements 
+# $HOME/.gbootroot/yard/Replacements 
 home_builder($home_yard_replacements);
 if (-d $global_yard_replacements) {
     if (-d $home_yard_replacements) {
-	find sub { ( my $replacement = 
+	find sub {  ( my $replacement = 
 		       $File::Find::name ) =~ s/$global_yard_replacements\///;
-		   if (!-e "$home_yard_replacements/$File::Find::name") {
+		   if (!-e "$home_yard_replacements/$replacement") {
 		       system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
 		   }
 
@@ -337,7 +337,7 @@ sub home_builder {
 my ($sec,$min,$hour,$day,$month,$year) = (localtime)[0,1,2,3,4,5];
 my $time = sprintf("%02d:%02d:%02d-%02d-%02d-%04d", 
 		   $hour, $min, $sec, $month+1, $day, $year+1900);
-if (!-d "$tmp1/gbootroot_tmp$time") {
+if (!-d "$tmp1/gbootroot_tmp$time") {   
   $tmp = "$tmp1/gbootroot_tmp$time" if err_custom_perl(
          "mkdir $tmp1/gbootroot_tmp$time",
          "gBootRoot: ERROR: Could not make temporary directory") != 2;
@@ -1390,6 +1390,8 @@ sub Generate {
     $ars->{mnt}            = $mnt;
     $ars->{template_dir}   = $template_dir; # static right now.
     ars($ars);
+    
+    print $ars->{tmp}, "\n"; return;
 
     my $template = $ars->{template};
     $root_device = $ars->{device};
