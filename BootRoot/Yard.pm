@@ -3244,8 +3244,17 @@ sub check_nss {
    my($nss_conf) = "$mount_point/etc/nsswitch.conf";
    info(0, "Checking for NSS\n");
 
+   # What u know, Suse 7.3 doesn't have a libc-*, but it does have
+   # ld-*  (libc6 2.2.4) --freesource  
+
    my($libc) = yard_glob("$mount_point/lib/libc-*");  ## removed 2
-   my($libc_version) = $libc =~ m|/lib/libc-\d+\.(\d)|; ## changed 2 & . 
+   my $libcc = "libc";
+   if ( !$libc ) {
+       $libc = yard_glob("$mount_point/lib/ld-*");  ## removed 2
+       my $libcc = "ld";
+   }
+
+   my($libc_version) = $libc =~ m|/lib/$libcc-\d+\.(\d)|; ## changed 2 & . 
    if (!defined($libc_version)) {
       warning_test "Can't determine your libc version\n";
    } else {
