@@ -1334,7 +1334,7 @@ sub advanced_root_section {
        # Filesystem Size
        # $::fs_device
        label_advanced("Filesystem Size:",0,1,3,4,$table_advanced_root);
-       $adj3 = Gtk::Adjustment->new( 4096.0, 0.0, 1000000000.0, 128.0, 
+       $adj3 = Gtk::Adjustment->new( 8192.0, 0.0, 1000000000.0, 128.0, 
                                     1024.0, 0.0 );
        $spinner_size = Gtk::SpinButton->new( $adj3, 0, 0 );
        $table_advanced_root->attach($spinner_size,1,2,3,4,
@@ -1347,7 +1347,7 @@ sub advanced_root_section {
        $spinner_size->set_numeric( $true );
        $spinner_size->set_shadow_type( 'in' );
        $spinner_size->show();
-       $filesystem_size = 4096 if !$filesystem_size;
+       $filesystem_size = 8192 if !$filesystem_size;
        $ars->{filesystem_size} = $filesystem_size;
        ars($ars);
        filesystem_size();
