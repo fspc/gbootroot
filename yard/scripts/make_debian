@@ -170,6 +170,9 @@ my $stuff = << "STUFF";
 # Ipchains stuff
 /etc/default/ipchains
 
+# Netkit-inetd stuff
+/etc/inetd.conf <= Replacements/etc/inetd.conf
+
 # Network stuff
 # You will want to edit the interfaces file.
 # Remember to load any needed modules on the host system, for instance
