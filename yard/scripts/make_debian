@@ -19,7 +19,8 @@ my $info = "/var/lib/dpkg/info";
 #
 # Swim provides excellent information for this task.  swim -qT packagename &
 # swim -ql --df packagename & swim -qc packagename (not all conf files can
-# be found this way .. read above).
+# be found this way .. read above) so you will want to use 
+# swim -q --scripts packagename.
 
 my @extra_packages = qw(file-rc swim apt apt-utils debconf nvi sysklogd
 klogd netbase tcpd net-tools portmap netkit-ping netkit-inetd ifupdown less 
@@ -267,8 +268,20 @@ $stuff = << "STUFF";
 /etc/default/ipchains
 
 # Network stuff
+# You will want to edit the interfaces file.
+# Remember to load any needed modules on the host system, for instance
+# if tap is used, you will want to do this:
+# modprobe ethertap
+# modprobe netlink_dev
 /etc/resolv.conf 
 /root/umlnet <= Replacements/root/umlnet # Example network setup script
+/etc/network <= Replacements/etc/network
+/etc/network/if-down.d      # empty
+/etc/network/if-post-down.d # ""
+/etc/network/if-pre-up.d    # ""
+/etc/network/if-up.d        # ""
+/etc/network/interfaces <= Replacements/etc/network/interfaces
+/etc/network/spoof-protect
 
 # Devices - optional stuff which can be picked up by devfsd.
 /dev/MAKEDEV # a link
