@@ -5,11 +5,13 @@
 #  Tested on Debian unstable/testing,  but should work on other distributions 
 #  (Mandrake,  RedHat, etc.) by using the proper inittab (edit) and getty.
 # 
-#  Create either as a normal user or root.  When using genext2fs it's necessary to specify a
-#  root filesystem slightly larger than the actual size shown in Space Left because genext2fs
-#   uses different accounting information than mke2fs.
+#  Create either as a normal user or root.  [ When using genext2fs it's
+#  necessary to specify a root filesystem slightly larger than the actual 
+#  size shown in Space Left because genext2fs uses different accounting 
+#  information than mke2fs. ] ?
 #
-#  Works both with and without devfs, i.e devfs=nomount.
+#  Works both with and without devfs, i.e devfs=nomount, assuming the correct
+#  replacements are used.
 
 #############################################################################
 #
@@ -22,9 +24,9 @@
 #    links on the root fs.  For example, if you want sh linked to ash
 #    in the root fs you could specify: "/bin/sh -> /bin/ash".
 #    The literal output from the last column found when using `ls -s`
-#     may be used, or fictional links may be created, for instance,  ashsa -> bash
-#    (In this case if /bin/bash exists on the system the link would be
-#    /bin/ashsa -> /bin/bash, otherwise /asha -> /bash)
+#    may be used, or fictional links may be created, for instance,  
+#    ashsa -> bash (In this case if /bin/bash exists on the system the link 
+#    would be /bin/ashsa -> /bin/bash, otherwise /asha -> /bash)
 #    (There is no way to specify hardlinks, though hard linked files
 #    that exist on the hard disk will be hard linked.)
 #
@@ -37,38 +39,43 @@
 #    Replacements may be specified in their absolute or relative paths 
 #    (found using $PATH). 
 #
-#  - User defined paths may be specified in the Path Box (Edit->Settings->Path).  These paths
-#    may be used to search for the relative paths for Replacements, links and files.
+#  - User defined paths may be specified in the Path Box 
+#    (Edit->Settings->Path).  These paths may be used to search for the 
+#    relative paths for Replacements, links and files.
 #     
 #  - Glob designations (?, * and []) are generally allowed, eg /dev/hd[ab]*
 #    Wildcards are not allowed in link specs or replacement specs.
 #
-#   - The $RELEASE variable which may be used to locate the modules directory can come from 
-#    one of three sources,  the kernel version returned from a selected kernel in the main section, 
-#    a user defined kernel version in the ABS, or the value of `uname -r` returned automatically
-#    when the other two sources aren't specified.
+#  - The $RELEASE variable which may be used to locate the modules directory 
+#    can come from one of three sources,  the kernel version returned from a 
+#    selected kernel in the main section, 
+#    a user defined kernel version in the ABS, or the value of `uname -r` 
+#    returned automatically when the other two sources aren't specified.
 #
 #    You don't need to specify shared libraries or loaders because
 #    necessary libraries are detected automatically.  
 
 #    You may choose between two behaviors for the treatment of NSS and PAM 
-#     libraries.  The old Yard behavior assumes that only the user knows which
-#     service modules they want to include in the file set, and tests (see Tests menu)  
-#     may be run on the configuration files to show what isn't provided, 
-#     so that the user can include the missing modules manually by editing the template,
-#     but the user still needs to figure out any dependencies since the modules are dynamically
-#     loaded.
+#    libraries.  The old Yard behavior assumes that only the user knows which
+#    service modules they want to include in the file set, and tests 
+#    (see Tests menu) may be run on the configuration files to show what isn't
+#    provided, so that the user can include the missing modules manually by 
+#    editing the template, but the user still needs to figure out any 
+#    dependencies since the modules are dynamically loaded.
 #
-#     The new Yard behavior (default) assumes that the user does know what they want 
-#     based on what the user puts in the NSS (nsswitch.conf) and PAM (pam.conf or pam.d/*)
-#     configuration files.  The configuration files are then parsed and the corresponding 
-#     service modules are included in the file set if they exist on the host system, tests 
-#     (see Tests menu) can be run to find out which ones don't exist.   The service modules are
-#     checked for library dependencies.  What this means is that the users only needs
-#     to specify the configuration files in the template, and don't need to concern themselves
-#     with the service modules or libraries involved.  The new behavior is recommended, 
-#     but if the old behavior is desired switch off Edit->Settings->"NSS Conf" and 
-#     Edit->Settings->"PAM Conf".
+#    The new Yard behavior (default) assumes that the user does know what they
+#    want based on what the user puts in the NSS (nsswitch.conf) and PAM 
+#    (pam.conf or pam.d/*) configuration files.  The configuration files are 
+#    then parsed and the corresponding service modules are included in the 
+#    file set if they exist on the host system, tests (see Tests menu) can be 
+#    run to find out which ones don't exist.   The service modules are checked
+#    for library dependencies.  What this means is that the user only needs
+#    to specify the configuration files in the template, and doesn't need to 
+#    be concerned with the service modules or libraries involved.  The new 
+#    behavior is recommended, and won't effect the file set even if the 
+#    requirements are already included in the template.  If desired, the old 
+#    behavior may be regained by switching off Edit->Settings->"NSS Conf" 
+#    and Edit->Settings->"PAM Conf".
 #
 #    You don't need to explicitly specify intermediate directories unless you
 #    just want to make sure they exist.
@@ -76,17 +83,18 @@
 ##############################################################################
 
 # init - parent of all processes
-## Consider being creative with init, for instance use ash, sash, or busybox as an init replacement.
+## Consider being creative with init, for instance use ash, sash, or busybox 
+## as an init replacement.
 # Choose an inittab to compliment the traditional init in the page below.
 /sbin/init 		   	
-/sbin/telinit
+telinit
 /sbin/shutdown
 /sbin/halt
 /etc/init.d/halt    # make this into a replacement
 /sbin/swapon               
 /sbin/reboot
 /etc/init.d/reboot  # make this into a replacement
-/etc/rc   <=    Replacements/etc/rc.debian-min # need two of these and put them in init.d
+/etc/rc   <=    Replacements/etc/rc.debian-min
 /etc/init.d/rcS <= Replacements/etc/rcS.example
 
 # Login stuff .. password not used. 
@@ -145,7 +153,8 @@
 # /etc/pam.conf
 
 #   PROVISIONS FOR NSS
-#   If you use the old libc5, or uClibc you don't need this.  Comment out this line.
+#   If you use the old libc5, or uClibc you don't need this.  
+#   Comment out this line.
 #
 /etc/nsswitch.conf <= ./Replacements/etc/nsswitch.conf.sample
 
@@ -185,8 +194,8 @@
 # the executable you're using.  Yard can't check this and *getty* will
 # hang if the arguments are wrong.
 
-# Devices - for devfs=nomount the bare minimum required is an inital console, otherwise
-# nothing is required.
+# Devices - for devfs=nomount the bare minimum required is an inital console, 
+# otherwise nothing is required.
 /dev/console
 /dev/ram*
 /dev/mem
@@ -213,16 +222,18 @@
 
 #####  utmp and wtmp.  
 # Made by rcS if they don't exist.
+w
+last
 
-#####  terminfo entries for programs which need terminal capabilities like vi and nano.
+#####  terminfo entries for programs which need terminal capabilities like 
+#####  vi and nano.
 /usr/share/terminfo/v/vt100    
 /usr/share/terminfo/l/linux  
 # The old way
 #/etc/termcap <= Replacements/etc/termcap
 reset
 
-# If you want to load a special keytable, add the filename here:
-#/usr/lib/kbd/keytables/defkeymap.map
+# loadkeys ?
 
 #####  Empty directories
 /proc               
@@ -243,7 +254,7 @@ modprobe
 /etc/modules.conf
 #
 #       The actual modules.  You probably want to be more selective than this.
-#       Do an "lsmod" and include the modules you use.
+#       Do a "lsmod" and include the modules you use.
 #/lib/modules/$RELEASE/*/*.o
 
 #####  ESSENTIAL SYSTEM UTILITIES
@@ -276,8 +287,6 @@ touch
 whoami
 diff
 wc
-w
-last
 date
 	   	
 # Editors
