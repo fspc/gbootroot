@@ -11,6 +11,14 @@
 #
 #
 #
+#    PATRONS
+#    -------
+#
+#    Shirley Rosenbaum
+#    - My mother who provides food and shelter, and who without
+#      this project would never have existed, and even though she says she 
+#      doesn't understand what it is about .. I know she does.
+#
 #    CONTRIBUTORS
 #    ------------
 #
@@ -202,3 +210,4 @@ start();
 
 main Gtk;
 exit( 0 );
+
