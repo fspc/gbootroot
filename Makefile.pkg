@@ -2,7 +2,7 @@
 # buildroot, UML, and gbootroot.
 
 VERSION=2.4.19
-PATCH_VERSION=38
+PATCH_VERSION=40
 UTIL_VER=20021103
 
 BASE_DIR=${shell pwd}
@@ -34,18 +34,6 @@ UTILITIES=uml_utilities_$(UTIL_VER).tar.bz2
 UTIL_DIR=$(BASE_DIR)/tools
 TOOLS = $(UTIL_DIR)/mconsole $(UTIL_DIR)/port-helper $(UTIL_DIR)/moo $(UTIL_DIR)/uml_net $(UTIL_DIR)/uml_router $(UTIL_DIR)/tunctl
 
-##TARGET_CC=$(BUILD_DIR)/bin/gcc
-##TARGET_CC1=$(BUILD_DIR)/usr/bin/$(ARCH)-uclibc-gcc
-##TARGET_CROSS=$(BUILD_DIR)/usr/bin/$(ARCH)-uclibc-
-##TARGET_PATH=$(BUILD_DIR)/usr/bin:$(BUILD_DIR)/bin:/bin:/sbin:/usr/bin:/usr/sbin
-##UCLIBC_DIR=$(BASE_DIR)/uClibc
-##UCLIBC_SOURCE=uClibc-snapshot.tar.gz
-##UCLIBC_PATCH=$(SOURCE_DIR)/uClibc.patch
-##UCLIBC_SITE=ftp://oss.lineo.com
-##BUSYBOX_DIR=$(BASE_DIR)/busybox
-##BUSYBOX_SOURCE=busybox.tar.gz
-##BUSYBOX_PATCH=$(SOURCE_DIR)/busybox.patch
-##BUSYBOX_SITE=http://busybox.lineo.com
 
 all:   world
 world: sources initrd
@@ -147,6 +135,16 @@ genext2fs: tools
 		$(MAKE) -C $(GENEXT2_DIR); \
 	fi;
 
+clean:
+	rm -rf $(KERNEL_DIR)
+	rm -rf $(UTIL_DIR)
+	rm -f $(GENEXT2_DIR)/{genext2fs,genext2fs.o}	
+	rm -f $(ROOT_FS_DIR)/{root_fs_helper,Initrd.gz}
+
+clean-sources:
+	rm -f $(SOURCE_DIR)/*
+
+
 install:
 	install -d $(DESTDIR)/usr/bin
 	cp -fa gbootroot $(DESTDIR)/usr/bin/gbootroot
@@ -205,4 +203,4 @@ remove:
 	rm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm
 	rm -rf /usr/share/doc/gbootroot
 
-.PHONY: tools sources genext2fs root_fs_helper_genext2fs root_fs_helper
+.PHONY: tools sources genext2fs root_fs_helper

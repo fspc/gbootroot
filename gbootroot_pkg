@@ -104,7 +104,7 @@ if (!( $ARGV[0] eq "both" || $ARGV[0] eq "deb" || $ARGV[0] eq "rpm" ||
 
 
 # Here's where we get to copy over all the pristine sources from the build
-if ( -e $packaging_place) {
+if ( -e $packaging_place && $ARGV[0] eq "cvs" ) {
 
 # sources 
 system "cp -a $packaging_place/sources/* $gbootroot_cvs/sources/";
@@ -124,6 +124,9 @@ system "cp -a $packaging_place/user-mode-linux/usr/bin/* $gbootroot_cvs/user-mod
 # genext2fs
 system "cp -a $packaging_place/genext2fs/genext2fs $gbootroot_cvs/genext2fs/genext2fs";
 
+# root_fs_helper & Initrd.gz
+system "cp -a $packaging_place/root_filesystem/root_fs_helper $gbootroot_cvs/root_filesystem/root_fs_helper";
+system "cp -a $packaging_place/root_filesystem/Initrd.gz $gbootroot_cvs/root_filesystem/Initrd.gz";
 
 exit;
 
@@ -179,7 +182,6 @@ foreach (@make_lines) {
 
 # Stuff not in the Makefile
 system "cp -fa $makefile $packaging_place/Makefile";
-
 
 #  Basically this is stuff we want in the source package, but not the normal
 #  package
