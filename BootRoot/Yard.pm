@@ -661,9 +661,11 @@ sub library_dependencies {
 
 	    ## uClibc uses a different ldd  --freesource
 	    ## Determine which ldd to use
+	    ## If it just returns STDERR then it is a different type
+	    ## of ldd.
 	    my $ldd;
 	    my $determine_ldd = `ldd $file 2>&1 1>/dev/null`;
-	    if ( $determine_ldd =~ /BusyBox/ ) {
+	    if ( $determine_ldd ) {
 		$ldd = "/usr/i386-linux-uclibc/bin/ldd";
 	    }
 	    else {
