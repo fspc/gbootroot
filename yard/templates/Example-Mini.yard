@@ -1,0 +1,91 @@
+#  $Id$
+#  Example-Mini.yard
+#
+#  Creates a minimalistic S runlevel root filesystem with not much more than 
+#  a shell.  
+# 
+#  Create either as a normal user or root.
+#
+#  Works both with and without devfs, i.e devfs=nomount.
+
+#############################################################################
+#
+# Format rules:
+#  - Lines beginning with # or % are comments.
+#
+#  - Blank lines and whitespace are ignored.
+#
+#  - Lines of the form "filename1 ->  filename2" will create symbolic (soft)
+#    links on the root fs.  For example, if you want sh linked to ash
+#    in the root fs you could specify: "/bin/sh -> /bin/ash".
+#    The literal output from the last column found when using `ls -s`
+#    may be used, or fictional links may be created, for instance,  
+#    ashsa -> bash (In this case if /bin/bash exists on the system the link 
+#    would be /bin/ashsa -> /bin/bash, otherwise /asha -> /bash)
+#    (There is no way to specify hardlinks, though hard linked files
+#    that exist on the hard disk will be hard linked.)
+#
+#  - Lines of the form "filename1 <= Replacements/pathto_filename2"
+#    will cause filename2 to be copied to filename1 on the root fs.
+#    This is useful for specifying trimmed-down replacements for
+#    /etc/passwd, /etc/inittab, etc.  For the above example, filename2 
+#    is found in its real path below the Replacements directory which is 
+#    found in the default Replacements path of $HOME/yard/Replacements.
+#    Replacements may be specified in their absolute or relative paths 
+#    (found using $PATH). 
+#
+#  - User defined paths may be specified in the Path Box 
+#    (Edit->Settings->Path).  These paths may be used to search for the 
+#    relative paths for Replacements, links and files.
+#     
+#  - Glob designations (?, * and []) are generally allowed, eg /dev/hd[ab]*
+#    Wildcards are not allowed in link specs or replacement specs.
+#
+#  - The $RELEASE variable which may be used to locate the modules directory 
+#    can come from one of three sources,  the kernel version returned from a 
+#    selected kernel in the main section, 
+#    a user defined kernel version in the ABS, or the value of `uname -r` 
+#    returned automatically when the other two sources aren't specified.
+#
+#    You don't need to specify shared libraries or loaders because
+#    necessary libraries are detected automatically.  
+
+#    You may choose between two behaviors for the treatment of NSS and PAM 
+#    libraries.  The old Yard behavior assumes that only the user knows which
+#    service modules they want to include in the file set, and tests 
+#    (see Tests menu) may be run on the configuration files to show what isn't
+#    provided, so that the user can include the missing modules manually by 
+#    editing the template, but the user still needs to figure out any 
+#    dependencies since the modules are dynamically loaded.
+#
+#    The new Yard behavior (default) assumes that the user does know what they
+#    want based on what the user puts in the NSS (nsswitch.conf) and PAM 
+#    (pam.conf or pam.d/*) configuration files.  The configuration files are 
+#    then parsed and the corresponding service modules are included in the 
+#    file set if they exist on the host system, tests (see Tests menu) can be 
+#    run to find out which ones don't exist.   The service modules are checked
+#    for library dependencies.  What this means is that the user only needs
+#    to specify the configuration files in the template, and doesn't need to 
+#    be concerned with the service modules or libraries involved.  The new 
+#    behavior is recommended, and won't effect the file set even if the 
+#    requirements are already included in the template.  If desired, the old 
+#    behavior may be regained by switching off Edit->Settings->"NSS Conf" 
+#    and Edit->Settings->"PAM Conf".
+#
+#    You don't need to explicitly specify intermediate directories unless you
+#    just want to make sure they exist.
+#
+##############################################################################
+
+# This is to demonstrate how init can be anything.  It could be sash, busybox,
+# perl, an alternative init binary or even a script (assuming there is an 
+# interpreter around).  
+#
+# Bash is good for this minimalistic example because it includes echo 
+# (amongst many things) to let you see what is around.  You pass the option 
+# init=/bin/bash to the kernel to start in the S runlevel.  
+
+bash
+/dev/console
+
+
