@@ -31,8 +31,8 @@ package Yard;
 use vars qw(@ISA @EXPORT %EXPORT_TAGS);
 use Exporter;
 @ISA = qw(Exporter);
-@EXPORT =  qw(kernel_version_check read_contents_file extra_links 
-              library_dependencies hard_links space_check
+@EXPORT =  qw(start_logging_output kernel_version_check read_contents_file 
+              extra_links library_dependencies hard_links space_check
               create_filesytem);
 
 use strict;
@@ -51,44 +51,14 @@ my $BLKFLSBUF_ioctl  = 4705;
 my $EXT2_BLOCK_SIZE  = 1024; 
 my $INODE_SIZE       = 1024;
 my $objcopy = "objcopy";
+my($Warnings) = 0;
 
 STDOUT->autoflush(1);
 
-#@@ start_logging_output();
-
-#@@ info(0, "root_fs\n");
-#@@ info(1, "(running under Perl $PERL_VERSION)\n");
-
-my($Warnings) = 0;
 sub warning {
   info(0, "Warning: ", @_);
   $Warnings++;
 }
-
-##############################################################################
-#####  Check some basic things before starting.
-#####  There's probably a more graceful way to maintain and check
-#####  a set of user options (via a Perl module), but I'm too lazy
-#####  to track it down.
-##############################################################################
-# Too restrictive for gBootRoot
-#if ($REAL_USER_ID != 0) {
-#   error("This script must be run as root\n");
-#}
-
-# Not necessary, gBootRoot handles this stuff.
-#if (!defined($::device) and !defined($::mount_point)) {
-#  error("Nothing defined in CFG package.  You probably just copied\n",
-#	"an old Config.pl file.\n";
-#}
-
-#  Check mount point
-#if (-d $::mount_point and -w _) {
-#  info(1, "Using $::mount_point as mount point for $::device\n");
-#} else {
-#  error("Mount point $::mount_point must be a directory and\n",
-#	"must be write-enabled.\n";
-#}
 
 # This is a good thing to be used for all device checking in
 # gBootRoot, but it may be restrictive since sometimes it is a 
@@ -99,70 +69,34 @@ sub warning {
 #  Make sure $::device isn't already mounted and $::mount_point is free
 #@@ load_mount_info();
 
-## This is put here for reference, and is from Config.pl
-## loopback is the standard for building a filesytem in gBootRoot.
-##  No choice here.
-#  $device: string (device name)
-#
-#  The device for building the filesystem.  This can be /dev/ram0 or a        
-#  spare partition.  You can turn off swapping temporarily and use the
-#  swap partition on your hard disk.  You can use a loopback device if
-#  your kernel supports them -- see the section "Using a Loopback
-#  Device" in the Yard documentation for instructions.
-#  It should not be a symbolic link.                
-#                                    
-#$device =           "/dev/ram0";
-
-#if (defined($::mounted{$::device})) {
-
-#  if ($::mounted{$::device} eq $::mount_point) {
-#    #info(1, "Device $::device is already mounted on $::mount_point\n");
-#    info(1, "Unmounting it automatically.\n");
-#    sys("umount $::mount_point");
-
-#  } else {
-#    error("$::device is already mounted elsewhere (on $::mounted{$::device})\n",
-#	  "Unmount it first.\n");
-#  }
-
-#} elsif (defined($::mounted{$::mount_point})) {
-#  error("Some other device is already mounted on $::mount_point\n");
-#}
-
-
 #  Have to test this every time so we can work around.
 ## This will get replaced with a readdir loop, no sense relying on people's
 ## shells.  Anotherwards, yard_glob get changed.
 #@@ test_glob();
 
-#####  Determine release of $::kernel for modules.
-#####  Set RELEASE environment variable for use in contents.
-## Still need an option for this, may become part of beginners section.
-
-## uses kernel_version .. will probably just run these in relation to
-## gBootRoots checks.
-## 'use Yard; $kernel = "/root/HDB/vmlinuz-2.2.14-ncr"; $kernel_version = "1.2"; kernel_version_check();
-## requires $kernel && $kernel_version
+## REQUIRES $kernel opt. $kernel_version
 sub kernel_version_check {
 
-    if (defined($::kernel_version)) {
+    my($kernel,$kernel_version) = @_;
+    
+    if (defined($kernel_version)) {
 	#  Check to see if it agrees
-	my($version_guess) = kernel_version($::kernel);
-	if ($version_guess ne $::kernel_version) {
+	my($version_guess) = kernel_version($kernel);
+	if ($version_guess ne $kernel_version) {
             ## Is this really necessary, it can be assumed a person knows
             ## what they are doing.
 	    info(0, 
-	    "You declared kernel $::kernel to be version $::kernel_version\n",
+          "You declared kernel $kernel to be version $kernel_version\n",
 	    "even though a probe says $version_guess.",
 	    "  I'll assume you're right.\n")
 	}
-	$ENV{'RELEASE'} = $::kernel_version;
+	$ENV{'RELEASE'} = $kernel_version;
 
-    } elsif (defined($ENV{'RELEASE'} = kernel_version($::kernel))) {
-	info(0, "Version probe of $::kernel returns: $ENV{'RELEASE'}\n");
+    } elsif (defined($ENV{'RELEASE'} = kernel_version($kernel))) {
+	info(0, "Version probe of $kernel returns: $ENV{'RELEASE'}\n");
 
     } else {
-	warning "Can't determine kernel version of $::kernel\n";
+	warning "Can't determine kernel version of $kernel\n";
 	my($release) = `uname -r`;
 	if ($release) {
 	    chomp($release);
@@ -174,38 +108,24 @@ sub kernel_version_check {
 	}
     }
 
-} # end sub kernel_version 
+} # end sub kernel_version_check 
 
 ## This checks lib/modules/$version for rd.o, ext2.o, floppy.o
 ## Perhaps just extra stuff, this could be made real fancy, too.
 #@@warn_about_module_dependencies($ENV{'RELEASE'});
 
-## gBootRoot does this as a separate process
-#if ($::disk_set !~ /^(single|double|base\+extra)$/) {
-#  error("Config variable disk_set is set to \"$::disk_set\"\n",
-#	"which is not a valid value.\n");
-#}
-
 ############################
 #####  READ IN CONTENTS FILE
 ############################
-
-## uses info, resolve_file, error, cf_warn, make_link_absolute,
-## make_link_relative, cf_die, must_be_abs, replaced_by, yard_glob,
-## include_file
-## requires $contents_file
-
+## Uses info, error, cf_warn, make_link_absolute, make_link_relative, 
+## cf_die, must_be_abs, replaced_by, yard_glob 
+## REQUIRES $contents_file
 sub read_contents_file {
+    
+    my ($contents_file) = @_;
 
-    my($contents_file) = resolve_file($::contents_file);
-    info(0, "\n\nPASS 1:  Reading $::contents_file");
-    #info 0, " ($contents_file)" if $contents_file ne $::contents_file;
+    info(0, "\n\nPASS 1:  Reading $contents_file");
     info(0, "\n");
-
-    #my(%Included);
-    #my(%replaced_by);
-    #my(%links_to);
-    #my(%is_module);
 
     open(CONTENTS, "<$contents_file") or error("$contents_file: $!");
 
@@ -246,25 +166,29 @@ sub read_contents_file {
 	  @files = ($abs_link);
 	  
       } elsif ($line =~ /<=/) {	#####  REPLACEMENT SPEC
-	  cf_die($line, "Can't use wildcard in replacement specification") if
-	      $line =~ /[\*\?\[]/;
+	  cf_die($contents_file, $line, 
+              "Can't use wildcard in replacement specification") if
+	       $line =~ /[\*\?\[]/;
 
 	  my($file, $replacement) = $line =~ /^(\S+)\s*<=\s*(\S+)\s*$/;
 
 	  if (!defined($replacement)) {
-	      cf_warn($line, "Can't parse this replacement spec");
+	      cf_warn($contents_file, $line, 
+                      "Can't parse this replacement spec");
 	      next LINE;
 
 	  } else {
 	      must_be_abs($file);
-	      (-d $file) and cf_warn($line, "left-hand side can't be directory");
+	      (-d $file) and cf_warn($contents_file, $line, 
+                                     "left-hand side can't be directory");
 	      my($abs_replacement) = find_file_in_path($replacement);
 	      if (!(defined($abs_replacement) and -e $abs_replacement)) {
-		  cf_warn($line, "Can't find $replacement");
+		  cf_warn($contents_file, $line, "Can't find $replacement");
 		  
 	      } elsif ($replacement =~ m|^/dev/(?!null)|) {
 		#  Allow /dev/null but no other devices
-		cf_warn($line, "Can't replace a file with a device");
+		cf_warn($contents_file, $line, 
+                        "Can't replace a file with a device");
 
 	      } else {
 		  $replaced_by{$file} = $abs_replacement;
@@ -275,7 +199,7 @@ sub read_contents_file {
     } #  End of replacement spec
 
     } elsif ($line =~ /(<-|=>)/) {
-    cf_warn($line, "Not a valid arrow.");
+    cf_warn($contents_file, $line, "Not a valid arrow.");
     next LINE;
 
     } else {
@@ -285,7 +209,8 @@ sub read_contents_file {
 	for $expr (split(' ', $line)) {
 	    my(@globbed) = yard_glob($expr);
 	    if ($#globbed == -1) {
-		cf_warn($line, "Warning: No files matched $expr");
+		cf_warn($contents_file, $line, 
+                        "Warning: No files matched $expr");
 	    } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
 		info(1, "Expanding $expr to @globbed\n");
 	    }
@@ -299,7 +224,8 @@ sub read_contents_file {
 	if ($file =~ m|^/|) {	#####  Absolute filename
 
 	    if (-l $file and readlink($file) =~ m|^/proc/|) {
-		info(1, "Recording proc link $file -> ", readlink($file), "\n");
+		info(1, "Recording proc link $file -> ", readlink($file), 
+                     "\n");
 		$Included{$file} = 1;
 		$links_to{$file} = readlink($file);
 
@@ -313,7 +239,8 @@ sub read_contents_file {
 		next FILE;
 
 	    } else {
-		cf_warn($line, "Absolute filename $file doesn't exist");
+		cf_warn($contents_file, $line, 
+                        "Absolute filename $file doesn't exist");
 	    }
 
 	} else {		##### Relative filename
@@ -322,41 +249,38 @@ sub read_contents_file {
 		info(1, "Found $file at $abs_file\n");
 		$Included{$abs_file} = 1;
 	    } else {
-		cf_warn($line, "Didn't find $file anywhere in path");
+		cf_warn($contents_file, $line, 
+                        "Didn't find $file anywhere in path");
 	    }
 	}
     }				# End of FILE loop
   }				# End of LINE loop
 
     info(0, "\nDone with $contents_file\n\n");
-
-##if ($::disk_set eq "base+extra") {
-##  include_file(find_file_in_path("tar"))
-##}
-
     close(CONTENTS) or error("close on $contents_file: $!");
-
-## may or may not include this in read_contents_file
 
 } # end read_contents_file
 
-#####################################
 
+# Uses include_file
 sub extra_links {
 
+    my ($contents_file) = @_;
+    
     info(0, "\n\nPASS 2:  Picking up extra files from links...\n");
 
     for (keys %Included) {
-	include_file($_);
+        # watch for "" - GBteam
+	include_file($contents_file, $_) if $_ ne "";
     }
 
     info(0, "Done.\n\n");
 }
 
 
-#####################################
-
 sub library_dependencies {
+
+    my ($contents_file) = @_;
 
     info(0, "PASS 3:  Checking library dependencies...\n");
     info(1, "(Ignore any 'statically linked' messages.)\n");
@@ -389,8 +313,8 @@ sub library_dependencies {
 	    $is_module{$file} = 1;
 
 	} elsif ($file_line =~ m/shared object/) {
-	    #####  Any library (shared object) seen here was explicitly included
-	    #####  by the user.
+	    #####  Any library (shared object) seen here was explicitly 
+            #####  included by the user.
 
 	    push(@{$lib_needed_by{$file}}, "INCLUDED BY USER");
 	}
@@ -406,15 +330,18 @@ sub library_dependencies {
 		my($abs_lib) = $lib;
 
 		if ($lib =~ /not found/) {
-		    warning "File $file needs library $lib, which does not exist!";
+		    warning "File $file needs library $lib," . 
+                            " which does not exist!";
 		} else {
 
-		    #####  Right-hand side of the ldd output may be a symbolic link.
+		    #####  Right-hand side of the ldd output may be 
+                    #####  a symbolic link.
+
 		    #####  Resolve the lib absolutely.
 		    #####  include_file follows links and adds each file;
 		    #####  the while loop makes sure we get the last.
 		    $abs_lib = $lib;
-		    include_file($lib);
+		    include_file($contents_file, $lib);
 		    while (1) {
 			if (defined($links_to{$abs_lib})) {
 			    $abs_lib = make_link_absolute($abs_lib,
@@ -476,7 +403,7 @@ sub library_dependencies {
 		}
 		$line .= $binary . " ";
 	    }
-	    ##info(1, $line, "\n" if $line);
+	    info(1, $line, "\n") if $line;
 
 	    if (!($seen_ELF_lib and $seen_AOUT_lib)) {
 
@@ -519,7 +446,7 @@ sub library_dependencies {
 	my($ld_file) = (yard_glob("/lib/ld-linux.so.?"))[-1];	# Get last one
 	if (defined($ld_file)) {
 	    info(1, "Adding loader $ld_file for ELF libraries\n");
-	    include_file($ld_file);
+	    include_file($contents_file, $ld_file);
 	} else {
 	    info(0, "Can't find ELF loader /lib/ld-linux.so.?");
 	}
@@ -530,7 +457,7 @@ sub library_dependencies {
 	my($ld_file);
 	foreach $ld_file (yard_glob("/lib/ld.so")) {
 	    info(1, "Adding loader $ld_file for a.out libraries\n");
-	    include_file($ld_file);
+	    include_file($contents_file, $ld_file);
 	}
     }
 
@@ -565,9 +492,12 @@ sub hard_links {
 
 ##########################
 
+# REQUIRES $fs_size $strip_objfile (0|1)
+# GBteam adds stripped file size check using stripper()
 sub space_check {
 
     info(0, "Checking space needed.\n");
+    my ($fs_size, $strip_objfiles) = @_;
     my($total_bytes) = 0;
     my(%counted);
 
@@ -592,10 +522,12 @@ sub space_check {
 
 	} elsif ($devino = $hardlinked{$file}) {
 	    #####  This file is hard-linked to another.  We don't necessarily
-	    #####  know that the others are going to be in the file set.  Count
-	    #####  the first and mark the dev/inode so we don't count it again.
+	    #####  know that the others are going to be in the file set.  
+            #####  Count the first and mark the dev/inode so we don't count 
+            #####  it again.
 	    if (!$counted{$devino}) {
-		info(1, "Counting ", -s _, " bytes of hard-linked file $file\n");
+		info(1, "Counting ", -s _, 
+		     " bytes of hard-linked file $file\n");      
 		$total_bytes += bytes_allocated($file);
 		$counted{$devino} = 1;
 	    } else {
@@ -622,9 +554,9 @@ sub space_check {
 
     info(0, "Total space needed is ", bytes_to_K($total_bytes), " Kbytes\n");
 
-    if (bytes_to_K($total_bytes) > $::fs_size) {
-	info(0, "This is more than $::fs_size Kbytes allowed.\n");
-	if ($::strip_objfiles) {
+    if (bytes_to_K($total_bytes) > $fs_size) {
+	info(0, "This is more than $fs_size Kbytes allowed.\n");
+	if ($strip_objfiles) {
 	    info(0, "But since object files will be stripped, more space\n",
 		 "may become available.  Continuing...\n");
 	} else {
@@ -645,6 +577,7 @@ sub space_check {
 
 
 # This could be broken up into a lot of functions
+## copy_strip_file will be modified.
 sub create_filesystem {
 
     my $file;
@@ -795,15 +728,15 @@ sub create_filesystem {
 
 } # end sub create_filesystem
 
-#############################################################################
+#######################################
 #####  Utility subs for make_root_fs.pl
-#############################################################################
+#######################################
 
 #####  Add file to the file set.  File has to be an absolute filename.
 #####  If file is a symlink, add it and chase the link(s) until a file is
 #####  reached.
 sub include_file {
-    my($file) = @_;
+    my($contents_file, $file) = @_;
 
     must_be_abs($file);
     if (onto_proc_filesystem($file)) {
@@ -837,7 +770,7 @@ sub include_file {
 	    info(1, "File $file is a symbolic link to $link\n");
 	    #info(1, "\t(which resolves to $abs_target),\n"
 	    #	if $link ne $abs_target);
-	    info(1, "\twhich was not included in $::contents_file.\n");
+	    info(1, "\twhich was not included in $contents_file.\n");
 	    if (-e $abs_target) {
 		info(1, "\t ==> Adding it to file set.\n\n");
 		$Included{$abs_target} = $file;
@@ -849,19 +782,17 @@ sub include_file {
     }
 }
 
-
-
 #####  More informative versions of warn and die, for the contents file
 sub cf_die {
-  my($line, @msgs) = @_;
-  info(0, "$::contents_file($cf_line): $line\n");
+  my($contents_file, $line, @msgs) = @_;
+  info(0, "$contents_file($cf_line): $line\n");
   foreach (@msgs) { info(0, "\t$_\n"); }
   exit;
 }
 
 sub cf_warn {
-  my($line, @msgs) = @_;
-  info(0, "$::contents_file($cf_line): $line\n");
+  my($contents_file, $line, @msgs) = @_;
+  info(0, "$contents_file($cf_line): $line\n");
   $Warnings++;
   foreach (@msgs) { info(0, "\t$_\n"); }
 }
@@ -905,18 +836,11 @@ sub copy_strip_file {
 
 #####  End of make_root_fs
 
-##############################################################
-##############################################################
-##############################################################
-###############################################################
-###############################################################
-
 ########################################################
 ##
 ##      YARD_UTILS.PL -- Utilities for the Yard scripts.
 ##
 ########################################################
-
 
 # Get device number of /proc filesystem
 my($proc_dev) = (stat("/proc"))[0];
@@ -935,11 +859,12 @@ sub error {
 }
 
 sub start_logging_output {
-  #my($logfile) = basename($PROGRAM_NAME, ('.pl','.perl')) . ".log";
 
+  my ($yard_temp) = @_;
   my $logfile;
-  if (defined($::yard_temp) and $::yard_temp) {
-    $logfile = $::yard_temp;
+
+  if (defined($yard_temp) and $yard_temp) {
+    $logfile = $yard_temp;
   }
   # ERRORCHECK
   open(LOGFILE, ">$logfile") or die "open($logfile): $!\n";
@@ -957,8 +882,6 @@ sub sys {
   close(SYS) or die "Command failed: @_\nSee logfile for error message.\n";
   0;				# like system()
 }
-
-
 
 sub load_mount_info {
   undef %::mounted;
@@ -1005,18 +928,6 @@ sub must_be_abs {
 }
 
 
-#  resolve_file: Resolve a file name.
-#  NB. This now resolves relative names WRT config_dest rather than cwd.
-sub resolve_file {
-  my($file) = @_;
-
-  if ($file =~ m|^/|) {
-    $file;			# File is absolute, just return it
-  } else {
-     "$::config_dest/$file";
-  }
-}
-
 sub sync {
   #  Parts of unix are still a black art
   system("sync") and die "Couldn't sync!";
@@ -1029,6 +940,7 @@ sub sync {
 #  If file is relative, file is resolved relative to config_dest and lib_dest.
 my(@pathlist);
 sub find_file_in_path {
+
   my($file, @path) = @_;
 
   if (!@path) {
@@ -1047,20 +959,18 @@ sub find_file_in_path {
   }
 
 
-  if ($file =~ m|/|) {
-    #####  file contains a slash; don't search for it.
-    resolve_file($file);
 
-  } else {
+  if ($file) {
 
     #####  Relative filename, search for it
     my($dir);
-    foreach $dir (@path, $::config_dest, $::lib_dest) {
+    foreach $dir (@path) {
       my($abs_file) = "$dir/$file";
       return $abs_file if -e $abs_file;
     }
     undef;
   }
+
 }
 
 #  Note that this does not verify existence of the returned file.
