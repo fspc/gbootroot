@@ -2,10 +2,14 @@
 
 #    gBootRoot Copyright (C) 2000, 2001
 #
+#
 #    AUTHOR
 #    ------
+#
 #    [ Lead Developer and Project Coordinator ]
 #    Jonathan Rosenbaum <freesource@users.sourceforge.net>
+#
+#
 #
 #    CONTRIBUTORS
 #    ------------
@@ -279,6 +283,7 @@ $main::global_yard =  $home_yard;
 $main::oldroot = "/OLDROOT";
 my $global_yard_replacements = "/usr/share/gbootroot/yard/Replacements";
 my $global_yard_templates = "/usr/share/gbootroot/yard/templates";
+$ENV{'PATH'} = "$home_yard:" . $ENV{'PATH'};
 
 
 my $initrd;
@@ -2876,7 +2881,7 @@ sub lilo_put_it_together {
   pb($B,7);
   chdir("$mnt"); #"boot_root: ERROR: Could not change directories\n";
 
-  # This enforces that lilo is only ran on a bootable drive,
+  # This enforces that lilo is only wil run on a bootable drive,
   # otherwise the user has to do it manually.
   if ($container[BOOT_DEVICE] eq $entry_advanced[0]) {
 #
