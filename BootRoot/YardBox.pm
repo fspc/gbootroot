@@ -1220,7 +1220,7 @@ sub shortcut {
     $shortcut = Gtk::Dialog->new();
     $shortcut->signal_connect("destroy", \&destroy_window, \$shortcut);
     $shortcut->signal_connect("delete_event", \&destroy_window, \$shortcut);
-    $shortcut->set_title("Save As");
+    $shortcut->set_title("Shortcuts");
     $shortcut->border_width(12);
     $shortcut->set_position('center');
 
