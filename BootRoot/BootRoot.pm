@@ -286,25 +286,6 @@ my $time = sprintf("%02d:%02d:%02d-%02d-%02d-%04d",
 # Here's where stuff gets intersting, non-root users can create root_fs,
 # which is great for UML, and a boot disk.
 
-if ( $> == 0 ) {
-
-    if (!-d "$tmp1/gbootroot_tmp$time") {   
-	$tmp = "$tmp1/gbootroot_tmp$time" if err_custom_perl(
-		"mkdir $tmp1/gbootroot_tmp$time",
-		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
-    }
-    if (!-d "$tmp1/gbootroot_mnt$time") {
-	$mnt = "$tmp1/gbootroot_mnt$time" if err_custom_perl(
-	       "mkdir $tmp1/gbootroot_mnt$time",
-               "gBootRoot: ERROR: Could not make mount directory") != 2;
-    }
-
-    # Why?
-    $tmp = "$tmp1/gbootroot_tmp$time";
-
-}
-else {
-
     # The Administrator just needs to add a line like the one below to the 
     # fstab for each non-root user who wants to be able to create root_fs.
     # In this example, `id -u` has to be the actual effective numeric user 
@@ -333,6 +314,8 @@ else {
     #
     # /dev/fd0 /tmp/gboot_not_root_mnt_`id -u` auto  defaults,noauto,user 0 0
     
+    # We call root, non-root, too, that's an in-joke.  Root should stay
+    # out the picture anyways.
 
     my $user = $>;
 
@@ -349,8 +332,6 @@ else {
                "gBootRoot: ERROR: Could not make mount directory") != 2;
     }
     $mnt = "$tmp1/gboot_non_root_mnt_$user";
-
-}
 
 
 # Verbosity is universal for all methods, and controlled by a scale slider. 
@@ -896,7 +877,7 @@ if ( $option{"preserve-ownership"} ) {
 
 $ars->{uml_exclusively} = $uml_exclusively;
 ars2($ars);  #not used in function below    
-$ars->{preserve_ownership} = $uml_exclusively;
+$ars->{preserve_ownership} = $preserve_ownership;
 ars2($ars); 
 
 # links_deps()

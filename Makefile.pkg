@@ -6,9 +6,9 @@ PATCH_VERSION=35
 UTIL_VER=20021103
 
 BASE_DIR=${shell pwd}
-TARGET_DIR=$(BASE_DIR)/root
-BUILD_DIR=$(BASE_DIR)/staging_dir
 SOURCE_DIR=$(BASE_DIR)/sources
+ROOT_FS_DIR=$(BASE_DIR)/root_filesystem
+TMP=/tmp/gboot_non_root_`id -u`
 
 KERNEL=$(BASE_DIR)/user-mode-linux/usr/bin/linuxbr
 IMAGE=$(BASE_DIR)/root_filesystem/root_fs_helper
@@ -90,6 +90,25 @@ kernel:
 	fi;
 	cp $(KERNEL_DIR)/.config $(KCONFIG)
 
+
+
+root_fs_helper:
+
+	@if [ ! -f $(ROOT_FS_DIR)/root_fs_helper ] ; then \
+		perl -I . ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command "genext2fs -z -r0" --genext2fs-dir genext2fs/ ; \
+		cp -fa $(TMP)/root_fs_helper $(ROOT_FS_DIR) ; \
+	fi;
+	@if [ -f $(ROOT_FS_DIR)/root_fs_helper ] ; then \
+		perl -I. ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command mkcramfs  --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper; \
+		cp -fa $(TMP)/root_fs_helper_cramfs $(ROOT_FS_DIR)/root_fs_helper; \
+	fi;
+
+initrd: root_fs_helper
+
+	@if [ ! -f $(ROOT_FS_DIR)/Initrd.gz ] ; then \
+		perl -I. ./gbootroot --home . --template Initrd.yard --root-filename Initrd --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper --filesystem-size 4096; \
+		gzip -c9 $(TMP)/Initrd > $(ROOT_FS_DIR)/Initrd.gz; \
+	fi;
 
 
 modules: 
@@ -186,4 +205,4 @@ remove:
 	rm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm
 	rm -rf /usr/share/doc/gbootroot
 
-.PHONY: tools sources genext2fs
+.PHONY: tools sources genext2fs root_fs_helper_genext2fs root_fs_helper

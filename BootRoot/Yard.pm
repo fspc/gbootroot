@@ -1573,6 +1573,9 @@ sub create_expect_uml {
 		info(1,"$x_count  $_");
 		$x_count++;
 		# Didn't need this before, but now do.
+		if ( $_ =~/Power down\./ ) {
+		    last;
+		}
 		if ( $_ =~/nbd.*module cleaned up/ ) {
 		    last;
 		}
