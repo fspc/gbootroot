@@ -157,9 +157,11 @@ sub read_contents_file {
 	undef %strippable;
 	undef %lib_needed_by;
 	undef @Libs;
-	unlink("$mnt/device_table.txt") if -e "$mnt/device_table.txt";
     }
     $contents_file_tmp = $contents_file;
+
+    unlink("$mnt/device_table.txt") if -e "$mnt/device_table.txt";
+
 
     # Need to know whether genext2fs is being used
     my $fs_type = (split(/\s/,$main::makefs))[0];
@@ -1685,21 +1687,58 @@ sub device_table {
     my $mnt = shift @devices;
     my $error;
 
-    # /dev is always made automatically
+    # /dev is always needs to be made automatically
     open(DEVICE_TABLE, ">>$mnt/device_table.txt") or
 	($error = error("$mnt/device_table.txt: $!"));
     return "ERROR"if $error && $error eq "ERROR";
     
-    #<path>  <type>  <mode>  <uid>  <gid>  <major>  <minor>  <start>  <inc> 
-    # start and inc are the tricky parts with the glob
-    foreach (@devices) {
-	info(1,"$_\n");
+    #<path>  <type>  <mode>  <uid>  <gid>  <major> <minor> <start><inc><count> 
+    # start and inc are the tricky parts with the glob so they are being
+    # ignored
+    
+    foreach my $device (@devices) {
+	my ( $mode, $uid, $gid ) = (stat($device))[2,4,5];
+	$mode  = sprintf( "%04o", $mode );
+	$mode =~ /^(\d*)(\d{4})$/;
+	my $type = $1; 
+	$mode = $2;			 			 
+	my $maj_min = `file $device`;
+
+	# print only if it is one of these types
+	if ( !-l $device ) {
+	    if ( $type == 2 ) {
+		$type = "c";
+	    }
+	    elsif ( $type == 6 ) {
+		$type = "b";
+	    }
+	    elsif ( $type == 1 ) {
+		$type = "p";
+	    }
+	}
+
+	my ($major, $minor);
+	if ( $maj_min =~ /special/ ) {
+	    $maj_min =~ m,\((\d+)/(\d+)\),;
+	    $major = $1;
+	    $minor = $2;
+	}
+	elsif ( $maj_min =~ /fifo/ ) {
+	    $major = "-";
+	    $minor = "-";
+	}
+
+	if ( $type eq "c" || $type eq "b" || $type eq "p" ) {
+	    print DEVICE_TABLE 
+		"$device\t$type\t$mode\t$uid\t$gid\t$major\t$minor\t-\t-\t-\n";
+	}
+
     }
 
     close(DEVICE_TABLE);
 
-
 } # end sub device_table
+
 
 sub mount_device {
     
