@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.32 2001/12/05 19:13:05 freesource Exp $</center>
+<center>$Id: index.html,v 1.33 2001/12/05 20:27:25 freesource Exp $</center>
 
 <p>
 
@@ -361,19 +361,21 @@ $HOME/.gbootroot/yard/.</p>
 was the original program, but I decided that a GUI approach
 provided the user much more versatility and power in creating 
 distributions.&nbsp;&nbsp;Since the first gBootRoot,
-bOOTrOOT has become a full blown distribution creation program.
-It may be used for the creation of root filesystems used in every
+bOOTrOOT has become a full blown distribution creation program which may
+be used by a normal user.
+It may be used for the creation of root filesystems in every
 imaginable application from Embedded Systems to Mini Distributions to 
 Macro distributions to Full sized Distributions.&nbsp&nbsp;The root 
-and boot filesystems  may 
-be tested long before implemenation by using user-mode-linux.&nbsp;&nbsp;
+and boot filesystems may 
+be tested long before implementation by using user-mode-linux.&nbsp;&nbsp;
 Boot Methods are provided to allow root filesystems to run from different types
 of media.&nbsp;&nbsp;
 Historically, developers have written scripts
 which have focused on providing a particular type of root 
-filesystem and booting method.  Observation, reveals that all these
-approaches share many commonalities.  gBootRoot has been designed to embrace
-all these approaches, and to allow developers to create drop-in replacements 
+filesystem and booting method.&nbsp;&nbsp;Observation, reveals that all these
+approaches share many commonalities.&nbsp;&nbsp;gBootRoot has been 
+designed to embrace
+these similiarities, and to allow developers to create drop-in methods 
 via modules or easy to understand templates.&nbsp;&nbsp;
 gBootroot is the GIMP of distribution creation!</P>
 
@@ -562,9 +564,10 @@ new replacements and then creates symlink from the
 $HOME/.gbootroot/yard/Replacements directory to the 
 replacements repository.&nbsp;&nbsp;
 In general the repository for replacements is owned by root, so normal 
-users can't make changes to these files anyways; however, root should makes 
-it a policy always to make changes from her local directory by using an editor 
-which respects versioned files (i.e. Emacs).  Then she will not be able to 
+users can't make changes to these files anyways; however, root should make 
+it a policy always to make changes from the $HOME location while using 
+an editor  which respects versioned files (i.e. Emacs).  Then the 
+administrator will not be able to 
 make any changes to the replacements repository because the CVS directories 
 keep date information which prevents the editing of these
 files.&nbsp;&nbsp;It is highly recommended to follow this procedure, and
@@ -576,13 +579,43 @@ for data which shouldn't be modified
 
 <p>
 
-<b>What is make_debian, and how do I use it?</b></p>
+Binaries are auto-magically checked to discover whether they require libc6 or
+uClibc.&nbsp;&nbsp;If they are found to require uClibc 
+/usr/i386-linux-uclibc/bin/ldd
+is used to discover shared library dependencies, otherwise ldd is
+called without any path.</p>
 
+
+<b>What do you mean by macro distribution?</b></p>
 
 <p>
 
+A macro distribution is a term I coined.&nbsp;&nbsp;It implies a software
+distribution larger than a mini distribution usually 
+associated with 1.44 to 1.722 sized floppy disks, but smaller than a
+base distribution which provides the foundation to create a full size 
+distribution.&nbsp;&nbsp;It is usually pruned, and provides the 
+absolute minimum needed to provide all the functionality usually
+associated with a full sized distribution, yet it still uses the same 
+libraries and binaries.&nbsp;&nbsp;Because it can be made quickly, it is 
+useful for creating a current snapshot of ones own host systems, and can be 
+used to run experiments safely without fear of corrupting the host system
+via user-mode-linux.</p>
+
+
 <b>How am I able to create root filesystems as a normal user?</b></p>
 
+<p>
+
+Genext2fs is used.  This progam allows a normal user to create an ext2 
+filesystem with all uids and gids belonging to 0 (root) without the need for 
+a loop or ram device.&nbsp;&nbsp;Device nodes are created from a device table
+file written to by gbootroot.&nbsp&nbsp;This program is authored by 
+Xavier Bestel, but the version used by gbootroot has
+modifications from Erik Andersen (BusyBox) to allow a device table
+to be used rather than a device listing.&nbsp;&nbsp;The maximum allowable size
+for a filesystem is 8192k.&nbsp;&nbsp;User and group information
+can be changed when the filesystem is run from a kernel.
 
 <p>
 
@@ -590,6 +623,56 @@ for data which shouldn't be modified
 
 
 <p>
+
+
+<b>What is make_debian, and how do I use it?</b></p>
+
+<p>
+
+Make_debian is a script which takes information from
+a Debian installation and creates a template which can be used to make a
+macro distribution using gBootRoot's yard method.&nbsp;&nbsp;
+It creates replacements for important configuration files to represent
+the actual packaging state it will be providing.&nbsp;&nbsp;
+In order to use this script you need to be running a Debian-like
+distribution, anotherwards, one which uses dpkg, apt and file-rc to maintain 
+its packaging and boot hierarchy.&nbsp;&nbsp;Dswim is used to collect
+information used in making the template.&nbsp;&nbsp;You will need to build the 
+filesystem as root because it exceeds the 8192k limit provided by genext2fs.</p>
+
+<p>
+
+Run make_debian from the command-line.&nbsp;&nbsp;The script first finds all
+required packages on your host system, then it checks to see if any of
+the extra packages mentioned in its configuration are missing.&nbsp;&nbsp;
+As a rule, even if extra packages
+are missing, a working distribution will still be created.&nbsp;&nbsp;
+The script will then ask you a few questions, 
+and then proceed to make Debian-`uname -n`.yard in your template 
+directory.&nbsp;&nbsp;
+
+<p>
+
+<em>Extra Packages and static template data:</em>
+
+<br>
+
+You can resolve missing packages by installing them on your system, or you can
+edit the script and replace these packages with a suitable replacement,
+since you may be using a different version of Debian then the author 
+used when putting together make_debian.&nbsp;&nbsp;Make a copy of make_debian,
+and then edit the part under EDIT HERE between qw().&nbsp;&nbsp;
+You may edit the static data in the template from
+within the script below where it is clearly marked as editable.
+While on the subject the <b>make-debian-x11 add-on</b> is actually the 
+result of
+making these modifications.&nbsp;&nbsp;First, extra packages were 
+added, second, extra replacements were provided and the static information
+in the template was modified to reflect these replacements.
+
+
+</p>
+
 
 <b>My root filesystem doesn't start in single mode when started like
 this:&nbsp;&nbsp&quot;bootdisk 1?&quot;</b></P>
