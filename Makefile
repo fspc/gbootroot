@@ -28,6 +28,9 @@ install:
 	cp -fa genext2fs/genext2fs.c /usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/Makefile /usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/dev* /usr/share/gbootroot/genext2fs
+	install -d /usr/share/gbootroot/skas-or-tt
+	cp -fa  skas-or-tt/skas-or-tt.c /usr/share/gbootroot/skas-or-tt
+	cp -fa  skas-or-tt/Makefile /usr/share/gbootroot/skas-or-tt
 	install -d /etc/gbootroot
 	cp -fa gbootrootrc /etc/gbootroot/gbootrootrc
 	install -d /usr/X11R6/include/X11/pixmaps

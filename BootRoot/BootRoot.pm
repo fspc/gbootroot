@@ -27,7 +27,7 @@ package BootRoot::BootRoot;
 use vars qw(@ISA @EXPORT %EXPORT_TAGS);
 use Exporter;
 @ISA = qw(Exporter);
-@EXPORT =  qw(start);
+@EXPORT =  qw(start skas_or_tt);
 
 use strict;
 use POSIX;
@@ -2201,7 +2201,7 @@ sub uml_box {
 						  # Order does matter because it's used by linuxrc
 						  $entry_advanced[9] = 
 						      "mtd=mtdram,$fs_type,$total_size,$erasure_size,$init, " .
-							  "$mem $ramdisk_size $initrd " .
+							  "$mem $ramdisk_size $initrd " . "mode=" . skas_or_tt() . " " .
 							      $entry_advanced[9]; 
 
 					      }
@@ -2216,7 +2216,7 @@ sub uml_box {
 						  # Order does matter because it's used by linuxrc
 						  $entry_advanced[9] = 
 						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size,$init, " .
-							  "$mem $initrd " .
+							  "$mem $initrd " . "mode=" . skas_or_tt() . " " .
 							  $entry_advanced[9]; 
 
 					      }
@@ -5304,6 +5304,30 @@ Little things you may want to know:
 * gBootRoot requires ash for initrd.  Ash is a feather weight version of Bash.
 
 HELP
+
+}
+
+sub skas_or_tt {
+
+    my $ret;
+
+    # CLI is never appended, but it could be.
+    if ( !$option{gui_mode} ) {
+	open(SKAS_OR_TT,"/usr/lib/bootroot/skas-or-tt|") or
+	    die "Couldn't open /usr/lib/bootroot/skas-or-tt\n";
+    }
+    else {
+	my $skas_or_tt = $option{home} . "/skas-or-tt/skas-or-tt";
+	open(SKAS_OR_TT,"$skas_or_tt|") or
+	    die "Couldn't open $skas_or_tt\n";
+    }
+
+    while (<SKAS_OR_TT>) {
+	!m,not found$, ? ($ret = "skas") : ($ret = "tt");
+    }
+    close(SKAS_OR_TT);
+
+    return $ret;
 
 }
 

@@ -1538,10 +1538,15 @@ sub create_expect_uml {
 	    }
 
 	    my $ubd1 = "ubd1=$device";
+	    # This works for both forms of gui, but avoids cli.
+	    if ( !$option{template} ) {
+		$option{"uml-options"} = $option{"uml-options"} .
+		    " mode=" . skas_or_tt();
+	    }
 	    my $options = "root=/dev/ubd0 " . $option{"uml-options"};
 	    my $filesystem;
 	    if ( $fs_type eq "genext2fs" ) {
-		$filesystem = "mke2fs -m0";
+	        $filesystem = "mke2fs -m0";
 	    }
 	    else {
 		$filesystem = $main::makefs;
