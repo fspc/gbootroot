@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.69 2002/01/09 19:22:10 freesource Exp $</center>
+<center>$Id: index.html,v 1.70 2002/01/09 19:35:14 freesource Exp $</center>
 
 <p>
 
@@ -480,14 +480,25 @@ and things should become more clear.
 <br>
 13.&nbsp;&nbsp;<a href="#13">I've created a root fs.&nbsp;&nbsp;Then I've tried to create the boot disk using the 2 disk compression method.&nbsp;&nbsp;The device selection is /dev/fd0, size is 1440k, but the initrd_image.gz is 715k.&nbsp;&nbsp;I don't know much about boot disks but shouldn't the boot disks contain mainly the kernel?</a>
 <br>
-14.&nbsp;&nbsp;<a href="#14">There isn't enough room left on my 1440 floppy to make a Boot or Root disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing the size of the kernel?</a>
+14.&nbsp;&nbsp;<a href="#14">If libc is included in the boot disk, why is it needed in the root disk as well?</a>
 <br>
-15.&nbsp;&nbsp;<a href="#15">gBootRoot doesn't start because it can't locate Gtk.pm?</a>
+15.&nbsp;&nbsp;<a href="#15">There isn't enough room left on my 1440 floppy to make a Boot or Root disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing the size of the kernel?</a>
 <br>
-16.&nbsp;&nbsp;<a href="#16">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
+16.&nbsp;&nbsp;<a href="#16">Last, but not least...the boot disk boots, waits for the root disk, and now fails. "Can't open console"??? or sth like this (I'm pretty tired right now, recheck later), which appears after "VFS:ext2fs was found..."</a>
+<br>
+17.&nbsp;&nbsp;<a href="#17">What are the kernel's drivers/fs that must be directly compiled, not as modules, except ext2, floppy?  Could you attach your kernel's .config?</a>
+<br>
+18.&nbsp;&nbsp;<a href="#18">What is the root_fs_helper 2Mb file in the grootboot package?</a>
+<br>
+19.&nbsp;&nbsp;<a href="#19">
+Now the creation works, but actually the whole image is less than 1440k... Still, unclear to me is the purpose of the device/size in the main widget - is it only for the boot or also for the root disk?   After all, the root fs image size has been already entered in the ARS.</a>
+<br>
+20.&nbsp;&nbsp;<a href="#20">gBootRoot doesn't start because it can't locate Gtk.pm?</a>
+<br>
+21.&nbsp;&nbsp;<a href="#21">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
 </a>
 <br>
-17.&nbsp;&nbsp;<a href="#17">Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</a>
+22.&nbsp;&nbsp;<a href="#22">Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</a>
 <br>
 
 <P><a name="1"><b>What's the advantage of using this program?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
@@ -1165,7 +1176,28 @@ Unfortunately (or fortunately for root filesystem making, a process which
 used to take days), I've been devoting a lot of time to the ARS, but
 hopefully I'll be adding major changes to the ABS in the near future.
 
-<p><a name="14"><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
+<p>
+
+<a name="14"><b>If libc is included in the boot disk, why is it needed in the root disk as 
+well?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+
+<p>
+
+An interesting question.&nbsp;&nbsp;Let's consider the two disk compression 
+method,
+first the initrd is decompressed into /dev/ram0 or /dev/rd/0, then the
+root filesystem is decompressed into /dev/ram1 or /dev/rd/1, even though
+one would think since everything is being done in memory, the prescence of
+the libraries would remain in memory.&nbsp;&nbsp;But, in this case memory is
+partitioned and the new root device doesn't share information with
+the previous root device.&nbsp;&nbsp;An easier way to look at this is simply 
+that a
+new root is being used which doesn't share information with the previous
+root.&nbsp;&nbsp; You can experiment with this by removing libc-*.so and 
+ld-*.so from a root filesystem which previously worked, first test it with 
+UML,  and then try to boot it; in both cases it won't work.
+
+<p><a name="15"><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
 disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing 
 the size of the kernel?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
@@ -1199,13 +1231,101 @@ worked
 everywhere.&nbsp;&nbsp;Feel free 
 to add your comments to the Feature Request.&nbsp;&nbsp;Thanks.</p>
 
+
 <p>
 
-<a name="15"><b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+<a name="16"><b>Last, but not least...the boot disk boots, waits for the root disk, and
+now fails. "Can't open console"??? or sth like this (I'm pretty tired
+right now, recheck later), which appears after "VFS:ext2fs was found..."</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+
+<p>
+
+This is an easy one.&nbsp;&nbsp;First, make sure that there is a 
+/dev directory in 
+your root filesystem.&nbsp;&nbsp;Genext2fs will automatically make this 
+from its devices table, but other fs creators (mke2fs) don't know any better.
+Second, does your kernel have devfs?&nbsp;&nbsp;Based on this answer, 
+make sure you choose the proper inittab for your kernel, and if you aren't 
+using devfs 
+make sure that the proper devices are included.&nbsp;&nbsp;The minimum 
+required is /dev/console and you will need devices for anything listed 
+in the inittab.
+Genext2fs will include devices for any user, but non-root users can't
+create devices with other filesystem creators.&nbsp;&nbsp;Third, test 
+with UML, if the filesytem is not devfs use the devfs=nomount option 
+to make sure your filesystem is running properly.
+
+<p>
+
+<a name="17"><b>What are the kernel's drivers/fs that must be directly compiled, not as
+modules, except ext2, floppy?&nbsp;&nbsp;Could you attach your 
+kernel's .config?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+
+<p>
+
+I don't want to take all the fun away from you.&nbsp;&nbsp;There is a 
+config for the uml kernel in 
+/usr/lib/bootroot/yard/Replacements/lib/modules.&nbsp;&nbsp;If you get
+it running with uml, and it doesn't run with your own kernel, take a look 
+here.
+
+<p>
+
+<a name="18"><b>What is the root_fs_helper 2Mb file in the grootboot package?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+
+<p>
+
+This is the ultimate in root filesystem engineering.&nbsp;&nbsp;The root 
+filesystem helper is actually a much bigger filesystem made with cramfs, and it
+originated from a genext2fs filessytem made as a normal user.&nbsp;&nbsp;
+It includes
+utilities like filesystem creators.&nbsp;&nbsp;It is part of the automated
+filesystem creation system, and after it is booted by uml, it is
+intereacted with via expect based on user choices placed in the filesystem
+box.&nbsp;&nbsp;Considering that mkreiserfs doesn't allow loop devices to 
+be used,
+this is an easy way to get around this limitation, and most importantly it
+allows non-root users to create UID/GID 0 root filesystems.&nbsp;&nbsp;
+Try creating a root filesystem as a normal user with both "uml exclusively" and
+"preserve ownership" turned on and discover if you can successfully create
+a working root filesystem.&nbsp;&nbsp;Answer: No, you will not be able 
+to unless preserve ownership is off.
+
+<p>
+
+<a name="19"><b>Now the creation works, but actually the whole image is less than
+1440k... Still, unclear to me is the purpose of the device/size in the
+main widget - is it only for the boot or also for the root disk?&nbsp;&nbsp;
+After all, the root fs image size has been already entered in the ARS.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+
+<p>
+
+Gbootroot is designed with the idea that new Linux users don't need to  
+open up the ARS or ABS; basically, they just choose a boot method, provide
+a pre-made compressed root_fs and kernel, and then press the submit button
+to get a two disk floppy system.&nbsp;&nbsp;What this means is 
+that if the ARS is
+never opened then the boot and root devices will both be /dev/fd0.&nbsp;&nbsp;
+But, if the ARS is opened up, then the boot device is whatever is found in the
+main section, and the root device is whatever is found in the ARS.&nbsp;&nbsp;
+Likewise, if the ABS is opened up, and the user decides that they would like 
+to do
+development work on a different device than the boot device, for instance,
+/dev/fd1, then they can change the device in the ABS.&nbsp;&nbsp;In this 
+case, the
+device should be left to /dev/fd0 in the main section, unless you have one
+of those amazing Bioses which allow /dev/fd1 to be booted.&nbsp;&nbsp;
+At a later  
+date the user can run "lilo -v -C brlilo.conf -r /mnt" where /mnt
+represents the mounted device provided in the main section.
+
+<p>
+
+<a name="20"><b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
 <p>This program requires Gtk-Perl available from <a href="http://www.perl.com/CPAN">CPAN</a>, <a href="http://freshmeat.net/projects/gtk-perl">Freshmeat</a> or most GNU/Linux distributions.</p>
 
-<p><a name="16"><b>If you roll the floppy density counter down to 0 and then try go back 
+<p><a name="21"><b>If you roll the floppy density counter down to 0 and then try go back 
 up towards 1440 and 1722, you get very funny figures.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
@@ -1252,7 +1372,7 @@ page up with the second button to 1440 and step with the first button to
       <LI> Ctrl-V   Paste from clipboard </LI>
     </UL>
 
-<p><a name="17"><b>Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+<p><a name="22"><b>Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
