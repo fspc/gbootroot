@@ -3005,33 +3005,12 @@ sub help {
 
 gBootRoot $version $date GNU GPL
 email contact -> Jonathan Rosenbaum <freesource\@users.sourceforge.net>
-Homepage -> http://the.netpedia.net/gBootRoot.html
+Homepage -> http://gbootroot.sourceforge.net
 Submit a Bug -> http://sourceforge.net/bugs/?group_id=9513
 Development site -> http://sourceforge.net/projects/gbootroot
 Help forum -> http://sourceforge.net/forum/forum.php?forum_id=29639
 Open forum -> http://sourceforge.net/forum/forum.php?forum_id=29638
 gbootroot-devel mailing list -> http://sourceforge.net/mail/?group_id=9513
-
-gBootRoot is a Gtk+/Perl program useful for both beginners and advanced
-GNU/Linux users.  It makes the construction/development of emergency and
-mini distributions simple.
-
-- A GNU/Linux user can easily create an emergency Boot/Root set.
-  There are a multitude of pre-existing compressed filesystems readily
-  available.  Please check the gBootRoot FAQ at the gBootRoot site
-  listed above.
-
-** If you are a developer please send me links to Kernel/Filesystems
-   which I can share with users of gBootRoot.
-
-- A developer creating a mini distribution can concentrate his efforts
-  on perfecting the filesystem, and then he can use gBootRoot to
-  quickly create a Boot/Root set to run tests.
-
-- Disk sets allow for more space to include interesting and necessary
-  things.  The size of the Kernel is increasing every day making sets
-  advantageous.
-
 
 How to Use gBootRoot:
 
@@ -3039,25 +3018,29 @@ The most important button to familiarize yourself with is the Submit button
 which starts the whole process; dialogs are presented as the process 
 continues asking you if you want to continue "OK" or stop "Cancel".
 
-The first row has only one choice "lilo."  Clicking on the menu on the right 
-selects the boot method.
+The first row presently has only one Boot Method choice: "2 disk compression."
+Clicking on the menu on the right selects the Boot Method.
 
 The second row allows you to select the kernel for the Boot/Root set.  You
 may either use the file selector button on the right hand side, or you may
 type in the location on the left hand side.
 
 The third row allows you to select the compressed filesystem you are
-providing, using either of the two ways mentioned before.
+providing, using either of the two ways mentioned before.  You may use a
+pre-made root filesystem or you may create one using one of the Methods 
+provided in the Advanced Root Section.
 
 The fourth row allows you to select the device you want to use.  The default
 device is the first floppy disk (/dev/fd0).
 
 The fifth row allows you to choose the size of the device being used.  The
-default size is 1722 which works fine with 1440 floppy drives. Click on the 
+default size of 1440 assumes you are using a floppy drive (Note: You may want 
+to experiment with 1722 which works fine with many floppy drives.), but can
+be used with other sized devices like tape drives.   Click on the 
 appropriate radio button to choose either gzip or bzip2 compression if the 
 program doesn't automatically detect it.
 
-Advanced Section:
+Advanced Boot Section:
 
 "Stripping"  On by default for libraries and binaries.  The stripping 
 behavior for libraries may be changed by clicking on the right mouse button 
@@ -3074,6 +3057,45 @@ kernel to function properly.  Put a space between each device.  For instance,
 
 "append ="  Add append options to brlilo.conf.  If you are using a frame
 buffer device you could add something like video=matrox:vesa:402,depth:16.
+
+Advanced Root Section:
+
+"Root Device"  This is the device used for the root filesystem when 
+constructing the Boot/Root set.  You may choose a device which is different 
+than the Boot device, but presently only floppy devices are supported.
+
+"Root Device Size"  The size of the actual media used for the Root Device.
+
+"Root Filename"  The name give to the root filesystem when initially made
+in the temporary creation location.  The save button allows the creation to
+be saved in the permanent default location when the Accept button is pressed. 
+
+"Filesystem Size"  Root Methods make the filesystem the size which is 
+specified here.
+
+"Compression"  Off by default to allow user-mode-linux testing.  Turn on 
+compression when you are ready to use a Boot Method which requires compression.
+
+"Method"  The root filesystem creation method.
+
+"Template"  The template associated with a Root Method.  Not all Root Methods
+have templates.
+
+"Generate"  This puts the chosen Root Method in action.
+
+"UML"  Abbreviation for user-mode-linux.  This is a linux kernel which runs on
+top of the host system's linux kernel and allows a you run a live root 
+filesystem.  
+
+"Accept"  This accepts the created root filesystem if it is found in the 
+temporary creation directory.  The UML box and the main section will now 
+reflect the path to this root filesystem.  You can now test with the UML 
+button or a put together a complete Boot/Root set with the Submit button.
+
+Advanced Kernel Section:
+
+Still in development.
+
 
 Little things you may want to know:
 
