@@ -220,12 +220,11 @@ BEGIN {
 
     my $fhs = grep(/\/usr\/share\/perl5/,@INC);
 
-    unshift(@INC,".");  # better make sure we mean . when we mean .
-
     if ($fhs == 0) {
 	unshift(@INC,"/usr/share/perl5");
     }
 
+    unshift(@INC,".");  # better make sure we mean . when we mean .
 
     my $sbin = grep(/\/sbin/,$ENV{'PATH'});
     if ($sbin == 0) {
