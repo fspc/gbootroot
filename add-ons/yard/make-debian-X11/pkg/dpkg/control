@@ -11,7 +11,8 @@ Depends: gbootroot (>= 1.2.13), swim, debconf
 Description: BootRoot add-on. 
  This add-on is an enhanced make_debian script which creates a template for
  gBootRoot's Yard Method.  The root filesystem created from this script
- includes X11, and the ability to run gBootRoot from within its own creation.
+ is user-mode-linux ready, includes X11, and the ability to run gBootRoot 
+ from within its own creation.
  .
  See the script for information on how to customize it to your own 
  specifications.  This package depends on swim.  Add this line to your 
