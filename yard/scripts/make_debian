@@ -42,10 +42,11 @@ my %inetd; # checks for inetd binaries.
 #
 # You may have to edit the text below STUFF.
 #
-# Swim provides excellent information for this task.  swim -qT packagename &
-# swim -ql --df packagename & swim -qc packagename (not all conf files can
-# be found this way .. read above) so you will want to use 
-# swim -q --scripts packagename.
+# Swim provides excellent information for this task.  swim -qT packagename(s) &
+# swim -ql --df packagename(s) & swim -qc packagename(s) (not all conf files 
+# can  be found this way .. read above) so you will want to use 
+# swim -q --scripts packagename(s) or 
+# swim -q --preinst --postinst packagenames(s).
 
 my @extra_packages = qw(file-rc swim apt apt-utils debconf nvi sysklogd
 klogd netbase tcpd net-tools portmap netkit-ping netkit-inetd ifupdown less 
@@ -173,6 +174,10 @@ my $stuff = << "STUFF";
 # Netkit-inetd stuff
 /etc/inetd.conf <= Replacements/etc/inetd.conf
 
+# Tcpd stuff
+/etc/hosts.allow
+/etc/hosts.deny
+
 # Network stuff
 # You will want to edit the interfaces file.
 # Remember to load any needed modules on the host system, for instance
@@ -184,6 +189,7 @@ my $stuff = << "STUFF";
 # to your network device:
 # eth0=ethertap,tap0,HWaddr,192.168.1.5
 /etc/resolv.conf 
+/etc/hosts <= Replacements/etc/hosts
 /root/umlnet <= Replacements/root/umlnet # Example network setup script
 /etc/network <= Replacements/etc/network
 /etc/network/if-down.d      # empty
@@ -221,7 +227,7 @@ my $stuff = << "STUFF";
 /var/tmp
 /var/run
 /var/lock
-/var/log
+/var/log/news
 
 # Stuff so ldconfig doesn't complain.
 /etc/ld.so.conf <= Replacements/etc/ld.so.conf
@@ -236,9 +242,9 @@ return $stuff;
 #################################################################
 #################################################################
 
-####################
-## Template Creation
-
+#######################
+## Template Creation ##
+#######################
 open(DEBIAN,">$template_dir/$debian_yard") 
 	or die "Couldn't open $!\n";
 open(FILERC,"/etc/runlevel.conf") or die "No runlevel.conf: $!\n";
@@ -296,8 +302,9 @@ foreach (@alternatives) {
 
 close(DEBIAN);
 
-# END TEMPLATE CREATION
-#######################
+#########################
+# END TEMPLATE CREATION #
+#########################
 
 # This creates a tweaked runlevel.conf which is easier then trying to figure
 # out which symlinks to use in /etc/rc?d.
@@ -310,7 +317,6 @@ map { [ (split(/\s/,$_))[0], $_ ] }
 @file_rc;
 print MY_FILERC @sortedrc;
 close(MY_FILERC);
-
 
 # This creates a status file for use by dpkg and swim.
 # Although swim could be used to do this, it is more efficient just to
