@@ -88,6 +88,7 @@ kernel:
 	if [ -e $(KERNEL_DIR)/linux ] ; then \
 		objcopy --strip-all $(KERNEL_DIR)/linux $(KERNEL); \
 	fi;
+	cp $(KERNEL_DIR)/.config $(KCONFIG)
 
 modules: 
 	cd linux-$(VERSION) ; \
