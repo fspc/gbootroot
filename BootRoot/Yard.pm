@@ -177,7 +177,13 @@ sub read_contents_file {
 	      cf_warn($line, "Can't use wildcards in link specification!");
 	      next LINE;
 	  }
-	  my($file, $link) = $line =~ /^(\S+)\s*->\s*(\S+)\s*$/;
+
+	  ## I decided to switch this from ($file,$link) to ($link,$file)
+	  ## to make this more intuitive for users so something like
+	  ## ls -l /bin/sh which ='s /bin/sh -> /bin/bash is literal 
+	  ## .. before it was backwards.
+
+	  my($link, $file) = $line =~ /^(\S+)\s*->\s*(\S+)\s*$/;
 	  if (!defined($link)) {
 	      cf_warn($line, "Can't parse this link");
 	      next LINE;
@@ -185,7 +191,10 @@ sub read_contents_file {
 	  #####  The '->' supersedes file structure on the disk, so don't
 	  #####  call include_file until pass two after all explicit links
 	  #####  have been seen.
-	  my($abs_file) = find_file_in_path($file);
+
+	  ## find_file_in_path($file) changed to find_file_in_path($link)
+
+	  my($abs_file) = find_file_in_path($link);
 	  $Included{$abs_file} = 1 if $abs_file;
 	  ####   Have to be careful here.  Record the rel link for use
 	  ####   in setting up the root fs, but use the abs_link in @files
@@ -1650,7 +1659,14 @@ sub onto_proc_filesystem {
   my($file) = @_;
   my($sdev) = (stat($file))[0];
   my($ldev) = (lstat($file))[0];
-  $sdev == $proc_dev or $ldev == $proc_dev
+
+  if ($sdev) {
+      $sdev = $proc_dev;
+  }
+  elsif ($ldev) {
+      $ldev = $proc_dev;
+  }
+
 }
 
 
