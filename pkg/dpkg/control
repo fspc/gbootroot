@@ -1,5 +1,5 @@
 Source: gbootroot
-Section: unknown
+Section: utils
 Priority: optional
 Maintainer: Jonathan Rosenbaum <freesource@users.sourceforge.net>
 Build-Depends: debhelper (>> 3.0.0)
@@ -7,6 +7,10 @@ Standards-Version: 3.5.2
 
 Package: gbootroot
 Architecture: any
-Depends: ${shlibs:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Depends: libgtk-perl
+Description: Graphical BootRoot
+ BootRoot makes the construction/development of distributions fun and simple
+ with its Root Methods (Yard) and user-mode-linux test bed. Finish the product
+ with a Boot Method (2-disk compression supported). GNU Debian users should 
+ try make_debian.
+ .
