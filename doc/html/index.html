@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.34 2001/12/06 04:18:04 freesource Exp $</center>
+<center>$Id: index.html,v 1.35 2001/12/06 07:32:02 freesource Exp $</center>
 
 <p>
 
@@ -659,27 +659,93 @@ can be changed when the filesystem is run from a kernel.
 
 Although genext2fs only allows a normal user to create a UID/GID 0 root
 filesystem up to a maximum size of 8192k, there is an easy solution to
-create root filesystems larger than this limit.&nbsp;&nbsp;Eventually,
+creating root filesystems larger than this limit.&nbsp;&nbsp;Eventually,
 I'll automate the steps required, but for now you will have to do it
 manually.
 
 <p>
 
-1.&nbsp;&nbsp;Create your root filesystem as you normally would when using
+1.&nbsp;&nbsp;You may want to create a helper root filesystem 
+(<=8192k), and give it an unique name in the
+ARS Root Filename.&nbsp;&nbsp;The root_fs 
+created from Example.yard provides all the functionality you need, 
+regardless, you will need some sort of working root_fs with all the 
+necessary system utilities before proceeding with the next step.&nbsp;&nbsp;
+We will call this root_fs_helper.
+
+<p>
+
+2.&nbsp;&nbsp;Create your root filesystem (>8192k) as you normally would when 
+using
 genext2f, making sure to choose the filesystem size you require from 
 the ARS.&nbsp;&nbsp;
 Proceed through the required stages, and when you finish the Create stage
-there will be an  ERROR dialog box which will pop up saying "Cannot genext2fs 
+an ERROR dialog box will pop up saying "Cannot genext2fs 
 filesystem" which you can safely ignore.&nbsp;&nbsp;At this point in the 
-"echo /tmp/gboot_root_`id -u`" directory there is an empty file with the name 
-specified in the ARS Root Filename field.&nbsp;&nbsp;Above this directory
+"echo /tmp/gboot_non_ root_`id -u`" directory there is an empty file 
+with the name 
+specified in the ARS Root Filename field which we will assume is called
+root_fs.&nbsp;&nbsp;Above this directory
 in loopback/  all files and directories copied over during the Create stage 
 can be found.
 
 <p>
 
-2.
+3.&nbsp;&nbsp;Open up the UML box from the ARS.&nbsp;&nbsp;In the Root_Fs
+entry ubd0 should be pointing to the helper root_fs, and
+ubd1 should be pointing to the empty root_fs file:&nbsp;&nbsp; 
+<pre>
+  ubd0=/tmp/gboot_non_root_1000/root_fs_helper ubd0=/tmp/gboot_non_root_1000/root_fs
+</pre>
+</p>
 
+<p>
+
+4.&nbsp;&nbsp;The devfs is used in this example.&nbsp;&nbsp;
+Press the Submit button on the UML box, and login to 
+the root_fs_helper.&nbsp;&nbsp;Create two mounting directories if they
+don't exist.&nbsp;&nbsp;For this example, /mnt1 and
+/mnt2 are used.&nbsp;&nbsp;
+
+<p>
+
+5.&nbsp;&nbsp;Make a filesystem type of your own choice on /dev/ubd/1:
+<pre>
+  mke2fs -m0 /dev/ubd/1
+</pre>
+
+<p>
+
+6.&nbsp;&nbsp;Mount /dev/ubd/1 on /mnt1:
+<pre>
+  mount /dev/ubd/1 /mnt1
+</pre>
+
+<p>
+
+7.&nbsp;&nbsp;Mount the host filsystem on /mnt2:
+<pre>
+   mount -t hostfs none -o /tmp/gboot_non_root_1000/loopback /mnt2
+</pre>
+
+<p>
+
+8.&nbsp;&nbsp;Copy everything from loopback to /mnt1:
+<pre>
+  cp -a /mnt2/* /mnt1
+</pre>
+
+<p>
+
+9.&nbsp;&nbsp;Change UIDs and GIDs to the appropriate user:
+<pre>
+  chown -v -R 0:0 /mnt1/*
+  chown -v -R 1002:1002 /mnt1/home
+</pre>
+
+<p>
+
+10.&nbsp;&nbsp;Unmount everything.&nbsp;&nbsp;Root_fs is now ready to be used!
 
 <p>
 
@@ -701,8 +767,10 @@ the actual packaging state it will be providing.&nbsp;&nbsp;
 In order to use this script you need to be running a Debian-like
 distribution, anotherwards, one which uses dpkg, apt and file-rc to maintain 
 its packaging and boot hierarchy.&nbsp;&nbsp;Dswim is used to collect
-information used in making the template.&nbsp;&nbsp;You will need to build the 
-filesystem as root because it exceeds the 8192k limit provided by genext2fs.</p>
+information used in making the template.&nbsp;&nbsp;When you run the
+template in the Yard Box as 
+a normal user follow the instructions from the FAQ answer to
+"How can a normal user create a root filesystem larger than 8192k?"</p>
 
 <p>
 
@@ -815,7 +883,7 @@ up towards 1440 and 1722, you get very funny figures.</b></p>
 This is because of the way Gtk works.&nbsp;&nbsp;There are two adjustments, 
 step and page increments.&nbsp;&nbsp;When you press your first mouse button the step 
 has been set to 282 so that a person can easily switch between 1440 and 1722.  
-&nbsp;&nbsp;When you use your second mouse button the page is set at 360.  You can go 
+&nbsp;&nbsp;When you use your second mouse button the page is set at 1024.  You can go 
 down to zero by pressing your third mouse button on the 
 down arrow.&nbsp;&nbsp;Now 
 page up with the second button to 1440 and step with the first button to 
