@@ -1,7 +1,6 @@
 #############################################################################
 ##
 ##  YardBox.pm 
-##  Copyright (C) 2000 Modifications by the gBootRoot Project
 ##  Copyright (C) 2000 by Jonathan Rosenbaum
 ##
 ##  This program is free software; you may redistribute it and/or modify
@@ -37,8 +36,12 @@ my $false = 0;
 my $error;
 my ($continue_button,$close_button,$save_button);
 my($check,$dep,$space,$create,$test);
-my($device,$device_size,$filename,$filename_size,$kernel,$template_dir,
+my($device,$device_size,$filename,$filesystem_size,$kernel,$template_dir,
    $template,$tmp,$mnt);
+my $TEXT_CHANGED = "no";
+my $lib_bool =            1;
+my $bin_bool =            1;
+my $mod_bool =            1;
 
 my @menu_items = ( { path        => '/File',
 		     type        => '<Branch>' },
@@ -181,7 +184,7 @@ sub yard {
     $device           = $ars->{device};
     $device_size      = $ars->{device_size};
     $filename         = $ars->{filename};
-    $filename_size    = $ars->{filename_size};
+    $filesystem_size  = $ars->{filesystem_size};
     $kernel           = $ars->{kernel};
     $template_dir     = $ars->{template_directory};
     $template         = $ars->{template};
@@ -220,6 +223,7 @@ sub yard {
 # active which makes the next magic possible.  set_active is like actually
 # pressing the button.  It's a lot easier to work with checkbuttons than
 # with radio buttons, because there is no easy way to establish a group.
+# The use of hide() and show() can really create some magic.
 
 my $lib_strip_all;
 my $lib_strip_debug;
@@ -276,57 +280,143 @@ sub stages_user_defined {
 }
 
 
-my $continue;
-#reset_continue();
-#sub reset_continue {
+my $continue = {
+    check      => 0,
+    dep        => 0,
+    space      => 0,
+    create     => 0,
+    test       => 0,
+    };
 
-    $continue = {
-	     check      => 0,
-	     links_deps => 0,
-	     space_left => 0,
-	     create     => 0,
-	     test       => 0
-	     };
-#}
-
+my @check_boxes;
 
 # Makes main checkbuttons act like radiobuttons
-# Applies to both one_by_one & continuous
-
+# Applies to both one_by_one & continuous,
+# otherwise just normal click capabilities (expert mode).
 sub which_stage {
 
     my($widget,$name) = @_;
-    my @check_boxes = ($check, $dep, $space, $create, $test);
-    my ($thing);
+    my ($thing,$name_cmp);
+    @check_boxes = ($check, $dep, $space, $create, $test);
+
     if ($stages_bool eq "one-by-one" or $stages_bool eq "continuous") {
 	foreach $thing (@check_boxes) {
 	    if ($thing ne $widget) {
 		$thing->hide();
 		$thing->active($false);
 		$thing->show();
-		print "$thing $widget\n";
 	    }
 	}   
-    }
+
+	# Finally we just reset %continue to reflect the button pressed.
+	# Either  the user can back up when doing one-by-one or it 
+	# automatically starts again if the text has been modified.
+	# 0 0 0 0 0
+	# 1 0 0 0 0
+	# 1 1 0 0 0
+	# 1 1 1 0 0
+	# 1 1 1 1 0
+	# 1 1 1 1 1
+
+	# text will have to be dealt with differently
+	# 0 everything
+	if ($name eq "check" || $TEXT_CHANGED eq "yes") {
+	    foreach $name_cmp (%$continue) {
+		$continue->{$name_cmp} = 0;	
+	    }
+	    if ($TEXT_CHANGED eq "yes") {
+		foreach $thing (@check_boxes) {
+		    $thing->hide();
+		    $thing->active($false);
+		    $thing->show();
+		}   
+		$check->hide();
+		$check->active($true);
+		$check->show();
+		$TEXT_CHANGED = "no";
+	    }
+	}
+	# 1 0 0 0 0
+	elsif ($name eq "dep") {
+	    foreach $name_cmp (%$continue) {
+		if ($name_cmp ne "check") {
+		    $continue->{$name_cmp} = 0;	
+		}
+	    }
+	}
+	elsif ($name eq "space") {
+	    foreach $name_cmp (%$continue) {
+		if ($name_cmp ne "check" && $name_cmp ne "dep") {
+		    $continue->{$name_cmp} = 0;	
+		}
+	    }
+	}
+	elsif ($name eq "create") {
+	    foreach $name_cmp (%$continue) {
+		if ($name_cmp ne "check" && $name_cmp ne "dep" && 
+		    $name_cmp ne "space") {
+		    $continue->{$name_cmp} = 0;	
+		}
+	    }
+	}
+	elsif ($name eq "test") {
+	    foreach $name_cmp (%$continue) {
+		if ($name_cmp ne "check" && $name_cmp ne "dep" && 
+		    $name_cmp ne "space" && $name_cmp ne "create") {
+		    $continue->{$name_cmp} = 0;	
+		}
+	    }
+	}
+
+    } # end if one-by-one or continuous
+
+    for (keys %$continue) { print $_, "=>", $continue->{$_}, "\n"; }
 
 }
 
 sub continue {
 
+    my $thing;
+
     # This has to go sequentially, but backwards is o.k.
     if ($stages_bool eq "one-by-one") {
         if ( $continue->{check} == 0 ) {
 	    check();
-	    $check->set_active($false);
-	    $dep->set_active($true);
+	    foreach $thing (@check_boxes) {
+		$thing->hide();
+		$thing->active($false);
+		$thing->show();
+	    }   
+	    $dep->hide();
+	    $dep->active($true);
+	    $dep->show();
 	    $continue->{check} = 1;
 	    return;
 	}
-        if ( $continue->{links_deps} == 0 ) {
+        if ( $continue->{dep} == 0 ) {
 	    links_deps();
-	    $dep->set_active($false);
-	    $space->set_active($true);
-	    $continue->{link_deps} = 1;
+	    foreach $thing (@check_boxes) {
+		$thing->hide();
+		$thing->active($false);
+		$thing->show();
+	    }   
+	    $space->hide();
+	    $space->active($true);
+	    $space->show();
+	    $continue->{dep} = 1;
+	    return;
+	}
+        if ( $continue->{space} == 0 ) {
+	    space_left();
+	    foreach $thing (@check_boxes) {
+		$thing->hide();
+		$thing->active($false);
+		$thing->show();
+	    }   
+	    $create->hide();
+	    $create->active($true);
+	    $create->show();
+	    $continue->{space} = 1;
 	    return;
 	}
 
@@ -360,12 +450,15 @@ sub links_deps {
 
 sub space_left {
 
-##    $error = space_check($filesystem_size, 
-##              $lib_strip_check_root->get_active(),
-##		$bin_strip_check_root->get_active(), 
-##		$module_strip_check_root->get_active(), 
-##		$obj_count_root, $tmp);
-##    return if $error && $error eq "ERROR";
+    $lib_bool = "" if $lib_bool eq 0;
+    $bin_bool = "" if $bin_bool eq 0;
+    $mod_bool = "" if $mod_bool eq 0;
+    $strip_bool eq "strip-all" ? ($strip_bool = 1) : ($strip_bool = 0);
+
+    $error = space_check($filesystem_size, 
+              $lib_bool, $bin_bool, $mod_bool,
+		$strip_bool, $tmp);
+    return if $error && $error eq "ERROR";
 
 }
 
@@ -411,7 +504,7 @@ sub tests {
 
     my ($widget,$action) = @_;
 
-    my @label = keys( %{ $tests{$action} } );
+    my @label = keys( % { $tests{$action} } );
     # off
     if ($tests{$action}{$label[0]} == 1) {
 	$tests{$action}{$label[0]} = 0;
@@ -440,6 +533,7 @@ my %checks = (
 	    }	
 );
 
+# try show hide & use variables
 sub check_stage {
 
     my ($widget,$action) = @_;
@@ -461,8 +555,8 @@ sub check_stage {
 	    $item_factory->delete_item
 		('/Create/Replacements/fstab directory name');
 	    $item_factory->create_item
-		(['/Create/Replacements/fstab directory name', 
-		  undef, undef, <Item>]);
+		 (['/Create/Replacements/fstab directory name', 
+		    undef, undef, <Item>]);
 	}
     }
     print "$label[0]", $checks{$action}{$label[0]} , "\n";
@@ -473,9 +567,6 @@ sub check_stage {
 # YARDBOX #
 ###########
 # cut little booleans for Gtk::CheckMenuItem
-my $lib_bool =            1;
-my $bin_bool =            1;
-my $mod_bool =            1;
 my $replacement_bool =    1;
 my $module_bool =         1;
 my $start_length;
@@ -563,6 +654,7 @@ sub yard_box {
        # 35 test_pam            1 (default)  0
        # 36 test_nss            1 (default)  0
 
+ 
        # Stages
        $one_by_one =  $item_factory->get_item('/Edit/Stages/one-by-one');
        $continuous = $item_factory->get_item('/Edit/Stages/continuous');
@@ -693,12 +785,12 @@ sub yard_box {
        # Create the GtkText widget
        my $text = new Gtk::Text( undef, undef );
        $text->set_editable($true);
-       my $beginning_text = $text->get_chars(0,$start_length);
        $text->signal_connect("changed", sub { 
 	   my $new_length =  $text->get_length();
 	   my $changed_text = $text->get_chars(0,$new_length);
 	   if ( $start_length != $new_length ) {
 	       print "Text has changed $start_length $new_length\n";
+	       $TEXT_CHANGED = "yes";
 	   }    
        } );
        $table->attach( $text, 0, 1, 0, 1,
