@@ -204,7 +204,7 @@ chdir($packaging_place);
 # Using dch for the changelog .. very convenient and debian proper.
 if (!$stop) {
 
-    $ENV{MAIL} = $email;
+    $ENV{EMAIL} = $email;
     $ENV{DEBFULLNAME} = $name;
 
     system "chown $real_uid:$real_gid $packaging_place/debian/changelog";
