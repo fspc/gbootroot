@@ -263,7 +263,7 @@ my @original_container;
 my $file_dialog;
 
 # These are used in submit
-my ($root_image, $size);
+my ($size);
 
 my $mtab;
 my ($tmp,$mnt);
@@ -2438,7 +2438,7 @@ sub lilo {
   sys("umount $tmp/initrd_mnt");
 
   my $kernel = $container[KERNEL];
-  $root_image = $container[ROOT_FS];
+  my $root_image = $container[ROOT_FS];
   my $device = $container[BOOT_DEVICE];
   $size = $container[SIZE];
 
@@ -2572,7 +2572,7 @@ else {
 sub device2 {
 
   my $device_size = (split(/\s+/,`df $mnt`))[8];
-  my $root_image_size = (stat($root_image))[12]/2;
+  my $root_image_size = (stat($container[ROOT_FS]))[12]/2;
   my $remain_root = $device_size - $root_image_size;
 
   if ($remain_root  =~ /^-+\d+$/) {
@@ -2584,16 +2584,16 @@ sub device2 {
 
      info(0, "Copy over the compressed filesystem\n");
      return if errrm(sys("rmdir $mnt/lost+found")) == 2;
-     my $broot_image = basename($root_image);
+     my $broot_image = basename($container[ROOT_FS]);
 
      my $FS = "filesystem";
-     my $line_count = `wc -l < $root_image`; chomp $line_count;
+     my $line_count = `wc -l < $container[ROOT_FS]`; chomp $line_count;
      my $half_line_count = $line_count/2;
      my $count = 1;
      open(CF, ">$mnt/$broot_image") or error_window(
       "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
 
-     open(CR, "$root_image") or error_window(
+     open(CR, "$container[ROOT_FS]") or error_window(
      "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
 
      while (<CR>) {
