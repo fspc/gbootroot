@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: rcS.example,v 1.1 2001/12/01 21:42:26 freesource Exp $
+# $Id: rcS.example,v 1.2 2001/12/03 05:43:33 freesource Exp $
 # Used by the Example.yard template.
 # /etc/rcS:  System initialization script.
 #
@@ -13,8 +13,6 @@
 
 #  Mount everything mentioned in fstab
 #  .. but proc needs to be mounted first, anyways.
-#/bin/mount -anv
-#mount -v -n -o remount,rw /
 mount -o remount /
 mount -a
 
