@@ -36,10 +36,10 @@ my $zoneinfo = get("make-debian-x11/make_debian_x11-zoneinfo");
 
     if ($swim) {
 	if ($swim  eq "true") {
-	    $swim = "yes";
+	    $swim = "yes\n";
 	}
 	else {
-	    $swim = "no";
+	    $swim = "no\n";
 	}
     }
 
@@ -51,12 +51,14 @@ my $zoneinfo = get("make-debian-x11/make_debian_x11-zoneinfo");
 	close(SCRIPT);
     }
     else {
-	open (SCRIPT, "|make_debian-X11") 
+	print STDERR "Be patient, this will take a little while.\n";
+	open (SCRIPT, "|make_debian-X11 2&> /dev/null") 
 	or warn "Couldn't open make_debian-X11\n";
 	print SCRIPT $swim;
 	print SCRIPT $doc;
 	print SCRIPT $zoneinfo;
 	close(SCRIPT);
+        set("make-debian-x11/make_debian_x11-swim","");
     }
 
 }
