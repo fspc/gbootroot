@@ -26,5 +26,7 @@ Description: Boot/Root Filesystem Distribution testing and creation.
  .
  See manual in /usr/share/doc/gbootroot-nest1/html for instructions on how
  to add the proper lines to your sources.list.  Both binary and source
- packages are available.
+ packages are available.  This package should be installed under a Debian
+ root_fs;  make_debian or the make_debian_x11 script from make-debian-x11
+ can be used to make Debian root_fs.
 

@@ -65,7 +65,7 @@ my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
 my $gbootroot_cvs_rep = "$gbootroot_cvs/yard/replacements";
 my $packaging_place = "$user_home/gbootroot/PACKAGING";
 my $packaging_place_orig = $packaging_place;
-my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg";
+my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg/gbootroot";
 my $email = "freesource\@users.sourceforge.net";
 my $name = "Jonathan Rosenbaum";
 my $makefile = "Makefile.pkg";
@@ -356,6 +356,8 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
     # a source package specific to rpm is made more than once.
 
     my $source = dirname($packaging_place) . "/" . $prog . "-" . $version;
+    chdir($packaging_place);
+    system "make clean-sources";
 
     foreach my $package ( @rpm_packages ) {
 	open (RPM_PLACE, "$rpm_packaging_place/$package" ) or 
