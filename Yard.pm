@@ -31,7 +31,7 @@ package Yard;
 use vars qw(@ISA @EXPORT %EXPORT_TAGS);
 use Exporter;
 @ISA = qw(Exporter);
-@EXPORT =  qw(start_logging_output info kernel_version_check 
+@EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys);
 
@@ -70,6 +70,8 @@ sub warning {
   info(0, "Warning: ", @_);
   $Warnings++;
 }
+
+sub verbosity { $verbosity = $_[0]; }
 
 ## REQUIRES $kernel opt. $kernel_version
 sub kernel_version_check {
