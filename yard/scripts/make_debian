@@ -363,7 +363,7 @@ foreach (@required_files) {
 	    }
 	}
 	else {
-	    if (! m,/usr/share/info|/usr/share/man|/usr/share/doc,) {
+	    if (! m,/usr/share/info|/usr/share/man|/usr/share/doc|/usr/X11R6/man,) {
 		if ($alternatives{$_}) {
 		    push(@alternatives,$_);
 		}
