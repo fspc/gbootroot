@@ -267,7 +267,7 @@ my $home_rootfs = "$home/root_filesystem/";
 my $home_uml_kernel = "$home/uml_kernel/";
 my $modules_directory = "/lib/modules";
 if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
-    $main::makefs = "genext2fs -r0 -i8192";
+    $main::makefs = "genext2fs -z -r0 -i8192";
 }
 
 
