@@ -1,0 +1,64 @@
+#!/usr/bin/perl -w
+
+# make-debian-x11.postinst
+# Jonathan Rosenbaum <freesource@users.sourceforge.net>
+
+use strict;
+use Debconf::Client::ConfModule ':all';
+
+if ($ARGV[0] && $ARGV[0] eq "configure") {
+    if (-d "/usr/doc" && !-e "/usr/doc/make-debian-x11" && 
+	-d "/usr/share/doc/make-debian-x11") {
+	system "ln -sf ../share/doc/make-debian-x11 /usr/doc/make-debian-x11";
+    }
+}
+
+my $answer = get("make-debian-x11/make_debian_x11");
+
+if ($answer eq "true") {
+
+my $swim = get("make-debian-x11/make_debian_x11-swim");
+my $doc = get("make-debian-x11/make_debian_x11-doc");
+my $zoneinfo = get("make-debian-x11/make_debian_x11-zoneinfo");
+
+    if ($doc eq "true") {
+	$doc = "yes\n";
+    }
+    else {
+	$doc = "no\n";
+    }
+    if ($zoneinfo eq "true") {
+	$zoneinfo = "yes\n";
+    }
+    else {
+	$zoneinfo = "no\n";
+    }
+
+    if ($swim) {
+	if ($swim  eq "true") {
+	    $swim = "yes";
+	}
+	else {
+	    $swim = "no";
+	}
+    }
+
+    if (!$swim) {
+	open (SCRIPT, "|make_debian-X11") 
+	or warn "Couldn't open make_debian-X11\n";
+	print SCRIPT $doc;
+	print SCRIPT $zoneinfo;
+	close(SCRIPT);
+    }
+    else {
+	open (SCRIPT, "|make_debian-X11") 
+	or warn "Couldn't open make_debian-X11\n";
+	print SCRIPT $swim;
+	print SCRIPT $doc;
+	print SCRIPT $zoneinfo;
+	close(SCRIPT);
+    }
+
+}
+
+stop();

@@ -1,0 +1,40 @@
+Template: make-debian-x11/close_gbootroot_down
+Type: note
+Description: gBootRoot needs to be restarted to initiate replacements changes.
+ This package adds new replacements to gBootRoot.  In order for a user's local
+ replacements directory to reflect the changes, gbootroot needs to be restarted
+ for each user.  If these replacement files already exist in a user's directory
+ they will not be updated unless you choose to delete them first in the local
+ directory, this is up to your own digression.  Here is the list of the 
+ replacement files:
+ .
+ /usr/share/gbootroot/yard/Replacements/root/make_swapfile
+ /usr/share/gbootroot/yard/Replacements/root/README-debian-X11
+ /usr/share/gbootroot/yard/Replacements/root/setup-debian-X11
+ /usr/share/gbootroot/yard/Replacements/usr/X11R6/bin/startx-debian-X11
+
+Template: make-debian-x11/make_debian_x11
+Type: boolean
+Description: Make the Debian-X11.yard template?
+ I can now make the Debian-X11.yard template, or you can do it latter yourself.
+ I will just create one for the administrator: root
+
+Template: make-debian-x11/make_debian_x11-swim
+Type: boolean
+Description: Generate swim databases to allow template creation?
+ In order for the template to be properly created swim databases first
+ have to exist.  Do you want me to proceed with this?  Otherwise, the template
+ will not be created.
+
+Template: make-debian-x11/make_debian_x11-doc
+Type: boolean
+Description: Remove /usr/share/{doc,man,info}?
+ All documentation, manuals and info can be removed to create a more 
+ streamline root filesystem.
+
+Template: make-debian-x11/make_debian_x11-zoneinfo
+Type: boolean
+Description: Only use your locale settings?
+ The default is to remove everything in /usr/share/zoneinfo except for your 
+ local settings found in /etc/locatime.
+
