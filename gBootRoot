@@ -52,6 +52,7 @@ set_locale Gtk;
 # value for $tmp1.
 my $tmp1 = "/tmp";              # tmp should be default - Cristian
 my $lilo_conf = "/etc/lilo.conf";
+my $home = "$ENV{HOME}/.gbootroot";
 
 # CHANGES
 #
@@ -113,6 +114,7 @@ my $date = "09.03.2000";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $template_dir = "./";
+my $home_rootfs = "$home/root_filesystem";
 
 my $initrd;
 my $compress;
@@ -231,6 +233,7 @@ $SIG{KILL} = \&signal;
 
 (undef,$container[KERNEL],$container[ABS_APPEND]) = gdkbirdaao();
 
+# /tmp
 if (!-d $tmp1) {
     if (-e $tmp1) {
        error_window(
@@ -244,6 +247,24 @@ if (!-d $tmp1) {
               : ($placement = $placement . "/" . $directory_parts[$_]);
               -d $placement or err_custom_perl(
               "mkdir $placement","gBootRoot: ERROR: Could not make $tmp1");
+           }
+    }
+}
+
+# $HOME/.gbootroot/root_filesystem
+if (!-d $home_rootfs) {
+    if (-e $home_rootfs) {
+       error_window(
+          "gBootRoot: ERROR: A file exists where $home_rootfs should be");
+    }
+    else {
+        my @directory_parts = split(m,/,,$home_rootfs);
+        my $placement = "/";
+          for (1 .. $#directory_parts) {
+              $_ == 1 ? ($placement = "/$directory_parts[$_]")
+              : ($placement = $placement . "/" . $directory_parts[$_]);
+              -d $placement or err_custom_perl(
+              "mkdir $placement","gBootRoot: ERROR: Could not make $home_rootfs");
            }
     }
 }
@@ -790,9 +811,13 @@ sub advanced_root_section {
                            "" );
        my $ear2_save = Gtk::CheckButton->new("save");
        $ear2_save->set_active($true);
+
+#                           "Save Root File.  Press right button to change" .
+#                           " the Directory the file is saved in.",
        $tooltips->set_tip( $ear2_save, 
-                           "Save Root File.  Press right button to change" .
-                           " the Directory the file is saved in.",
+                           "Saves the Root Filesystem in your" .
+			   " $ENV{HOME}/.gbootroot/root_filesystem" .
+                           " directory.",
                            "" );
        $table_advanced_root->attach($ear2_save,2,3,2,3, 
                                ['expand'],['fill','shrink'],0,0);
@@ -964,8 +989,64 @@ sub advanced_root_section {
        # Will check to make sure that Filesystem fits device.
        # Method determines whether or not compression is used.
        my $accept_b = button_advanced(2,3,8,9,"Accept");
+       $accept_b->signal_connect("clicked", sub { 
+	   my($tool,$value);
+	   if (-e "$mnt/$entry_advanced[4]" ) {
+	       
+	       if (!$compression_off->active) {
+		   if ($gz_toggle_root->active) {
+		       $compress = "gzip";
+		       open(F,"file $mnt/$entry_advanced[4] |"); 
+		       while (<F>) {
+			   if (/gzip/) {
+			       info(0, "Already gzip compressed.\n");
+			   }
+			   elsif (/bzip2/) {
+			       info(0, "Already bzip2 compressed.\n");
+			   }
+			   else {
+			       system "$compress $mnt/$entry_advanced[4]";
+			       $entry_advanced[4] = "$entry_advanced[4].gz";
+			       $entry3->set_text("$mnt/$entry_advanced[4]");
+			   }
+		       }
+		       if ($ear2_save->active) {
+			   return if errcp(sys("cp -a $mnt/$entry_advanced[4] $home_rootfs")) == 2;
+		       }
+		   }
+		   elsif ($bz2_toggle_root->active) {
+                       $compress = "bzip2";
+		       open(F,"file $mnt/$entry_advanced[4] |"); 
+		       while (<F>) {
+			   if (/gzip/) {
+			       info(0, "Already gzip compressed.\n");
+			   }
+			   elsif (/bzip2/) {
+			       info(0, "Already bzip2 compressed.\n");
+			   }
+			   else {
+			       system "$compress $mnt/$entry_advanced[4]";
+			       $entry_advanced[4] =  "$entry_advanced[4].bz2";
+			       $entry3->set_text("$mnt/$entry_advanced[4]");
+			   }
+		       }
+		       if ($ear2_save->active) {
+			   return if errcp(sys("cp -a $mnt/$entry_advanced[4] $home_rootfs")) == 2;
+		       }
+		   }
+	       }
+	       else {  # off
+		   $entry3->set_text("$mnt/$entry_advanced[4]");
+		   if ($ear2_save->active) {
+		       return if errcp(sys("cp -a $mnt/$entry_advanced[4] $home_rootfs")) == 2;
+		   }
+	       }
+	   }
+	   else {
+	       error("$entry_advanced[4] doesn't exist; create it first.\n");
+	   }
+       });
        $tooltips->set_tip( $accept_b, "Accept Filesystem.", "" );
-
 
 
        $table_advanced_root->show();
