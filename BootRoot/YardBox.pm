@@ -1173,6 +1173,8 @@ sub search {
 	# Search button
 
 	my ($keywords, $old_keywords, $offset);
+	my ($tmp_ct, $tmp_k);
+
 	my $submit_b = button(0,1,3,4,"Search",$table_search);
 	$search1->signal_connect("key_press_event", sub {
 	    my $event = pop @_;
@@ -1185,16 +1187,19 @@ sub search {
 	$submit_b->grab_default;
 	$submit_b->signal_connect( "clicked", sub {
 	    my $keywords = $search1->get_text();
-
+	    
 	    # rindex
 	    if ($search_backwards->active) {
 
 		if (!$offset) {
 		    if(!$case_sensitive->active) {
-			my ($tmp_ct, $tmp_k);
-			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
-			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			if (!$tmp_ct && !$tmp_k) {
+			    ($tmp_ct = $changed_text_from_template) =~ 
+				tr/A-Z/a-z/;
+			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			}
 			$offset = rindex($tmp_ct, $tmp_k);
+
 		    }
 		    else {
 			$offset = rindex($changed_text_from_template, 
@@ -1212,9 +1217,11 @@ sub search {
 		    $offset = $offset - 1;
 
 		    if(!$case_sensitive->active) {
-			my ($tmp_ct, $tmp_k);
-			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
-			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			if (!$tmp_ct && !$tmp_k) {
+			    ($tmp_ct = $changed_text_from_template) =~ 
+				tr/A-Z/a-z/;
+			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			}
 			$offset = rindex($tmp_ct, $tmp_k, $offset);
 		    }
 		    else {
@@ -1240,9 +1247,11 @@ sub search {
 	    else {
 		if (!$offset) {
 		    if(!$case_sensitive->active) {
-			my ($tmp_ct, $tmp_k);
-			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
-			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			if (!$tmp_ct && !$tmp_k) {
+			    ($tmp_ct = $changed_text_from_template) =~ 
+				tr/A-Z/a-z/;
+			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			}
 			$offset = index($tmp_ct, $tmp_k);
 		    }
 		    else {
@@ -1265,9 +1274,11 @@ sub search {
 		    $offset = $offset + 1;
 
 		    if(!$case_sensitive->active) {
-			my ($tmp_ct, $tmp_k);
-			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
-			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			if (!$tmp_ct && !$tmp_k) {
+			    ($tmp_ct = $changed_text_from_template) =~ 
+			    tr/A-Z/a-z/;
+			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			}
 			$offset = index($tmp_ct, $tmp_k, $offset);
 		    }
 		    else {
