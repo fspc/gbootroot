@@ -11,7 +11,7 @@ use File::Find;
 
 # This program uses dh-make, and copies your own defaults to 
 # $packaging_place/debian from your $packaging_defaults, and updates
-# to the proper date/times and data in changelog, copyright, and files.  
+# to the proper date/times and data in changelog and copyright.  
 # After this debuild from devscripts (this uses lintian) runs. 
 # Now all you do is finish stuff off with dpkg-scanpackages.
 
@@ -180,6 +180,9 @@ if (!$stop) {
     close(CHANGELOG);
     print "\n";
 
+system "chown $real_uid $packaging_defaults/changelog";
+system "chgrp $real_gid $packaging_defaults/changelog";
+
 } # end if !$stop
 
 # Set-up the copyright
@@ -192,13 +195,8 @@ print COPYRIGHT "Copyright:\n\n" .
 "On Debian GNU/Linux systems, the complete text of the GNU General Public\n" .
     "License can be found in /usr/share/common-licenses/GPL\n";
 close(COPYRIGHT);
-
-# Set-up files
-open(FILES,">$packaging_defaults/files") 
-    or die "Couldn't open up $packaging_defaults/files: $?\n";
-print FILES "$prog_$version-$revision_$arch.deb $group $priority\n";
-close(FILES);
-
+system "chown $real_uid $packaging_defaults/copyright";
+system "chgrp $real_gid $packaging_defaults/copyright";
 
 system "rm $packaging_place/debian/*";
 system "cp -fa $packaging_defaults/* $packaging_place/debian";
