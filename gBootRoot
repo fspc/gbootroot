@@ -354,7 +354,7 @@ $adj->signal_connect( "value_changed", sub {
     $container[4] = $spinner->get_value_as_int();
     $adj2->set_value($container[4]) if defined $adj2;});
 $box2->pack_start( $spinner, $true, $true, 0 );
-label("Device Size");
+#label("Device Size");
 
 # gz and bz2 radio buttons
 my $rbutton = new Gtk::RadioButton( "gz" );
@@ -370,11 +370,26 @@ $bz2_toggle = $rbutton;
 $box2->pack_start( $rbutton, $true, $true, 0);
 $rbutton->show();
 
+# Verbosity adjustment
+my $adj1 = new Gtk::Adjustment( 2.0, 0.0, 2.0, 0.0, 1.0, 0.0 );
+my $verbosity_scale = new Gtk::HScale($adj1);
+$verbosity_scale->set_value_pos("right");
+$verbosity_scale->set_digits(0);
+$tooltips->set_tip( $verbosity_scale, "Adjust the Verbosity Level.", "" );
+$verbosity_scale->show();
+$adj1->signal_connect( "value_changed", sub {
+    $verbosity = $verbosity_scale->get_adjustment->value - 1; 
+    verbosity($verbosity);
+     } );
+$box2->pack_start( $verbosity_scale, $false, $false, 0);
+
+#start_logging_output($yard_temp,$verbosity); 
+
 # Size status entry
 my $entry5 = new Gtk::Entry();
 $entry5->set_editable( $false );
 $tooltips->set_tip( $entry5, "This shows room remaining on the Device.", "" );
-$entry5->set_usize(15,20);
+$entry5->set_usize(20,20);
 $box2->pack_start( $entry5, $true, $true, 0 );
 $entry5->show();
 
@@ -1776,6 +1791,7 @@ sub initrd_size {
   my $dir_size = 9 + 1;
   my $initrd_size = $dir_size + $linuxrc_size;
 
+  # This and libs should be user accessible
   # add other executables here
   my @initrd_stuff = qw(ash gzip mount umount);
 
@@ -1893,6 +1909,7 @@ sub initrd {
   return if errcp(sys("cp -a $device $tmp/initrd_mnt/dev")) == 2;
   pb($I,7);
 
+  # This and libs should be user accessible
   info(0, ".. the bins\n");
   my @initrd_stuff = qw(ash gzip mount umount);
   foreach (@initrd_stuff) {
@@ -1947,7 +1964,6 @@ sub initrd {
   pb($I,10); # This takes the longest.
 
   $initrd = $initrd . ".gz";
-
 
 } # end sub initrd
 
@@ -2076,9 +2092,9 @@ sub gdkbirdaao
 
 } # end sub gdkbirdaao
 
-#########
+###########
 # Mtab area
-#########
+###########
 
 sub mtab_window {
 # Will just use a dialog box.
@@ -2179,9 +2195,9 @@ mtab_window($dialog,$error,$count) if $error == 0;
 
 } # end sub mtab_check
 
-#############
+###############
 # Error Section
-#############
+###############
 # The biggest problem here is that err? are hardwired, perhaps one
 # could be used and message could just be $!, err_custom is nice.
 # All err? report errors if $? > 0.
@@ -2278,7 +2294,7 @@ sub err_custom {
          system("$_[0] > /dev/null 2>&1");
     }
     else {
-     sys("$_[0] >> $verbosefn 2>&1");
+     sys("$_[0]");
     }
     error_window($_[1]) if ($? != 0);
     if (defined $error_window) {
@@ -2302,14 +2318,15 @@ sub err_custom_perl {
     }
 }
 
-#################
+###################
 # End Error Section
-#################
+###################
 
-################
+##################
 # Here Doc Section
-################
+##################
 
+# This should be user accessible
 sub initrd_heredoc {
 
     my($broot_image) = @_;
