@@ -112,8 +112,8 @@ $main::makefs = "mke2fs -F -m0 -i8192";
 # right libraries are copied over to initrd and the size is checked).
 
 # I need to remember to edit this
-my $version = "1.2.2";
-my $date = "09.03.2000";
+my $version = "1.2.13";
+my $date = "08.30.2001";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
