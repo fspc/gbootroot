@@ -1265,9 +1265,12 @@ sub create_filesystem {
 	    my($floppy_file) = $mount_point . $file;
 	    mkpath(dirname($floppy_file));
 	    info(1, "\tLink\t$floppy_file -> $target\n");
-	    symlink($target, $floppy_file) or
-		($error = error("symlink($target, $floppy_file): $!\n"));
-	    return "ERROR"if $error && $error eq "ERROR";
+	    # This allows previous symlinks to exist sources
+	    if  ( !-e $floppy_file ) {
+		symlink($target, $floppy_file) or
+		    ($error = error("symlink($target, $floppy_file): $!\n"));
+		return "ERROR"if $error && $error eq "ERROR";
+	    }
 	    delete $Included{$file}; # Get rid of it so next pass doesn't copit
 
 	} elsif (-d $file) {
