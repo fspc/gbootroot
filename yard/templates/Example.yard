@@ -1,4 +1,4 @@
-#  $Id: Example.yard,v 1.18 2003/02/07 18:30:29 freesource Exp $
+#  $Id: Example.yard,v 1.19 2003/02/07 19:07:06 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with getty.  
@@ -62,13 +62,15 @@
 #
 #    Control Structures
 #    ------------------
+#
 #    The if/elsif operator may be used to test for the existence of an
 #    absolute or relative file condition.  If the condition is true
 #    than the following statements will be parsed, otherwise additional
 #    conditions are examined.  The statements can be specified by any
-#    of the formats rules.  The \ deliminator is used at the beginning
-#    and ending of the control structure so that the parser knows how to
-#    properly treat the logic.
+#    of the formats rules, but can't be on the same line as the
+#    condition.  The \ deliminator is used at the beginning and ending
+#    of the control structure so that the parser knows how to properly
+#    treat the logic.
 #
 #    This is especially useful for creating templates that work
 #    properly for different distributions allowing portability.
