@@ -2160,6 +2160,7 @@ sub entry_advanced {
 
 	$entry_advanced->signal_connect( "changed", sub {
 	    $entry_advanced[$numa] = $entry_advanced->get_text();
+	    print $entry_advanced[$numa], "  $numa\n";
 	    if ($numa == 4) {
 		$ars->{filename} = $entry_advanced[$numa];
 		ars($ars);
@@ -3058,6 +3059,7 @@ sub lilo_put_it_together {
       # root lilo power, before going on.
       else {
 
+
 	  # Ask the user if they have su lilo priviliges.
 	  # Hopefully, password free, but that can be incorporated.
 	  mtab(3);
@@ -3614,9 +3616,9 @@ sub initrd {
     if ( $fs_type eq "genext2fs" ) {
 	# Assuming busybox is being used, so bzip2 should still be standard
 	# just another link .. just for testing.
-	if ( $compress eq "bzip2" ) {
-	    $compress  = "bunzip2";
-	}
+	##if ( $compress eq "bzip2" ) {
+	##    $compress  = "bunzip2";
+	##}
     }
 
     my $broot_image = basename($root_image);
