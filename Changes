@@ -1,7 +1,7 @@
-Got rid of the complete lock-up when large files are compressed; however,
-there is still a lock-up  between each large chunk, but added a little 
-verbosity to tell when the process has begun and finished.  Probably should
-add -v.
+Got rid of the complete lock-up when large files are compressed, ofcourse,
+users won't want to try to compress more than one format at the same time, 
+because the logic will get skewed.  In the future may make this OO.  Added 
+some verbosity to tell when the process has begun and finished.
 
 Established logic for Filesystem Box bases on ownership.  Defaults need to
 be different dependending on the user.  Normal users probably never will
