@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.33 2001/12/05 20:27:25 freesource Exp $</center>
+<center>$Id: index.html,v 1.34 2001/12/06 04:18:04 freesource Exp $</center>
 
 <p>
 
@@ -355,6 +355,40 @@ $HOME/.gbootroot/yard/.</p>
 
 <P><IMG ALT="" SRC="images/gBSicon.jpg" align="center"> <b>FAQ</b></P>
 
+<!-- 
+
+
+What's the advantage of using this program?  [back]
+
+How can I test gBootRoot?
+
+What are all these CVS directories doing in my replacements?
+
+Can I use a program linked to uClibc in the template? 
+
+What do you mean by macro distribution?
+
+How am I able to create root filesystems as a normal user? 
+
+How can a normal user create a root filesystem larger than 8192k?
+
+How can I create boot disks as a normal user?
+
+What is make_debian, and how do I use it?
+
+My root filesystem doesn't start in single mode when started like this:  "bootdisk 1?" 
+
+What does the 2 disk compression method do?
+
+There isn't enough room left on my 1440 floppy to make a Boot or Root disk.  Is there any way to free up more space apart from reducing the size of the kernel?
+
+gBootRoot doesn't start because it can't locate Gtk.pm?
+
+If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.
+
+                                              -->
+
+
 <P><b>What's the advantage of using this program?</b></P>
 
 <P><A href="./bootroot.html">BootRoot</A> 
@@ -607,8 +641,8 @@ via user-mode-linux.</p>
 
 <p>
 
-Genext2fs is used.  This progam allows a normal user to create an ext2 
-filesystem with all uids and gids belonging to 0 (root) without the need for 
+Genext2fs is used to allow a normal user to create an ext2 
+filesystem with all UIDS and GIDS belonging to 0 (root) without the need for 
 a loop or ram device.&nbsp;&nbsp;Device nodes are created from a device table
 file written to by gbootroot.&nbsp&nbsp;This program is authored by 
 Xavier Bestel, but the version used by gbootroot has
@@ -616,6 +650,36 @@ modifications from Erik Andersen (BusyBox) to allow a device table
 to be used rather than a device listing.&nbsp;&nbsp;The maximum allowable size
 for a filesystem is 8192k.&nbsp;&nbsp;User and group information
 can be changed when the filesystem is run from a kernel.
+
+<p>
+
+<b>How can a normal user create a root filesystem larger than 8192k?</b></p>
+
+<p>
+
+Although genext2fs only allows a normal user to create a UID/GID 0 root
+filesystem up to a maximum size of 8192k, there is an easy solution to
+create root filesystems larger than this limit.&nbsp;&nbsp;Eventually,
+I'll automate the steps required, but for now you will have to do it
+manually.
+
+<p>
+
+1.&nbsp;&nbsp;Create your root filesystem as you normally would when using
+genext2f, making sure to choose the filesystem size you require from 
+the ARS.&nbsp;&nbsp;
+Proceed through the required stages, and when you finish the Create stage
+there will be an  ERROR dialog box which will pop up saying "Cannot genext2fs 
+filesystem" which you can safely ignore.&nbsp;&nbsp;At this point in the 
+"echo /tmp/gboot_root_`id -u`" directory there is an empty file with the name 
+specified in the ARS Root Filename field.&nbsp;&nbsp;Above this directory
+in loopback/  all files and directories copied over during the Create stage 
+can be found.
+
+<p>
+
+2.
+
 
 <p>
 
@@ -658,13 +722,13 @@ directory.&nbsp;&nbsp;
 <br>
 
 You can resolve missing packages by installing them on your system, or you can
-edit the script and replace these packages with a suitable replacement,
+edit the script and replace those packages with a suitable replacement,
 since you may be using a different version of Debian then the author 
 used when putting together make_debian.&nbsp;&nbsp;Make a copy of make_debian,
 and then edit the part under EDIT HERE between qw().&nbsp;&nbsp;
-You may edit the static data in the template from
-within the script below where it is clearly marked as editable.
-While on the subject the <b>make-debian-x11 add-on</b> is actually the 
+You may edit the static data for the template within the script where it says 
+EDIT TEMPLATE BELOW.
+The <b>make-debian-x11</b> add-on is actually the 
 result of
 making these modifications.&nbsp;&nbsp;First, extra packages were 
 added, second, extra replacements were provided and the static information
