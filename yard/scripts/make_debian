@@ -534,6 +534,10 @@ foreach my $rp (@required_packages) {
     if (-f "$info/$rp.config") {
 	push(@info,"$info/$rp.config\n");        
     }
+    if (-f "$info/$rp.templates") {
+	push(@info,"$info/$rp.templates\n");        
+    }
+
 }
 close(DIVERT);
 
