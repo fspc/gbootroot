@@ -93,6 +93,7 @@ sub kernel_version_check {
     my($kernel,$kernel_version) = @_;
 
     if (defined($kernel_version)) {
+
 	#  Check to see if it agrees
 	my($version_guess) = kernel_version($kernel);
 	if ($version_guess ne $kernel_version) {
@@ -905,7 +906,7 @@ sub create_filesystem {
 	} elsif (-f $file) {
 	    #####  A normal file.
 	    ## File::Path likes to die when the device runs out of space,
-	    ## something which will have to be worked on.
+	    ## something which will have to be worked on. -- freesource
 	    mkpath(dirname($floppy_file));
 
 	    #####  Maybe a hard link.

@@ -138,8 +138,9 @@ sub err_custom {
          system("$_[0] > /dev/null 2>&1");
     }
     else {
-	# Yard::sys .. this seems to be necessary for my flakey floppy drive
-	# which doesn't even support 1722.
+	# Yard::sys .. this seems to be necessary for a problem related 
+	# to using 1722 for the floppy on my system, it isn't the drives
+        # fault, but something perhaps related to the BIOS.
       BootRoot::Yard::sys("$_[0]");
     }
     error_window($_[1]) if ($? != 0);
