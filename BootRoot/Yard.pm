@@ -254,7 +254,7 @@ sub read_contents_file {
       #  
       # control structure.  \ is chosen as the beginning deliminator
       # then the structure is parsed until the ending deliminator \ is
-      # found. The fun part is check the logic, all () need to be closed
+      # found. The fun part is checking the logic, all () need to be closed
       # Otherwise we report an invalid template.
 
       # We test only for absolute and relative files in conditionals.
@@ -267,14 +267,13 @@ sub read_contents_file {
       #
       # This is non-strict checking .. junk can be after conditionals (maybe) -
       # or last delimiter - which will be ignored - 
-      # The most important check is to avoid never finding a final delimiter
+      # If a delimiter is missing normal Yard parsing behavior comes into play.
       # 
       # Error conditions in order - all these things need to exist or there
       #                             is an ERROR.
       #  ( remember outer parens )
       #  1. if && ( && ) && statments
       #  2. elsif && ( && ) && statements
-      #  3. end deliminator \ has to be found before EOF
       # 
       # Example (not practical ofcourse):
       #
@@ -283,13 +282,8 @@ sub read_contents_file {
       #        netstat
       #    elsif ( perl )
       #        cc
-      #    else
-      #      ls cd bash 
-      #       echo \
 
 
-
-      # First line found with \ &&  may be an if ()
       # \ OR \ IF
       if ( $line =~ /\s*\\/ && !%control_structure  ) {
 
@@ -331,7 +325,6 @@ sub read_contents_file {
 			 
 		      }
 		      
-
 		  } # end for glob condition
 
 
@@ -1000,8 +993,6 @@ sub extra_links {
     %Included = (%Included, %user_defined_link); # --freesource
 
     info(0, "Done.\n\n");
-
-    exit;
 
 }
 
