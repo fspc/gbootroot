@@ -31,9 +31,9 @@ package Yard;
 use vars qw(@ISA @EXPORT %EXPORT_TAGS);
 use Exporter;
 @ISA = qw(Exporter);
-@EXPORT =  qw(start_logging_output kernel_version_check 
+@EXPORT =  qw(start_logging_output info kernel_version_check 
               read_contents_file extra_links library_dependencies hard_links 
-              space_check create_filesystem);
+              space_check create_filesystem find_file_in_path sys);
 
 use strict;
 use File::Basename;
@@ -889,15 +889,15 @@ sub start_logging_output {
   print "Logging output to $logfile\n";
 }
 
-#####  Same as system() but obeys $::verbosity setting for both STDOUT
+#####  Same as system() but obeys $verbosity setting for both STDOUT
 #####  and STDERR.
 sub sys {
   open(SYS, "@_ 2>&1 |") or die "open on sys(@_) failed: $!";
   while (<SYS>) {
     print LOGFILE;
-    print if $::verbosity > 0;
+    print if $verbosity > 0;
   }
-  close(SYS) or die "Command failed: @_\nSee logfile for error message.\n";
+  close(SYS) or return $?; 
   0;				# like system()
 }
 
