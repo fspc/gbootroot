@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.49 2001/12/22 07:14:46 freesource Exp $</center>
+<center>$Id: index.html,v 1.50 2001/12/22 18:13:44 freesource Exp $</center>
 
 <p>
 
@@ -241,9 +241,11 @@ button or a put together a complete Boot/Root set with the Submit button.</p>
 
 <br><br><br><br><br><br><br>
 
-<p><P align="center"><b>User Mode Linux Box</b></p>
+<p><P align="left"><b>User Mode Linux Box</b></p>
 
-<p><IMG ALT="" SRC="images/uml_box.jpg" align="right">
+<p><IMG ALT="" SRC="images/uml_box.jpg" align="center"></p>
+
+<p>
 
 "Xterm"&nbsp;&nbsp;Choose an xterm with its executable options switch.</p>
 
@@ -262,7 +264,7 @@ filesystem.&nbsp;&nbsp;Append with ubd?=.</p>
 "Abort"&nbsp;&nbsp;Abort user-mode-linux kernel processes.</p>
 
 
-<p><P align="center"><b>
+<p><P align="left"><b>
 About the Yard Box</b></p>
 
 <p><IMG ALT="" SRC="images/yard_box.jpg" align="center"></p>
@@ -343,9 +345,29 @@ Edit->Setting->Paths allows you to prepend a new search path to gbootroot's
 environment $PATH variable.
 </p>
 
-<p><IMG ALT="" SRC="images/filesystem.jpg" align="center"></p>
+
+<p><IMG ALT="" SRC="images/replacements.jpg" align="center"></p>
 
 <p>
+
+Edit->Replacements in your $HOME/.gbootroot/Replacements directory using
+an editor of your choice.
+</p>
+
+<p><IMG ALT="" SRC="images/create.jpg" align="center"></p>
+
+<p>
+
+Create->Replacements creates special replacement 
+files.&nbsp;&nbsp; Presently it creates 
+a fstab configuration file as Replacements/etc/fstab.new in 
+$HOME/.gbootroot/yard/.</p>
+
+
+<P align="left">
+<b>Filesystem Box</b></P>
+
+<p><IMG ALT="" SRC="images/filesystem.jpg" align="center"></p>
 
 The Filesystem Box (Edit->'File System") is the control center for access to
 the filesystem making utilities provided by the root_fs helper.&nbsp;&nbsp;
@@ -383,23 +405,6 @@ this filesystem.&nbsp;&nbsp;
 If in doubt
 what this all means, watch the verbosity box when the filesystem is created,
 and things should become more clear.  
-
-<p><IMG ALT="" SRC="images/replacements.jpg" align="center"></p>
-
-<p>
-
-Edit->Replacements in your $HOME/.gbootroot/Replacements directory using
-an editor of your choice.
-</p>
-
-<p><IMG ALT="" SRC="images/create.jpg" align="center"></p>
-
-<p>
-
-Create->Replacements creates special replacement 
-files.&nbsp;&nbsp; Presently it creates 
-a fstab configuration file as Replacements/etc/fstab.new in 
-$HOME/.gbootroot/yard/.</p>
 
 <br>
 
@@ -623,7 +628,7 @@ filesystem type:  ext2, minix, reiserfs, romfs or cramfs.
 
 18.&nbsp;&nbsp;Open up the Filesystem Box (Edit->'File System") and click on
 the UML Exclusively check button, and enter a filesystem command.  For this
-example <code>genromfs</code> will be used to create a read-only romfs.
+example <code>mkminix</code> will be used to create a minix filesystem.
 &nbsp;&nbsp;Normal users will want to keep the Preserve Permissions check
 button off.&nbsp;&nbsp;Press the submit button when finished.
 
@@ -644,9 +649,11 @@ Filesystem Box.
 
 <P>
 
-21.&nbsp;&nbsp;Do step 16.&nbsp;&nbsp;You may notice complaints on boot-up
-about ioctl.save, to remove these complaints you could create a replacement
-ioctl.save, edit the template, re-create the filesystem, and test again.
+21.&nbsp;&nbsp;Do step 16.&nbsp;&nbsp;Try steps 18-21 again, but this time
+enter <code>genromfs</code> to create a romfs filesystem.&nbsp;&nbsp;You may 
+notice complaints on boot-up about ioctl.save, to remove these complaints you 
+could create a replacement ioctl.save, edit the template, re-create the 
+filesystem, and test again.
 
 <p>
 
