@@ -34,8 +34,7 @@ my $urgency = "low";
 my $gbootroot_cvs =  
     "$user_home/gbootroot/gbootroot/add-ons/yard/make-debian-X11";
 my $packaging_place = "$user_home/gbootroot/PACKAGING-debian-X11";
-my $packaging_defaults = 
-    "$gbootroot_cvs/add-ons/yard/make-debian-X11/pkg/dpkg";
+my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg";
 my $email = "freesource\@users.sourceforge.net";
 my $name = "Jonathan Rosenbaum";
 my $makefile = "Makefile.pkg";
@@ -139,6 +138,11 @@ system "dh_make -e $email";
 # Here we ask the user what changes to add to the changelog and set the proper
 # time using 822-date.  If it is the initial release we don't do anything.
 
+if ( !-e "$packaging_defaults/changelog" ) {
+    system 
+	"cp -a $packaging_place/debian/changelog $packaging_defaults";
+}
+
 open(CHANGELOG,"$packaging_defaults/changelog") 
     or die "Couldn't open $packaging_place/changelog: $!\n";
 my @changelog = <CHANGELOG>;
@@ -174,6 +178,7 @@ if (!$stop) {
 	}
 	$count++;
     }
+
 
     open(CHANGELOG,">$packaging_defaults/changelog") 
 	or die "Couldn't open check: $!\n";
