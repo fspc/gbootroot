@@ -24,6 +24,7 @@ install:
 	cp -fa user-mode-linux/usr/lib/uml/port-helper $(DESTDIR)/usr/lib/uml/port-helper
 	install -d $(DESTDIR)/usr/share/gbootroot/yard/templates	
 	cp -fa yard/templates/Example* $(DESTDIR)/usr/share/gbootroot/yard/templates	
+		cp -fa yard/templates/Helper.yard $(DESTDIR)/usr/share/gbootroot/yard/templates
 	install -d $(DESTDIR)/usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/genext2fs.c $(DESTDIR)/usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/Makefile $(DESTDIR)/usr/share/gbootroot/genext2fs

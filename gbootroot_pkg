@@ -140,7 +140,8 @@ foreach (@make_lines) {
 	}
 	else {
                if (!/mknod|dev/) {
-		    system "$_";
+                    ## no need to do this
+		    ##system "$_";
                }
         }
 }
@@ -152,6 +153,7 @@ system "cp -fa $makefile $packaging_place/Makefile";
 #  package
 system "cp -fa README $packaging_place/README";
 system "cp -fa user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch $packaging_place/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch";
+system "ln -sf $packaging_place/yard/replacements $packaging_place/yard/Replacements";
 
 # Now we get to clean out any CVS directories and make sure that the 
 # permissions are all for the user who will be creating the package.

@@ -26,6 +26,7 @@ install:
 	install -d /usr/share/gbootroot/yard/templates
 	chmod 0444 yard/templates/*.yard
 	cp -fa yard/templates/Example* /usr/share/gbootroot/yard/templates
+	cp -fa yard/templates/Helper.yard /usr/share/gbootroot/yard/templates
 	install -d /usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/genext2fs.c /usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/Makefile /usr/share/gbootroot/genext2fs
