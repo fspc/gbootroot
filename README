@@ -2,7 +2,7 @@ Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
 The Makefile included with this source package doesn't figure out whether 
-your system has the proper requirements.  However, it isn't difficult to 
+your installation has the proper requirements.  However, it isn't difficult to 
 understand what is necessary to get gbootroot to work.  First type "make",
 follow the instructions in the "Important Configurations" section near the
 bottom of this page, and then run gbootroot.  The program will indicate to you
