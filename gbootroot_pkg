@@ -14,7 +14,7 @@ use File::Find;
 # $packaging_place/debian from your $packaging_defaults, and updates
 # to the proper date/times and data in changelog and copyright.  
 # After this debuild from devscripts (this uses lintian) runs. 
-# Now all you do is finish stuff off with dpkg-scxanpackages ..
+# Now all you do is finish stuff off with dpkg-scanpackages ..
 # something like this:
 # dpkg-scanpackages . override | gzip > Packages.gz
 
