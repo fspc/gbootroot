@@ -1683,7 +1683,7 @@ sub uml_box {
         if ( -f  "$tmp/$entry_advanced[4]" ) {
                my $stat_size =  (stat("$tmp/$entry_advanced[4]"))[12]/2; 
 	       my $blocks  = ($stat_size + ( $stat_size * 0.30 ))/1024;
-	       $blocks = sprintf("%.f",$blocks);
+	       $blocks = sprintf("%.f",ceil($blocks));
 	       $mtd_total_size = $blocks * 1024;
 	}
         $eab3->signal_connect( "changed", sub {
@@ -1691,7 +1691,7 @@ sub uml_box {
 	   if ( -f  $root_fs ) {
 	       my $stat_size =  (stat("$root_fs"))[12]/2; 
 	       my $blocks  = ($stat_size + ( $stat_size * 0.30 ))/1024;
-	       $blocks = sprintf("%.f",$blocks);
+	       $blocks = sprintf("%.f",ceil($blocks));
 	       $mtd_total_size = $blocks * 1024;
 	   }
 	   if ( $mtd_size ) {
@@ -1881,7 +1881,7 @@ sub uml_box {
 					      }
 
 
-					      # Memory needs to be figure out in 16384K blocks
+					      # Memory needs to be figured out in 16384K blocks
 					      # otherwise it fails, and it needs to be at least 16384 
 					      # for uml. 
 
@@ -1923,6 +1923,9 @@ sub uml_box {
 						  # ramdisk_size
 						  if ( !$ramdisk_size ) {
 						      $ramdisk_size = "ramdisk_size=$total_size";
+						      if ( $ramdisk_size < 4096 ) {
+							  $ramdisk_size = 4096;
+						      }
 						  }
 						  else {
 						      undef $ramdisk_size;
