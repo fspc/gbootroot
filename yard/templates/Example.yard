@@ -1,7 +1,7 @@
 #  $Id$
 #  Example.yard
 #
-#  Creates a minimalistic runlevel 2 root filesystem with getty.  
+#  Creates a minimalistic multi-user runlevel root filesystem with getty.  
 #  Tested on Debian unstable/testing,  but should work on other distributions 
 #  (Mandrake,  RedHat, etc.) by using the proper inittab (edit) and getty.
 # 
@@ -11,7 +11,7 @@
 #  information than mke2fs. ] ?
 #
 #  Works both with and without devfs, i.e devfs=nomount, assuming the correct
-#  replacements are used.
+#  replacement inittab is used.
 
 #############################################################################
 #
@@ -83,8 +83,6 @@
 ##############################################################################
 
 # init - parent of all processes
-## Consider being creative with init, for instance use ash, sash, or busybox 
-## as an init replacement.
 # Choose an inittab to compliment the traditional init in the page below.
 /sbin/init 		   	
 telinit
@@ -94,13 +92,13 @@ telinit
 /sbin/swapon               
 /sbin/reboot
 /etc/init.d/reboot  # make this into a replacement
-/etc/rc   <=    Replacements/etc/rc.debian-min
-/etc/init.d/rcS <= Replacements/etc/rcS.example
+/etc/init.d/rc   <=    Replacements/etc/init.d/rc.example
+/etc/init.d/rcS <= Replacements/etc/init.d/rcS.example
 
-# Login stuff .. password not used. 
+# Login stuff
 /bin/login 
 /sbin/sulogin # used by inittab.debian-min
-/etc/securetty <= Replacements/etc/securetty.debian-min
+/etc/securetty <= Replacements/etc/securetty.example
 /root/.bashrc <= Replacements/root/.bashrc.debian
 /root/.profile <= Replacements/root/.profile.debian
 /home/user/.bashrc <= Replacements/home/user/.bashrc.debian
@@ -108,21 +106,20 @@ telinit
 /etc/hostname <= Replacements/etc/hostname
 /etc/motd <= Replacements/etc/motd
 
-# Important stuff
+# login and mount stuff
 #
-# Create->Replacements-> fstab.  Edit file to use /dev/ubd/0 or /dev/ram
-/etc/fstab	<= ./Replacements/etc/fstab.new 
+/etc/fstab	<=  Replacements/etc/fstab.example
 #
 /etc/issue # nice to have
 #
-# No password for anyone.
-#/etc/group <= Replacements/etc/group.debian-min	
-#/etc/passwd <= Replacements/etc/passwd.debian-min
+# No password for root or user.
+/etc/group <= Replacements/etc/group.example	
+/etc/passwd <= Replacements/etc/passwd.example
 #
 # Shadow password  root=root user=user
-/etc/group <= Replacements/etc/group.debian	
-/etc/passwd <= Replacements/etc/passwd.debian
-/etc/shadow <= Replacements/etc/shadow.debian
+#/etc/group <= Replacements/etc/group.debian	
+#/etc/passwd <= Replacements/etc/passwd.debian
+#/etc/shadow <= Replacements/etc/shadow.debian
 /etc/login.defs
 
 #  Specify these binaries absolutely because boot scripts need them to be here.
@@ -146,7 +143,7 @@ telinit
 /bin/sash 
 #
 /etc/profile		    
-/etc/shells # Make sure ash is listed if it is used.
+/etc/shells # Make sure all included shells are listed.
 
 #   PROVISIONS FOR PAM: 
 /etc/pam.d/login
@@ -156,69 +153,57 @@ telinit
 #   If you use the old libc5, or uClibc you don't need this.  
 #   Comment out this line.
 #
-/etc/nsswitch.conf <= ./Replacements/etc/nsswitch.conf.sample
+/etc/nsswitch.conf <=  Replacements/etc/nsswitch.conf.example
+
+## some of these may use gettydefs .. find out which?
 
 ##### INITTAB and GETTY
-# Use one of these pairs, based on your distribution:
-#  Remember these aren't absolutely necessary.
+# These inittab and getty pairs are based on major distributions.
+# If your distribution isn't mentioned here, one of these inittabs may still work
+# Check your /etc/inittab to confirm, or create a new inittab replacement and
+# edit as required.
 #
-#===== DEBIAN (1.1) uses a program called "getty" which is actually 
-#                  agetty in disguise:
-/etc/inittab	<= Replacements/etc/inittab.debian-min
+# Choose the *-nodevfs version if you don't want to use the device fs (devfs=nomount)
+#
+#===== DEBIAN uses a program called "getty" which is actually agetty in disguise:
+#/etc/inittab	<= Replacements/etc/inittab.example-deb
+/etc/inittab	<= Replacements/etc/inittab.example-deb-nodevfs
 /sbin/getty
 #
-#
-#===== REDHAT (5.x, 6.0) uses getty
-#/etc/inittab	<= Replacements/etc/inittab
-#/sbin/getty
-#
-#
-#===== MANDRAKE (7.0, 8.0) uses mingetty
-#/etc/inittab	<= Replacements/etc/inittab.mingetty
+#===== MANDRAKE uses mingetty
+#/etc/inittab	<= Replacements/etc/inittab.mingetty.example-mdrk
+#/etc/inittab	<= Replacements/etc/inittab.mingetty.example-mdrk-nodevfs
 #/sbin/mingetty
-#
 #
 #===== SLACKWARE uses agetty:
-#/etc/inittab	<= Replacements/etc/inittab.agetty
+#/etc/inittab	<= Replacements/etc/inittab.agetty.example-slack
+#/etc/inittab	<= Replacements/etc/inittab.agetty.example-slack-nodevfs
 #/sbin/agetty
 #
+#===== REDHAT uses getty
+#/etc/inittab	<= Replacements/etc/inittab.example-rh
+#/etc/inittab	<= Replacements/etc/inittab.example-rh-nodevfs
+#/sbin/getty
 #
-#===== SUSE	uses mingetty:
-#/etc/inittab    <= Replacements/etc/inittab.mingetty     
+#===== SUSE uses mingetty:
+#/etc/inittab    <= Replacements/etc/inittab.mingetty.example-suse
+#/etc/inittab    <= Replacements/etc/inittab.mingetty.example-suse-nodevfs     
 #/sbin/mingetty
-#
-#
-# If in doubt, check your /etc/inittab.
-#
-# In any case, check to make sure the *getty* calls in the inittab match
-# the executable you're using.  Yard can't check this and *getty* will
-# hang if the arguments are wrong.
 
-# Devices - for devfs=nomount the bare minimum required is an inital console, 
-# otherwise nothing is required.
+# Devices - If devfs isn't desired use the kernel option devfs=nomount 
 /dev/console
-/dev/ram*
-/dev/mem
-/dev/kmem
 /dev/null
 /dev/zero
-/dev/tty[0-9] # nice for getty
-## /dev/ubd0 <= Replacements/dev/ubd0
-
-##/dev/mem	/dev/kmem
-##/dev/null       /dev/zero
-##/dev/ram*
-##/dev/hd[abcd]*              # Hard disks
-##/dev/ttyS[0-9]		    # Serial ports (new style)
-#  Optional devices.  Uncomment the ones you want, but
-#  keep in mind that each device file consumes an inode.
-##/dev/fd0*                   # Floppy disk drives
-#/dev/*tape*                 #  Tape device links
-#/dev/*rft0                  #  Floppy tape devices
-#/dev/st?                    #  SCSI tape drives
-#/dev/sd*                    # SCSI disks
-##/dev/cdrom /dev/modem       # Links to real devices, which will be copied
-#/dev/mouse
+/dev/tty[0-2]
+#
+/dev/mem
+/dev/kmem
+/dev/port
+/dev/random
+/dev/urandom
+/dev/ram[0-2]
+/dev/loop[0-2]
+/dev/fd0
 
 #####  utmp and wtmp.  
 # Made by rcS if they don't exist.
@@ -233,7 +218,9 @@ last
 #/etc/termcap <= Replacements/etc/termcap
 reset
 
-# loadkeys ?
+# Designate a keyboard map of choice if you want to load one for 
+# the text console.  Edit rcS to point to it.
+# /usr/share/keymaps/i386/qwerty/defkeymap.kmap.gz
 
 #####  Empty directories
 /proc               
@@ -288,6 +275,7 @@ whoami
 diff
 wc
 date
+dmesg
 	   	
 # Editors
 vi
