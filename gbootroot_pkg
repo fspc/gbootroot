@@ -1,0 +1,115 @@
+#!/usr/bin/perl
+
+use File::Basename;
+use File::Find;
+
+# The Lazy Guy's packaging tool for gBootRoot.
+# This program sets-up the archive which will be turned into a package and 
+# needs to be run as root.  The advantage of this program is that the 
+# archive will always represent the Makefile which is being tested
+# when development isn't being done with perl -I . ./gbootroot.
+
+# User defined variables for directories
+
+my $user_home = "/home/mttrader";
+my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
+my $packaging_place = "$user_home/gbootroot";
+
+# Other vars
+my $version;
+
+# Find the version
+
+open(CVS, "$gbootroot_cvs/gbootroot") or 
+	die "Couldn't find gbootroot in $gbootroot_cvs: $!\n";
+	while (<CVS>) {
+		if (/\my \$version/) {
+			$version = (split(/=/,$_))[1];
+			chomp $version;
+			$version =~ s/ //;
+			$version =~ s/"//g;
+			$version =~ s/;//;
+		}			
+
+	}
+close(CVS);
+
+
+$packaging_place = "$packaging_place/gbootroot-$version";
+
+# Make sure the directory exists.
+
+home_builder($packaging_place);
+
+# Because I am too lazy to clean out CVS, I only want the stuff copied over
+# which is in the Makefile, I'll also have to clean out any CVS directories.
+
+$/  = "";
+my @make_paragraph;
+open(CVS, "$gbootroot_cvs/Makefile") or 
+	die "Couldn't find Makefile in $gbootroot_cvs: $!\n";
+
+	while (<CVS>) {
+		push(@make_paragraph,$_);				
+	}
+close(CVS);
+$/ = "\n";
+
+chomp $make_paragraph[1];
+my @make_lines = split(/\n/,$make_paragraph[1]);
+shift(@make_lines);
+
+chdir($gbootroot_cvs) or die "Couldn't change to $gbootroot_cvs: $?\n";
+
+# Basically we are just concerned with the first part of cp and will
+# use home_builder to make sure the directory exists.
+
+foreach (@make_lines) {
+	s/\t//;
+	if (/cp/) {
+	 my $dir = ((split))[2];
+	 my $base;
+         	if ($dir =~ m,/,) {
+	 	$base = dirname($dir);
+		home_builder("$packaging_place/$base");
+		}
+	 system "cp -fa $dir $packaging_place/$base";
+	}
+	else {
+		system "$_";
+	}
+}
+
+system "cp -fa Makefile.pkg $packaging_place";
+
+# Now we get to clean out any CVS directories and make the permissions are
+# all for the user who will be creating the package.
+chdir($packaging_place) or die "Couldn't change to $packaging_place: $?\n";
+
+
+
+sub home_builder {
+
+    my ($home_builder) = @_; 
+
+    if (!-d $home_builder) {
+	if (-e $home_builder) {
+	    print "ERROR: A file exists where $home_builder should be.\n";
+	}	
+	else {
+	    my @directory_parts = split(m,/,,$home_builder);
+	    my $placement = "/";
+	    for (1 .. $#directory_parts) {
+		$_ == 1 ? ($placement = "/$directory_parts[$_]")
+		    : ($placement = $placement . "/" . $directory_parts[$_]);
+		-d $placement or mkdir $placement;
+	    }
+	}
+    }
+
+} # end home_builder
+
+
+
+
+
