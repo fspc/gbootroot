@@ -30,9 +30,13 @@
 ##
 ##############################################################################
 
+
+
 BEGIN {
 
     my $fhs = grep(/\/usr\/share\/perl5/,@INC);
+
+    unshift(@INC,".");  # better make sure we mean . when we mean .
 
     if ($fhs == 0) {
 	unshift(@INC,"/usr/share/perl5");
@@ -49,8 +53,20 @@ BEGIN {
 	$ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
     }
 
-}
 
+    my $pwd = `pwd`; chomp $pwd;
+
+    my $tools = grep(/$pwd\/user-mode-linux\/usr\/bin/,$ENV{'PATH'});
+    if ($tools == 0) {
+	$ENV{'PATH'} = "$pwd/user-mode-linux/usr/bin:" . $ENV{'PATH'};
+    }
+
+    $tools = grep(/$pwd\/user-mode-linux\/usr\/lib\/uml/,$ENV{'PATH'});
+    if ($tools == 0) {
+	$ENV{'PATH'} = "$pwd/user-mode-linux/usr/lib\/uml:" . $ENV{'PATH'};
+    }
+
+}
 
 use strict;
 use BootRoot::Yard;
