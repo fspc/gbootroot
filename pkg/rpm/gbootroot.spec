@@ -9,7 +9,7 @@
 
 
 # Update this according to version
-%define version 1.3.4
+%define version 1.3.3
 %define release 1
 
 
@@ -52,6 +52,13 @@ Normal (non-root) users can make root filesystems and boot disks.
 
 The required perl modules perl-Expect, perl-IO-Stty, perl-IO-Tty are 
 available for download from prdownloads.sourceforge.net/gbootroot.
+
+Please note that there are two types of rpms packaged for gbootroot.  
+Distributions which require perl-GTK and require perl-base for perl such as 
+Mandrake should use the mdk rpm.  Distributions which require Gtk-Perl and 
+only require perl for perl such as Red Hat should use the rpm not marked 
+as mdk. 
+
 
 %prep
 %setup -n gbootroot-%{version}.orig
