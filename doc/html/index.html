@@ -382,7 +382,7 @@ bOOTrOOT has become a full blown distribution creation program.</P>
 
 <p>
 
-(Note:&nbsp;&nbsp;You may run all these tests as a normal user.&nbsp;&nbsp;
+(Note:&nbsp;&nbsp;You may run most of these tests as a normal user.&nbsp;&nbsp;
 See the exceptions which apply in the FAQ.)</p>
 
 <center><u>Test an existing mini distribution.</u></center>
@@ -497,13 +497,11 @@ comment (#) out the corresponding stuff for Debian.</p>
 
 14.&nbsp;&nbsp;The Example.yard template introduces you to Replacements like
 the inittabs described above.&nbsp;&nbsp;
-Replacements can be anywhere and may be found in an absolute path
-or found in $PATH
-(Edit->Settings->Path); the default location for Replacements for users is
-$HOME/.gbootroot/yard/Replacements.&nbsp;&nbsp;For more information see the 
-FAQ question
-"What are all these CVS directories doing in my replacements?"&nbsp;&nbsp;
-Also, this template introduces you to links, $VERSION, 
+Replacements can be anywhere and are specified in the template as either 
+an absolute path or relative to $PATH
+(Edit->Settings->Path); the default path location for Replacements for users is
+$HOME/.gbootroot/yard/Replacements.
+&nbsp;&nbsp;Also, this template introduces you to links, $VERSION, 
 how library dependencies are automatically figured for binaries 
 and the automated 
 approach for finding service modules and dependencies for PAM and NSS.
