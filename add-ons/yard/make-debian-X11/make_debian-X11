@@ -55,7 +55,7 @@ perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils
 binutils bzip2 file libbz2-1.0 libfreetype6 libglib1.2 libgtk-perl 
 libgtk1.2 make xfonts-base xfree86-common xlibmesa3 xlibs 
 xserver-common xterm xutils zlib1g libgdbmg1 libxaw7 gbootroot
-flwm libfltk1 xnest make-debian-x11); 
+flwm libfltk1 xnest make-debian-x11 ash); 
 
 # --------------------------------------------------------------------
 # DIRECTIONS
@@ -513,7 +513,16 @@ while (<STATUS>) { # keep the order
 	# Deal with names with +
 	$rp =~ s/\+/\\+/g if $rp !~ /\\+/g;
 	if ($stat2 =~ /^Package: $rp$/) {
-	    print NEW_STATUS $stat;
+	    # For debian packaging
+	    if ($rp eq "make-debian-x11") {
+		if ($stat =~ /unpacked/) {
+		    $stat =~ s/unpacked/installed/;
+		}
+		print NEW_STATUS $stat;
+            }
+            else {
+		print NEW_STATUS $stat;
+	    }
 	} 
     }
 }

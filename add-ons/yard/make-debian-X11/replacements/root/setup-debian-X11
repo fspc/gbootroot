@@ -17,7 +17,7 @@ chgrp user /home/user/*
 chown user /home/user/.*
 chgrp user /home/user/.*
 
-swim --initdb
+# swim --initdb
 
 # Generally a good idea since user-mode-linux doesn't run within itself.
 #rm /usr/bin/uml_*
