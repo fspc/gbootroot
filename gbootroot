@@ -1419,13 +1419,15 @@ sub save_as {
  
     my $button = Gtk::Button->new("OK");
     my $event_count = 0;
+    my $new_template_tmp = "nothing";
     $button->signal_connect("clicked", sub {
+
 	$entry_advanced[4] = $new_template;
 
 	# This is a renaming deal and this time doesn't exist in the archive
 	if (!-f "$home_rootfs/$new_template") {
 	    if ($template ne $new_template) {
-		return if err_custom("cp $tmp/$template $tmp/$new_template",
+		return if err_custom("mv $tmp/$template $tmp/$new_template",
 		"gBootRoot: ERROR: Could not rename $template to " .
 				     "$new_template") == 2;
 	    }
@@ -1435,7 +1437,7 @@ sub save_as {
 	    $save_as->destroy;
 	}
 
-	# This is an write-over situation .. exists in $tmp and archive
+	# This is a write-over situation .. exists in $tmp and archive
 	elsif (-e "$tmp/$new_template" && -f "$tmp/$new_template" 
 	       && -f "$home_rootfs/$new_template" )  {
 	    return if errcp(sys("cp -a $tmp/$new_template $home_rootfs")) == 2;
@@ -1446,16 +1448,18 @@ sub save_as {
 	# Here the file trying to be renamed already exist in the archive
 	# but doesn't exist in $tmp
 	else {
+
 	    $label->set_text("$new_template already exists, " . 
 			     "do\nyou want to write over it, " .
 			     "or\nsave it with a different name?");
 
 	    $event_count++;
 	    my $event = pop(@_);
-	    
+
+	    if ($new_template eq $new_template_tmp) {
 	    if ($event_count >= 2 && $event && $event eq "clicked") {
 		if ("$tmp/$template" ne "$tmp/$new_template") {
-		return if err_custom("cp $tmp/$template $tmp/$new_template",
+		return if err_custom("mv $tmp/$template $tmp/$new_template",
 		    "gBootRoot: ERROR: Could not rename $template to " .
 				     "$new_template") == 2;
 	        }
@@ -1466,7 +1470,10 @@ sub save_as {
 		$ear2->set_text($new_template);
 		$save_as->destroy;
 	    }	    
+	    }
+	    $new_template_tmp = $new_template;
 	}
+	#$new_template_tmp = $new_template;
     },"clicked");
     $button->can_default(1);
     $save_as->action_area->pack_start($button, $false, $false,0);
