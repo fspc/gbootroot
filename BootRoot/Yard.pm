@@ -36,7 +36,9 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys device_table 
-              text_insert error logadj *LOGFILE which_tests create_fstab);
+              text_insert error logadj *LOGFILE which_tests create_fstab
+	      make_link_absolute make_link_relative cleanup_link); # these last two added
+                                                      # as a test
 
 use strict;
 use File::Basename;
@@ -48,7 +50,7 @@ use File::Find; # used by check_root_fs
 use BootRoot::Error; 
 
 my (%Included, %replaced_by, %links_to, %is_module, %hardlinked, 
-    %strippable, %lib_needed_by, @Libs);
+    %strippable, %lib_needed_by, @Libs, %user_defined_link);
 my $cf_line = 0;
 my $BLKGETSIZE_ioctl = 4704; 
 my $BLKFLSBUF_ioctl  = 4705; 
@@ -192,7 +194,7 @@ sub read_contents_file {
     return "ERROR"if $error && $error eq "ERROR";
 
     my($line);
-
+    
   LINE: while (defined($line = <CONTENTS>)) {
 
       my(@files);
@@ -200,7 +202,7 @@ sub read_contents_file {
       chomp $line;
       $line =~ s/[\#%].*$//;	# Kill comments
       next if $line =~ /^\s*$/;	# Ignore blank/empty line
-
+      
       $line =~ s/^\s+//;		# Delete leading/trailing whitespace
       $line =~ s/\s+$//;
 
@@ -273,7 +275,7 @@ sub read_contents_file {
 	  ## I decided to switch this from ($file,$link) to ($link,$file)
 	  ## to make this more intuitive for users so something like
 	  ## ls -l /bin/sh which ='s /bin/sh -> /bin/bash is literal 
-	  ## .. before it was backwards.
+	  ## .. before it was backwards. --freesource
 
 	  my($link, $file) = $line =~ /^(\S+)\s*->\s*(\S+)\s*$/;
 	  if (!defined($link)) {
@@ -285,23 +287,80 @@ sub read_contents_file {
 	  #####  have been seen.
 
 	  ## find_file_in_path($file) changed to find_file_in_path($link)
+	  ## the downside to this is that you can't create a fictional
+          ## link on the left-hand side, but that can be fixed, the upside
+	  ## is that full dists can be created.
 
-	  my($abs_file) = find_file_in_path($link);
-	  $Included{$abs_file} = 1 if $abs_file;
+	  my $abs_link = find_file_in_path($link);
+	  my $abs_file = find_file_in_path($file);
 
 	  ####   Have to be careful here.  Record the rel link for use
 	  ####   in setting up the root fs, but use the abs_link in @files
 	  ####   so next loop gets any actual files.
-	  my($abs_link) = make_link_absolute($abs_file, $link);
-	  my($rel_link) = make_link_relative($abs_file, $link);
-	  $links_to{$abs_file} = $rel_link if $abs_file;
-	  info(1, "$line links $abs_file to $rel_link\n") if $abs_file;
-	  @files = ($abs_link);
+
+	  ## Basically, what is happening here is if the $link on the left
+	  ## is absolute, include_file will discover any symlink 
+	  ## from extra_links completely ignoring what is specified by $file.
+	  ## If $link doesn't exist either absolutely or
+	  ## relatively, it is assumed that $file needs to exist, then
+	  ## a symlink is built from $link -> $file (ln -sf) .. where
+	  ## $link can either exist (will be found) or can be fictional.
+	  ## --freesource
+
+	  my $abs_link_link = make_link_absolute($abs_link, $link);
+	  my($rel_link) = make_link_relative($abs_link, $link);
+
+	  # This allows user defined ln -sf when the $file actually exists
+	  # and its absolute path is found.  This will complain if
+	  # $abs_file isn't real, and this was what was intended.
+
+	  my $abs_file_file = make_link_absolute($abs_file, $file);
+	  my $rel_file = make_link_relative($abs_file, $file);
+
+	  # Only do this if $file doesn't exist
+	  $Included{$abs_link} = 1 if $abs_link; # && !$abs_file;
+
+	  # This is the revised link specification which is more 
+	  # intuitive and allows user-defined links.
+	  # The file can be fictional.  $abs_file_file means there is 
+	  # something on the right side.  Generally, we want to use
+	  # the file on the right as the real file. --freesource
+	  if ( $abs_file_file ) {
+	      if ( ! $rel_link ) {
+		  if ( $abs_link ) {
+		      $links_to{$abs_link} = $abs_file_file;
+		      info(1, "$line links $abs_link to $abs_file_file\n");
+		  }
+		  # The left is fictional will create relative to /
+		  # or doesn't exist in PATH
+		  else {
+		      if ( !$rel_file ) {
+			  $links_to{$link} = $abs_file_file;
+			  $user_defined_link{$link} = 1;
+			  info(1, "$line links $link to $abs_file_file\n");
+		      }
+		      else {
+			  $links_to{$link} = $rel_file;
+			  $user_defined_link{$link} = 1;
+			  info(1, "$line links $link to $rel_file\n");
+			  $abs_file_file = $rel_file;
+		      }
+		  }
+	      }
+	      else {
+		  $links_to{$abs_link_link} = $file if $abs_link_link;
+		  info(1, "$line links $abs_link_link to $file\n") 
+		      if $abs_link_link;
+	      }
+	  }
+
+
+	  @files = ($abs_file_file);
 	  
       } elsif ($line =~ /<=/) {	#####  REPLACEMENT SPEC
 	  $error = cf_die($contents_file, $line, 
-              "Can't use wildcard in replacement specification") if
-	       $line =~ /[\*\?\[]/;
+			  "Can't use wildcard in replacement specification") if
+			      $line =~ /[\*\?\[]/;
 	  return "ERROR" if $error && $error eq "ERROR";
 
 	  my($file, $replacement) = $line =~ /^(\S+)\s*<=\s*(\S+)\s*$/;
@@ -325,40 +384,40 @@ sub read_contents_file {
 		cf_warn($contents_file, $line, 
                         "Can't replace a file with a device");
 
-	      } else {
-		  $replaced_by{$file} = $abs_replacement;
-		  $Included{$file} = 1;
-          }
-
-      next LINE;
-    } #  End of replacement spec
-
-    } elsif ($line =~ /(<-|=>)/) {
-    cf_warn($contents_file, $line, "Not a valid arrow.");
-    next LINE;
-
-    } else {
-
-	@files = ();
-	my($expr);
-	for $expr (split(' ', $line)) {
-	    my(@globbed) = yard_glob($expr);
-	    if ($#globbed == -1) {
-		cf_warn($contents_file, $expr, 
-                        "Warning: No files matched $expr");
-	    } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
-		info(1, "Expanding $expr to @globbed\n");
+	    } else {
+		$replaced_by{$file} = $abs_replacement;
+		$Included{$file} = 1;
 	    }
-	    push(@files, @globbed);
-	}
-    }
+	      
+	      next LINE;
+	  } #  End of replacement spec
+
+      } elsif ($line =~ /(<-|=>)/) {
+	  cf_warn($contents_file, $line, "Not a valid arrow.");
+	  next LINE;
+
+      } else {
+    
+	  @files = ();
+	  my($expr);
+	  for $expr (split(' ', $line)) {
+	      my(@globbed) = yard_glob($expr);
+	      if ($#globbed == -1) {
+		  cf_warn($contents_file, $expr, 
+			  "Warning: No files matched $expr");
+	      } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
+		  info(1, "Expanding $expr to @globbed\n");
+	      }
+	      push(@files, @globbed);
+	  }
+      }
 
       my($file);
 
     FILE: foreach $file (@files) {
 
 	if ($file =~ m|^/|) {	#####  Absolute filename
-
+	    
 	    # This complains for non-existent $files for some reason.
 	    # like /dev/pilot, but can't replicate
 	    if (-l $file and readlink($file) =~ m|^/proc/|) {
@@ -417,6 +476,8 @@ sub extra_links {
         # watch for "" - freesource
 	include_file($contents_file, $_) if $_ ne "";
     }
+
+    %Included = (%Included, %user_defined_link); # --freesource
 
     info(0, "Done.\n\n");
 }
@@ -954,6 +1015,7 @@ sub create_filesystem {
 		info(1, "\tCreating $newdir as a link target for $file\n");
 	    }
 	}
+	
     }
 
 
@@ -966,6 +1028,18 @@ sub create_filesystem {
 
 	my($target);
 	if (defined($target = $links_to{$file})) {
+
+	    # When no directory is specified for a fictional link,
+	    # assume it is in the same directory as the file --freesource
+	    if ( $file !~ m,^/, ) {
+		if ( find_file_in_path($target) ) {
+		    $file = dirname(find_file_in_path($target)) . "/$file";
+		}
+		else {
+		    $file = dirname($target) . "/$file";
+		}
+	    }
+
 	    my($floppy_file) = $mount_point . $file;
 	    mkpath(dirname($floppy_file));
 	    info(1, "\tLink\t$floppy_file -> $target\n");
@@ -1495,12 +1569,14 @@ sub make_link_absolute {
 
 sub cleanup_link {
   my($link) = @_;
+
   # Collapse all occurrences of /./
   1 while $link =~ s|/\./|/|g;
   # Cancel occurrences of /somedir/../
   # Make sure somedir isn't ".."
-  1 while $link =~ s|/(?!\.\.)[^/]+/\.\./|/|g;
-  $link
+  1 while $link =~ s|/(?!\.\.)[^/]+/\.\./|/|gx;
+
+  $link;
 }
 
 
