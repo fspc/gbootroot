@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# This is usually enough for a minimalistic system
+dpkg-reconfigure xfree86-common
+dpkg-reconfigure xserver-common
+dpkg-reconfigure xfonts-base
+
+# You will want doc/info/man installed, and you may have to make a few
+# directories and add a few files.
+#dpkg-reconfigure --all
+
+chown user /home/user
+chgrp user /home/user
+chown user /home/user/*
+chgrp user /home/user/*
+chown user /home/user/.*
+chgrp user /home/user/.*
+
+swim --initdb
+
+# Generally a good idea since user-mode-linux doesn't run within itself.
+#rm /usr/bin/uml_*
+#rm /usr/biin/linux
+
+/etc/cron.daily/find
