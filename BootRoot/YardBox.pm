@@ -809,15 +809,16 @@ sub yard_box {
 	$search_window->destroy if $search_window; } );
     $main::yard_window->signal_connect("delete_event", sub { 
 	$search_window->destroy if $search_window; });
-    $main::yard_window->signal_connect("key_press_event", sub {
-	my $event = pop @_; 
-	if ($event->{'keyval'}) {
-	    if ($event->{'keyval'} == 65307) {
-		$main::yard_window->destroy;
-	    }
-	}
-    },
-			     );
+    # Probably not such a good idea, but interesting to try
+##  $main::yard_window->signal_connect("key_press_event", sub {
+##	my $event = pop @_; 
+##	if ($event->{'keyval'}) {
+##	    if ($event->{'keyval'} == 65307) {
+##		$main::yard_window->destroy;
+##	    }
+##	}
+##  },
+##			     );
     $main::yard_window->set_usize( 525, 450 );
     $main::yard_window->set_policy( $true, $true, $false );
     $main::yard_window->set_title( "Yard Box - $template" );
