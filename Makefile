@@ -8,6 +8,9 @@ install:
 	cp -fa yard_chrooted_tests /usr/lib/bootroot/yard_chrooted_tests
 	cp -fa genext2fs/genext2fs /usr/lib/bootroot/genext2fs
 	cp -fa expect_uml /usr/lib/bootroot/expect_uml
+	install -d /usr/lib/bootroot/root_filesystem
+	chmod 06666 root_filesystem/root_fs_helper
+	cp -fa root_filesystem/root_fs_helper /usr/lib/bootroot/root_filesystem
 	cp -fa yard/scripts/make_debian /usr/bin/make_debian
 	install -d /usr/share/perl5/BootRoot
 	cp -fa BootRoot/*.pm /usr/share/perl5/BootRoot
@@ -17,7 +20,7 @@ install:
 	cp -fa user-mode-linux/usr/lib/uml/modules* /usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/CVS /usr/lib/bootroot/yard/Replacements/lib/modules/CVS
 	install -d /usr/share/gbootroot/yard/templates
-	chmod 444 yard/templates/*.yard
+	chmod 0444 yard/templates/*.yard
 	cp -fa yard/templates/Example* /usr/share/gbootroot/yard/templates
 	install -d /usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/genext2fs.c /usr/share/gbootroot/genext2fs

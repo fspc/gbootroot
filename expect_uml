@@ -3,34 +3,36 @@
 use BootRoot::UML;
 
 if ( !$ARGV[0] ) {
-
-    die "expect_uml host-systems-kernel-version ubd0 ubd1 other-options mount-point\n";
+    
+    die "expect_uml ubd0 ubd1 other-options mount-point filesystem_command\n";
 
 }
 
 
-my $arguments = "$ARGV[1] $ARGV[2] $ARGV[3]"; 
-my $mount_point = "$ARGV[4]";
+my $arguments = "$ARGV[0] $ARGV[1] $ARGV[2]"; 
+my $mount_point = "$ARGV[3]";
+my $filesystem = "$ARGV[4];
 
 
-	    my $uml  = 
-	      BootRoot::UML->new( login_prompt    =>  "bootroot login: ",
-				  arguments       =>  $arguments,
-				  login           =>  "root",
-				  password_prompt =>  "Password: ",
-				  password        =>  "",
-				  prompt          =>  "bootroot:.*# ",
-				  halt            =>  "shutdown -h now"
-				  );
+my $uml  = 
+  BootRoot::UML->new( login_prompt    =>  "bootroot login: ",
+		      arguments       =>  $arguments,
+		      login           =>  "root",
+		      password_prompt =>  "Password: ",
+		      password        =>  "",
+		      prompt          =>  "bootroot:.*# ",
+		      halt            =>  "shutdown -h now"
+		      );
 
-	    $uml->boot();
-	    $uml->command("mke2fs -m0 /dev/ubd/1");
-	    $uml->command("mount /dev/ubd/1 /mnt1");
-	    $uml->command("mount -t hostfs none -o $mount_point /mnt2");
-	    $uml->command("cp -a /mnt2/* /mnt1");
-	    $uml->command("chown -R 0:0 /mnt1");
-	    $uml->command("umount /mnt1; umount /mnt2");   
-	    $uml->halt();
+$uml->boot();
+# Make the GID/UID 0 FS
+$uml->command("$filesystem /dev/ubd/1");
+$uml->command("mount /dev/ubd/1 /mnt1");
+$uml->command("mount -t hostfs none -o $mount_point /mnt2");
+$uml->command("cp -a /mnt2/* /mnt1");
+$uml->command("chown -R 0:0 /mnt1");
+$uml->command("umount /mnt1; umount /mnt2");   
+$uml->halt();
 
 
 
