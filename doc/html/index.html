@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.52 2001/12/22 18:45:03 freesource Exp $</center>
+<center>$Id: index.html,v 1.53 2001/12/22 22:11:30 freesource Exp $</center>
 
 <p>
 
@@ -251,8 +251,14 @@ button or a put together a complete Boot/Root set with the Submit button.</p>
 
 <p>
 
-"Options"&nbsp;&nbsp;Enter uml command-line options like: mem=64, 
-devfs=nomount.</p>
+"Options"&nbsp;&nbsp;Enter uml command-line options like: <code>mem=64, 
+devfs=nomount</code>.&nbsp;&nbsp;The <code>umid</code> option is used by
+the Reboot and Halt button to determine which Linux virtual machine is 
+running.&nbsp;&nbsp;Many different machines can be controlled by submitting 
+each
+machine with a different name, and then changing the umid when control is
+required for a different machine with these two buttons.
+</p>
 
 <p>
 
@@ -261,7 +267,18 @@ filesystem.&nbsp;&nbsp;Append with ubd?=.</p>
 
 <p>
 
-"Abort"&nbsp;&nbsp;Abort user-mode-linux kernel processes.</p>
+"Reboot"&nbsp;&nbsp;Passes the reboot command to the mconsole to reboot the
+Linux virutal machine.
+
+<p>
+
+"Halt"&nbsp;&nbsp;Passes the halt command to the mconsole to halt the
+Linux virtual machine.
+
+<p>
+
+"Abort"&nbsp;&nbsp;Abort user-mode-linux kernel processes.&nbsp;&nbsp;Should
+be used as a last resort when Halt fails.</p>
 
 
 <p><P align="left"><b>
@@ -642,25 +659,27 @@ users to how the 8192k barrier of genext2fs can be exceeded.
 <p>
 
 20.&nbsp;&nbsp;
-Press Continue and observe what happens.&nbsp;&nbsp;Root users should have
-made the original filesystem with genext2fs, if not, they need to go
-through steps 12-16 again after entering <code>genext2fs -z -r0</code> in the 
-Filesystem Box.&nbsp;&nbsp;Do step 16.
+Set the staging behavior to user defined, and choose the Create check button
+if you are a normal user or if you are root and created the root_fs in stages 
+12-16 with genext2fs, otherwise, root needs to choose the Check, Links & Deps, 
+Copy, and Create check boxes.&nbsp;&nbsp;Press Continue and observe what 
+happens.&nbsp;&nbsp;Do step 16.
 
 <P>
 
 21.&nbsp;&nbsp;Can we create a different filesystem type
-for the root filesystem we just created?&nbsp;&nbsp;
+for the root filesystem we just altered?&nbsp;&nbsp;
 Enter <code>genromfs</code> to create a romfs filesystem.&nbsp;&nbsp;
-Set the staging behavior to user defined, turn on the Create check button,
+Set the staging behavior to user defined if this hasn't already been done, 
+turn on the Create check button,
 and press the Continue button.&nbsp;&nbsp;Assuming you've left the
 ARS open, press the UML button so that the UML box closes and reopens, and you
 will notice that your fs has _romfs appended to it.&nbsp;&nbsp;Try it out.
 &nbsp;&nbsp;
 You may 
 notice complaints on boot-up about ioctl.save, to remove these complaints you 
-could create a replacement ioctl.save, edit the template, re-create the 
-filesystem, and test again.
+could create a replacement ioctl.save, edit and save the changes to the 
+template, re-create the filesystem, and test again.
 
 <p>
 
@@ -822,7 +841,7 @@ can be changed when the filesystem is run from a kernel.
 Although genext2fs only allows a normal user to create a UID/GID 0 root
 filesystem up to a maximum size of 8192k, this program exceeds this barrier by
 taking advantage of the unique characteristics of user-mode-linux, allowing
-normal users to explore things they never could before&nbsp;&nbsp;
+normal users to explore things they never could before.&nbsp;&nbsp;
 User-mode-linux is used to boot up a root_fs helper, the program then
 communicates with the user linux system via expect to automatically
 create a UID/GID 0 filesystem from the files copied over from the
