@@ -1118,7 +1118,8 @@ sub space_check {
 #####  Create filesystem
 ########################
 
-
+# This is really copy for normal users, uml_exclusively, and genext2fs
+# since everything goes into a source directory.
 sub create_filesystem {
 
     my ($filename, $fs_size, $mnt, $strip_lib, 
@@ -1363,16 +1364,21 @@ sub create_filesystem {
     }
 
 
-    if ( $uml_exclusively == 0 ) {
-	info(0, "\nFinished creating root filesystem.\n");
-    }
-
     if (@Libs) {
 
 	info(0, "Re-generating /etc/ld.so.cache on root fs.\n");
 	info(1, "Ignore warnings about missing directories\n");
 
 	sys("ldconfig -v -r $mount_point");
+    }
+
+
+    # This could be run as another stage, its only complicated
+    # when root is using a loop device, in figuring out the verbosity.
+
+
+    if ( $uml_exclusively == 0 ) {
+	info(0, "\nFinished creating root filesystem.\n");
     }
 
 
@@ -1418,6 +1424,7 @@ sub create_filesystem {
 	    info(0,"$command_line\n\n");
 
 	    # add error correction
+	    # I'll allow the GUI to lock-xup for big copies and fs creation.
 	    open(EXPECT,"$command_line|");
 	    while (<EXPECT>) {
 		info(1,"$x_count  $_");
