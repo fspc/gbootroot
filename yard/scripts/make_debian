@@ -198,7 +198,7 @@ my $stuff = << "STUFF";
 /etc/resolv.conf 
 /etc/hosts <= Replacements/etc/hosts
 /root/umlnet <= Replacements/root/umlnet # Example network setup script
-/etc/network <= Replacements/etc/network
+/etc/networks <= Replacements/etc/networks
 /etc/network/if-down.d      # empty
 /etc/network/if-post-down.d # ""
 /etc/network/if-pre-up.d    # ""
@@ -340,9 +340,14 @@ print DEBIAN status_info_divert();
 print DEBIAN "\n# Alternative stuff.\n";
 foreach (@alternatives) {
     if ($alternatives{$_}) {
-	print DEBIAN "/etc/alternatives/", $alternatives{$_}, "\n";
-	print DEBIAN "/var/lib/dpkg/alternatives/", $alternatives{$_}, "\n";
-	print DEBIAN dirname($_), "/", $alternatives{$_}, "\n";
+	foreach my $alt ( 0 .. $#{ $alternatives{$_} } ) {
+	    print DEBIAN "/etc/alternatives/", 
+	    $alternatives{$_}[$alt], "\n";
+	    print DEBIAN "/var/lib/dpkg/alternatives/", 
+	    $alternatives{$_}[$alt], "\n";
+	    print DEBIAN dirname($_), "/", 
+	    $alternatives{$_}[$alt], "\n";
+	}
     }
 }
 
@@ -491,7 +496,12 @@ sub alternatives {
 	    my($left,$right) = split(" -> ");
 	    chomp $right;
 	    $left =~ s/^.*\d+\s//g;
-	    $alternatives{$right} = $left; 
+	    if (!$alternatives{$right}) {
+		$alternatives{$right} = [$left]; 
+	    }
+	    else {
+		push @{ $alternatives {$right} }, $left;
+	    }
 	}
     }
     close(LS);
