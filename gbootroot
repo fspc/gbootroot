@@ -238,7 +238,7 @@ my @container;
 # Make @container verbose
 use constant  METHOD               => 0  ;
 use constant  KERNEL               => 1  ;
-use constant  ROOT_DEVICE          => 2  ;
+use constant  ROOT_FS              => 2  ;
 use constant  BOOT_DEVICE          => 3  ;
 use constant  SIZE                 => 4  ;
 use constant  COMPRESS             => 5  ;
@@ -2045,10 +2045,10 @@ sub file_ok_sel {
     }
 
     # auto-detect compression if system has file
-    if ($container[ROOT_DEVICE]) {
+    if ($container[ROOT_FS]) {
         my $file = sys("which file > /dev/null 2>&1");
         if ($file == 0) {
-           open(F,"file $container[ROOT_DEVICE] |"); # no error check 
+           open(F,"file $container[ROOT_FS] |"); # no error check 
 	                                                   # here
              while (<F>) {
                 if (/gzip/) {
@@ -2121,8 +2121,8 @@ sub entry {
                  if ($num == 2) {
                      my $file = sys("which file");
                      if ($file == 0) {
-		       if ($container[ROOT_DEVICE]) {
-                       open(F,"file $container[ROOT_DEVICE] |"); # no error check here 
+		       if ($container[ROOT_FS]) {
+                       open(F,"file $container[ROOT_FS] |"); # no error check here 
                           while (<F>) {
                              if (/gzip/) {
                                $gz_toggle->set_active( $true );
@@ -2227,9 +2227,9 @@ elsif (defined $container[METHOD])  {
     error_window("gBootRoot: ERROR: Kernel not found");
     return;
 }
-if (defined $container[ROOT_DEVICE] && -e $container[ROOT_DEVICE] && 
-    !-d $container[ROOT_DEVICE] ) {
-    $root_image = $container[ROOT_DEVICE];
+if (defined $container[ROOT_FS] && -e $container[ROOT_FS] && 
+    !-d $container[ROOT_FS] ) {
+    $root_image = $container[ROOT_FS];
     if ($root_image =~ m,^$mnt,) {
       # Bug revealed by Cristian Ionescu-Idbohrn <cii@axis.com>
       error_window(
@@ -2246,7 +2246,7 @@ if (defined $container[BOOT_DEVICE] && -b $container[BOOT_DEVICE]) {
          $device = $container[BOOT_DEVICE];
 }
 elsif (defined $container[METHOD] && defined $container[KERNEL]
-       && defined $container[ROOT_DEVICE]) {
+       && defined $container[ROOT_FS]) {
     error_window("gBootRoot: ERROR: Not a valid Block Device");
     return;
 }
@@ -2256,7 +2256,7 @@ if (defined $container[SIZE]) {
 
 # pretty unlikely
 elsif (defined $container[METHOD] && defined $container[KERNEL] &&
-       defined $container[ROOT_DEVICE] && defined $container[BOOT_DEVICE]) {
+       defined $container[ROOT_FS] && defined $container[BOOT_DEVICE]) {
     error_window("gBootRoot: ERROR: No size specified");
     return;
 }
@@ -2425,7 +2425,7 @@ sub lilo {
   sys("umount $tmp/initrd_mnt");
 
   $kernel = $container[KERNEL];
-  $root_image = $container[ROOT_DEVICE];
+  $root_image = $container[ROOT_FS];
   $device = $container[BOOT_DEVICE];
   $size = $container[SIZE];
 
@@ -2753,7 +2753,7 @@ sub initrd_size {
 
     # This and libs should be user accessible
     # add other executables here
-    my @initrd_stuff = qw(ash gzip mount umount);
+    my @initrd_stuff;
     if (@modules) {
 	@initrd_stuff = qw(ash gzip mount umount modprobe insmod);
     }
@@ -3401,14 +3401,15 @@ sub help {
 
 gBootRoot $version $date GNU GPL
 
-email contact -> Jonathan Rosenbaum <freesource\@users.sourceforge.net>
+Email contact -> Jonathan Rosenbaum <freesource\@users.sourceforge.net>
+
 Homepage -> http://gbootroot.sourceforge.net
 Submit a Bug -> http://sourceforge.net/bugs/?group_id=9513
-Development site -> http://sourceforge.net/projects/gbootroot
+Devel. & Releases  -> http://sourceforge.net/projects/gbootroot
 
            Places to talk - email lists are more popular.
 
-gbootroot--{devel,user} mailing lists -> http://sourceforge.net/mail/?group_id=9513
+gbootroot-{devel,user} mailing lists -> http://sourceforge.net/mail/?group_id=9513
 Help forum -> http://sourceforge.net/forum/forum.php?forum_id=29639
 Open forum -> http://sourceforge.net/forum/forum.php?forum_id=29638
 
