@@ -37,7 +37,7 @@ use Exporter;
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys device_table 
               text_insert error warning warning_test logadj *LOGFILE 
-	      which_tests create_fstab ars2 make_link_absolute 
+	      which_tests create_fstab ars2 root_filename make_link_absolute 
 	      make_link_relative cleanup_link yard_glob); 
               # these last four added for tests
 
@@ -64,6 +64,7 @@ my($Warnings) = 0;
 my $verbosity;
 my ($text_insert,$red,$blue); 
 my $logadj;
+my $ear2;
 my ($device, $mount_point);
 my $contents_file_tmp; # Checks for template name change
 my @pathlist;
@@ -90,6 +91,7 @@ sub warning {
 
 sub verbosity { $verbosity = $_[0]; }
 sub text_insert { $text_insert = $_[0]; $red = $_[1]; $blue = $_[2]; }
+sub root_filename { $ear2 = $_[0]; }
 sub logadj { $logadj = $_[0]; }
 my ($ars, $kernel, $kernel_version_choice, $uml_exclusively, $preserve_ownership);
 sub ars2 { $ars = $_[0]; 
@@ -1415,6 +1417,14 @@ sub create_filesystem {
 		$x_count++;
 		while (Gtk->events_pending) { Gtk->main_iteration; }
 	    }
+
+	    if ( $fs_type eq "mkcramfs" ) {
+		$device = $device . "_cramfs";
+		my $cramfs_name = basename($device);
+		$ear2->set_text($cramfs_name);
+		$mount_point = dirname($device);
+	    }
+	    
 
 	}
 	elsif (
