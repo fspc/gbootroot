@@ -1612,7 +1612,9 @@ sub save_as {
     my $new_template;
     my $entry = Gtk::Entry->new();
     $entry->set_editable( $true );
-    $entry->set_text($template) if $template;
+    if ( $whoami == 101 ) {
+	$entry->set_text($template) if $template;
+    }
     $entry->signal_connect( "changed", sub {
 	$new_template = $entry->get_text();
     }); 
@@ -1715,9 +1717,15 @@ sub save_as {
 	    }
 
 
-	    $label->set_text("$new_template already exists, " . 
-			     "do\nyou want to write over it, " .
-			     "or\nsave $template with a different name?");
+	    if ( $whoami == 101 ) {
+		$label->set_text("$new_template already exists, " . 
+				 "do\nyou want to write over it, " .
+				 "or\nsave $template with a different name?");
+	    }
+	    elsif ( $whoami == 103 ) {
+		$label->set_text("$new_template already exists, " . 
+				 "do\nyou want to write over it?");
+	    }
 
 	    $event_count++;
 	    my $event = pop(@_);
@@ -1728,7 +1736,15 @@ sub save_as {
 		open(NEW,">$new") or 
 		    ($error = error("Can't create $new"));
 		return if $error && $error eq "ERROR";    
-		print NEW $changed_text_from_template;
+		if ( $whoami == 101 ) {
+		    print NEW $changed_text_from_template;
+		}
+		elsif ( $whoami == 103 ) {
+		    my $text_length = $text->get_length();
+		    $text->set_point($text_length);
+		    $text->backward_delete($text->get_length());
+		    print NEW "";
+		}
 		close(NEW);
 		$template = $new_template;
 
