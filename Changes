@@ -1,3 +1,9 @@
+If a fs is being made with mkcramfs, genromfs, mkfs.jffs or mkfs.jffs2 and
+the directories /dev or /initrd don't exist, they are automatically are
+created during the create stage.  Initrd dir is needed for mtd emulation 
+testing, and dev is also required.  Devfs will always be used on /dev, and 
+won't be an option.
+
 Added cad "Ctrl-Alt-Del" to mconsole interface, and documented it.
 
 Now looks for mconsole at both Locations /tmp/uml/$umid/mconsole and

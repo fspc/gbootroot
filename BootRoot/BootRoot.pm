@@ -136,7 +136,8 @@ my ($ea1,$ea2,$ea3,$ea4,$ea5,$ea6); # entry advanced boot
 my ($ear1,$ear2,$ear2_save,$ear3,$ear4); # entry advanced root
 my ($eab1,$eab2,$eab3,$eab4); # entry advanced uml
 my ($mtd_radio, $mtd_fs_type, $mtd_fs_type_combo, @fs_types,
-    $mtd_radio_mtdram, $mtd_radio_blkmtd, $mtd_check);   # mtd uml box
+    $mtd_radio_mtdram, $mtd_radio_blkmtd, $mtd_check, $mtd_size,
+    $mtd_total_size); # mtd uml box
 my $uml_window;
 my $table_advanced;
 my $table_advanced_root;
@@ -1662,7 +1663,7 @@ sub uml_box {
         label_advanced("total size:",1,2,5,6,$table_uml);
         my $mtd_adj = Gtk::Adjustment->new( 8192.0, 0.0, 1000000000.0, 128.0, 
                                     1024.0, 0.0 );
-        my $mtd_size = Gtk::SpinButton->new( $mtd_adj, 0, 0 );
+        $mtd_size = Gtk::SpinButton->new( $mtd_adj, 0, 0 );
         $table_uml->attach($mtd_size,2,3,5,6,
                             ['shrink','fill','expand'],['fill','shrink'],
                             0,0);
@@ -1673,15 +1674,41 @@ sub uml_box {
         $mtd_size->set_numeric( $true );
         $mtd_size->set_shadow_type( 'in' );
         $mtd_size->show();
-               
+        # Watch size if an actual file on open
+        if ( -f  "$tmp/$entry_advanced[4]" ) {
+              my $stat_size =  (stat("$tmp/$entry_advanced[4]"))[12]/2; 
+	      my $blocks  = ($stat_size + ( $stat_size * 0.30 ))/1024;
+	      $blocks = sprintf("%.f",$blocks);
+	      $mtd_total_size = $blocks * 1024;
+	}
+        $eab3->signal_connect( "changed", sub {
+	   my $root_fs = (split(/ubd0=/,$entry_advanced[10]))[1];
+	   if ( -f  $root_fs ) {
+	       my $stat_size =  (stat("$root_fs"))[12]/2; 
+	       my $blocks  = ($stat_size + ( $stat_size * 0.30 ))/1024;
+	       $blocks = sprintf("%.f",$blocks);
+	       $mtd_total_size = $blocks * 1024;
+	   }
+	   if ( $mtd_size ) {
+	       $mtd_size->set_value($mtd_total_size) if $mtd_total_size;
+	   }
+        });
+        $mtd_adj->signal_connect( "value_changed", sub {
+	       $mtd_total_size = $mtd_size->get_value_as_int();
+	   });
+        $mtd_size->set_value($mtd_total_size) if $mtd_total_size;
 
-        # erasure size
+
+        # erasure size $entry_advanced[15]
 	label_advanced("erasure size:",3,4,5,6,$table_uml);
 	my $mtd_erasure = entry_advanced(4,5,5,6,15,$table_uml);
         $tooltips->set_tip( $mtd_erasure, 
                            "Choose the erasure size for the mtd device.",
                             "" );
 
+
+        #----------------------------------
+        # Separators
         my $mtd_separator1 =  Gtk::HSeparator->new();
         $table_uml->attach($mtd_separator1,0,5,3,4,
                             ['shrink','fill','expand'],['fill','shrink'],
@@ -1694,6 +1721,7 @@ sub uml_box {
                             ['shrink','fill','expand'],['fill','shrink'],
                             0,5);
         $mtd_separator2->show();
+
 
         $table_uml->set_row_spacing( 6, 8);       
 
