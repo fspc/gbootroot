@@ -1,7 +1,5 @@
 #!/usr/bin/perl -w
 
-package YardChroot;
-
 #############################################################################
 ##
 ##  YARD_CHROOT_TEST
@@ -50,11 +48,20 @@ sub which_test {
     my $test_inittab = $ARGV[2];
     my $test_scripts = $ARGV[3];
 
-    fork_chroot_and(\&check_fstab)   if $test_fstab   == 1;
-    fork_chroot_and(\&check_inittab) if $test_inittab == 1;
-    fork_chroot_and(\&check_scripts) if $test_scripts == 1;
 
-}
+    if ( $test_fstab   == 1 ) {
+	print "\nTEST: fstab";
+	fork_chroot_and(\&check_fstab);   
+    }
+    if ( $test_inittab == 1 ) {
+	print "\nTEST: inittab";
+	fork_chroot_and(\&check_inittab); 
+    }
+    if ( $test_scripts == 1 ) {
+	print "\nTEST: scripts";
+	fork_chroot_and(\&check_scripts);
+    }
+} # end sub which_test
 
 #  This takes a procedure call, forks off a subprocess, chroots to
 #  $mount_point and runs the procedure.
@@ -65,8 +72,7 @@ sub fork_chroot_and {
 
    unless (defined $Godot) {
  
-      my $error = error("Can't fork: $!"); 
-      return "ERROR" if $error && $error eq "ERROR";
+      die "Can't fork: $!"; 
    }
 
    if (!$Godot) {
@@ -86,7 +92,10 @@ sub check_fstab {
   my($proc_seen);
 
 
-   open(FSTAB, "<$FSTAB") or error ("$FSTAB: $!");
+  open(FSTAB, "<$FSTAB") or error_test ("$FSTAB: $!");
+  if (-z $FSTAB) {
+      error_test ("fstab is an empty file");
+  }
   print "\nChecking $FSTAB\n";
 
   while (<FSTAB>) {
@@ -140,6 +149,9 @@ sub check_inittab {
      warning("$INITTAB: $!\n");
      return
   }
+  if (-z $INITTAB) {
+      error_test ("fstab is an empty file");
+  }
 
   my($default_rl, $saw_line_for_default_rl);
 
@@ -168,7 +180,7 @@ sub check_inittab {
       } elsif (!-x $exec) {
 	  print "$INITTAB($.): $line\n";
 	print "\tMaking $exec executable\n";
-	chmod(0777, $exec) or error("chmod failed: $!");
+	chmod(0777, $exec) or error_test("chmod failed: $!");
 
       } else {
 	#####  executable but not binary ==> script
@@ -180,7 +192,7 @@ sub check_inittab {
       }
     }
   }
-  close(INITTAB) or error("close(INITTAB): $!");
+  close(INITTAB) or error_test("close(INITTAB): $!");
 
   if (!$saw_line_for_default_rl) {
     warning("\tDefault runlevel is $default_rl, but no entry for it.\n");
@@ -194,26 +206,30 @@ sub check_scripts {
 
   sub check_interpreter {
     if (-x $File::Find::name and -f _ and -T _) {
-      open(SCRIPT, $File::Find::name)		or error "$File::Find::name: $!";
+      open(SCRIPT, $File::Find::name)		or error_test("$File::Find::name: $!");
       my($prog, $firstline);
+
       chomp($firstline = <SCRIPT>);
       if (($prog) = $firstline =~ /^\#!\s*(\S+)/) {
 	if (!-e $prog) {
-	  warning "Warning: $File::Find::name needs $prog, which is missing\n";
+	  warning("Warning: \$File::Find::name needs $prog which is missing\n");
 	} elsif (!-x $prog) {
-	  warning "Warning: $File::Find::name needs $prog, " .
-	      "which is not executable.\n";
+	  warning("Warning: \$File::Find::name needs $prog, " .
+	      "which is not executable.\n");
 	}
       }
       close(SCRIPT);
     }
-  };				# End of sub check_interpreter
+  }				# End of sub check_interpreter
 
   find(\&check_interpreter, "/");
 }
 
+sub warning {
+    print "\n", @_;                                                   
+} 
 
-
-
-
-
+sub error_test {
+  print STDERR "\nError: ", @_, "\n";                             
+  exit(-1);                                              
+} 

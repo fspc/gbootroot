@@ -34,8 +34,8 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys 
-              text_insert logadj error *LOGFILE which_tests check_termcap
-	      warning scan_command_file check_getty_type_call);
+              text_insert logadj *LOGFILE which_tests check_termcap
+	      scan_command_file check_getty_type_call);
 
 use strict;
 use File::Basename;
@@ -72,6 +72,9 @@ BEGIN {
 }
 
 STDOUT->autoflush(1);
+
+$SIG{__WARN__} = 
+    sub { warn @_ unless $_[0] =~ /Subroutine [\w:]+ redefined/io };
 
 sub warning {
   info(0, "Warning: ", @_);
@@ -922,6 +925,11 @@ sub create_filesystem {
     info(0, "\nDone making the root filesystem.  $Warnings warnings.\n",
 	 "$device is now umounted from $mount_point\n\n");
 
+    #info(0, "All done!\n");
+    #info(0, "You can run more tests with the UML kernel\n", 
+    #     "or construct a distribution by using this root\n",
+    #     "filesystem with a boot method.");
+    
 } # end sub create_filesystem
 
 #######################################
@@ -1092,6 +1100,11 @@ my($proc_dev) = (stat("/proc"))[0];
 
 sub info {
   my($level, @msgs) = @_;
+  
+  if ($level != 3) {
+      print LOGFILE @msgs; 
+  }
+  $level = 0x if $level == 3;
 
   my $output = join("",@msgs);
   if ($verbosity >= $level) {
@@ -1108,7 +1121,6 @@ sub info {
 	  while (Gtk->events_pending) { Gtk->main_iteration; }
       }
   }
-  print LOGFILE @msgs;
 
 }
 
@@ -1141,15 +1153,31 @@ sub start_logging_output {
 #####  Same as system() but obeys $verbosity setting for both STDOUT
 #####  and STDERR.
 sub sys {
-  open(SYS, "@_ 2>&1 |") or die "open on sys(@_) failed: $!";
-  while (<SYS>) {
-    print LOGFILE unless $_ =~ m,\/.*file\n$,;
-    if ($verbosity > 0) {
-	info(1,$_) unless $_ =~ m,\/.*file\n$,;
-    }	
-  }
-  close(SYS) or return $?; 
-  0;				# like system()
+    my $error;
+    
+    # when using sys on yard_chrooted_tests
+    my $dont = pop @_;
+    if ($dont ne "TESTING") {
+	push @_, $dont; 
+    }
+
+    open(SYS, "@_ 2>&1 |") or ($error = error("open on sys(@_) failed: $!"));
+    return "ERROR"if $error && $error eq "ERROR";
+    while (<SYS>) {
+	if ($dont ne "TESTING") {
+	    print LOGFILE unless $_ =~ m,\/.*file\n$,;
+	}
+	if ($verbosity > 0) {
+	    if ($dont ne "TESTING") {
+		info(1,$_) unless $_ =~ m,\/.*file\n$,;
+	    }
+	    else {
+		info(3,$_) unless $_ =~ m,\/.*file\n$,;		
+	    }
+	}	
+    }
+    close(SYS) or return $?; 
+    0;				# like system()
 }
 
 # This is history, simply because the mount point is unique to
@@ -1458,7 +1486,8 @@ sub kernel_version {
 ## HISTORY
 #####  Eventually move this into configure since it doesn't have to be
 #####  done with every make_root_fs.  But yard_glob would have to be
-#####  configured, and yard_utils.pl isn't configured.
+#####  configured, and yard_utils.pl isn't configured.  Will use for
+#####  other things, though.
 my($glob_broken);
 sub test_glob {
   my($globbed) = join(' ', glob("/*"));
@@ -1619,6 +1648,10 @@ my($checked_for_getty_files);	# Scalar -- have we checked getty files yet?
 my(%checked);			# Hash table of files we've already checked
 my $login_binary;
 
+sub warning_test {
+    info(0, "\n", @_);
+}
+
 sub which_tests {
 
     my ($chosen_tests) = @_;
@@ -1642,31 +1675,33 @@ sub which_tests {
     check_termcap();
 
     #####  Here are the tests.
-#    fork_chroot_and(\&check_fstab)  if $chosen_tests->{30}{test_fstab}   == 1;
-#    fork_chroot_and(\&check_inittab)if $chosen_tests->{31}{test_inittab} == 1;
-#    fork_chroot_and(\&check_scripts)if $chosen_tests->{32}{test_scripts} == 1;
-
     my $t_fstab    = $chosen_tests->{30}{test_fstab};
     my $t_inittab  = $chosen_tests->{31}{test_inittab};
     my $t_scripts  = $chosen_tests->{32}{test_scripts};
 
+    sys("yard_chrooted_tests $mount_point $t_fstab $t_inittab $t_scripts",
+	"TESTING"); 
 
-    sys("yard_chrooted_tests $mount_point $t_fstab $t_inittab $t_scripts"); 
-    check_links()                   if $chosen_tests->{33}{test_links}   == 1;
-    check_passwd()                  if $chosen_tests->{34}{test_passwd}  == 1;
-    check_pam()                     if $chosen_tests->{35}{test_pam}     == 1;
-    check_nss()                     if $chosen_tests->{36}{test_nss}     == 1;
+    if ( $chosen_tests->{33}{test_links}   == 1 ) {
+	info(0,"\nTEST: links\n");
+	check_links();                   
+    }
+    if ( $chosen_tests->{34}{test_passwd}  == 1 ) {
+	info(0,"\nTEST: passwd\n");
+	check_passwd();                  
+    }
+    if ( $chosen_tests->{35}{test_pam}     == 1 ) {
+	info(0,"\nTEST: pam\n");
+	check_pam();                     
+    }
+    if ( $chosen_tests->{36}{test_nss}     == 1 ) {
+	info(0,"\nTEST: nss\n");
+	check_nss();                     
+    }
 
- 
     return "ERROR" if errum(sys("umount $mount_point")) == 2;
     
-    info(0, "All done!\n");
-    info(0, "You can run more tests with the UML kernel\n", 
-         "or construct a distribution by using this root\n",
-         "filesystem with a boot method.");
-    
 } # end sub which_tests
-
 
 
 #####  This could be made much more complete, but for typical rc type
@@ -1690,7 +1725,7 @@ sub scan_command_file {
 	# next if $abs_file =~ m/[*?]/; # Skip meta chars - we don't trust glob
 	next if $warned{$abs_file}; # Only warn once per file
 	if (!-e $abs_file) {
-	    warning("$cmdfile($.): $line\n\t$1: missing on root filesystem\n");
+	    warning_test("$cmdfile($.): $line\n\t$1: missing on root filesystem\n");
 	    $warned{$abs_file} = 1;
 	}
     }
@@ -1704,8 +1739,12 @@ sub scan_command_file {
 
 #####  Check_passwd is NOT run under chroot.
 sub check_passwd {
+  my $error;
   my($passwd_file) = "$mount_point/etc/passwd";
-  open(PASSWD, "<$passwd_file")	or error("Can't read passwd file: $!\n");
+  open(PASSWD, "<$passwd_file")	or 
+      ($error = error("Can't read passwd file: $!\n"));
+  return if $error && $error eq "ERROR";
+
   info(0, "\nChecking passwd file $passwd_file\n");
 
   while (<PASSWD>) {
@@ -1718,10 +1757,10 @@ sub check_passwd {
     next if $passwd eq "*";	# Skip warnings if user can't login
 
     -d ($mount_point . $home) or
-      warning "$passwd_file($.): $line\n",
+      warning_test "$passwd_file($.): $line\n",
 	      "\tHome directory of $login_name ($mount_point$home) is missing\n";
     -e ($mount_point . $shell) or
-      warning "$passwd_file($.): $line\n",
+      warning_test "$passwd_file($.): $line\n",
 	      "\tShell of $login_name ($mount_point$shell) doesn't exist\n";
 
     check_init_files($login_name, $home, $shell);
@@ -1750,7 +1789,7 @@ sub check_pam {
       next if /^\#/ or /^\s*$/;          # Skip comments and empty lines
       my($file) = (split)[3];	# Get fourth field
       if (!-e "$mount_point/$file") {
-	warning "$pam_conf($.): $_\n",
+	warning_test "$pam_conf($.): $_\n",
 	"\tLibrary $file does not exist on root fs\n";
       }
       #  That's all we check for now
@@ -1774,8 +1813,8 @@ sub check_pam {
 	   my($file) = (split)[3]; # Get fourth field
 	   $pam_configured = 1;
 	   if (!-e "$mount_point/$file") {
-	      #warning "$file2($.): $_\n",
-	      #	  "\tLibrary $file does not exist on root fs\n";
+	      warning_test "$file2($.): $_\n",
+	      	  "\tLibrary $file does not exist on root fs\n";
 	   }
 	}
 	close(PF);
@@ -1787,7 +1826,7 @@ sub check_pam {
   if (!$pam_configured and -e $login_binary) {
      my($dependencies) = scalar(`ldd $login_binary`);
      if (defined($dependencies) and $dependencies =~ /libpam/) {
-	warning "Warning: login ($login_binary) needs PAM, but you haven't\n",
+	warning_test "Warning: login ($login_binary) needs PAM, but you haven't\n",
 	    "\tconfigured it (in /etc/pam.conf or /etc/pam.d/)\n",
 		"\tYou probably won't be able to login.\n";
      }
@@ -1814,7 +1853,7 @@ sub check_nss {
    my($libc) = yard_glob("$mount_point/lib/libc-2*");
    my($libc_version) = $libc =~ m|/lib/libc-2.(\d)|;
    if (!defined($libc_version)) {
-      warning "Can't determine your libc version\n";
+      warning_test "Can't determine your libc version\n";
    } else {
       info(0, "You're using $libc\n");
    }
@@ -1837,7 +1876,7 @@ sub check_nss {
 	    next if $entry =~ /^\[/; # ignore action specifiers
 	    my($lib) = "$mount_point/lib/libnss_${entry}.so.${X}";
 	    if (!-e $lib) {
-	       warning "$nss_conf($.):\n$line\n",
+	       warning_test "$nss_conf($.):\n$line\n",
 		   "\tRoot filesystem needs $lib to support $entry\n";
 	    }
 	 }
@@ -1850,7 +1889,7 @@ sub check_nss {
 	 my($libc_version) = ($dependencies =~ /libc\.so\.(\d+)/m);
 	 if ($libc_version > 5) {
 	    #  Needs libc 6 or greater
-	    warning "Warning: $login_binary on rescue disk needs libc.so.$libc_version,\n"
+	    warning_test "Warning: $login_binary on rescue disk needs libc.so.$libc_version,\n"
 		. "\tbut there is no NSS configuration file ($nss_conf)\n"
 		    . "\ton root filesystem.\n";
 	 }
@@ -1858,8 +1897,6 @@ sub check_nss {
    }
    info(0, "Done with NSS\n");
 }
-
-
 
 sub check_links {
   info(0, "\nChecking links relative to $mount_point\n");
@@ -1878,7 +1915,7 @@ sub check_links {
 	chase_link($::target, 16);
 
       } elsif (!-e $::target) {
-	warning "Warning: Unresolved link: $File::Find::name -> $::raw_link\n";
+	warning_test "Warning: Unresolved link: $File::Find::name -> $::raw_link\n";
       }
     }
   };
@@ -1891,7 +1928,7 @@ sub chase_link {
   my($file, $link_depth) = @_;
 
   if ($link_depth == 0) {
-    warning "Warning: Probable link circularity involving $file\n";
+    warning_test "Warning: Probable link circularity involving $file\n";
 
   } elsif (-l $file) {
     chase_link(make_link_absolute($file, readlink($file)),
@@ -1911,9 +1948,9 @@ sub check_scripts {
       chomp($firstline = <SCRIPT>);
       if (($prog) = $firstline =~ /^\#!\s*(\S+)/) {
 	if (!-e $prog) {
-	  warning "Warning: $File::Find::name needs $prog, which is missing\n";
+	  warning_test "Warning: $File::Find::name needs $prog, which is missing\n";
 	} elsif (!-x $prog) {
-	  warning "Warning: $File::Find::name needs $prog, " .
+	  warning_test "Warning: $File::Find::name needs $prog, " .
 	      "which is not executable.\n";
 	}
       }
@@ -1931,10 +1968,10 @@ sub check_getty_type_call {
     my($tty, $speed, $type) = @args;
 
     if (!-e "$mount_point/dev/$tty") {
-      warning "\tLine $.: $prog for $tty, but /dev/$tty doesn't exist.\n";
+      warning_test "\tLine $.: $prog for $tty, but /dev/$tty doesn't exist.\n";
     }
     if (!defined($Termcap{$type})) {
-      warning "\tLine $.: Type $type not defined in termcap\n";
+      warning_test "\tLine $.: Type $type not defined in termcap\n";
     }
   }
   ##  If getty or getty_ps, look for /etc/gettydefs, /etc/issue
@@ -1942,15 +1979,14 @@ sub check_getty_type_call {
 
   if ($prog =~ /^getty/) {
     if (!$checked_for_getty_files) {
-      warning "\tLine $.: $prog expects /etc/gettydefs, which is missing.\n"
+      warning_test "\tLine $.: $prog expects /etc/gettydefs, which is missing.\n"
 	unless -e "$mount_point/etc/gettydefs";
-      warning "\tLine $.: $prog expects /etc/issue, which is missing.\n"
+      warning_test "\tLine $.: $prog expects /etc/issue, which is missing.\n"
 	unless -e "$mount_point/etc/issue";
       $checked_for_getty_files = 1;
     }
   }
 }
-
 
 ###
 ###  NB. This is *not* run under chroot
@@ -2016,7 +2052,7 @@ sub check_init_files {
       if ($cmd and ($hd_abs = find_file_in_path($cmd, @path))) {
 	#  If it's here, see if it's on the rescue disk
 	if (!(-e "$mount_point/$hd_abs" and -x _)) {
-	  warning "$init_file($.): $_\n\t\t$cmd looks like a command but\n",
+	  warning_test "$init_file($.): $_\n\t\t$cmd looks like a command but\n",
 	  "\t\tdoes not exist on the root filesystem.\n";
 	}
       }
@@ -2028,9 +2064,9 @@ sub check_init_files {
 	#  Note that this could mislead if the user moved it to a different
 	#  dir on the root fs.
 	if (!-e "$mount_point/$hd_abs") {
-	  warning "${init_file}($.): $_\n\t$cmd: missing from root fs.\n";
+	  warning_test "${init_file}($.): $_\n\t$cmd: missing from root fs.\n";
 	} elsif (!-x _) {
-	  warning "$init_file($.): $_\n\t$cmd: not executable on root fs.\n";
+	  warning_test "$init_file($.): $_\n\t$cmd: not executable on root fs.\n";
 	}
       }
     }
@@ -2043,8 +2079,11 @@ sub check_init_files {
 
 
 sub check_termcap {
+  my $error;  
   open(TERMCAP, "<$mount_point/etc/termcap") or
-    warning "No file $mount_point/etc/termcap";
+   ( $error = error("No file $mount_point/etc/termcap"))
+;
+  return if $error && $error eq "ERROR";
   while (<TERMCAP>) {
     chomp;
     next unless $_;
@@ -2070,6 +2109,7 @@ sub check_termcap {
 #####  END OF CHECK_ROOT_FS
 
 1;
+
 
 
 
