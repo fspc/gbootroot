@@ -274,7 +274,6 @@ $main::sudo = "sudo";
 
 start();
 
-
 if ( !%option || $option{gui_mode} ) {
     if ( !$::commandline  ) {
 

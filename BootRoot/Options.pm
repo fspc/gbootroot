@@ -67,7 +67,7 @@ sub option {
 
 		"home=s",                  # by itself = GUI
 		                           # path relative to `pwd` usually "."
-		"root-fs-helper-location=s", # full path or rel path 
+		"root-fs-helper=s", # full path or rel path 
 		                             # in Yard $ubd0
 		"expect-program=s",          # i.e. ./expect_uml
 

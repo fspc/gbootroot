@@ -1,4 +1,4 @@
-###########################################################################
+##########################################################################
 ##
 ##  Yard.pm combining
 ##  MAKE_ROOT_FS, CHECK_ROOT_FS, and YARD_UTILS.PL by Tom Fawcett
@@ -1529,8 +1529,8 @@ sub create_expect_uml {
 
 	    my $ubd0;
 	    if ( !$option{gui_mode} ) {
-		$option{"root-fs-helper-location"} ?
-		    ($ubd0 = "ubd0=" . $option{"root-fs-helper-location"}) :
+		$option{"root-fs-helper"} ?
+		    ($ubd0 = "ubd0=" . $option{"root-fs-helper"}) :
 			($ubd0 = "ubd0=/usr/lib/bootroot/root_filesystem/root_fs_helper");
 	    }
 	    else {
@@ -1548,10 +1548,20 @@ sub create_expect_uml {
 	    }
 
 	    my $x_count = 1;
+	    
+	    my $command_line;
 
-	    my $command_line = "$expect_program $ubd0 $ubd1 $options " .
-		"$mount_point $preserve_ownership " . 
-		$option{"uml-kernel"} . " $filesystem";
+	    if ( $option{"uml-kernel"} ) {
+		$command_line = "$expect_program $ubd0 $ubd1 $options " .
+		    "$mount_point $preserve_ownership " . 
+		    $option{"uml-kernel"} . " $filesystem";
+	    }
+	    else {
+		$command_line = "$expect_program $ubd0 $ubd1 $options " .
+		    "$mount_point $preserve_ownership " . 
+		    BootRoot::BootRoot::uml_kernel() . " $filesystem";
+	    }
+
 
 	    info(0,"\nUsing helper root_fs to $fs_type the filesystem:\n\n");
 	    info(0,"$command_line\n\n");

@@ -68,10 +68,16 @@ my $version = "1.4.0";
 my $date = "11.19.2002";
 my $gtk_perl_version = "0.7002";
 my $home_rootfs = "$home/root_filesystem/";
+
+# here's where the value of linux can be set
 my $home_uml_kernel;
 $option{gui_mode} ? ($home_uml_kernel = "$home/user-mode-linux/usr/bin/")
     :  ($home_uml_kernel = "$home/uml_kernel/");
-$option{"uml-kernel"} = $home_uml_kernel . "linux" if !$option{"uml-kernel"};
+sub uml_kernel {
+    $home_uml_kernel = $home_uml_kernel . "linux" if !$option{"uml-kernel"};
+    return $home_uml_kernel;
+}
+
 my $modules_directory = "/lib/modules";
 my $Initrd;
 $option{gui_mode} ?
@@ -257,9 +263,12 @@ my $ars = {}; # anonymous hash
 
 sub start {
 
-    if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
-    $main::makefs = "genext2fs -z -r0"; # -i8192 not a good idea
-}
+
+    if ( ($> != 0 && -e "/usr/lib/bootroot/genext2fs") ||
+	 ($> != 0 && ( $option{gui_mode} || $option{template}) ) ||
+	 ($> != 0 && ( $option{help} || $option{h} ) ) ) {
+	$main::makefs = "genext2fs -z -r0"; # -i8192 not a good idea
+    }
 
 $SIG{INT} = \&signal;
 $SIG{ABRT} = \&signal;
@@ -811,6 +820,8 @@ else {
 #    return if $error && $error eq "ERROR";
 #
 #  create_uml()  create_expect_uml($filesystem_size, $tmp, $filename);
+#
+# something like this does the trick: ./gbootroot --home . --template Example-Mini.yard --uml-exclusively on --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linux --root-fs-helper root_filesystem/root_fs_helper
 ########################################################
 # What to do if somebody specifies help
 
@@ -833,7 +844,12 @@ else {
 	print "                           (system kernel options)\n";
         print "  --kernel=path             specify different system kernel\n"; 
 	print "  --kernel-version=version  specify alternative version\n";
-	print "  --genext2fs-dir=dir       /usr/lib/bootroot/\n\n";
+	print "  --genext2fs-dir=dir       /usr/lib/bootroot/\n";
+	print "  --expect-program=path     /usr/lib/bootroot/expect_uml\n";
+	print "  --root-fs-helper=path     /usr/lib/bootroot/root_filesystem/root_fs_helper\n";
+	print "  --home=dir                gui mode = without other options\n";
+        print "                            cl mode  = with other options\n";
+	print "                                       min: --template\n\n";
 	print "                           (print options)\n";
 	print "  --no-stdout               don't print to console\n\n";
 	print "filesytem-commands supported by root_fs_helper:\n";
@@ -846,8 +862,8 @@ else {
 
 # Let's read in the ARGV
 
-###    die "specify a template found in $template_dir\nuse --template\n" 
-###	if !$option{template};
+    die "specify a template found in $template_dir\nuse --template\n" 	
+	if !$option{template};
 
     start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
     
