@@ -1,0 +1,180 @@
+#!/bin/bash -x
+# $id$
+
+##############################################################################
+##
+##   
+##  Copyright (C) 2002  by Jonathan Rosenbaum 
+##                              <freesource@users.sourceforge.net>
+##
+##  GNU General Public License 
+##
+##############################################################################
+
+# initrd using mtdram or blkmtd: This is most useful for jffs/jffs2 
+# filesystems.
+
+
+# Find all the necessary details from /proc/cmdline
+# Parse for runlevel, too, both from cmdline and inittab if it exists.
+# This assumes init= isn't being used, otherwise use this instead.
+
+PATH=/mnt/sbin:/mnt/usr/sbin:/mnt/bin:/mnt/usr/bin:/sbin:/usr/sbin:/bin:/usr/bin:$PATH:.
+
+mount -t proc none /proc
+
+# All filesystems made with cramfs/jffs/jffs2 will need the /dev and /initrd
+# directories automatically added.  
+
+MTD_TYPE=`cat /proc/cmdline | cut -d= -f2 | cut -d, -f1`
+FS_TYPE=`cat /proc/cmdline | cut -d= -f2 | cut -d, -f2`
+TOTAL_SIZE=`cat /proc/cmdline | cut -d= -f2 | cut -d, -f3`
+ERASURE_SIZE=`cat /proc/cmdline | cut -d= -f2 | cut -d, -f4`
+INIT=`cat /proc/cmdline | cut -d= -f2 | cut -d, -f5`
+FILE_PATH=`cat /proc/cmdline | sed s/.*ubd[0-9][a-z]\\\?=// | cut -d" " -f1`
+FILE_USER=${FILE_PATH%/*}
+FILE_DD=${FILE_PATH##/*/}
+FILE=${FILE_DD/_dd/}
+UBD_NUMBER=` cat /proc/cmdline | sed s/.*ubd// | sed s/[^0-9].*//`
+CHROOT=/mnt/usr/sbin/chroot
+
+# devfs or not?
+if [ `cat /proc/cmdline | sed s/.*devfs=// | cut -d" " -f1` = nomount ]
+then
+    MTD=/dev/mtd0
+    MTDBLOCK=/dev/mtdblock0
+    UBD=/dev/ubd$UBD_NUMBER
+    DEVFS=nomount
+else
+    MTD=/dev/mtd/0
+    MTDBLOCK=/dev/mtdblock/0
+    UBD=/dev/ubd/$UBD_NUMBER
+    DEVFS=mount
+fi
+
+
+###############
+# MTDRAM
+###############
+
+# There are total_size=$TOTAL_SIZE erase_size=$ERASURE_SIZE
+# options, see http://www.iptel-now.de/HOWTO/MTD/mtd.html
+# Auto-determine total_size if user doesn't as well as mem option to kernel.
+# Need to know which filesystem, and type
+
+if [ $MTD_TYPE = mtdram ]
+then
+    if [ $ERASURE_SIZE ]
+    then
+	insmod mtdram.o -o mtdram$UBD_NUMBER total_size=$TOTAL_SIZE erase_size=$ERASURE_SIZE
+	dd if=$UBD of=$MTD
+	mount -t $FS_TYPE $MTDBLOCK /mnt
+    else
+	insmod mtdram.o -o mtdram$UBD_NUMBER total_size=$TOTAL_SIZE
+	dd if=$UBD of=$MTD
+	mount -t $FS_TYPE $MTDBLOCK /mnt
+    fi
+fi
+
+
+##############
+# BLKMTD
+##############
+
+# ubd/0 is going to be a dd copy, and a larger size than the real image
+# by default, but the user can specify a different size.
+# dd if=root_fs_jffs2 of=root_fs_jffs2_dd
+# and it will be mysteriously replaced for the real ubd/0 specified by the
+# user .. the fs with dd appended when blkmtd is chosen.
+
+if [ $MTD_TYPE = blkmtd ]
+then
+    insmod blkmtd.o -o blkmtd$UBD_NUMBER device=$UBD
+    if [ $ERASURE_SIZE ]
+    then
+	erase $MTD 0 $ERASURE_SIZE
+    else	
+	erase $MTD 0 0x20000
+    fi	
+    mount -t hostfs none -o $FILE_USER /mnt
+    dd if=/mnt/$FILE of=$MTD
+    umount /mnt
+    mount -t $FS_TYPE $MTDBLOCK /mnt
+fi
+
+#########################
+# RUNLEVEL or MTD_INIT
+#########################
+
+if [ ! $INIT ]
+then
+    if [ -e /mnt/etc/inittab ]
+
+    then
+	INIT="sbin/init $(grep initdefault /mnt/etc/inittab | cut -d: -f2)" 
+    else
+    	INIT="sbin/init 2"
+    fi
+fi
+
+
+###############
+# PIVOT_ROOT
+###############
+
+cd /mnt
+
+# Check if directory already exists .. cramfs/jffs/jffs2 better have this.
+# This is done automatically by gbootroot, but it is good to check.
+
+if [ ! -d /mnt/initrd ]
+then 
+    /sbin/mkdir /mnt/initrd
+fi
+
+if [ ! -d /mnt/dev -a ! -L /mnt/dev ]
+then 
+    /sbin/mkdir /mnt/dev
+fi
+
+# For pivot_root to work chroot needs to be on the root filesystem
+if [ ! -f $CHROOT ]
+then
+    CHROOT=`which chroot | sed s,/mnt,,` 
+    if [ $CHROOT = /usr/sbin/chroot ]
+    then
+	echo "ERROR: Can't find chroot, add it to the root filesystem."
+	echo "       Staying in the initrd.  :-)"
+	/bin/bash
+    fi
+else
+    CHROOT=/usr/sbin/chroot
+fi
+
+if [ $DEVFS = mount ]
+then
+    mount -t devfs none /mnt/dev
+fi
+
+pivot_root . initrd
+cd /
+
+# User may have to supply init level or type of init, and there is mtd_init
+# option to the kernel.
+exec $CHROOT . $INIT <dev/console >dev/console 2>&1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
