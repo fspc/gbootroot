@@ -9,11 +9,18 @@ use File::Find;
 # archive will always represent the Makefile which is being tested
 # when development isn't being done with perl -I . ./gbootroot.
 
+# This program uses dh-make, and copies your own defaults to 
+# $packaging_place/debian from your $packaging_defaults, and updates
+# to the proper date/times.
+
 # User defined variables for directories
 
 my $user_home = "/home/mttrader";
 my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
 my $packaging_place = "$user_home/gbootroot";
+my $packaging_defaults;
+my $email = "freesource\@users.sourceforge.net";
+
 
 # Other vars
 my $version;
@@ -77,16 +84,34 @@ foreach (@make_lines) {
 	}
 	else {
 		system "$_";
-	}
+        }
 }
 
-system "cp -fa Makefile.pkg $packaging_place";
+system "cp -fa Makefile.pkg $packaging_place/Makefile";
 
-# Now we get to clean out any CVS directories and make the permissions are
-# all for the user who will be creating the package.
-chdir($packaging_place) or die "Couldn't change to $packaging_place: $?\n";
+# Now we get to clean out any CVS directories and make sure that the 
+# permissions are all for the user who will be creating the package.
+my ($real_uid, $real_gid) = (stat($user_home))[4,5];
+if (-d $packaging_place) {
+        finddepth sub {  
 
+                 my($uid,$gid) = (stat($File::Find::name))[4,5];
+                 if ($real_uid != $uid) {
+                    system "chown $real_uid $File::Find::name";
+                 }
+                 if ($real_gid != $gid) {
+                    system "chgrp $real_gid $File::Find::name";
+                 }  
+                 if (/CVS/) {
+                     chdir(dirname($File::Find::name));
+                     system "rm -rf CVS";
+                 }
+               
+         } , $packaging_place ;
+}
 
+chdir($packaging_place) or die "Can't change to $packaging_place: $?\n";
+system "dh_make -e $email";
 
 sub home_builder {
 
