@@ -31,7 +31,7 @@ install:
 	cp -fa genext2fs/dev* $(DESTDIR)/usr/share/gbootroot/genext2fs
 	cp -fa user-mode-linux/usr/bin/uml_*  $(DESTDIR)/usr/bin
 	cp -fa user-mode-linux/usr/bin/tunctl $(DESTDIR)/usr/bin/tunctl
-	cp -fa user-mode-linux/usr/bin/linux $(DESTDIR)/usr/bin/linux
+	cp -fa user-mode-linux/usr/bin/linuxbr $(DESTDIR)/usr/bin/linuxbr
 	install -d $(DESTDIR)/etc/gbootroot
 	cp -fa gbootrootrc $(DESTDIR)/etc/gbootroot/gbootrootrc
 	install -d $(DESTDIR)/usr/X11R6/include/X11/pixmaps
@@ -52,7 +52,7 @@ remove:
 	rm -rf /usr/share/gbootroot
 	rm /usr/bin/uml_*
 	rm /usr/bin/tunctl
-	rm /usr/bin/linux
+	rm /usr/bin/linuxbr
 	rm /etc/gbootroot/gbootrootrc
 	rmdir /etc/gbootroot
 	rm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm

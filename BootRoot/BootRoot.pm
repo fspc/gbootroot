@@ -74,7 +74,7 @@ my $home_uml_kernel;
 $option{gui_mode} ? ($home_uml_kernel = "$home/user-mode-linux/usr/bin/")
     :  ($home_uml_kernel = "$home/uml_kernel/");
 sub uml_kernel {
-    $home_uml_kernel = $home_uml_kernel . "linux" if !$option{"uml-kernel"};
+    $home_uml_kernel = $home_uml_kernel . "linuxbr" if !$option{"uml-kernel"};
     return $home_uml_kernel;
 }
 
@@ -391,7 +391,7 @@ if ( !%option ) {
 
     # $HOME/.gbootroot/uml_kernel
     home_builder($home_uml_kernel);
-    symlink_builder("/usr/bin/linux","$home_uml_kernel/linux");
+    symlink_builder("/usr/bin/linuxbr","$home_uml_kernel/linuxbr");
     if (!-e "$home_uml_kernel/.options") {
 	open(OPTIONS,">$home_uml_kernel/.options") 
 	    or die "Couldn't write $home_uml_kernel/.options at $?\n";
@@ -839,7 +839,7 @@ else {
 	print "  --filesystem-command=c    \"$::makefs\"\n";
 	print "  --uml-exclusively=on|off  off\n";
 	print "  --uml-kernel=path         $ENV{HOME}/.gbootroot/" . 
-					   "uml_kernel/linux\n";
+					   "uml_kernel/linuxbr\n";
 	print "  --preserve-ownership=y|n  n\n";
 	print "  --genext2fs-dir=dir       /usr/lib/bootroot/\n";
 	print "  --expect-program=path     /usr/lib/bootroot/expect_uml\n";
@@ -1399,7 +1399,7 @@ sub advanced_root_section {
        label_advanced("UML Kernel:",0,1,5,6,$table_advanced_root);
        # $_[4] shares with advanced_boot_sections @entry_advanced
        $ear3 = entry_advanced(1,2,5,6,5,$table_advanced_root);
-       !$entry_advanced[5] ? $ear3->set_text("$home_uml_kernel" . "linux") :
+       !$entry_advanced[5] ? $ear3->set_text("$home_uml_kernel" . "linuxbr") :
 	   $ear3->set_text($entry_advanced[5]);
        $tooltips->set_tip( $ear3, 
                           "If you have a User Mode Linux Kernel, type in" .

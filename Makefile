@@ -35,7 +35,7 @@ install:
 	chown 0:0 /usr/bin/uml_*
 	chmod 4755 /usr/bin/uml_net
 	cp -fa user-mode-linux/usr/bin/tunctl /usr/bin/tunctl
-	cp -fa user-mode-linux/usr/bin/linux /usr/bin/linux
+	cp -fa user-mode-linux/usr/bin/linuxbr /usr/bin/linuxbr
 	install -d /etc/gbootroot
 	cp -fa gbootrootrc /etc/gbootroot/gbootrootrc
 	install -d /usr/X11R6/include/X11/pixmaps
@@ -55,7 +55,7 @@ remove:
 	rm -rf /usr/share/gbootroot
 	rm /usr/bin/uml_*
 	rm /usr/bin/tunctl
-	rm /usr/bin/linux
+	rm /usr/bin/linuxbr
 	rm /etc/gbootroot/gbootrootrc
 	rmdir /etc/gbootroot
 	rm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm
