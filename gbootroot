@@ -276,8 +276,8 @@ if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
 }
 # This is for experimental stuff .. basically so I can test
 # the boot fs as a normal user, since it's hard to create a boot disk
-# with enough room using genext2fs, otherwise.
-my $busybox = 1;
+# with enough room using genext2fs.
+my $busybox;
 
 
 # Yard Stuff
@@ -2798,7 +2798,6 @@ sub lilo_put_it_together {
 	    }
 	}
 
-	info(0,"DEVICES @devices\n");
 
 	device_table( @devices );
 	close(BootRoot::Yard::DEVICE_TABLE);
@@ -3823,6 +3822,7 @@ sub initrd {
     }
 
     else {
+	chdir($pwd); 
 	info(0, "Umounting loop device, and compressing initrd\n");
 	return if errum(sys("umount $tmp/initrd_mnt")) == 2;    
     }
@@ -4188,8 +4188,7 @@ read ENTER
 
 echo Mounting $root_device readonly ...
 
-# -t causes busybox to fail here, -o doesn't help much either .. needs to
-# be repeated twice, which is silly .. the mounting.
+# -t causes busybox to fail here, -o doesn't help much either.
 #mount -o ro -t ext2 $root_device /mnt
 mount $root_device /mnt
 
