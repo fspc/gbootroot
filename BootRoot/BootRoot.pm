@@ -1663,7 +1663,7 @@ sub uml_box {
 	# Reboot Button - mconsole
 	my $reboot_b = button_advanced(1,2,3,4,"Reboot",$table_uml);
 	$tooltips->set_tip( $reboot_b, 
-                           "Passes the reboot command to mconsole.",
+                           "Passes the reboot command to the mconsole.",
                            "" );
 	$reboot_b->signal_connect("clicked",
 				 sub {
@@ -1682,7 +1682,7 @@ sub uml_box {
 	# Halt Button - mconsole
 	my $halt_b = button_advanced(2,3,3,4,"Halt",$table_uml);
 	$tooltips->set_tip( $halt_b, 
-                           "Passes the halt command to mconsole. " .
+                           "Passes the halt command to the mconsole. " .
                            "If this fails use the Abort button.",
                            "" );
 	$halt_b->signal_connect("clicked",
