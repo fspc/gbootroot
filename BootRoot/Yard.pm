@@ -1210,9 +1210,24 @@ sub copy_strip_file {
 	    }
 	}
 	else { # fallback just in case
-	#  Normal copy, no strip
-	info(1, "Copying $from to $to\n");
-	sys("cp -a $from $to");
+
+	    #  Normal copy, no strip
+	    if ( $from !~ m,/Replacements/, ) {
+		info(1, "Copying $from to $to\n");
+		sys("cp -a $from $to");
+	    }
+	    else {
+		if ( !-l $from ) {
+		    info(1, "Copying $from to $to\n");
+		    sys("cp -a $from $to");
+		}
+		else {
+		    $from = readlink($from);
+		    info(1, "Copying $from to $to\n");
+		    sys("cp -a $from $to");
+		}
+	    }
+
 	}
 
 	# Copy file perms and owner
@@ -1240,9 +1255,24 @@ sub copy_strip_file {
 
     }
     else {
+
 	#  Normal copy, no strip
-	info(1, "Copying $from to $to\n");
-	sys("cp -a $from $to");
+	if ( $from !~ m,/Replacements/, ) {
+	    info(1, "Copying $from to $to\n");
+	    sys("cp -a $from $to");
+	}
+	else {
+	    if ( !-l $from ) {
+		info(1, "Copying $from to $to\n");
+		sys("cp -a $from $to");
+	    }
+	    else {
+		$from = readlink($from);
+		info(1, "Copying $from to $to\n");
+		sys("cp -a $from $to");
+	    }
+	}
+
     }
 
 }
