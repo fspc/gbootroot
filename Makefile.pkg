@@ -29,6 +29,7 @@ install:
 	cp -fa genext2fs/Makefile $(DESTDIR)/usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/dev* $(DESTDIR)/usr/share/gbootroot/genext2fs
 	cp -fa user-mode-linux/usr/bin/uml_*  $(DESTDIR)/usr/bin
+	cp -fa user-mode-linux/usr/bin/tunctl $(DESTDIR)/usr/bin/tunctl
 	cp -fa user-mode-linux/usr/bin/linux $(DESTDIR)/usr/bin/linux
 	install -d $(DESTDIR)/etc/gbootroot
 	cp -fa gbootrootrc $(DESTDIR)/etc/gbootroot/gbootrootrc
@@ -49,6 +50,7 @@ remove:
 	rmdir /usr/share/perl5/BootRoot
 	rm -rf /usr/share/gbootroot
 	rm /usr/bin/uml_*
+	rm /usr/bin/tunctl
 	rm /usr/bin/linux
 	rm /etc/gbootroot/gbootrootrc
 	rmdir /etc/gbootroot

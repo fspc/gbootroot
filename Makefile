@@ -33,6 +33,7 @@ install:
 	cp -fa user-mode-linux/usr/bin/uml_* /usr/bin
 	chown 0:0 /usr/bin/uml_*
 	chmod 4755 /usr/bin/uml_net
+	cp -fa user-mode-linux/usr/bin/tunctl /usr/bin/tunctl
 	cp -fa user-mode-linux/usr/bin/linux /usr/bin/linux
 	install -d /etc/gbootroot
 	cp -fa gbootrootrc /etc/gbootroot/gbootrootrc
@@ -52,6 +53,7 @@ remove:
 	rmdir /usr/share/perl5/BootRoot
 	rm -rf /usr/share/gbootroot
 	rm /usr/bin/uml_*
+	rm /usr/bin/tunctl
 	rm /usr/bin/linux
 	rm /etc/gbootroot/gbootrootrc
 	rmdir /etc/gbootroot
