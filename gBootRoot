@@ -988,6 +988,8 @@ sub Generate {
     $ars->{template_dir}   = $template_dir; # static right now.
     ars($ars);
 
+    print %$ars;
+
 =pod
 
     foreach (%$ars) {

@@ -52,14 +52,14 @@ sub ars { $ars = $_[0];
 $filename         = $ars->{filename};
 $filesystem_size  = $ars->{filesystem_size};
 $kernel           = $ars->{kernel};
-$template_dir     = $ars->{template_directory};
+$template_dir     = $ars->{template_dir};
 $template         = $ars->{template};
 $tmp              = $ars->{tmp};
 $mnt              = $ars->{mnt};
 
 # Freshmeat comes here so the rest of the program needs
 # to be warned when the template is coming from here.
-$changed_text = "$template_dir$template";
+$changed_text = "$template_dir$template" if $template;
 
 }
 
@@ -497,7 +497,7 @@ sub continue {
 
 sub check {
     
-    $error = read_contents_file($changed_text);
+    $error = read_contents_file("$template_dir$template");
     return if $error && $error eq "ERROR";
 
 }
@@ -510,7 +510,7 @@ sub links_deps {
     $error = hard_links();
     return if $error && $error eq "ERROR";
 
-    $error = library_dependencies($changed_text);
+    $error = library_dependencies("$template_dir$template");
     return if $error && $error eq "ERROR";
 
 }
@@ -983,15 +983,15 @@ sub saved {
 			 "writable.\nUse [ File->Save As ] or " .
 			 "[Alt-S] with the yard suffix.");		     
 	}
-	else {
+	else { 
 	    # Here's where we get to undef Yard variable and start over at 
 	    # check
 	    my $new = "$template_dir$template" . ".new";
 	    open(NEW,">$new") or 
 		($error = error("gBootRoot: ERROR: Can't create $new"));
-		return if $error && $error eq "ERROR";    
-	        print NEW $changed_text;
-	        close(NEW);
+	    return if $error && $error eq "ERROR";    
+	    print NEW $changed_text;
+	    close(NEW);
 	    rename($new, "$template_dir$template") or
 		($error = error("gBootRoot: ERROR: Can't rename $new to " .
 				"$template_dir$template"));
