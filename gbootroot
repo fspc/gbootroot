@@ -452,6 +452,98 @@ $SIG{KILL} = \&signal;
 
 (undef,$container[KERNEL],$container[ABS_APPEND]) = gdkbirdaao();
 
+
+my ($sec,$min,$hour,$day,$month,$year) = (localtime)[0,1,2,3,4,5];
+my $time = sprintf("%02d:%02d:%02d-%02d-%02d-%04d", 
+		   $hour, $min, $sec, $month+1, $day, $year+1900);
+
+# Here's where stuff gets intersting, non-root users can create root_fs,
+# which is great for UML, and a boot disk.
+
+if ( $> == 0 ) {
+
+    if (!-d "$tmp1/gbootroot_tmp$time") {   
+	$tmp = "$tmp1/gbootroot_tmp$time" if err_custom_perl(
+		"mkdir $tmp1/gbootroot_tmp$time",
+		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
+    }
+    if (!-d "$tmp1/gbootroot_mnt$time") {
+	$mnt = "$tmp1/gbootroot_mnt$time" if err_custom_perl(
+	       "mkdir $tmp1/gbootroot_mnt$time",
+               "gBootRoot: ERROR: Could not make mount directory") != 2;
+    }
+
+    # Why?
+    $tmp = "$tmp1/gbootroot_tmp$time";
+
+}
+else {
+
+    # The Administrator just needs to add a line like the one below to the 
+    # fstab for each non-root user who wants to be able to create root_fs.
+    # In this example, `id -u` has to be the actual effective numeric user 
+    # id,  and the root_fs has to always be named root_fs when it is being
+    # made, but it can be renamed afterwards.
+    #
+    # /tmp/gboot_non_root_`id -u`/root_fs  \ 
+    # /tmp/gboot_non_root_`id -u`/loopback \
+    # auto   defaults,noauto,user,loop       0       0
+    #
+    # For the boot/root disks the administrator will have to give the user
+    # special su privileges (mknod) to make special devices.  The $main::sudo 
+    # variable can be set to sudo or super, fakeroot won't work.
+    # These include: /dev/{console,null,ram0,ram1,tty0}
+    # These two lines need to be added to create the boot_fs and the boot/root
+    # disk.  In this example the user is locked into using one type of device 
+    # for the boot/root
+    #
+    # /tmp/gboot_non_root_`id -u`/initrd_image \ 
+    # /tmp/gboot_non_root_'id -u1`/initrd_mnt  \
+    # auto   defaults,noauto,user,loop       0      0
+    #
+    # /dev/fd0 /tmp/gboot_not_root_mnt_`id -u` auto  defaults,noauto,user 0 0
+    
+
+    my $user = $>;
+
+    if (!-d "$tmp1/gboot_non_root_$user") {   
+	$tmp = "$tmp1/gboot_non_root_$user" if err_custom_perl(
+		"mkdir $tmp1/gboot_non_root_$user",
+		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
+    }
+    $tmp = "$tmp1/gboot_non_root_" . $user;
+
+    if (!-d "$tmp1/gboot_non_root_mnt_$user") {
+	$mnt = "$tmp1/gboot_non_root_mnt_$user" if err_custom_perl(
+	       "mkdir $tmp1/gboot_non_root_mnt_$user",
+               "gBootRoot: ERROR: Could not make mount directory") != 2;
+    }
+    $mnt = "$tmp1/gboot_non_root_mnt" . $user;
+
+}
+
+
+# Verbosity is universal for all methods, and controlled by a scale slider. 
+# Yard 
+#  0 --> only the important messages.
+#  1 --> all messages.
+my $verbosity = 1; # info & sys use this as Global
+
+## One hard copy log file is saved for the session, and the user can also 
+## save from the verbosity box including saving a selection.
+
+my $verbosefn = "$tmp/verbose"; # All verbosity
+#my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
+
+# Need this before everything.
+Gtk::Rc->parse("/etc/gbootroot/gbootrootrc");
+
+verbosity_box();
+start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
+                                             # "verbosity level"
+
+#-------------------------------
+# USER DIRECTORIES
 # /tmp
 home_builder($tmp1);
 
@@ -544,96 +636,7 @@ sub home_builder {
     }
 
 } # end home_builder
-
-my ($sec,$min,$hour,$day,$month,$year) = (localtime)[0,1,2,3,4,5];
-my $time = sprintf("%02d:%02d:%02d-%02d-%02d-%04d", 
-		   $hour, $min, $sec, $month+1, $day, $year+1900);
-
-# Here's where stuff gets intersting, non-root users can create root_fs,
-# which is great for UML, and a boot disk.
-
-if ( $> == 0 ) {
-
-    if (!-d "$tmp1/gbootroot_tmp$time") {   
-	$tmp = "$tmp1/gbootroot_tmp$time" if err_custom_perl(
-		"mkdir $tmp1/gbootroot_tmp$time",
-		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
-    }
-    if (!-d "$tmp1/gbootroot_mnt$time") {
-	$mnt = "$tmp1/gbootroot_mnt$time" if err_custom_perl(
-	       "mkdir $tmp1/gbootroot_mnt$time",
-               "gBootRoot: ERROR: Could not make mount directory") != 2;
-    }
-
-    # Why?
-    $tmp = "$tmp1/gbootroot_tmp$time";
-
-}
-else {
-
-    # The Administrator just needs to add a line like the one below to the 
-    # fstab for each non-root user who wants to be able to create root_fs.
-    # In this example, `id -u` has to be the actual effective numeric user 
-    # id,  and the root_fs has to always be named root_fs when it is being
-    # made, but it can be renamed afterwards.
-    #
-    # /tmp/gboot_non_root_`id -u`/root_fs  \ 
-    # /tmp/gboot_non_root_`id -u`/loopback \
-    # auto   defaults,noauto,user,loop       0       0
-    #
-    # For the boot/root disks the administrator will have to give the user
-    # special su privileges (mknod) to make special devices.  The $main::sudo 
-    # variable can be set to sudo or super, fakeroot won't work.
-    # These include: /dev/{console,null,ram0,ram1,tty0}
-    # These two lines need to be added to create the boot_fs and the boot/root
-    # disk.  In this example the user is locked into using one type of device 
-    # for the boot/root
-    #
-    # /tmp/gboot_non_root_`id -u`/initrd_image \ 
-    # /tmp/gboot_non_root_'id -u1`/initrd_mnt  \
-    # auto   defaults,noauto,user,loop       0      0
-    #
-    # /dev/fd0 /tmp/gboot_not_root_mnt_`id -u` auto  defaults,noauto,user 0 0
-    
-
-    my $user = $>;
-
-    if (!-d "$tmp1/gboot_non_root_$user") {   
-	$tmp = "$tmp1/gboot_non_root_$user" if err_custom_perl(
-		"mkdir $tmp1/gboot_non_root_$user",
-		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
-    }
-    $tmp = "$tmp1/gboot_non_root_" . $user;
-
-    if (!-d "$tmp1/gboot_non_root_mnt_$user") {
-	$mnt = "$tmp1/gboot_non_root_mnt_$user" if err_custom_perl(
-	       "mkdir $tmp1/gboot_non_root_mnt_$user",
-               "gBootRoot: ERROR: Could not make mount directory") != 2;
-    }
-    $mnt = "$tmp1/gboot_non_root_mnt" . $user;
-
-}
-
-
-# Verbosity is universal for all methods, and controlled by a scale slider. 
-# Yard 
-#  0 --> only the important messages.
-#  1 --> all messages.
-my $verbosity = 1; # info & sys use this as Global
-
-## One hard copy log file is saved for the session, and the user can also 
-## save from the verbosity box including saving a selection.
-
-my $verbosefn = "$tmp/verbose"; # All verbosity
-#my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
-
-# Need this before everything.
-Gtk::Rc->parse("/etc/gbootroot/gbootrootrc");
-
-verbosity_box();
-start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
-                                             # "verbosity level"
-
+#-------------------------------
 
 # Gtk::check_version expects different arguments than .7004 so will have
 # to check for the version instead.
