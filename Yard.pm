@@ -728,7 +728,7 @@ sub space_check {
     ## ext2 filesystem info .. and other filesystems may be allowed in the
     ## future.  8192 inodes == 1.63% penalty or at iso9660
     if (bytes_to_K($total_bytes) > $fs_size) {
-	info(0, "This is more than $fs_size Kbytes allowed.\n");
+	info(0, "This is more than the $fs_size Kbytes allowed.\n");
             return;
     }
 

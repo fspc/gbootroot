@@ -955,7 +955,8 @@ sub Generate {
     # 3 = Root Device
     # 4 = Root Filename
     # 5 = UML Kernel
-    $method = $entry_advanced[6];         # 6 = Method
+    # 6 = Method
+    $method = $entry_advanced[6];         
     # 7 = Template
     # $root_device_size;
     # $filesystem_size;
