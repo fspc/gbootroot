@@ -16,6 +16,8 @@ install:
 	cp -fa user-mode-linux/usr/bin/linux $(DESTDIR)/usr/bin/linux
 	install -d $(DESTDIR)/etc/gbootroot
 	cp -fa gbootrootrc $(DESTDIR)/etc/gbootroot/gbootrootrc
+	install -d $(DESTDIR)/usr/X11R6/include/X11/pixmaps
+	cp -fa gbootroot.xpm $(DESTDIR)/usr/X11R6/include/X11/pixmaps/gbootroot.xpm
 
 remove:
 	rm /usr/bin/gbootroot
