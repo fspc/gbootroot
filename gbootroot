@@ -76,7 +76,7 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-
+use lib "/usr/share/perl5";
 use Gtk;
 use strict;
 use BootRoot::Yard;
@@ -109,6 +109,8 @@ $main::makefs = "mke2fs -F -m0 -i8192";
 #
 #       1.2.13 - 09/28/2001
 #                * Renamed "lilo" Boot method to "2 disk compression." 
+#                * Add three new entry fields to manage kernel modules, and
+#                  made important changes to the 2 disk compression code.
 #                * Advanced Section is now Advanced Boot Section (ABS).
 #                * Advanced Root Section (ARS) added. Includes root device and
 #                  size, root filesystem name with Save or Save As, filesystem
@@ -2700,22 +2702,37 @@ sub initrd_size {
 	    $initrd_size =  $initrd_size + ((stat($path))[12]/2);
 	    unlink($path) if $value == 1;
 	}
+
+	# The modules directory has to be removed here.
+	return if 
+        errrm(sys("rmdir $tmp/initrd_mnt/lib/modules/$kernel_version")) == 2;
+	return if 
+        errrm(sys("rmdir $tmp/initrd_mnt/lib/modules")) == 2;
+	return if 
+        errrm(sys("rmdir $tmp/initrd_mnt/lib/")) == 2;
+
     }
 
     # This and libs should be user accessible
     # add other executables here
-    my @initrd_stuff = qw(ash gzip mount umount modprobe);
+    my @initrd_stuff = qw(ash gzip mount umount);
     if (@modules) {
-	@initrd_stuff = qw(ash gzip mount umount modprobe);
+	@initrd_stuff = qw(ash gzip mount umount modprobe insmod);
     }
     else {
 	@initrd_stuff = qw(ash gzip mount umount);
     }
 
     foreach (@initrd_stuff) {
-	($path,$value) = stripper(find_file_in_path($_),"bin");
-	$initrd_size =  $initrd_size + ((stat($path))[12]/2);
-	unlink($path) if $value == 1;
+	    if ( !readlink($_) ) {
+		($path,$value) = stripper(find_file_in_path($_),"bin");
+		$initrd_size =  $initrd_size + ((stat($path))[12]/2);
+		unlink($path) if $value == 1;
+	    }
+	    else {
+		$initrd_size = $initrd_size + 
+		    length(readlink(find_file_in_path($_)));
+	    }
     }
 
     if ($compress eq "bzip2" && -e find_file_in_path($compress)) {
@@ -2817,7 +2834,7 @@ sub initrd {
     pb($I,2);
     # no need to enter y every time .. could use -F
     my $error;
-    open(T,"|mke2fs -m0 -i8192 $tmp/$initrd >/dev/null 2>&1") or 
+    open(T,"|mke2fs -F -m0 -i8192 $tmp/$initrd >/dev/null 2>&1") or 
 	($error = error("Can not make ext2 filesystem on initrd.\n")); 
     return "ERROR" if $error && $error eq "ERROR";
     print T "y\n"; close(T);
@@ -2862,7 +2879,7 @@ sub initrd {
 	mkpath("$tmp/initrd_mnt/lib/modules/$kernel_version");
 
 	foreach my $stuff (@modules) {
-	    ($path,$value) = stripper($stuff,"bin");
+	    ($path,$value) = stripper($stuff,"mod");
 	    $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
 	    if (!$path) {
 		info(1,"gBootRoot Error: Couldn't find $stuff\n");
@@ -2881,25 +2898,27 @@ sub initrd {
     info(0, ".. the bins\n");
     my @initrd_stuff;
     if (@modules) {
-	@initrd_stuff = qw(ash gzip mount umount modprobe);
+	@initrd_stuff = qw(ash gzip mount umount modprobe insmod);
     }
     else {
 	@initrd_stuff = qw(ash gzip mount umount);
     }
 
+    # Will put the stuff in sbin because the is where the kernel looks for
+    # modprobe.
     foreach (@initrd_stuff) {
 	($path,$value) = stripper(find_file_in_path($_),"bin");
 	$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
 	if (!$path) {
 	    info(1,"gBootRoot Error: Couldn't find $_\n");
 	}
-	return if errcp(sys("$tool $path $tmp/initrd_mnt/bin")) == 2;
+	return if errcp(sys("$tool $path $tmp/initrd_mnt/sbin")) == 2;
     }
 
     if ($compress eq "bzip2" && -e find_file_in_path($compress)) {
 	($path,$value) = stripper(find_file_in_path($compress),"bin");
 	$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-	return if errcp(sys("$tool $path $tmp/initrd_mnt/bin")) == 2;
+	return if errcp(sys("$tool $path $tmp/initrd_mnt/sbin")) == 2;
     }
 
     # Testing if init is sufficient for grabbing the correct libraries for the
@@ -3187,7 +3206,8 @@ mtab_window($dialog,$error,$count) if $error == 0;
   # Keep asking until they are.
   if ($error == 1) {
    destroy $mtab;
-   sys("mke2fs -m0 -i8192 $entry_advanced[0] $size");
+   # $size has to be determined by boot disk or root disk
+   sys("mke2fs -F -m0 -i8192 $entry_advanced[0] $size");
    if ($? != 0) {
     $dialog = "gBootRoot: ERROR: You need to insert a disk\n";
      mtab_window($dialog,$error,$count);
@@ -3212,7 +3232,7 @@ sub initrd_heredoc {
 # Here's where the initrd is put together using a loop device
 # HEREDOC
 my $initrd_exec = << "INITRD";
-#!/bin/ash
+#!/sbin/ash
 
 export PATH=/bin:/sbin:/usr/bin:
 
