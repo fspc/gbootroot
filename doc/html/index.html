@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.70 2002/01/09 19:35:14 freesource Exp $</center>
+<center>$Id: index.html,v 1.71 2002/01/10 06:05:02 freesource Exp $</center>
 
 <p>
 
@@ -1263,8 +1263,13 @@ kernel's .config?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
 <p>
 
-I don't want to take all the fun away from you.&nbsp;&nbsp;There is a 
-config for the uml kernel in 
+I don't want to take all the fun away from you.&nbsp;&nbsp;However, floppy
+can be a module for the two disk compression method.&nbsp;&nbsp;Boot methods
+automatically check for the existence of required modules, otherwise, 
+they are assumed to be part of the kernel.&nbsp;&nbsp;If you peruse the
+verbosity box the required modules are revealed.&nbsp&nbsp;INITRD and 
+BLK_DEV_RAM should be in the kernel if an initrd is being used.&nbsp;&nbsp;
+There is a config for the uml kernel in 
 /usr/lib/bootroot/yard/Replacements/lib/modules.&nbsp;&nbsp;If you get
 it running with uml, and it doesn't run with your own kernel, take a look 
 here.
