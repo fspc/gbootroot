@@ -896,8 +896,8 @@ sub advanced_boot_section {
 
        #_______________________________________ 
        # Kernel Module(s)
-       label_advanced("Kernel Module(s)",0,1,3,4,$table_advanced);
-       $ea3 = entry_advanced(1,3,3,4,11,$table_advanced);
+       label_advanced("Kernel Module(s)",0,1,4,5,$table_advanced);
+       $ea3 = entry_advanced(1,3,4,5,11,$table_advanced);
        $tooltips->set_tip( $ea3, "Add the modules found in" .
                                  " /lib/modules/kernel-version which are" .
                                	 " necessary for the Boot Method to work" .
@@ -909,8 +909,8 @@ sub advanced_boot_section {
 
        #_______________________________________ 
        # Append Options
-       label_advanced("append =",0,1,4,5,$table_advanced);
-       $ea4 = entry_advanced(1,3,4,5,2,$table_advanced);
+       label_advanced("append =",0,1,3,4,$table_advanced);
+       $ea4 = entry_advanced(1,3,3,4,2,$table_advanced);
        my $append; (undef,undef,$append) = gdkbirdaao();
        $tooltips->set_tip( $ea4, "Add append options to brlilo.conf.", "");
        $ea4->set_text($append) if defined $append;
