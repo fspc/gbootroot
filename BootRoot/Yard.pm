@@ -196,6 +196,7 @@ sub read_contents_file {
 
 	  my($abs_file) = find_file_in_path($link);
 	  $Included{$abs_file} = 1 if $abs_file;
+
 	  ####   Have to be careful here.  Record the rel link for use
 	  ####   in setting up the root fs, but use the abs_link in @files
 	  ####   so next loop gets any actual files.
@@ -1331,13 +1332,27 @@ sub make_link_relative {
     #  It's absolute -- we have to relativize it
     #  The abs_file guaranteed not to have any funny
     #  stuff like "/./" or "/foo/../../bar" already in it.
-    $newlink = ("../" x path_length($abs_file)) . $1;
+
+      ## This is an experimental solution to an annoying tendency
+      ## for this to happen ../../../../ for files/dirs .. basically
+      ## this occurs when called from include_file() called from
+      ## extra_links() .. the reason for relativing links like this
+      ## doesn't make sense.
+      if (!-f $link && !-d $link) {
+	  $newlink = ("../" x path_length($abs_file)) . $1;
+      }
 
   } else {
     #  Already relative
     $newlink = $link;
   }
-  cleanup_link($newlink);
+  if ($newlink) {
+     cleanup_link($newlink) 
+  }
+  else {
+      return $link;
+  }
+
   }
 }
 
