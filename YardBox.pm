@@ -36,6 +36,8 @@ my $accel_group;
 my $true = 1;
 my $false = 0;
 
+
+my $item_type = '<Title>';
 my @menu_items = ( { path        => '/File',
 		     type        => '<Branch>' },
 		   { path        => '/File/file_tearoff',
@@ -51,18 +53,62 @@ my @menu_items = ( { path        => '/File',
 		   { path        => '/File/Close',
 		     accelerator => '<alt>W',
 		     callback    => sub { destroy $yard_window; }},
-
+		   
                    { path        => '/_Edit',
                      type        => '<Branch>' },
+		   { path        => '/Edit/edit_tearoff',
+		     type        => '<Tearoff>' },
+		   { path        => '/Edit/Settings/' },
+		   { path        => '/Edit/Settings/edit_tearoff',
+		     type        => '<Tearoff>' },
+		   { path        => '/Edit/Settings/Path' },
+		   { path        => '/Edit/Settings/Stripping/' },
+		   { path        => '/Edit/Settings/Stripping/edit_tearoff',
+		     type        => '<Tearoff>' },
+		   { path        => '/Edit/Settings/Stripping/Libraries',
+		     action      => "1",
+		     type        => '<CheckItem>' },
+		   { path        => '/Edit/Settings/Stripping/settings/' },
+		   { path        => '/Edit/Settings/Stripping/settings/strip-all',
+		     action      => "10",
+		     type        => '<RadioItem>' },
+                   { path        => '/Edit/Settings/Stripping/settings/strip-debug',
+		     action      => '11',
+                     type        => '<RadioItem>' },,
+
+		   { path        => '/Edit/Settings/Stripping/Binaries',
+		     action      => "2",
+		     type        => '<CheckItem>' },
+                   { path        => '/Edit/Settings/Stripping/Modules',
+		     action      => '3',
+                     type        => '<CheckItem>' },
+
+                   { path        => '/Edit/Settings/edit_separator',
+                     type        => '<Separator>' },
+		   { path        => '/Edit/Settings/Replacements',
+		     action      => "4",
+		     type        => '<CheckItem>' },
+		   { path        => '/Edit/Settings/Modules',
+		     action      => "5",
+		     type        => '<CheckItem>' },
+		   
 
                    { path        => '/_Create',
                      type        => '<Branch>' },
+		   { path        => '/Create/create_tearoff',
+		     type        => '<Tearoff>' },
+                       
 
                    { path        => '/_Tests',
                      type        => '<Branch>' },
+		   { path        => '/Tests/tests_tearoff',
+		     type        => '<Tearoff>' },
+
 
                    { path        => '/_Help',
                      type        => '<LastBranch>' },
+		   { path        => '/Help/help_tearoff',
+		     type        => '<Tearoff>' },
                    { path        => '/_Help/Tutorial' },
                    { path        => '/_Help/Shortcuts' } );
 
@@ -136,6 +182,7 @@ sub yard_box {
        $main_vbox->pack_start( $vbox, $false, $true, 0 );
        $vbox->show();
 
+       #_______________________________________ 
        # Item::Factory
        my $menubar = yard_menu($yard_window);
        $vbox->pack_start( $menubar, $false, $true, 0 );
@@ -152,6 +199,7 @@ sub yard_box {
        $vbox->pack_start( $table, $true, $true, 0 );
        $table->show( );
 
+       #_______________________________________ 
        # Create the GtkText widget
        my $length;
        my $text = new Gtk::Text( undef, undef );
@@ -220,7 +268,7 @@ sub yard_box {
        $separator->show();
 
        #_______________________________________ 
-       # Continue - Cancel - Save Buttons
+       # Continue - Close - Save Buttons
        $vbox = new Gtk::HBox( $false, 10 );
        $vbox->border_width( 10 );
        $main_vbox->pack_start( $vbox, $false, $true, 0 );
@@ -266,16 +314,20 @@ sub yard_menu {
                                              $accel_group );
     $accel_group->attach($window);
     $item_factory->create_items(@menu_items);
+    ##$item_factory->delete_item('/File/Checkbox');
+    ##$item_factory->create_item(['/File/Checkbox', undef, undef, <Item>]);
 
     # Manipulate Gtk::ItemFactory - The trick here is to use the real path.
-    ##my $checkbox = $item_factory->get_item("/File/CheckBox");
-    ##$checkbox->set_active($true);
+    ##my $checkbox = $item_factory->get_item('/File/Checkbox');
+    ##my $otherbox = $item_factory->get_item('/File/Save');
+
 
     return ( $item_factory->get_widget( '<main>' ) );
 
 } 
 
 1;
+
 
 
 
