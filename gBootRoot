@@ -242,7 +242,7 @@ button("Device Selection",$entry4,"Device Selection",3,$true);
 
 # Fifth row
 hbox("what");
-my $adj = new Gtk::Adjustment( 1440.0, 0.0, 360000000.0, 360.0, 360.0, 0.0 );
+my $adj = new Gtk::Adjustment( 1440.0, 0.0, 360000000.0, 282.0, 360.0, 0.0 );
 my $spinner = new Gtk::SpinButton( $adj, 0, 0 );
 $tooltips->set_tip( $spinner, "Choose the Device Size.", "" );
 $spinner->set_wrap( $true );
@@ -1272,14 +1272,14 @@ echo -n 'Please insert the root floppy, and press [Enter]: '
 read ENTER
 
 echo Mounting floppy drive readonly ...
-mount -o ro -t ext2 /dev/fd0 $mnt
+mount -o ro -t ext2 /dev/fd0 /mnt
 
 echo -n Copying new root to ramdisk .. please wait ...
-$compress -cd $mnt/$broot_image > /dev/ram1
+$compress -cd /mnt/$broot_image > /dev/ram1
 echo done.
 
 echo -n Unmounting floppy ...
-umount $mnt
+umount /mnt
 echo done.
 
 echo Changing to the new root.
