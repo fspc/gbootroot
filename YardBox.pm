@@ -23,7 +23,7 @@ package YardBox;
 use vars qw(@ISA @EXPORT %EXPORT_TAGS);
 use Exporter;
 @ISA = qw(Exporter);
-@EXPORT =  qw(yard yard_box);
+@EXPORT =  qw(yard ars);
 
 use strict;
 use Yard;
@@ -44,6 +44,19 @@ my $TEXT_CHANGED = "no";
 my $lib_bool =            1;
 my $bin_bool =            1;
 my $mod_bool =            1;
+
+my $ars;
+sub ars { $ars = $_[0]; 
+
+$filename         = $ars->{filename};
+$filesystem_size  = $ars->{filesystem_size};
+$kernel           = $ars->{kernel};
+$template_dir     = $ars->{template_directory};
+$template         = $ars->{template};
+$tmp              = $ars->{tmp};
+$mnt              = $ars->{mnt};
+
+}
 
 my @menu_items = ( { path        => '/File',
 		     type        => '<Branch>' },
@@ -181,16 +194,6 @@ my @menu_items = ( { path        => '/File',
 # YARD
 ###### 
 sub yard {
-    
-    my ($ars) = @_;
-
-    $filename         = $ars->{filename};
-    $filesystem_size  = $ars->{filesystem_size};
-    $kernel           = $ars->{kernel};
-    $template_dir     = $ars->{template_directory};
-    $template         = $ars->{template};
-    $tmp              = $ars->{tmp};
-    $mnt              = $ars->{mnt};
 
 
       # Error handling in Yard will take some strategy
