@@ -1,8 +1,8 @@
 #!/bin/sh
 #
-# $Id$
+# $Id: rcS.example,v 1.1 2001/12/01 21:42:26 freesource Exp $
 # Used by the Example.yard template.
-# /etc/rc:  System initialization script.
+# /etc/rcS:  System initialization script.
 #
 
 #  Compute module dependencies
@@ -13,15 +13,17 @@
 
 #  Mount everything mentioned in fstab
 #  .. but proc needs to be mounted first, anyways.
-/bin/mount -anv
-mount -v -o remount,rw -n /dev/ram0 /
+#/bin/mount -anv
+#mount -v -n -o remount,rw /
+mount -o remount /
+mount -a
 
 #  Set host name
 /bin/hostname bootroot
 
 #  If you need to load a keyboard map, uncomment this line and
 #  fix the pathnames:
-#/usr/sbin/loadkeys /usr/lib/kbd/keytables/defkeymap.map
+#/usr/sbin/loadkeys /usr/share/keymaps/i386/qwerty/defkeymap.kmap.gz
 
 # create utmp if it doesn't already exist
 ( cd /var/run && \
@@ -35,8 +37,8 @@ then
 fi
 
 # create wtmp if it doesn't already exist
-( cd /var/run && \
-        find . ! -type d ! -name utmp ! -name innd.pid ! -name random-seed \
+( cd /var/log && \
+        find . ! -type d ! -name wtmp \
         ! -newer /etc/mtab -exec rm -f -- {} \; )
 : > /var/log/wtmp
 if grep -q ^utmp: /etc/group
