@@ -222,6 +222,7 @@ BEGIN {
 
     if ($fhs == 0) {
 	unshift(@INC,"/usr/share/perl5");
+	unshift(@INC,".");  # better make sure we mean . when we mean .
     }
 
 
