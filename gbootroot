@@ -133,6 +133,32 @@ $main::sudo = "sudo";
 
 # CHANGES
 #
+#       1.2.14 - 10/24/2001
+#               * Append field in the ABS now saves state for non-root users.
+#                 Before it only remembered state if lilo.conf could 
+#                 actually be read, ofcourse, this wasn't an option for 
+#                 non-root users.  The beginnings of non-root boot and root_fs
+#                 creation capabilities have been put into place, but haven't 
+#                 been fully implemented.  The end result of this is that 
+#                 directories created in $tmp are now static for non-root 
+#                 users and now use the userid number to keep track of 
+#                 different non-root users.
+#               * The author of swim came out with a new version he now calls 
+#                 dswim.  This means Debian System Wide Information Manager, 
+#                 but the "d" could also stand for different.  Changes have 
+#                 been made to make_debian to facilitate this much more stable
+#                 version of swim, and better non-installed package checks 
+#                 have been implemented in make_debian.
+#               * The control dependencies have been vastly improved, and 
+#                 reflect the change from swim to dswim.  Yard_chrooted_tests 
+#                 is now put in a gbootroot specific directory since it is 
+#                 unique to gbootroot.
+#               * The lastest user-mode-linux is included: 2.4.12
+#               * Updated the documentation, and it includes a better 
+#                 explanation in step 7 for "How can I test gBootRoot?"
+#               * Added checks for the existence of ash and lilo for the 2 
+#                 disk compression method.
+#
 #       1.2.13 - 09/28/2001
 #                * Renamed "lilo" Boot method to "2 disk compression." 
 #                * Added three new entry fields and one radio button to manage
@@ -666,6 +692,7 @@ $item->show();
 $item->signal_connect( 'activate',
     sub { $entry->set_text("2 disk compression");
 	  $container[METHOD] = "2 disk compression";
+	  two_disk_compression_check();
           kernel_modules(); });
 $menu->append( $item );
 $opt->set_menu( $menu );
@@ -2307,35 +2334,43 @@ sub button {
 }
 
 sub submit {
-
+    
       my($kernel, $root_image, $device, $size);
-
+      
       # comment this out for testing
       # Since only one filehandle is now used, this won't work
       # anymore.
       #unlink("$verbosefn");
       open (MTAB, "/etc/mtab") or die "no mtab!\n";
       while (<MTAB>) {
-         if (m,$mnt,) {
-           sys("umount $mnt");
-         }
+	  if (m,$mnt,) {
+	      sys("umount $mnt");
+	  }
       }
       close(MTAB);
       $entry5->set_text("");
       pb("boot",0);
 
-    if ($gz_toggle->active) {
-        $compress = "gzip";
-    }
-    elsif ($bz2_toggle->active) {
-        $compress = "bzip2";
-    }
+      if ($gz_toggle->active) {
+	  $compress = "gzip";
+      }
+      elsif ($bz2_toggle->active) {
+	  $compress = "bzip2";
+      }
 
-# Run some checks
-if (!defined $container[METHOD]) {
-    error_window("gBootRoot: ERROR: No Method supplied");
-    return;
-}
+      # Run some checks
+      if (!defined $container[METHOD]) {
+	  error_window("gBootRoot: ERROR: No Method supplied");
+	  return;
+      }
+      else {
+	  if ( $container[METHOD] eq "2 disk compression" ) {
+	      my $rt = two_disk_compression_check();
+	      return if $rt;
+	  }
+      }
+
+
 if (defined $container[KERNEL] && -e $container[KERNEL] && 
     !-d $container[KERNEL]) {
     $kernel = $container[KERNEL];    
@@ -2778,7 +2813,37 @@ sub stripper {
     }
     return ( $_[0], 0);
 
-}
+} # end sub stripper
+
+sub two_disk_compression_check {
+
+    my ($ash,$lilo);
+
+    if ( !find_file_in_path("ash") ) {
+	$ash = "ash";	
+    }
+
+    if ( !find_file_in_path("lilo") ) {
+	$lilo = "lilo";	
+    }
+
+    if ( $ash || 
+	 
+	 $lilo || 
+	 
+	 ($ash && $lilo)
+
+	 ) {
+
+	error_window(
+		     "Program(s) required by this method:  $lilo  $ash"
+		     );
+	
+	return 1;
+    }
+
+
+} # end sub two_disk_compression_check
 
 sub kernel_modules {
 
