@@ -588,9 +588,13 @@ sub start_up {
 
     # Swim has never been installed before?
     my $dpkg_result = system "dpkg -l swim >/dev/null 2>&1";
-    if ($dpkg_result !=0) {
-	die "Swim is required, and may be found at " .
-	    "http://www.sourceforge.net/projects/avd\n";
+    if ($dpkg_result != 0) {
+	die "Swim is required:\n\n" .
+            "Add one of these lines to your /etc/apt/sources.list:\n" .
+	    "deb http://prdownloads.sourceforge.net/avd ./  orx\n" .
+	    "deb http://download.sourceforge.net/avd ./\n\n" .
+            "Then do `apt-get update` and `apt-get install swim`\n" .
+            "";
     }
 
     # Swim has been installed but is removed or purged
@@ -600,8 +604,12 @@ sub start_up {
 	if (/Status:/) {
 	    if (!/\s+installed/) {
 		if (/purge|deinstall/) {
-		    die "Please retrieve swim from " .
-			"http://www.sourceforge.net/projects/avd and reinstall.\n";
+		    die "Swim needs to be reinstalled:\n\n" .
+	       "Add one of these lines to your /etc/apt/sources.list:\n" .
+	       "deb http://prdownloads.sourceforge.net/avd ./  orx\n" .
+	       "deb http://download.sourceforge.net/avd ./\n\n" .
+	       "Then do `apt-get update` and `apt-get install swim`\n" .
+            "";
 		}
 	    }
 	}
