@@ -1961,107 +1961,109 @@ sub initrd {
     my($lib,$what,$path,$value,$tool);
     my $I = "initrd";
 
-  my $broot_image = basename($root_image);
-  open(LC, ">$tmp/linuxrc") or die "Couldn't write linuxrc to loop device\n";
-  print LC initrd_heredoc($broot_image); close(LC);
-  pb($I,1);
-  my $size_needed = initrd_size((stat("$tmp/linuxrc"))[12]/2);
-  unlink("$tmp/linuxrc");
-
-  info(0, "Using loop device to make initrd\n");
-  info(0, "Make sure you have loop device capability in your running kernel\n");
-  sys("dd if=/dev/zero of=$tmp/$initrd bs=1024 count=$size_needed");
-  pb($I,2);
-  # no need to enter y every time .. could use -F
-  my $error;
-  open(T,"|mke2fs -m0 -i8192 $tmp/$initrd >/dev/null 2>&1") or 
-  ($error = error("Can not make ext2 filesystem on initrd.\n")); 
-  return "ERROR" if $error && $error eq "ERROR";
-  print T "y\n"; close(T);
-  pb($I,3);
-  info(0, "Mounting initrd in $tmp/initrd_mnt\n");
+    my $broot_image = basename($root_image);
+    open(LC, ">$tmp/linuxrc") or die "Couldn't write linuxrc to loop device\n";
+    print LC initrd_heredoc($broot_image); close(LC);
+    pb($I,1);
+    my $size_needed = initrd_size((stat("$tmp/linuxrc"))[12]/2);
+    unlink("$tmp/linuxrc");
+    
+    info(0, "Using loop device to make initrd\n");
+    info(0, "Make sure you have loop device capability in your running kernel\n");
+    sys("dd if=/dev/zero of=$tmp/$initrd bs=1024 count=$size_needed");
+    pb($I,2);
+    # no need to enter y every time .. could use -F
+    my $error;
+    open(T,"|mke2fs -m0 -i8192 $tmp/$initrd >/dev/null 2>&1") or 
+	($error = error("Can not make ext2 filesystem on initrd.\n")); 
+    return "ERROR" if $error && $error eq "ERROR";
+    print T "y\n"; close(T);
+    pb($I,3);
+    info(0, "Mounting initrd in $tmp/initrd_mnt\n");
 
     if (!-d "$tmp/initrd_mnt") {
 	return if errmk(sys("mkdir $tmp/initrd_mnt")) == 2;
     }
-  return if errm(sys("mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt"))
-          == 2;
-  pb($I,4);
+    return if errm(sys("mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt"))
+	== 2;
+    pb($I,4);
 
-  info(0, "Putting everything together\n");
-  open(LC, ">$tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to loop device\n";
-  print LC initrd_heredoc($broot_image); close(LC);
-  # I could test this but somebody's system may do permissions differently
-  sys("chmod 755 $tmp/initrd_mnt/linuxrc");
-  sys("rmdir $tmp/initrd_mnt/lost+found");
-  pb($I,5);
+    info(0, "Putting everything together\n");
+    open(LC, ">$tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to loop device\n";
+    print LC initrd_heredoc($broot_image); close(LC);
+    # I could test this but somebody's system may do permissions differently
+    sys("chmod 755 $tmp/initrd_mnt/linuxrc");
+    sys("rmdir $tmp/initrd_mnt/lost+found");
+    pb($I,5);
 
-  info(0, "... the dirs\n");
-  return if errmk(
-      sys("mkdir $tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr}")) == 2; 
-  return if errmk(sys("mkdir $tmp/initrd_mnt/usr/lib")) == 2;
-  pb($I,6);
+    info(0, "... the dirs\n");
+    return if errmk(
+    sys("mkdir $tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr}")) == 2; 
+    return if errmk(sys("mkdir $tmp/initrd_mnt/usr/lib")) == 2;
+    pb($I,6);
 
-  return if errcp(
-  sys("cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev")) == 2;
-  return if errcp(sys("cp -a $device $tmp/initrd_mnt/dev")) == 2;
-  pb($I,7);
+    return if errcp(
+    sys("cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev")) == 2;
+    return if errcp(sys("cp -a $device $tmp/initrd_mnt/dev")) == 2;
+    pb($I,7);
 
-  # This and libs should be user accessible
-  info(0, ".. the bins\n");
-  my @initrd_stuff = qw(ash gzip mount umount);
-  foreach (@initrd_stuff) {
-     ($path,$value) = stripper(find_file_in_path($_),"bin");
-     $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-     return if errcp(sys("$tool $path $tmp/initrd_mnt/bin")) == 2;
-  }
+    # This and libs should be user accessible
+    info(0, ".. the bins\n");
+    my @initrd_stuff = qw(ash gzip mount umount);
+    foreach (@initrd_stuff) {
+	($path,$value) = stripper(find_file_in_path($_),"bin");
+	$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+	return if errcp(sys("$tool $path $tmp/initrd_mnt/bin")) == 2;
+    }
 
-  if ($compress eq "bzip2" && -e find_file_in_path($compress)) {
-     ($path,$value) = stripper(find_file_in_path($compress),"bin");
-     $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-     return if errcp(sys("$tool $path $tmp/initrd_mnt/bin")) == 2;
-  }
+    if ($compress eq "bzip2" && -e find_file_in_path($compress)) {
+	($path,$value) = stripper(find_file_in_path($compress),"bin");
+	$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+	return if errcp(sys("$tool $path $tmp/initrd_mnt/bin")) == 2;
+    }
 
-  # Testing if init is sufficient for grabbing the correct libraries for the
-  # executables immediately above.  This could be modified to test a
-  # list of executables.
-  info(0, ".. the libs\n");
-  open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd, this is going to be fixed later with library_dependencies
-   while (<L>) {
-      $lib = (split(/=>/,$_))[0];
-      $lib =~ s/\s+//;
-      $lib = basename($lib); 
-      $lib =~ s/\s+$//;
-      open (SL,"ls -l /lib/$lib|") or die "humm: $!\n";
+    # Testing if init is sufficient for grabbing the correct libraries for the
+    # executables immediately above.  This could be modified to test a
+    # list of executables.
+    info(0, ".. the libs\n");
+    open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd, this is going to be fixed later with library_dependencies
+    while (<L>) {
+	$lib = (split(/=>/,$_))[0];
+	$lib =~ s/\s+//;
+	$lib = basename($lib); 
+	$lib =~ s/\s+$//;
+	open (SL,"ls -l /lib/$lib|") or die "humm: $!\n";
         while (<SL>) {
-          # symbolic link
-          if (-l "/lib/$lib") {
-            $what = (split(/\s+/,$_))[10];
-            ($path,$value) = stripper("/lib/$lib","lib");
-            $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-            return if errcp(sys("$tool $path $tmp/initrd_mnt/lib")) == 2;
-	    ($path,$value) = stripper("/lib/$what","lib");
-	    $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-            return if errcp(sys("$tool $path $tmp/initrd_mnt/lib")) == 2;
-          }
-          # no symbolic link
-          else {
-	    ($path,$value) = stripper("/lib/$lib","lib");
-            return if errcp(sys("cp -a $path $tmp/initrd_mnt/lib")) == 2;
-          }
+	    # symbolic link
+	    if (-l "/lib/$lib") {
+		$what = (split(/\s+/,$_))[10];
+		($path,$value) = stripper("/lib/$lib","lib");
+		$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+		return if errcp(sys("$tool $path $tmp/initrd_mnt/lib")) == 2;
+		($path,$value) = stripper("/lib/$what","lib");
+		$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+		return if errcp(sys("$tool $path $tmp/initrd_mnt/lib")) == 2;
+	    }
+	    # no symbolic link
+	    else {
+		($path,$value) = stripper("/lib/$lib","lib");
+		return if errcp(sys("cp -a $path $tmp/initrd_mnt/lib")) == 2;
+	    }
         }
-   }
+    }
 
 
-  info(0, "Determine run-time link bindings\n");
-  # Has a return code of 0 regardless
-  sys("ldconfig -r $tmp/initrd_mnt");
-  info(0, "Umounting loop device, and compressing initrd\n");
-  return if errum(sys("umount $tmp/initrd_mnt")) == 2;
-  sys("gzip -f9 $tmp/$initrd");
-  pb($I,10); # This takes the longest.
+    info(0, "Determine run-time link bindings\n");
+    # Has a return code of 0 regardless
+    # Also, produces false alarms even when it is working.  
+    info(1, "Ignore warnings about missing directories\n");
+    sys("ldconfig -v -r $tmp/initrd_mnt");
+    info(0, "Umounting loop device, and compressing initrd\n");
+    return if errum(sys("umount $tmp/initrd_mnt")) == 2;
+    sys("gzip -f9 $tmp/$initrd");
+    pb($I,10); # This takes the longest.
 
-  $initrd = $initrd . ".gz";
+    $initrd = $initrd . ".gz";
 
 } # end sub initrd
 

@@ -385,6 +385,11 @@ sub which_stage {
 	}
 
     } # end if one-by-one or continuous
+    elsif ($stages_bool eq "user-defined") {
+
+
+    }
+
 
     for (keys %$continue) { print $_, "=>", $continue->{$_}, "\n"; }
 
@@ -395,7 +400,7 @@ sub continue {
     my $thing;
 
     # This has to go sequentially, but backwards is o.k.
-    if ($stages_bool eq "one-by-one") {
+    if ($stages_bool eq "one-by-one" || $stages_bool eq "continuous") {
         if ( $continue->{check} == 0 ) {
 	    check();
 	    foreach $thing (@check_boxes) {
@@ -407,7 +412,7 @@ sub continue {
 	    $dep->active($true);
 	    $dep->show();
 	    $continue->{check} = 1;
-	    return;
+	    return if $stages_bool eq "one-by-one";
 	}
         if ( $continue->{dep} == 0 ) {
 	    links_deps();
@@ -420,7 +425,7 @@ sub continue {
 	    $space->active($true);
 	    $space->show();
 	    $continue->{dep} = 1;
-	    return;
+	    return if $stages_bool eq "one-by-one";
 	}
         if ( $continue->{space} == 0 ) {
 	    space_left();
@@ -433,7 +438,7 @@ sub continue {
 	    $create->active($true);
 	    $create->show();
 	    $continue->{space} = 1;
-	    return;
+	    return if $stages_bool eq "one-by-one";
 	}
         if ( $continue->{create} == 0 ) {
 	    create();
@@ -446,9 +451,13 @@ sub continue {
 	    $test->active($true);
 	    $test->show();
 	    $continue->{create} = 1;
-	    return;
+	    return if $stages_bool eq "one-by-one";
 	}
 
+    }
+    elsif ($stages_bool eq "user-defined") {
+	
+    
     }
 
 }

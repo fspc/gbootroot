@@ -770,7 +770,7 @@ sub create_filesystem {
 		return "ERROR" if $error && $error eq "ERROR";
 	    }
     } else {
-	    if (sys("mke2fs -F -m 0 -i $inode_size $device $fs_size") !~ 
+	    if (sys("mke2fs -m 0 -i $inode_size $device $fs_size") !~ 
 		/^0$/ ) {
 		$error = error("Can not make $fs_type filesystem");
 		return "ERROR" if $error && $error eq "ERROR";
@@ -778,7 +778,7 @@ sub create_filesystem {
     }
 
     if (!-d $mount_point) {
-	return "ERROR" if errmk(sys("mkdir $mount_point")) == 2;
+       return "ERROR" if errmk(sys("mkdir $mount_point")) == 2;
     }
     mount_device($device,$mount_point);
     ##### lost+found on a ramdisk is pointless
@@ -914,7 +914,7 @@ sub create_filesystem {
     ## Probably will want to umount here
 
     info(0, "\nDone with $PROGRAM_NAME.  $Warnings warnings.\n",
-	 "$device is still mounted on $mount_point\n");
+	 "$device is still mounted on $mount_point\n\n");
 
 } # end sub create_filesystem
 
