@@ -30,7 +30,7 @@
 
 # This line prevents alternative post scripts that are specific to
 # various rpm system from running, and interacting badly with the
-# spec.  This great when you want to maintain packages that run
+# spec.  This is great when you want to maintain packages that run
 # everywhere, and don't relish the idea of having to compile hundreds
 # of packages every time you do a release.  However, efforts on the
 # parts of individuals to make packages specific to various
