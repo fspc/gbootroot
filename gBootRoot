@@ -246,7 +246,7 @@ if (!-d "$tmp1/gbootroot_mnt$$") {
 #  1 --> all messages.
 my $verbosity = 1;
 my $verbosefn = "$tmp/verbose"; # gBootRoot
-my $yard_temp = "$tmp/yard_verbose;  # Yard
+my $yard_temp = "$tmp/yard_verbose";  # Yard - always logged, but 0&1 = STDOUT
 
 
 # Right now >= 0.7000 is o.k.
