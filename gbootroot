@@ -1420,6 +1420,9 @@ sub accept_button {
 			return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
 		    }
 		}
+		else {
+		    $ear2->set_text("$entry_advanced[4]");
+		}
 	    }
 	    elsif ($bz2_toggle_root->active) {
 		$compress = "bzip2";
@@ -1446,6 +1449,9 @@ sub accept_button {
 		    else {
 			return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
 		    }
+		}
+		else {
+		    $ear2->set_text("$entry_advanced[4]");
 		}
 	    }
 	}
