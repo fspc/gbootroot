@@ -1805,6 +1805,15 @@ sub save_as {
     $save_as = Gtk::Dialog->new();
     $save_as->signal_connect("destroy", \&destroy_window, \$save_as);
     $save_as->signal_connect("delete_event", \&destroy_window, \$save_as);
+    $save_as->signal_connect("key_press_event", sub {
+	my $event = pop @_; 
+	if ($event->{'keyval'}) {
+	    if ($event->{'keyval'} == 65307) {
+		$save_as->destroy;
+	    }
+	}
+    },
+			     );
     $save_as->set_title("Save As");
     $save_as->border_width(12);
     $save_as->set_position('center');

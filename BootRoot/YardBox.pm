@@ -809,6 +809,15 @@ sub yard_box {
 	$search_window->destroy if $search_window; } );
     $main::yard_window->signal_connect("delete_event", sub { 
 	$search_window->destroy if $search_window; });
+    $main::yard_window->signal_connect("key_press_event", sub {
+	my $event = pop @_; 
+	if ($event->{'keyval'}) {
+	    if ($event->{'keyval'} == 65307) {
+		$main::yard_window->destroy;
+	    }
+	}
+    },
+			     );
     $main::yard_window->set_usize( 525, 450 );
     $main::yard_window->set_policy( $true, $true, $false );
     $main::yard_window->set_title( "Yard Box - $template" );
@@ -1899,6 +1908,10 @@ File Shortcuts
  Alt-N  New Template  
  Ctrl-S Save File
  Alt-A  Save As File
+
+Yard Box Shortcuts
+
+ Esc  Close Yard Box
 SHORTCUTS
 
 sub path {
