@@ -1,5 +1,15 @@
-1.4.0 - 12/20/2002
+1.4.0 - 01/06/2003
 ------------------
+
+Updated to 2.4.19-45um and the latest uml tools 20021103.
+
+Added a nested package, gbootroot-nest1 to allow gbootroot to have
+full functionality under uml.
+
+Wrote and added a C program skas-or-tt to automatically add the proper
+mode={skas,tt} to the commandline.  This means compilation will be
+optimized, and things won't lock up when using gbootroot-nest1 with a
+uml running on top of a host kernel without the skas patch.
 
 The MTD Emulator doesn't work as nicely as before.  Blkmtd seems
 mostly broken, and mtdram needs more careful tweaking for total size,
@@ -13,17 +23,28 @@ this change exists with the new port-helper because wasn't the case
 before.  Also, added path for user-mode-linux/usr/bin to find the
 other tools.
 
+The Makefile has been altered quite a bit, and wgets necessary
+sources, unconventional but very nice in keeping up with jdike's
+latest patch.  You can now live quite happily out of the source
+directory.
+
+Added the templates for Initrd and root_fs_helper and the
+corresponding replacements that are also used by the source package.
+
+Updated the documentation, and the README found in the source packages
+is now available in the normal packages.
+
 The biggest change is the command-line interface with the yard root
 method.  Now distribute your template and let others easily recreate
 your root_fs without entering the gui by running "gbootroot --template
 your_template" and this is a nice way to manage a distribution you are
-developing.  This all means the source packages are completely
+developing.  This also means that source packages are completely
 automated now, and vastly improved, which is quite awesome.
 
 When root_fs_helper was running with the newer Expect.pm, and
 consequentially the newer uml kernel it became necessary to get out
 when the kernel shuts down with a last function right when it says
-"Power down."
+"Power down" or "bd.*module cleaned up."
 
 Checks for the proper version for newer libc6 linkers.  Hopefully,
 should work properly with libc6 > 2.3.1, too.

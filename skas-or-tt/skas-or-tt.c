@@ -36,10 +36,14 @@ int main(void)
 
 	if ( cmdline_value == 1 ) {
 		printf("Checking for the skas3 patch in the host...not found\nChecking for /proc/mm...not found\n");
+		kill(pid, SIGSTOP);
+		kill(pid, SIGKILL);
 		return(0);
 	}
 	else if ( cmdline_value == 2 ) {
 		printf("Checking for the skas3 patch in the host...found\nChecking for /proc/mm...found\n");
+		kill(pid, SIGSTOP);
+		kill(pid, SIGKILL);
 		return(0);
 	}
 
@@ -62,7 +66,8 @@ int main(void)
 		ret = 0;
 	}
 	else printf("found\n");
-	
+
+	kill(pid, SIGSTOP);
 	kill(pid, SIGKILL);
 	return(ret);
 

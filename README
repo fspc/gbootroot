@@ -1,4 +1,4 @@
-$Id: README,v 1.14 2002/12/22 03:15:05 freesource Exp $
+$Id: README,v 1.15 2003/01/05 02:10:41 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -58,7 +58,7 @@ REQUIREMENTS TO RUN GBOOTROOT
 PERL MODULES
 
 Gtk-Perl (Required for GUI)
---------
+--------------------------
 
 Version 0.7002 or greater.
 http://freshmeat.net/projects/gtk-perl
@@ -96,8 +96,8 @@ ash  lilo  bzip2  file
 
 ROOT METHODS
 
-Yard
-----
+Yard (This is a method - not a program)
+--------------------------------------
 
 Watch the verbosity box, it will be obvious when a required command is 
 missing.  Make sure you have this file installed on your system:
@@ -107,8 +107,9 @@ file
 
 IMPORTANT CONFIGURATIONS
 
-"chown 0:0 /usr/bin/uml_net; chmod 4755 /usr/bin/uml_net" so normal users can 
-have network capabilities.
+"chown 0:0 /usr/bin/uml_net; chmod 4755 /usr/bin/uml_net" so normal
+users can have network capabilities; ofcourse, you may totally avoid
+doing the suid thing by using tunctl.
 
 Should the host kernel have the skas patch applied?
 

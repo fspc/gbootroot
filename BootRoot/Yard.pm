@@ -1591,6 +1591,9 @@ sub create_expect_uml {
 		while (Gtk->events_pending) { Gtk->main_iteration; }
 	    }
 
+	    # Pretty important, probably should check for errors, too.
+	    close(EXPECT);
+
 	    # This will just keep appending, but that's o.k.
 
 	    if ( $fs_type eq "mkcramfs" || $fs_type eq "genromfs" ||

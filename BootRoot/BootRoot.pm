@@ -74,8 +74,9 @@ my $home_uml_kernel;
 $option{gui_mode} ? ($home_uml_kernel = "$home/user-mode-linux/usr/bin/")
     :  ($home_uml_kernel = "$home/uml_kernel/");
 sub uml_kernel {
-    $home_uml_kernel = $home_uml_kernel . "linuxbr" if !$option{"uml-kernel"};
-    return $home_uml_kernel;
+    my $home_umlk = $home_uml_kernel;
+    $home_umlk  = $home_umlk  . "linuxbr" if !$option{"uml-kernel"};
+    return $home_umlk;
 }
 
 my $modules_directory = "/lib/modules";
@@ -363,7 +364,7 @@ if ( !%option || $option{gui_mode} ) {
 # /tmp
 home_builder($tmp1);
 
-if ( !( $option{home} || $option{help} || $option{h} ) ) {
+if ( !( $option{help} || $option{h} ) ) {
 
 # $HOME/.gbootroot/root_filesystem
     home_builder($home_rootfs);
@@ -1545,7 +1546,10 @@ sub uml_box {
         $eab2 = Gtk::Combo->new();
         $table_uml->attach($eab2,1,5,1,2, 
 			  ['expand','fill'],['fill','shrink'],0,0); # 1,3
-	open(OPTIONS,"$home_uml_kernel/.options");
+	my $error;
+	open(OPTIONS,"$home_uml_kernel/.options") or
+	    ($error = error("$home_uml_kernel/.options: $!\n"));
+	return "ERROR"if $error && $error eq "ERROR";
 	my @initial_options = <OPTIONS>;
 	close(OPTIONS); chomp @initial_options;
 	$eab2->entry->set_text($initial_options[0]);
