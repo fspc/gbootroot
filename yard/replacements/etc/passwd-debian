@@ -1,4 +1,4 @@
-root:x:0:0:root:/root:/bin/bash
+root:x:0:0:root:/root:/bin/sh
 daemon:x:1:1:daemon:/usr/sbin:/bin/sh
 bin:x:2:2:bin:/bin:/bin/sh
 sys:x:3:3:sys:/dev:/bin/sh
@@ -19,4 +19,4 @@ list:x:38:38:SmartList:/var/list:/bin/sh
 irc:x:39:39:ircd:/var:/bin/sh
 gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats/gnats-db:/bin/sh
 nobody:x:65534:65534:nobody:/home:/bin/sh
-user:x:1002:1002:BootRoot User,uml,333-333-3333,333-333-333,Howdy:/home/user:/bin/bash
+user:x:1002:1002:BootRoot User,uml,333-333-3333,333-333-333,Howdy:/home/user:/bin/sh
