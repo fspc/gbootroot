@@ -250,7 +250,7 @@ my ($hbox_advanced);
 my $separator_advanced;
 my @entry_advanced;
 my $entry_advanced;
-my ($ea1,$ea2,$ea3,$ea4); # entry advanced boot  
+my ($ea1,$ea2,$ea3,$ea4,$ea5); # entry advanced boot  
 my ($ear1,$ear2,$ear3,$ear4); # entry advanced root
 my ($eab1,$eab2,$eab3); # entry advanced uml
 my $uml_window;
@@ -810,7 +810,7 @@ sub advanced_boot_section {
 	my $boolean;
 
        # The table section
-       $table_advanced = Gtk::Table->new( 5, 3, $true );
+       $table_advanced = Gtk::Table->new( 6, 3, $true );
        $vbox_advanced->pack_start( $table_advanced, $true, $true, 0 );
        $table_advanced->show();
 
@@ -880,7 +880,7 @@ sub advanced_boot_section {
        $ea3 = entry_advanced(1,3,3,4,11,$table_advanced);
        $tooltips->set_tip( $ea3, "Add the modules found in" .
                                  " /lib/modules/kernel-version which are" .
-                               	 " neccessary for the Boot Method to work" .
+                               	 " necessary for the Boot Method to work" .
                                  " properly.",
                                     "");
        $ea3->set_text($entry_advanced[11]) if defined $entry_advanced[11];
@@ -893,6 +893,17 @@ sub advanced_boot_section {
        $tooltips->set_tip( $ea4, "Add append options to brlilo.conf.", "");
        $ea4->set_text($append) if defined $append;
        $ea4->set_text($entry_advanced[2]) if defined $entry_advanced[1];
+
+       #_______________________________________ 
+       # Kernel Version
+       label_advanced("Kernel Version:",0,1,5,6,$table_advanced);
+       $ea5 = entry_advanced(1,2,5,6,12,$table_advanced);
+       $tooltips->set_tip( $ea5, "Override the kernel version number found" .
+			         " in the kernel header.  This will change" .
+                                 " the /lib/modules/kernel-version directory",
+                                    "");
+       $ea5->set_text($entry_advanced[12]) if defined $entry_advanced[12];
+
 
        $button_count++;
     }
@@ -1635,6 +1646,7 @@ sub Generate {
     # 10 = UML root_fs
 
     # 11 = Kernel Modules  .. from the Boot Method
+    # 12 = Kernel Version  .. from the Boot Method
 
     # $root_device_size;
     # $filesystem_size;
@@ -1677,6 +1689,8 @@ sub Generate {
 
     if ($method eq "yard") {
 	if (!$main::yard_window) {
+	    ##$ars->{kernel} = "" if !$entry2->get_text();
+	    ##ars($ars);
 	    yard();
         }
     }
