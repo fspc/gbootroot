@@ -1,4 +1,4 @@
-##############################################################################
+#############################################################################
 ##
 ##  Yard.pm combining
 ##  MAKE_ROOT_FS, CHECK_ROOT_FS, and YARD_UTILS.PL by Tom Fawcett
@@ -494,11 +494,13 @@ sub hard_links {
 # GBteam added stripped file size check.
 sub space_check {
 
+    
     info(0, "Checking space needed.\n");
 
     # For libs [obj_count  1 = "all" 0 = "debug"]
     my ($fs_size, $strip_lib, $strip_bin, 
         $strip_module, $obj_count, $tmp) = @_;
+
     my($total_bytes) = 0;
     my(%counted);
 
@@ -507,8 +509,6 @@ sub space_check {
     # %replaced_by /path/file /path/file .. <= 
     # %links_to    /path/file-symnlink   actual-file
     # %hardlinked  /path/file  dev/inode -> stat()
-
-#    open(CHECK,">check-size");
 
     my ($file);
     foreach $file (keys %Included) {
@@ -525,9 +525,66 @@ sub space_check {
 	    #####  Use the replacement file instead of this one.  In the
 	    #####  future, improve this so that replacement is resolved WRT
 	    #####  %links_to
+	    if ($strip_lib) {
+		my $not_stripped = `file $file`;
+		if ($not_stripped =~ m,not stripped,) {
+		    if ($obj_count == 0) {
+			if ($lib_needed_by{$replacement}) {
+			    my $tmp_strip = "$tmp/" . basename($replacement);
+			 sys("objcopy --strip-debug $replacement $tmp_strip");
+			    info(1, 
+                            "Counting bytes of replacement $replacement", 
+			     " (STRIPPED DEBUG)\n"); 
+			    $total_bytes += bytes_allocated($tmp_strip);
+			    unlink($tmp_strip);
+			    next;
+			}
+		    }
+		    elsif ($obj_count == 1) {
+			if ($lib_needed_by{$replacement}) {
+			    my $tmp_strip = "$tmp/" . basename($replacement);
+			 sys("objcopy --strip-debug $replacement $tmp_strip");
+			    info(1, 
+                            "Counting bytes of replacement $replacement",
+			    " (STRIPPED ALL)\n"); 
+			    $total_bytes += bytes_allocated($tmp_strip);
+			    unlink($tmp_strip);
+			    next;
+			}
+		    }
+	        }
+	    }
+
+	    if ($strip_module) {
+		my $not_stripped = `file $replacement`;
+		if ($not_stripped =~ m,not stripped,) {
+			if ($is_module{$replacement}) {
+			    my $tmp_strip = "$tmp/" . basename($replacement);
+			 sys("objcopy --strip-debug $replacement $tmp_strip");
+			    info(1, 
+                            "Counting bytes of replacement $replacement",
+			    " (STRIPPED DEBUG)\n"); 
+			    $total_bytes += bytes_allocated($tmp_strip);
+			    unlink($tmp_strip);
+			    next;
+			}
+	        }
+	    }
+
+	    if ($strip_bin) {
+		my $not_stripped = `file $replacement`;
+		if ($not_stripped =~ m,not stripped,) {
+		    my $tmp_strip = "$tmp/" . basename($replacement);
+		    sys("objcopy --strip-all $replacement $tmp_strip");
+		    info(1, "Counting bytes of replacement $replacement",
+		    " (STRIPPED ALL)\n"); 
+		    $total_bytes += bytes_allocated($tmp_strip);
+		    unlink($tmp_strip);
+		    next;
+	        }
+	    }
 	    info(1, "Counting bytes of replacement $replacement\n");
 	    $total_bytes += bytes_allocated($replacement);
-#            print CHECK "TOTAL: $total_bytes AMT: ", bytes_allocated($replacement), "\n";
 
 	} elsif (-l $file or $links_to{$file}) { ## no strip
 	    #####  Implicit or explicit symbolic link.  Only count link size.
@@ -536,17 +593,28 @@ sub space_check {
 		: length($links_to{$file});
 	    info(1, "$file (link) size $size\n");
 	    $total_bytes += $size;
-#            print "CHECK $file "TOTAL: $total_bytes AMT: ", $size, "\n";
 	} elsif ($devino = $hardlinked{$file}) {
 	    #####  This file is hard-linked to another.  We don't necessarily
 	    #####  know that the others are going to be in the file set.  
             #####  Count the first and mark the dev/inode so we don't count 
             #####  it again.  .. pretty cool
 	    if (!$counted{$devino}) {  ## 1 strip for hardlinked file
+		if ($strip_bin) {
+		    my $not_stripped = `file $file`;
+		    if ($not_stripped =~ m,not stripped,) {
+			my $tmp_strip = "$tmp/" . basename($file);
+			sys("objcopy --strip-all $file $tmp_strip");
+			info(1, "Counting ", -s $tmp_strip, 
+			     " bytes of hard-linked file $tmp_strip",
+			     " (STRIPPED ALL)\n");      
+			$total_bytes += bytes_allocated($tmp_strip);
+			unlink($tmp_strip);
+			next;
+		    }
+		}
 		info(1, "Counting ", -s _, 
 		     " bytes of hard-linked file $file\n");      
 		$total_bytes += bytes_allocated($file);
-#            print CHECK "TOTAL: $total_bytes AMT: ", bytes_allocated($file), "\n";
 		$counted{$devino} = 1;
 	    } else {
 		info(1, "Not counting bytes of hard-linked file $file\n");
@@ -555,7 +623,6 @@ sub space_check {
 	} elsif (-d $file) { ## no strip
 	    $total_bytes += $INODE_SIZE;
 	    info(1, "Directory $file = ", $INODE_SIZE, " bytes\n");
-#            print CHECK "TOTAL: $total_bytes AMT: ", $INODE_SIZE, "\n";
 	} elsif ($file =~ m|^/proc/|) { ## no strip
 	    #####  /proc files screw us up (eg, /proc/kcore), and there's no
 	    #####  Perl file test that will detect them otherwise.
@@ -568,9 +635,66 @@ sub space_check {
 	    ## and everything else if strippable.  For lib two states are
 	    ## posible
 	    #####  Count space for plain files
-	    info(1, "$file size ", -s _, "\n");
+	    if ($strip_lib) {
+		my $not_stripped = `file $file`;
+		if ($not_stripped =~ m,not stripped,) {
+		    if ($obj_count == 0) {
+			if ($lib_needed_by{$file}) {
+			    my $tmp_strip = "$tmp/" . basename($file);
+			    sys("objcopy --strip-debug $file $tmp_strip");
+			    info(1, "$file size ", 
+                                 -s $tmp_strip, " (LIB STRIPPED DEBUG)\n");
+			    $total_bytes += bytes_allocated($tmp_strip);
+			    unlink($tmp_strip);
+			    next;
+			}
+		    }
+		    elsif ($obj_count == 1) {
+			if ($lib_needed_by{$file}) {
+			    my $tmp_strip = "$tmp/" . basename($file);
+			    sys("objcopy --strip-debug $file $tmp_strip");
+			    info(1, "$file size ", 
+                                 -s $tmp_strip, " (LIB STRIPPED ALL)\n");
+			    $total_bytes += bytes_allocated($tmp_strip);
+			    unlink($tmp_strip);
+			    next;
+			}
+		    }
+	        }
+	    }
+
+	    if ($strip_module) {
+		my $not_stripped = `file $file`;
+		if ($not_stripped =~ m,not stripped,) {
+			if ($is_module{$file}) {
+			    my $tmp_strip = "$tmp/" . basename($file);
+			    sys("objcopy --strip-debug $file $tmp_strip");
+			    info(1, "$file size ", 
+                                 -s $tmp_strip, " (MODULE STRIPPED)\n");
+			    $total_bytes += bytes_allocated($tmp_strip);
+			    unlink($tmp_strip);
+			    next;
+			}
+	        }
+	    }
+
+
+	    if ($strip_bin) {
+		my $not_stripped = `file $file`;
+		if ($not_stripped =~ m,not stripped,) {
+		    my $tmp_strip = "$tmp/" . basename($file);
+		    sys("objcopy --strip-all $file $tmp_strip");
+		    info(1, "$file size ", 
+                         -s $tmp_strip, " (BIN STRIPPED)\n");
+		     $total_bytes += bytes_allocated($tmp_strip);
+		     unlink($tmp_strip);
+		     next;
+	        }
+	    }
+
+	    info(1, "$file size ",  -s $file, "\n");
 	    $total_bytes += bytes_allocated($file);
-#           print CHECK "TOTAL: $total_bytes AMT: ", bytes_allocated($file), "\n";
+
 	}
     }
 
@@ -580,7 +704,6 @@ sub space_check {
 
     if (bytes_to_K($total_bytes) > $fs_size) {
 	info(0, "This is more than $fs_size Kbytes allowed.\n");
-            print "Not enough room .. but I'll take care of that later\n";
             return;
     }
 
