@@ -187,6 +187,7 @@ sub read_contents_file {
 	  return "ERROR" if $error && $error eq "ERROR";
 
 	  my($file, $replacement) = $line =~ /^(\S+)\s*<=\s*(\S+)\s*$/;
+	  #$replacement = "$main::global_yard/$replacement";
 
 	  if (!defined($replacement)) {
 	      cf_warn($contents_file, $line, 
@@ -197,7 +198,7 @@ sub read_contents_file {
 	      must_be_abs($file);
 	      (-d $file) and cf_warn($contents_file, $line, 
                                      "left-hand side can't be directory");
-	      my($abs_replacement) = find_file_in_path($replacement);
+	      my($abs_replacement) = find_file_in_path($replacement,$main::global_yard);
 	      if (!(defined($abs_replacement) and -e $abs_replacement)) {
 		  cf_warn($contents_file, $line, "Can't find $replacement");
 		  
