@@ -1,4 +1,4 @@
-#  $Id: Example.yard,v 1.10 2001/12/07 02:46:52 freesource Exp $
+#  $Id: Example.yard,v 1.11 2001/12/11 01:51:46 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with getty.  
@@ -230,9 +230,30 @@ depmod
 modprobe
 /etc/modules.conf
 #
-#       The actual modules.  You probably want to be more selective than this.
-#       Do a "lsmod" and include the modules you use.
+#  Modules from your host system.  
+#
+#  You probably want to be more selective than this
+#  Do a "lsmod" and include the modules you use.
+#
 #/lib/modules/$RELEASE/*/*.o
+#
+#  User-Mode-Linux modules
+#
+#  These are modules compiled for the uml kernel version
+#  included with gbootroot.  Choose 2.2 or 2.4 depending on
+#  which kernel series your are using with your live host system.
+#  You may either include the modules archive with the root 
+#  filesystem as a replacement and "tar xvf", or untar the
+#  modules archive from the host system by mounting it 
+#  with "mount -t hostfs none -o \ 
+#  /usr/lib/bootroot/yard/Replacements/lib/modules /mnt" 
+#  and then "tar xvf /mnt/modules-2.4.tar -C /".
+#
+#  Then "depmod -ae -F /proc/ksyms" from the running uml kernel.
+#
+#
+#/modules-2.2.tar  <=  Replacements/lib/modules/modules-2.2.tar  
+#/modules-2.4.tar  <=  Replacements/lib/modules/modules-2.4.tar
 
 #####  ESSENTIAL SYSTEM UTILITIES
 # (your rescue disk may not boot if these are not present.)
