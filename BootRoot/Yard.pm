@@ -1516,14 +1516,27 @@ sub create_expect_uml {
 
 
 	    my $expect_program;
-	    $option{"expect-program"} ?
-		($expect_program = $option{"expect-program"}) :
-		    ($expect_program = "/usr/lib/bootroot/expect_uml");
+	    if ( !$option{gui_mode} ) {
+		$option{"expect-program"} ?
+		    ($expect_program = $option{"expect-program"}) :
+			($expect_program = "/usr/lib/bootroot/expect_uml");
+	    }
+	    else {
+		$expect_program = $option{home} . "/expect_uml";
+	    }
+
 	    my $version = "2.4";
+
 	    my $ubd0;
-	    $option{"root-fs-helper-location"} ?
-		($ubd0 = "ubd0=" . $option{"root-fs-helper-location"}) :
-	    ($ubd0 = "ubd0=/usr/lib/bootroot/root_filesystem/root_fs_helper");
+	    if ( !$option{gui_mode} ) {
+		$option{"root-fs-helper-location"} ?
+		    ($ubd0 = "ubd0=" . $option{"root-fs-helper-location"}) :
+			($ubd0 = "ubd0=/usr/lib/bootroot/root_filesystem/root_fs_helper");
+	    }
+	    else {
+		$ubd0 = "ubd0=./" .  "root_filesystem/root_fs_helper";
+	    }
+
 	    my $ubd1 = "ubd1=$device";
 	    my $options = "root=/dev/ubd0"; # need to keep this 1
 	    my $filesystem;
@@ -1587,17 +1600,39 @@ sub create_expect_uml {
 
 	    
         }
-	elsif (
-	       sys("/usr/lib/bootroot/$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
-	       /^0$/ ) {
-	    $error = error("Cannot $fs_type filesystem.\n");
-	    return "ERROR" if $error && $error eq "ERROR";
-	}
+	else {
+	    # This could have been done with one if statement --freesource
+	       if ( $option{genext2fs} ) {
+
+		   my $command = $option{genext2fs} . "/genext2fs/$main::makefs";
+
+		   if ( sys("$command -b $fs_size -d $mount_point -D $device_table $device") !~ 
+			/^0$/ ) {
+		       $error = error("Cannot $fs_type filesystem.\n");
+		       return "ERROR" if $error && $error eq "ERROR";
+		   }
+	       }
+	       elsif ( $option{gui_mode} ) {
+
+		   my $command = $option{home} . "/genext2fs/$main::makefs";
+		   if ( sys("$command  -b $fs_size -d $mount_point -D $device_table $device") !~ 
+			/^0$/ ) {
+		       $error = error("Cannot $fs_type filesystem.\n");
+		       return "ERROR" if $error && $error eq "ERROR";
+                 
+		   }
+	       }
+	       elsif ( sys("/usr/lib/bootroot/$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
+		       /^0$/ ) {
+		   $error = error("Cannot $fs_type filesystem.\n");
+		   return "ERROR" if $error && $error eq "ERROR";
+	       }
+	   }
     }
 
 
     info(0, "\nDone making the root filesystem.  $Warnings warnings.\n",
-	     "$device is now umounted from $mount_point\n\n");
+	 "$device is now umounted from $mount_point\n\n");
 
     #info(0, "All done!\n");
     #info(0, "You can run more tests with the UML kernel\n", 

@@ -237,6 +237,12 @@ BEGIN {
 
     $::commandline = \%option if %option;
     $::commandline = $ARGV[0] if $ARGV[0];
+    
+    if ( $option{home} && !$option{template} ) {
+	undef $::commandline;
+	$option{gui_mode} = $option{home};
+	undef $option{home};
+    }
 
     if ( $Getopt::Long::error > 0 ) {
 	
@@ -244,8 +250,8 @@ BEGIN {
 
     }
 
-
-    if ( !%option ) {
+    
+    if ( !%option || $option{gui_mode}) {
 	if ( !$::commandline  ) {
 
 	    use Gtk;
@@ -270,7 +276,7 @@ $main::sudo = "sudo";
 start();
 
 
-if ( !%option ) {
+if ( !%option || $option{gui_mode} ) {
     if ( !$::commandline  ) {
 
 	main Gtk;

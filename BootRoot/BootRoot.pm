@@ -49,6 +49,7 @@ my $tmp1 = "/tmp";              # tmp should be default - Cristian
 my $lilo_conf = "/etc/lilo.conf";
 my $pwd = `pwd`; chomp $pwd;
 my $home;
+$option{home} = $option{gui_mode} if $option{gui_mode};
 $option{home} ? ($home = $pwd) : ($home = "$ENV{HOME}/.gbootroot");
 my $uml_xterm = "xterm -e";
 
@@ -63,13 +64,16 @@ my $uml_xterm = "xterm -e";
 # and to make sure modules are correct in Initrd.gz
 # apply special patches
 
-my $version = "1.3.6";
-my $date = "03.10.2002";
+my $version = "1.4.0";
+my $date = "11.19.2002";
 my $gtk_perl_version = "0.7002";
 my $home_rootfs = "$home/root_filesystem/";
 my $home_uml_kernel = "$home/uml_kernel/";
 my $modules_directory = "/lib/modules";
-my $Initrd = "/usr/lib/bootroot/root_filesystem/Initrd.gz";
+my $Initrd;
+$option{gui_mode} ?
+    ($Initrd = $home_rootfs . "Initrd.gz")
+    : ($Initrd = "/usr/lib/bootroot/root_filesystem/Initrd.gz");
 
 # This is for experimental stuff .. basically so I can test
 # the boot fs as a normal user, since it's hard to create a boot disk
@@ -250,10 +254,9 @@ my $ars = {}; # anonymous hash
 
 sub start {
 
-if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
+    if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
     $main::makefs = "genext2fs -z -r0"; # -i8192 not a good idea
 }
-
 
 $SIG{INT} = \&signal;
 $SIG{ABRT} = \&signal;
@@ -350,7 +353,7 @@ my $verbosity = 1; # info & sys use this as Global
 $verbosefn = "$tmp/verbose"; # All verbosity
 #my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
 
-if ( !%option ) {
+if ( !%option || $option{gui_mode} ) {
     if ( !$::commandline ) {
 
 	# Need this before everything.
@@ -367,80 +370,87 @@ if ( !%option ) {
 # /tmp
 home_builder($tmp1);
 
+# gbootroot will need to be run at least once without options to make these
+# directories
+if ( !%option ) {
+
+
 # $HOME/.gbootroot/root_filesystem
-home_builder($home_rootfs);
+    home_builder($home_rootfs);
 
-# $HOME/.gbootroot/uml_kernel
-home_builder($home_uml_kernel);
-symlink_builder("/usr/bin/linux","$home_uml_kernel/linux");
-if (!-e "$home_uml_kernel/.options") {
-    open(OPTIONS,">$home_uml_kernel/.options") 
-	or die "Couldn't write $home_uml_kernel/.options at $?\n";
-    # I removed mem=16M to make sure the optimal mem size was being chosen for the MTD Emulator
-    # in case the user didn't know any better.
-    print OPTIONS "umid=bootroot root=/dev/ubd0\n";
-    close(OPTIONS);
+    # $HOME/.gbootroot/uml_kernel
+    home_builder($home_uml_kernel);
+    symlink_builder("/usr/bin/linux","$home_uml_kernel/linux");
+    if (!-e "$home_uml_kernel/.options") {
+	open(OPTIONS,">$home_uml_kernel/.options") 
+	    or die "Couldn't write $home_uml_kernel/.options at $?\n";
+	# I removed mem=16M to make sure the optimal mem size was being 
+	# chosen for the MTD Emulator
+	# in case the user didn't know any better.
+	print OPTIONS "umid=bootroot root=/dev/ubd0\n";
+	close(OPTIONS);
+    }
+
+    # $HOME/.gbootroot/yard/templates 
+    home_builder($template_dir);
+    if ( -d $global_yard_templates ) {
+	opendir(DIR,$global_yard_templates) if -d $template_dir;
+	# I decided this may be too restrictive, besides, everything
+	# is kept in its own directory.
+	#my @templates = grep { m,\.yard$, } readdir(DIR); 
+	my @templates = grep { m,^\w+, } readdir(DIR); 
+	closedir(DIR);
+	foreach ( @templates ) {
+	    if (!-e "$template_dir/$_" && !-l "$template_dir/$_") {
+		symlink_builder("$global_yard_templates/$_","$template_dir/$_");
+	    }
+    }
 }
+    
+    # Arch indep replacements repository
+    # $HOME/.gbootroot/yard/Replacements 
+    home_builder($home_yard_replacements);
+    if ( -d $global_yard_replacements_arch_indep ) {
+	if (-d $home_yard_replacements) {
+	    find sub {  ( my $replacement = 
+			  $File::Find::name ) =~ s/$global_yard_replacements_arch_indep\///;
+			if (!-e "$home_yard_replacements/$replacement") {
+			    
+			    #system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
+			    system "mkdir $home_yard_replacements/$replacement > /dev/null 2>&1" if -d $File::Find::name;
+			    symlink_builder( $File::Find::name,"$home_yard_replacements/$replacement") if !-d $File::Find::name;
+			}
+			
+		    }, $global_yard_replacements_arch_indep;
+	    
 
-# $HOME/.gbootroot/yard/templates 
-home_builder($template_dir);
-if ( -d $global_yard_templates ) {
-    opendir(DIR,$global_yard_templates) if -d $template_dir;
-    # I decided this may be too restrictive, besides, everything
-    # is kept in its own directory.
-    #my @templates = grep { m,\.yard$, } readdir(DIR); 
-    my @templates = grep { m,^\w+, } readdir(DIR); 
-    closedir(DIR);
-    foreach ( @templates ) {
-	if (!-e "$template_dir/$_" && !-l "$template_dir/$_") {
-	    symlink_builder("$global_yard_templates/$_","$template_dir/$_");
 	}
     }
-}
-
-# Arch indep replacements repository
-# $HOME/.gbootroot/yard/Replacements 
-home_builder($home_yard_replacements);
-if ( -d $global_yard_replacements_arch_indep ) {
-    if (-d $home_yard_replacements) {
-	find sub {  ( my $replacement = 
-		       $File::Find::name ) =~ s/$global_yard_replacements_arch_indep\///;
-		   if (!-e "$home_yard_replacements/$replacement") {
-
-		       #system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
-		       system "mkdir $home_yard_replacements/$replacement > /dev/null 2>&1" if -d $File::Find::name;
-		       symlink_builder( $File::Find::name,"$home_yard_replacements/$replacement") if !-d $File::Find::name;
-		   }
-
-	       }, $global_yard_replacements_arch_indep;
-		      
-
+    
+    # Arch dep replacements repository
+    if ( -d $global_yard_replacements_arch_dep ) {
+	if (-d $home_yard_replacements) {
+	    find sub {  ( my $replacement = 
+			  $File::Find::name ) =~ s/$global_yard_replacements_arch_dep\///;
+			if (!-e "$home_yard_replacements/$replacement") {
+			    
+			    #system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
+			    system "mkdir $home_yard_replacements/$replacement > /dev/null 2>&1" if -d $File::Find::name;
+			    symlink_builder( $File::Find::name,"$home_yard_replacements/$replacement") if !-d $File::Find::name;
+			}
+			
+		    }, $global_yard_replacements_arch_dep;
+	    
+	    
+	}
     }
-}
-
-# Arch dep replacements repository
-if ( -d $global_yard_replacements_arch_dep ) {
-    if (-d $home_yard_replacements) {
-	find sub {  ( my $replacement = 
-		       $File::Find::name ) =~ s/$global_yard_replacements_arch_dep\///;
-		   if (!-e "$home_yard_replacements/$replacement") {
-
-		       #system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
-		       system "mkdir $home_yard_replacements/$replacement > /dev/null 2>&1" if -d $File::Find::name;
-		       symlink_builder( $File::Find::name,"$home_yard_replacements/$replacement") if !-d $File::Find::name;
-		   }
-
-	       }, $global_yard_replacements_arch_dep;
-		      
-
-    }
-}
-
-
+    
+    
+} # !%options
 
 #-------------------------------
 
-if ( !%option ) {
+if ( !%option || $option{gui_mode} ) {
     if ( !$::commandline ) {
 
 # Gtk::check_version expects different arguments than .7004 so will have
@@ -462,8 +472,9 @@ if ( !%option ) {
 
 my $window;
 
-if ( !%option ) {
-    if ( !$::commandline  ) {
+if ( !%option || $option{gui_mode} ) {
+    if ( !$::commandline ) {
+
 
 $window = Gtk::Window->new("toplevel");
 # special policy
@@ -929,7 +940,7 @@ if ( $method eq "yard" ) {
 
 ######################################################
 
-}  # end if !$::commandline
+}  # end if !$::commandline || $option{gui_mode}
 
 } # end start
 
