@@ -231,13 +231,24 @@ BEGIN {
 	$ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
     }
 
+    if ( !$ARGV[0] ) {
+
+	use Gtk;
+	init Gtk;
+	set_locale Gtk; 
+	
+    }
+    else {
+ 
+	$::commandline = $ARGV[0];
+
+    }
+
 }
 
-use Gtk;
+
 use strict;
 use BootRoot::BootRoot;
-init Gtk;
-set_locale Gtk; 
 
 $main::editor = "emacs --font 6x13";
 $main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
@@ -245,11 +256,12 @@ $main::sudo = "sudo";
 
 start();
 
+if ( !$ARGV[0] ) {
 
-main Gtk;
-exit( 0 );
-
-
+    main Gtk;
+    exit( 0 );
+ 
+}
 
 
 

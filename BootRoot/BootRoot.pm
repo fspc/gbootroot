@@ -248,7 +248,6 @@ my $ars = {}; # anonymous hash
 
 sub start {
 
-
 if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
     $main::makefs = "genext2fs -z -r0"; # -i8192 not a good idea
 }
@@ -352,9 +351,11 @@ $verbosefn = "$tmp/verbose"; # All verbosity
 # Need this before everything.
 Gtk::Rc->parse("/etc/gbootroot/gbootrootrc");
 
-verbosity_box();
+if ( !$::commandline ) {
+verbosity_box(); 
 start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
                                              # "verbosity level"
+}
 
 #-------------------------------
 # USER DIRECTORIES
@@ -434,23 +435,29 @@ if ( -d $global_yard_replacements_arch_dep ) {
 
 #-------------------------------
 
+if ( !$::commandline ) {
+
 # Gtk::check_version expects different arguments than .7004 so will have
 # to check for the version instead.
 # Right now >= 0.7002 is o.k.
 #if (Gtk::check_version(undef,"1","0","7") =~ /too old/) {
 
-if (Gtk->major_version < 1) {
-    et();
-}
-elsif (Gtk->micro_version < 7) {
-    et();
-}
-elsif (Gtk->minor_version < 2) {
-    et();
+    if (Gtk->major_version < 1) {
+	et();
+    }
+    elsif (Gtk->micro_version < 7) {
+	et();
+    }
+    elsif (Gtk->minor_version < 2) {
+	et();
+    }
 }
 
+my $window;
 
-my $window = Gtk::Window->new("toplevel");
+if ( !$::commandline ) {
+
+$window = Gtk::Window->new("toplevel");
 # special policy
 $window->set_policy( $false, $true, $true );
 $window->set_title("gBootRoot");
@@ -712,6 +719,13 @@ $box2->pack_start( $hbutton, $true, $true, 0 );
 $box2->show();
 
 $window->show();
+
+}
+
+# Here we put the logic if the program is going to be run from the commandline.
+# The logic is linear.
+else {
+
 
 
 } # end start
@@ -2782,7 +2796,8 @@ sub verbosity_box {
 
        show $verbosity_window;
 
-} # end sub verbosity_box
+} # end sub verbosity_box 
+
 
 sub fileselect {
 
