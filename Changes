@@ -122,7 +122,7 @@ device hadn't been umounted yet, this was observed with genext2fs but was
 certainly a global bug.  This has been fixed.
 
 The majority of add-on replacements except for passwd*, shadow, and 
-ld.so.conf have $Id: Changes,v 1.2 2001/12/08 03:20:22 freesource Exp $ and "make_debian replacement".  
+ld.so.conf have a CVS Id and "make_debian replacement".  
 
 Original CVS information is now preserved so
 that non-root users and root can't edit global replacements, the basic idea 
