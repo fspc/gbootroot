@@ -6,6 +6,7 @@ install:
 	cp -fa gbootroot $(DESTDIR)/usr/bin/gbootroot
 	install -d $(DESTDIR)/usr/lib/bootroot
 	cp -fa yard_chrooted_tests $(DESTDIR)/usr/lib/bootroot/yard_chrooted_tests
+	cp -fa genext2fs/genext2fs $(DESTDIR)/usr/lib/bootroot/genext2fs
 	cp -fa yard/scripts/make_debian $(DESTDIR)/usr/bin/make_debian
 	install -d $(DESTDIR)/usr/share/perl5/BootRoot
 	cp -fa BootRoot/*.pm $(DESTDIR)/usr/share/perl5/BootRoot
@@ -27,6 +28,7 @@ install:
 remove:
 	rm /usr/bin/gbootroot
 	rm /usr/lib/bootroot/yard_chrooted_tests
+	rm /usr/lib/bootroot/genext2fs
 	rm /usr/bin/make_debian
 	rm /usr/share/perl5/BootRoot/*
 	rmdir /usr/share/perl5/BootRoot
