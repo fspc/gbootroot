@@ -611,6 +611,7 @@ sub advanced_root_section {
                                         $true, 0 );
        #_______________________________________ 
        # Root Device selection
+       # $::device  $device already exists 
        label_advanced("Root Device:",0,1,0,1,$table_advanced_root);
        # $_[4] shares with advanced_boot_sections @entry_advanced
        $ear1 = entry_advanced(1,2,0,1,3,$table_advanced_root);
@@ -623,6 +624,7 @@ sub advanced_root_section {
 
        #_______________________________________ 
        # Root Device Size
+       # gBootRoot methods
        label_advanced("Root Device Size:",0,1,1,2,$table_advanced_root);
        $adj2 = new Gtk::Adjustment( 1722.0, 0.0, 360000000.0, 282.0, 
                                     360.0, 0.0 );
@@ -641,6 +643,7 @@ sub advanced_root_section {
 
        #_______________________________________ 
        # Root File Name
+       # gBootRoot methods
        label_advanced("Root Filename:",0,1,2,3,$table_advanced_root);
        $ear2 = entry_advanced(1,2,2,3,4,$table_advanced_root);
        $ear2->set_text("root_fs");
@@ -650,7 +653,7 @@ sub advanced_root_section {
        $ear2_save->set_active($true);
        $tooltips->set_tip( $ear2_save, 
                            "Save Root File.  Press right button to change" .
-                           " Directory file is saved in.",
+                           " the Directory the file is saved in.",
                            "" );
        $table_advanced_root->attach($ear2_save,2,3,2,3, 
                                ['expand'],['fill','shrink'],0,0);
@@ -658,6 +661,7 @@ sub advanced_root_section {
 
        #_______________________________________ 
        # Filesystem Size
+       # $::fs_device
        label_advanced("Filesystem Size:",0,1,3,4,$table_advanced_root);
        $adj3 = new Gtk::Adjustment( 4096.0, 0.0, 1000000000.0, 128.0, 
                                     1024.0, 0.0 );
@@ -675,6 +679,7 @@ sub advanced_root_section {
 
        #_______________________________________ 
        # Compression
+       # gBootRoot methods
        label_advanced("Compression:",0,1,4,5,$table_advanced_root);
        $rbutton = new Gtk::RadioButton( "gz" );
        $tooltips->set_tip( $rbutton, 
@@ -695,6 +700,8 @@ sub advanced_root_section {
 
        #_______________________________________ 
        # lib_strip_check
+       # $::strip_objfiles 1 - yes 0 - no  altered Yard.pm to take
+       # into account adjustable library stripping
        label_advanced("Stripping:",0,1,5,6,$table_advanced_root);
        !defined $lib_strip_check_root ? ($boolean = 1) 
          : ($boolean = $lib_strip_check_root->get_active());
@@ -760,6 +767,7 @@ sub advanced_root_section {
 
        #_______________________________________ 
        # Template
+       # $::contents_file
        label_advanced("Template:",0,1,8,9,$table_advanced_root);
        my @strings = ("nothing is here now");
        $combo = new Gtk::Combo(); 
