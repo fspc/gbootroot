@@ -36,10 +36,10 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys device_table 
-              text_insert error warning logadj *LOGFILE which_tests 
-	      create_fstab ars2 make_link_absolute make_link_relative 
-	      cleanup_link yard_glob); # these last two added
-                                                      # as a test
+              text_insert error warning warning_test logadj *LOGFILE 
+	      which_tests create_fstab ars2 make_link_absolute 
+	      make_link_relative cleanup_link yard_glob); 
+              # these last four added for tests
 
 use strict;
 use File::Basename;
@@ -183,7 +183,6 @@ sub read_contents_file {
 
     kernel_version_check($kernel, $kernel_version_choice);
 
-
     # Open DEVICE_TABLE
     if ( $fs_type eq "genext2fs" ) {
 
@@ -280,7 +279,7 @@ sub read_contents_file {
 	      
 	  }
 
-      }
+      }  # genext2fs
 
       if ($line =~ /->/) {	#####  EXPLICIT LINK
 	  if ($line =~ /[\*\?\[]/) {
@@ -397,14 +396,14 @@ sub read_contents_file {
 		  cf_warn($contents_file, $line, "Can't find $replacement");
 		  
 	      } elsif ($replacement =~ m|^/dev/(?!null)|) {
-		#  Allow /dev/null but no other devices
-		cf_warn($contents_file, $line, 
-                        "Can't replace a file with a device");
-
-	    } else {
-		$replaced_by{$file} = $abs_replacement;
-		$Included{$file} = 1;
-	    }
+		  # Allow /dev/null but no other devices
+		  cf_warn($contents_file, $line, 
+			  "Can't replace a file with a device");
+		  
+	      } else {
+		  $replaced_by{$file} = $abs_replacement;
+		  $Included{$file} = 1;
+	      }
 	      
 	      next LINE;
 	  } #  End of replacement spec
@@ -487,11 +486,64 @@ sub extra_links {
 
     my ($contents_file) = @_;
     
+    #info(0, "PASS 2:  Picking up extra files from links, and finding pam and nss service modules...\n");
+
     info(0, "PASS 2:  Picking up extra files from links...\n");
 
-    for (keys %Included) {
+    # First we find nss and pam stuff if asked for.
+
+    for my $file (keys %Included) {
+
+	##### Use replacement file if specified
+	$file = $replaced_by{$file} if defined($replaced_by{$file});
+
+	## Here's where some cool stuff happens
+	## This can be turned on/off from the YardBox
+	## NSS
+	if ( $file =~ m,/nsswitch.conf, ) {
+
+	    my @nss_libs = find_nss($file);
+	    foreach ( @nss_libs ) {
+		$Included{$_} = 1;  # adding on the run
+	    }
+
+	}
+
+	## PAM
+	if ( $file =~ m,/pam\.conf|/pam\.d/, ) {
+	    info(0,"PAM $file\n");
+
+	}
+
+    }
+
+
+    for my $file (keys %Included) {
+
+
+	##### Use replacement file if specified
+	$file = $replaced_by{$file} if defined($replaced_by{$file});
+
+	## Here's where some cool stuff happens
+	## This can be turned on/off from the YardBox
+	## NSS
+	if ( $file =~ m,/nsswitch.conf, ) {
+
+	    my @nss_libs = find_nss($file);
+	    foreach ( @nss_libs ) {
+		$Included{$_} = 1;  # adding on the run
+	    }
+
+	}
+
+	## PAM
+	if ( $file =~ m,/pam\.conf|/pam\.d/, ) {
+	    info(0,"PAM $file\n");
+
+	}
+
         # watch for "" - freesource
-	include_file($contents_file, $_) if $_ ne "";
+	include_file($contents_file, $file) if $file ne "";
     }
 
     %Included = (%Included, %user_defined_link); # --freesource
@@ -517,6 +569,7 @@ sub library_dependencies {
 
 	##### Use replacement file if specified
 	$file = $replaced_by{$file} if defined($replaced_by{$file});
+
 
 	##### Skip links (target will be checked)
 	next if defined($links_to{$file}); # Symbolic (declared)
@@ -2334,7 +2387,8 @@ sub check_pam {
      }
   }
   info(0, "Done with PAM\n");
-}
+
+} # end check_pam
 
 
 
@@ -2360,7 +2414,7 @@ sub check_nss {
       info(0, "You're using $libc\n");
    }
    
-   ## glibc 2.2 uses version 2 for its services
+   ## glibc 2.2 uses version 2 for its services  --freesource
    ## 
    my $X;
    if ( $libc_version == 2 ) {
@@ -2407,7 +2461,8 @@ sub check_nss {
       }
    }
    info(0, "Done with NSS\n");
-}
+
+}  # end sub check_nss
 
 sub check_links {
   info(0, "\nChecking links relative to $mount_point\n");
@@ -2726,6 +2781,194 @@ BLARD
 
 
 ##### END REPLACEMENTS
+
+##### PAM and NSS
+
+#### These next two are basically check_pam and check_nss without the
+#### verbosity.
+
+sub find_pam {
+  my($pam_configured) = 0;	# Have we seen some pam config file yet?
+  info(0, "Checking for PAM\n");
+
+  my($pamd_dir) = "$mount_point/etc/pam.d";
+  my($pam_conf) = "$mount_point/etc/pam.conf";
+
+  if (-e $pam_conf) {
+    info(0, "Checking $pam_conf\n");
+    $pam_configured = 1;
+    open(PAM, $pam_conf)		or error("Can't open pam.conf: $!\n");
+    while (<PAM>) {
+      chomp;
+      next if /^\#/ or /^\s*$/;          # Skip comments and empty lines
+      my($file) = (split)[3];	# Get fourth field
+
+      # This adds a more extensive path search --freesource
+      my @file;
+      if ( $file !~ m,^/, ) {
+	  my $base = basename($file);
+	  @file = ("/usr/lib/security/$base", "/lib/security/$base");
+      }
+      else {
+	  @file = ($file);
+      }
+
+      my (%file_check, $ok);
+      foreach my $files ( @file ) {
+	  if (!-e "$mount_point/$files") {
+	      $file_check{$files} = 0;
+	  }
+	  else {
+	      $file_check{$files} = 1;
+	  }
+      }
+
+      for ( values %file_check ) {
+	  $ok = 1 if $_ == 1;
+      }
+      
+      if ( !$ok ) {
+
+	  foreach $file ( @file ) {
+	      warning_test "$pam_conf($.): $_\n",
+	      "\tLibrary $file does not exist on root fs\n";
+	  }
+
+      }
+
+      #  That's all we check for now
+    }
+    close(PAM)				or error("Closing PAM: $!");
+    info(0, "Done with $pam_conf\n");
+  }
+
+
+  if (-e $pamd_dir) {
+     info(0, "Checking files in $pamd_dir\n");
+     opendir(PAMD, $pamd_dir) or error("Can't open $pamd_dir: $!");
+     my($file);
+     while (defined($file = readdir(PAMD))) {
+	my($file2) = "$pamd_dir/$file";
+	next unless -f $file2;	# Skip directories, etc.
+	open(PF, $file2) or error("$file2: $!");
+	while (<PF>) {
+	   chomp;
+	   next if /^\#/ or /^\s*$/;           # Skip comments and empty lines
+	   my($file) = (split)[2]; ## Get third field --freesource
+	   $pam_configured = 1;
+
+	   # This adds a more extensive path search --freesource
+	   my @file;
+	   if ( $file !~ m,^/, ) {
+	       my $base = basename($file);
+	       @file = ("/usr/lib/security/$base", "/lib/security/$base");
+	   }
+	   else {
+	       @file = ($file);
+	   }
+
+	   my (%file_check, $ok);
+	   foreach my $files ( @file ) {
+	       if (!-e "$mount_point/$files") {
+		   $file_check{$files} = 0;
+	       }
+	       else {
+		   $file_check{$files} = 1;
+	       }
+	   }
+
+	   for ( values %file_check ) {
+	       $ok = 1 if $_ == 1;
+	   }
+      
+	   if ( !$ok ) {
+
+	       foreach $file ( @file ) {
+		   warning_test "$pam_conf($.): $_\n",
+		   "\tLibrary $file does not exist on root fs\n";
+	       }
+
+	   }
+
+	}
+	close(PF);
+     }
+     closedir(PAMD);
+     info(0, "Done with $pamd_dir\n");
+  }
+
+  #  Finally, see whether PAM configuration is needed
+  if (!$pam_configured and -e $login_binary) {
+     my($dependencies) = scalar(`ldd $login_binary`);
+     if (defined($dependencies) and $dependencies =~ /libpam/) {
+	warning_test "Warning: login ($login_binary) needs PAM, but you haven't\n",
+	    "\tconfigured it (in /etc/pam.conf or /etc/pam.d/)\n",
+		"\tYou probably won't be able to login.\n";
+     }
+  }
+  info(0, "Done with PAM\n");
+
+} # end sub find_pam
+
+
+sub find_nss {
+
+    my($nss_conf) = @_;
+    my @nss_libs;
+
+    my($libc) = yard_glob("$mount_point/lib/libc-*");  ## removed 2
+    my($libc_version) = $libc =~ m|/lib/libc-\d+\.(\d)|; ## changed 2 & . 
+    if (!defined($libc_version)) {
+	info(0,"Parsing $nss_conf:\n");
+	warning_test "Can't determine your libc version\n";
+    } else {
+	info(0,"Parsing $nss_conf:\n");
+	info(0, "Using NSS libraries from $libc\n");
+    }
+   
+    ## glibc 2.2 uses version 2 for its services  --freesource
+    ## 
+    my $X;
+    if ( $libc_version == 2 ) {
+	$X = $libc_version;  
+    }
+    else {
+	$X = $libc_version + 1;
+    }
+
+    if (-e $nss_conf) {
+	open(NSS, "<$nss_conf")		or die "open($nss_conf): $!";
+
+	my($line); my %nss_repeats;
+	while (defined($line = <NSS>)) {
+	    chomp $line;
+	    next if $line =~ /^\#/;
+	    next if $line =~ /^\s*$/;
+	    my($db, $entries) = $line =~ m/^(\w+):\s*(.+)$/;
+	    # Remove bracketed expressions	(action specifiers)
+	    $entries =~ s/\[[^\]]*\]//g;
+	    my(@entries) = split(' ', $entries);
+	    my($entry); 
+	    for $entry (@entries) {
+		next if $entry =~ /^\[/; # ignore action specifiers
+		my($lib) = "/lib/libnss_${entry}.so.${X}";
+		if ( -e $lib) {
+		    info(0,"[$line]  ='s  $lib\n");
+		    push(@nss_libs,$lib) if !$nss_repeats{$lib};
+		    $nss_repeats{$lib} = 1;
+		}
+	    }
+	}
+	close(NSS) or error("Closing NSS: $!");
+	
+	return @nss_libs;
+    } 
+    
+
+} # end sub find_nss
+
+
+##### END PAM and NSS
 
 1;
 
