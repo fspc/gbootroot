@@ -218,7 +218,7 @@ $main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
 
 # I need to remember to edit this
 my $version = "1.2.13";
-my $date = "09.28.2001";
+my $date = "10.08.2001";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
@@ -2794,7 +2794,6 @@ sub initrd_size {
     my $dir_size = 9 + 1;
     my $initrd_size = $dir_size + $linuxrc_size;
 
-    info(1,"SIZE $dir_size + $linuxrc_size = $initrd_size\n");
 
     # modules - see CVS:1.65 for previous non-size check.
     my @modules = kernel_modules();
