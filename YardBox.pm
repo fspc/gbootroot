@@ -545,12 +545,6 @@ sub create {
 
 }
 
-sub test {
-
-
-}
-
-
 #########
 # TESTS #
 #########
@@ -593,6 +587,12 @@ sub tests {
     }
     print "$label[0]", $tests{$action}{$label[0]} , "\n";
 
+}
+
+sub test { 
+
+    $error = which_tests(\%tests); 
+    return if $error && $error eq "ERROR";
 }
 
 #########################

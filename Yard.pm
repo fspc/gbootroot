@@ -34,7 +34,7 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys 
-              text_insert logadj error *LOGFILE);
+              text_insert logadj error *LOGFILE which_tests);
 
 use strict;
 use File::Basename;
@@ -57,7 +57,7 @@ my($Warnings) = 0;
 my $verbosity;
 my ($text_insert,$red,$blue); 
 my $logadj;
-my $mount_point;
+my ($device, $mount_point);
 
 # This solves an annoying problem with the new Perl-5.6 built in glob,
 # allowing earlier versions of Perl to run.
@@ -99,7 +99,7 @@ sub kernel_version_check {
 	$ENV{'RELEASE'} = $kernel_version;
 
     } elsif (defined($ENV{'RELEASE'} = kernel_version($kernel))) {
-	info(0, "Version probe of $kernel returns: $ENV{'RELEASE'}\n");
+	info(0, "\nVersion probe of $kernel returns: $ENV{'RELEASE'}\n");
     } else {
 	warning "Can't determine kernel version of $kernel\n";
 	my($release) = `uname -r`;
@@ -744,10 +744,10 @@ sub space_check {
 
 sub create_filesystem {
 
-    my ($filename, $fs_size,$ fs_type, $inode_size, $mnt, $strip_lib, 
+    my ($filename, $fs_size, $fs_type, $inode_size, $mnt, $strip_lib, 
 	$strip_bin, $strip_module, $obj_count) = @_;
         
-    my $device = "$mnt/$filename";
+    $device = "$mnt/$filename";
     $mount_point = "$mnt/loopback";
 
     my $file;
@@ -782,7 +782,8 @@ sub create_filesystem {
     if (!-d $mount_point) {
        return "ERROR" if errmk(sys("mkdir $mount_point")) == 2;
     }
-    mount_device($device,$mount_point);
+
+    return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
     ##### lost+found on a ramdisk is pointless
     sys("rm -rf $mount_point/lost+found");
 
@@ -1130,7 +1131,7 @@ sub start_logging_output {
   }
   # ERRORCHECK
   ## If logfile doesn't open in /tmp there is some type of fatal problem.
-  open(LOGFILE, ">>$logfile") or die "open($logfile): $!\n";
+  open(LOGFILE, ">>$logfile") or error("open($logfile): $!\n");
   # &::verbosity_box() if !visible $verbosity_window;
   info(1, "Logging output to $logfile\n")
 }
@@ -1149,19 +1150,22 @@ sub sys {
   0;				# like system()
 }
 
-# Maybe history but @mount_device_if_necessary() uses it.
+# This is history, simply because the mount point is unique to
+# the session, and umount is always used between stages, and
+# there are checks in place for it's failure.
 # Just need to add error_window.
+my (%mounted, %fs_type); 
 sub load_mount_info {
-  undef %::mounted;
-  undef %::fs_type;
+  undef %mounted;
+  undef %fs_type;
 
   open(MTAB, "</etc/mtab") or die "Can't read /etc/mtab: $!\n";
   while (<MTAB>) {
-    my($dev, $mp, $type) = split;
+    my($dev, $mp, $type) = split; 
     next if $dev eq 'none';
-    $::mounted{$dev} = $mp;
-    $::mounted{$mp}  = $dev;
-    $::fs_type{$dev} = $type;
+    $mounted{$dev} = $mp;
+    $mounted{$mp}  = $dev;
+    $fs_type{$dev} = $type;
   }
   close(MTAB);
 }
@@ -1169,21 +1173,22 @@ sub load_mount_info {
 sub mount_device_if_necessary {
   load_mount_info();
 
-  if (defined($::mounted{$::device})) {
+  # obviously these should be lexical to the whole package.
+  my ($device,$mount_point); 
+                            
+  if (defined($mounted{$device})) {
 
-    if ($::mounted{$::device} eq $::mount_point) {
-      print "Device $::device already mounted on $::mount_point\n";
+    if ($mounted{$device} eq $mount_point) {
+      info(0, "Device $device already mounted on $mount_point\n");
 
     } else {
-      print "$::device is mounted (on $::mounted{$::device})\n";
-      print "Can't mount it under $::mount_point.\n";
-      exit;
+      info(0, "$device is mounted \(on ", $mounted{$device}, "\)\n");
+      info(0, "Can't mount it under $mount_point.\n");
     }
 
-  } elsif ($::mounted{$::mount_point} eq $::device) {
-    print "Another device (", $::mounted{$::mount_point};
-    print ") is already mounted on $::mount_point\n";
-    exit;
+  } elsif ($mounted{$mount_point} eq $device) {
+    info(0, "Another device \(", $mounted{$mount_point},
+	 "\) is already mounted on $mount_point\n");
   }
 }
 
@@ -1198,8 +1203,8 @@ sub must_be_abs {
 
 sub sync {
   #  Parts of unix are still a black art
-  system("sync") and die "Couldn't sync!";
-  system("sync") and die "Couldn't sync!";
+  system("sync") and error("Couldn't sync!");
+  system("sync") and error("Couldn't sync!");
 }
 
 ## Need to put error() checking here
@@ -1212,8 +1217,6 @@ sub find_file_in_path {
 
   my($file, @path) = @_;
 
-
-  
   if (!@path) {
     #####  Initialize @pathlist if necessary
     if (!@pathlist) {
@@ -1560,7 +1563,6 @@ sub check_device {
 }
 
 
-
 #  Copy a file, substituting values for variables in the file.
 #  First try using a configuration variable (in CFG package),
 #  then issue a warning.
@@ -1603,73 +1605,87 @@ sub onto_proc_filesystem {
 }
 
 
-1;
-
-__END__
-
-=pod
-##############################################################################
+#################
 ##
 ##  CHECK_ROOT_FS
 ##
-##############################################################################
+#################
 
 ###  GLOBAL VARIABLES
 my(%Termcap);			# Defs from /etc/termcap
 my($checked_for_getty_files);	# Scalar -- have we checked getty files yet?
 my(%checked);			# Hash table of files we've already checked
-#  This is a little crude.  Technically we should read /etc/conf.getty
-#  to make sure we're not supposed to be using a different login binary.
-my($login_binary) = "$mount_point/bin/login";
+my $login_binary;
 
-## Maybe this
-##@mount_device_if_necessary();
+sub which_tests {
 
-#  This goes first so we define %Termcap for use in children
-check_termcap();
+    my ($chosen_tests) = @_;
+    my ($action, $label);
 
-#####  Here are the tests.
-fork_chroot_and(\&check_fstab);
-fork_chroot_and(\&check_inittab);
-fork_chroot_and(\&check_scripts);
-check_links();
-check_passwd();
-check_pam();
-check_nss();
+    return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
 
-info(0, "All done!\n");
-info(0, "You can run more tests with the UML kernel,\n 
-         or construct a distribution by using this root\n
-         filesystem with a boot method.");
+    #  This is a little crude.  Technically we should read /etc/conf.getty
+    #  to make sure we're not supposed to be using a different login binary.
 
-##########################
+    ## Originally, this was "$mount_point/usr/bin/login" but this is assuming 
+    ## to much.  It is better just to find the local version since this varies
+    ## from distribution to distribution, and more than likely this is the
+    ## "login" used in the mounted version, too.
+    ## Once PATH is complete, there will be a separate check just to look at
+    ## the non-local $mount_point PATH.
 
-# I think we will just add all warnings together
-#sub warning {
-#    info(0, "\n", @_);
-#    $Warnings++;
-#}
+    $login_binary = "$mount_point" . find_file_in_path("login");
+
+    #  This goes first so we define %Termcap for use in children
+    check_termcap();
+
+    #####  Here are the tests.
+    fork_chroot_and(\&check_fstab)  if $chosen_tests->{30}{test_fstab}   == 1;
+    fork_chroot_and(\&check_inittab)if $chosen_tests->{31}{test_inittab} == 1;
+    fork_chroot_and(\&check_scripts)if $chosen_tests->{32}{test_scripts} == 1;
+    check_links()                   if $chosen_tests->{33}{test_links}   == 1;
+    check_passwd()                  if $chosen_tests->{34}{test_passwd}  == 1;
+    check_pam()                     if $chosen_tests->{35}{test_pam}     == 1;
+    check_nss()                     if $chosen_tests->{36}{test_nss}     == 1;
+
+ 
+    return "ERROR" if errum(sys("umount $mount_point")) == 2;
+    
+    info(0, "All done!\n");
+    info(0, "You can run more tests with the UML kernel\n", 
+         "or construct a distribution by using this root\n",
+         "filesystem with a boot method.");
+    
+} # end sub which_tests
 
 
 #  This takes a procedure call, forks off a subprocess, chroots to
-#  $::mount_point and runs the procedure.
+#  $mount_point and runs the procedure.
 sub fork_chroot_and {
    my($call) = @_;
 
-   my($Godot) = fork;
-   die "Can't fork: $!" unless defined $Godot;
+   #my($Godot) = fork;
 
-   if (!$Godot) {
+   #unless (defined $Godot) {
+ 
+   #   my $error = error("Can't fork: $!"); 
+   #   return "ERROR" if $error && $error eq "ERROR";
+   #}
+
+   #if (!$Godot) {
       # Child process
-      chdir($::mount_point);
-      chroot($::mount_point); #####  chroot to the root filesystem
+      chdir($mount_point);
+      chroot($mount_point); #####  chroot to the root filesystem
       &$call;
-      exit;
-
-   } else {
+      # We don't want the child hanging around on the root filesystem.
+      chdir("/");
+      chroot("/");
+   #} else {
       # Parent here
-      waitpid($Godot, 0);
-   }
+   #   waitpid($Godot, 0);
+   #   chdir("/");
+   #   chroot("/");
+   #}
 }
 
 
@@ -1815,7 +1831,7 @@ sub scan_command_file {
 
 #####  Check_passwd is NOT run under chroot.
 sub check_passwd {
-  my($passwd_file) = "$::mount_point/etc/passwd";
+  my($passwd_file) = "$mount_point/etc/passwd";
   open(PASSWD, "<$passwd_file")	or error("Can't read passwd file: $!\n");
   info(0, "\nChecking passwd file $passwd_file\n");
 
@@ -1828,12 +1844,12 @@ sub check_passwd {
 
     next if $passwd eq "*";	# Skip warnings if user can't login
 
-    -d ($::mount_point . $home) or
+    -d ($mount_point . $home) or
       warning "$passwd_file($.): $line\n",
-	      "\tHome directory of $login_name ($::mount_point$home) is missing\n";
-    -e ($::mount_point . $shell) or
+	      "\tHome directory of $login_name ($mount_point$home) is missing\n";
+    -e ($mount_point . $shell) or
       warning "$passwd_file($.): $line\n",
-	      "\tShell of $login_name ($::mount_point$shell) doesn't exist\n";
+	      "\tShell of $login_name ($mount_point$shell) doesn't exist\n";
 
     check_init_files($login_name, $home, $shell);
   }
@@ -1849,8 +1865,8 @@ sub check_pam {
   my($pam_configured) = 0;	# Have we seen some pam config file yet?
   info(0, "Checking for PAM\n");
 
-  my($pamd_dir) = "$::mount_point/etc/pam.d";
-  my($pam_conf) = "$::mount_point/etc/pam.conf";
+  my($pamd_dir) = "$mount_point/etc/pam.d";
+  my($pam_conf) = "$mount_point/etc/pam.conf";
 
   if (-e $pam_conf) {
     info(0, "Checking $pam_conf\n");
@@ -1860,13 +1876,13 @@ sub check_pam {
       chomp;
       next if /^\#/ or /^\s*$/;          # Skip comments and empty lines
       my($file) = (split)[3];	# Get fourth field
-      if (!-e "$::mount_point/$file") {
+      if (!-e "$mount_point/$file") {
 	warning "$pam_conf($.): $_\n",
 	"\tLibrary $file does not exist on root fs\n";
       }
       #  That's all we check for now
     }
-    close(PAM)				or die "Closing PAM: $!";
+    close(PAM)				or error("Closing PAM: $!");
     info(0, "Done with $pam_conf\n");
   }
 
@@ -1884,7 +1900,7 @@ sub check_pam {
 	   next if /^\#/ or /^\s*$/;           # Skip comments and empty lines
 	   my($file) = (split)[3]; # Get fourth field
 	   $pam_configured = 1;
-	   if (!-e "$::mount_point/$file") {
+	   if (!-e "$mount_point/$file") {
 	      #warning "$file2($.): $_\n",
 	      #	  "\tLibrary $file does not exist on root fs\n";
 	   }
@@ -1919,10 +1935,10 @@ sub check_pam {
 #####  is 1 for glibc 2.0 and 2 for glibc 2.1.
 
 sub check_nss {
-   my($nss_conf) = "$::mount_point/etc/nsswitch.conf";
+   my($nss_conf) = "$mount_point/etc/nsswitch.conf";
    info(0, "Checking for NSS\n");
 
-   my($libc) = yard_glob("$::mount_point/lib/libc-2*");
+   my($libc) = yard_glob("$mount_point/lib/libc-2*");
    my($libc_version) = $libc =~ m|/lib/libc-2.(\d)|;
    if (!defined($libc_version)) {
       warning "Can't determine your libc version\n";
@@ -1946,7 +1962,7 @@ sub check_nss {
 	 my($entry);
 	 for $entry (@entries) {
 	    next if $entry =~ /^\[/; # ignore action specifiers
-	    my($lib) = "$::mount_point/lib/libnss_${entry}.so.${X}";
+	    my($lib) = "$mount_point/lib/libnss_${entry}.so.${X}";
 	    if (!-e $lib) {
 	       warning "$nss_conf($.):\n$line\n",
 		   "\tRoot filesystem needs $lib to support $entry\n";
@@ -1973,28 +1989,28 @@ sub check_nss {
 
 
 sub check_links {
-  info(0, "\nChecking links relative to $::mount_point\n");
+  info(0, "\nChecking links relative to $mount_point\n");
 
   sub wanted {
     if (-l $File::Find::name) {
-      local($raw_link) = readlink($File::Find::name);
-      local($target) = make_link_absolute($File::Find::name, $raw_link);
+      local($::raw_link) = readlink($File::Find::name);
+      local($::target) = make_link_absolute($File::Find::name, $::raw_link);
 
       #  I added this next test for /dev/stdout link hair.
       #  This really should be more complicated to handle link chains,
       #  but as a hack this works for three.
       if (onto_proc_filesystem($File::Find::name)) {
 
-      } elsif (-l $target) {
-	chase_link($target, 16);
+      } elsif (-l $::target) {
+	chase_link($::target, 16);
 
-      } elsif (!-e $target) {
-	warning "Warning: Unresolved link: $File::Find::name -> $raw_link\n";
+      } elsif (!-e $::target) {
+	warning "Warning: Unresolved link: $File::Find::name -> $::raw_link\n";
       }
     }
   };
 
-  finddepth(\&wanted, $::mount_point);
+  finddepth(\&wanted, $mount_point);
 }
 
 
@@ -2013,7 +2029,7 @@ sub chase_link {
 
 sub check_scripts {
   info(0, "\nChecking script interpreters\n");
-  local($prog);
+  local($::prog);
 
   sub check_interpreter {
     if (-x $File::Find::name and -f _ and -T _) {
@@ -2041,7 +2057,7 @@ sub check_getty_type_call {
   if ($prog eq 'getty') {
     my($tty, $speed, $type) = @args;
 
-    if (!-e "$::mount_point/dev/$tty") {
+    if (!-e "$mount_point/dev/$tty") {
       warning "\tLine $.: $prog for $tty, but /dev/$tty doesn't exist.\n";
     }
     if (!defined($Termcap{$type})) {
@@ -2054,9 +2070,9 @@ sub check_getty_type_call {
   if ($prog =~ /^getty/) {
     if (!$checked_for_getty_files) {
       warning "\tLine $.: $prog expects /etc/gettydefs, which is missing.\n"
-	unless -e "$::mount_point/etc/gettydefs";
+	unless -e "$mount_point/etc/gettydefs";
       warning "\tLine $.: $prog expects /etc/issue, which is missing.\n"
-	unless -e "$::mount_point/etc/issue";
+	unless -e "$mount_point/etc/issue";
       $checked_for_getty_files = 1;
     }
   }
@@ -2096,7 +2112,7 @@ sub check_init_files {
   my($init_file);
 
   foreach $init_file (@init_files) {
-    $init_file = $::mount_point . $init_file;
+    $init_file = $mount_point . $init_file;
 
     next if $checked{$init_file} or !-r $init_file;
 
@@ -2126,7 +2142,7 @@ sub check_init_files {
       ($cmd) = /^(\w+)\b/;	# Pick up cmd name
       if ($cmd and ($hd_abs = find_file_in_path($cmd, @path))) {
 	#  If it's here, see if it's on the rescue disk
-	if (!(-e "$::mount_point/$hd_abs" and -x _)) {
+	if (!(-e "$mount_point/$hd_abs" and -x _)) {
 	  warning "$init_file($.): $_\n\t\t$cmd looks like a command but\n",
 	  "\t\tdoes not exist on the root filesystem.\n";
 	}
@@ -2138,7 +2154,7 @@ sub check_init_files {
 	#  If it's here, see if it's on the rescue disk
 	#  Note that this could mislead if the user moved it to a different
 	#  dir on the root fs.
-	if (!-e "$::mount_point/$hd_abs") {
+	if (!-e "$mount_point/$hd_abs") {
 	  warning "${init_file}($.): $_\n\t$cmd: missing from root fs.\n";
 	} elsif (!-x _) {
 	  warning "$init_file($.): $_\n\t$cmd: not executable on root fs.\n";
@@ -2154,8 +2170,8 @@ sub check_init_files {
 
 
 sub check_termcap {
-  open(TERMCAP, "<$::mount_point/etc/termcap") or
-    warning "No file $::mount_point/etc/termcap";
+  open(TERMCAP, "<$mount_point/etc/termcap") or
+    warning "No file $mount_point/etc/termcap";
   while (<TERMCAP>) {
     chomp;
     next unless $_;
@@ -2179,8 +2195,8 @@ sub check_termcap {
 }
 
 #####  END OF CHECK_ROOT_FS
-=cut
 
+1;
 
 
 
