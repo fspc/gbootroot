@@ -29,6 +29,7 @@ use Exporter;
 
 use strict;
 use BootRoot::Yard;
+use BootRoot::Options;
 
 my $true = 1;
 my $false = 0;
@@ -47,31 +48,40 @@ sub error_window {
     my (@error) = @_;
     my $output = join("",@error);
 
-    if (not defined $error_window) {
-    $error_window = new Gtk::Dialog;
-    $error_window->signal_connect("destroy", \&destroy_window,
-                                  \$error_window);
-    $error_window->signal_connect("delete_event", \&destroy_window, 
-                                  \$error_window);
-    $error_window->set_title("gBootRoot ERROR");
-    $error_window->border_width(15);
-    my $label = new Gtk::Label($output);
-    #$label->set_justify("left") if $_[1];
-    $error_window->vbox->pack_start( $label, $true, $true, 15 );
-    $label->show();
-    my $button = new Gtk::Button("OK");
-    $button->signal_connect("clicked", sub {destroy $error_window});
-    $button->can_default(1);
-    $error_window->action_area->pack_start($button, $false, $false,0);
-    $button->grab_default;
-    $button->show;
-   }
-     if (!visible $error_window) {
-         show $error_window;
-     }
-     else {
-        destroy $error_window;
-     }
+    if (!%option ) {
+	if (not defined $error_window) {
+	    $error_window = new Gtk::Dialog;
+	    $error_window->signal_connect("destroy", \&destroy_window,
+					  \$error_window);
+	    $error_window->signal_connect("delete_event", \&destroy_window, 
+					  \$error_window);
+	    $error_window->set_title("gBootRoot ERROR");
+	    $error_window->border_width(15);
+	    my $label = new Gtk::Label($output);
+	    #$label->set_justify("left") if $_[1];
+	    $error_window->vbox->pack_start( $label, $true, $true, 15 );
+	    $label->show();
+	    my $button = new Gtk::Button("OK");
+	    $button->signal_connect("clicked", sub {destroy $error_window});
+	    $button->can_default(1);
+	    $error_window->action_area->pack_start($button, $false, $false,0);
+	    $button->grab_default;
+	    $button->show;
+	}
+	if (!visible $error_window) {
+	    show $error_window;
+	}
+	else {
+	    destroy $error_window;
+	}
+	
+    }
+    else {
+
+	print "$output\n";
+
+    }
+
 
 } # end sub error_window
 

@@ -39,9 +39,10 @@ sub option {
 		"method=s",
 		"template=s",           # The only required argument
 		"filesystem-size=s",
-		"filesytem-type=s",
-		"uml-exclusively=s",
+		"filesystem-command=s",
+		"uml-exclusively=s",    # on/off
 		"preserve-ownership=s",
+		"kernel=s",
 		"kernel-version=s",
 		"stdout"		
 		

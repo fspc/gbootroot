@@ -784,7 +784,8 @@ else {
 #  check() read_contents_file( "$template_dir$template", $tmp,
 #				    $filesystem_size, \%uml_expect );
 #
-#  links_deps() extra_links($changed_text, \%nss_pam);
+#  links_deps() extra_links($changed_text, \%nss_pam); hard_links 
+#               library_dependencies
 #
 #  create()  - term depends on whether root or normal user (really copy)
 #    $lib_bool = "" if $lib_bool eq 0;
@@ -805,17 +806,11 @@ else {
     start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
     
 
-
-#	   $kernel                    = $ars->{kernel};
-#	   $kernel_version_choice     = $ars->{kernel_version_choice};
-
     $ars->{kernel} = $option{kernel};
     ars2($ars);
     $ars->{kernel_version_choice} = $option{"kernel-version"};
     ars2($ars);
 
-#my $it = kernel_version_check($option{kernel},$option{"kernel-version"});
-    
     my $template = $option{template};
     
     $option{"filesystem-size"}
@@ -832,12 +827,64 @@ if ( $option{"uml-exclusively"} ) {
 $ars->{uml_exclusively} = $uml_exclusively;
 ars2($ars);  #not used in function below    
 
-read_contents_file( "$template_dir$template", $tmp,
-		    $filesystem_size);
+# links_deps()
+# Good defaults
+my %nss_pam = (
+            60 => {
+                conf_nss => 1,
+            },
+            61 => {
+                conf_pam => 1,
+            },
+);
+
+# create()
+my $lib_bool = 1;
+my $bin_bool = 1;
+my $mod_bool = 1;
+my $strip_bool = 1;
+
+my $filename;
+$option{"root-filename"} 
+? ($filename = $option{"root-filename"}) 
+    : ($filename = "root_fs");
+
+# The filesystem-type
+
+$::makefs = $option{"filesystem-command"} if $option{"filesystem-command"};
 
 
+# The Action - yard is the default method
 
-    #print kernel_version_check(), "Hi there!\n";
+my $method;
+$option{method} 
+? ($method = $option{method}) 
+    : ($method = "yard");
+
+if ( $method eq "yard" ) {
+
+    my $error = read_contents_file( "$template_dir$template", $tmp,
+    $filesystem_size);
+    return if $error && $error eq "ERROR";
+
+    $error = extra_links("$template_dir$template", \%nss_pam);
+    return if $error && $error eq "ERROR";
+
+    $error = hard_links();
+    return if $error && $error eq "ERROR";
+
+    $error = library_dependencies("$template_dir$template");
+    return if $error && $error eq "ERROR";
+
+    $error = create_filesystem($filename,$filesystem_size,$tmp,$lib_bool,
+			       $bin_bool,$mod_bool,$strip_bool);
+    return if $error && $error eq "ERROR";
+
+    # create_uml()
+    create_expect_uml($filesystem_size, $tmp, $filename);
+
+}
+
 ######################################################
 
 }  # end if $::commandline

@@ -1,4 +1,4 @@
-#############################################################################
+############################################################################
 ##
 ##  Yard.pm combining
 ##  MAKE_ROOT_FS, CHECK_ROOT_FS, and YARD_UTILS.PL by Tom Fawcett
@@ -47,6 +47,7 @@ use File::Path;
 use FileHandle;
 use Cwd; #  I am not even sure if this is being used here now
 use English;  # I think this can be ditched for portability
+use Term::ANSIColor;  # for commandline output
 use File::Find; # used by check_root_fs
 use BootRoot::BootRoot;
 use BootRoot::Error; 
@@ -536,6 +537,7 @@ sub extra_links {
     # First we find nss and pam stuff if asked for.
     $find_nss   = $nss_pam->{60}{conf_nss};
     $find_pam   = $nss_pam->{61}{conf_pam};
+
 
     # Determine how the PASS is configured by the user.
     if ( $find_nss != 1 && $find_pam != 1 ) {
@@ -1828,11 +1830,18 @@ sub info {
   }
 
 
-  if ( %option ) {
-      print @msgs;
+  if ( $option{stdout} ) {
+      if ( %option ) {
+	  if ($level == 0) {
+	      print color("blue"), @msgs, color("reset");	  
+	  }
+	  elsif ($level == 1) {
+	      print color("red"), @msgs, color("reset");
+	  }    
+      }
   }
-
-}
+  
+} # end sub info
 
 ## This will produce red.
 sub error {
@@ -2198,7 +2207,7 @@ sub kernel_version {
   my $error;
 
   # check if we have a normal file (-f dereferences symbolic links)
-  if (!-f $image) {
+  if (!$image || !-f $image) {
     #$error = error("Kernel image ($image) is not a plain file.\n");
     #return "ERROR"if $error && $error eq "ERROR";
     $error = warning("Kernel image ($image) is not a plain file.\n");
