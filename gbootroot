@@ -36,6 +36,7 @@ use BootRoot::Yard;
 use BootRoot::YardBox;
 use BootRoot::Error;
 use File::Basename;
+use File::Find;
 init Gtk;
 set_locale Gtk; 
 
@@ -120,10 +121,10 @@ my $home_uml_kernel = "$home/uml_kernel/";
 # Yard Stuff
 my $home_yard = "$home/yard";
 my $template_dir = "$home_yard/templates/";
-my $home_yard_replacements = "$home_yard/replacements";
-$main::global_yard = "/usr/share/gbootroot/yard";
-my $global_yard_replacements = "$main::global_yard/replacements";
-my $global_yard_templates = "$main::global_yard/templates";
+my $home_yard_replacements = "$home_yard/Replacements";
+$main::global_yard =  $home_yard;
+my $global_yard_replacements = "/usr/share/gbootroot/yard/Replacements";
+my $global_yard_templates = "/usr/share/gbootroot/yard/templates";
 
 my $initrd;
 my $compress;
@@ -276,6 +277,19 @@ if ( -d $global_yard_templates ) {
 
 # $HOME/.gbootroot/yard/replacements 
 home_builder($home_yard_replacements);
+if (-d $global_yard_replacements) {
+    if (-d $home_yard_replacements) {
+	find sub { ( my $replacement = 
+		       $File::Find::name ) =~ s/$global_yard_replacements\///;
+		   if (!-e "$home_yard_replacements/$File::Find::name") {
+		       system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
+		   }
+
+	       }, $global_yard_replacements;
+		      
+
+    }
+}
 
 
 # Basically so different users get the same things in
