@@ -10,7 +10,7 @@
 
 # Update this according to version
 %define version 1.3.4
-%define release 1mdk
+%define release 1
 
 
 Summary:      Boot/Root Filesystem Distribution testing and creation.
