@@ -50,7 +50,6 @@ use English;  # I think this can be ditched for portability
 use File::Find; # used by check_root_fs
 use BootRoot::BootRoot;
 use BootRoot::Error; 
-use BootRoot::UML;
 
 my (%Included, %replaced_by, %links_to, %is_module, %hardlinked, 
     %strippable, %lib_needed_by, @Libs, %user_defined_link);
@@ -207,6 +206,13 @@ sub read_contents_file {
 	    "# <path>\t<type>\t<mode>\t<uid>\t<gid>\t<major>\t<minor>" .
 		"\t<start>\t<inc>\t<count>\n"; 
 	print DEVICE_TABLE "/dev\t\td\t0755\t-\t-\t-\t-\t-\t-\t-\n";
+    }
+
+    if ( $uml_expect->{uml_exclusively} == 1 ) {
+
+	unlink("$mnt/device_table.txt") if -e "$mnt/device_table.txt";   
+	system "rm -rf $mnt/loopback";
+
     }
 
     info(0, "\n\nPASS 1:  Reading $contents_file");
@@ -1164,7 +1170,8 @@ sub create_filesystem {
     # Maybe other fs will be represented in the future, but genext2fs is all 
     # that exists now for non-root users, but if uml_exclusively
     # then the filsystem will be used from the helper machine. --freesource
-    if ( $fs_type ne "genext2fs" ) {
+    if ( $fs_type ne "genext2fs" && 
+	 $uml_expect->{uml_exclusively} == 0 ) {
 
 	if (-f $device) {
 	    #####  If device is a plain file, it means we're using some 
@@ -1193,7 +1200,8 @@ sub create_filesystem {
     }
 
 
-    if ( $fs_type ne "genext2fs" ) {
+    if ( $fs_type ne "genext2fs" && 
+	 $uml_expect->{uml_exclusively} == 0 ) {
 
 	return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
 	##### lost+found on a ramdisk is pointless
@@ -1379,13 +1387,20 @@ sub create_filesystem {
 		"ubd0=/usr/lib/bootroot/root_filesystem/root_fs_helper";
 	    my $ubd1 = "ubd1=$device";
 	    my $options = "root=/dev/ubd0";
+	    my $filesystem;
+	    if ( $fs_type eq "genext2fs" ) {
+		$filesystem = "mke2fs -m0";
+	    }
+	    else {
+		$filesystem = $main::makefs;
+	    }
 
 	    my $x_count = 1;
 
-	    info(1,"\n$expect_program $version $ubd0 $ubd1 $options $mount_point\n\n");
+	    info(1,"\n$expect_program $ubd0 $ubd1 $options $mount_point\n\n");
 
 	    # add error correction
-	    open(EXPECT,"$expect_program $version $ubd0 $ubd1 $options $mount_point|");
+	    open(EXPECT,"$expect_program $ubd0 $ubd1 $options $mount_point $filesystem|");
 	    while (<EXPECT>) {
 		info(0,"$x_count  $_");
 		$x_count++;
