@@ -15,6 +15,22 @@ if ($ARGV[0] && $ARGV[0] eq "configure") {
 
 }
 
+# Before doing anything else, append CVS Entries files with fictional dates
+# so replacements can't be edited.  This is because make-debian-x11 shares
+# a CVS/Entries file in /root with gbootroot.  Note:  This will be done
+# over and over again, but usually a new gbootroot is installed so it isn't
+# an issue.
+my $Entries = << "ENTRIES";
+/README-debian-X11/1.4/Thu Nov  8 06:16:29 2001//
+/make_swapfile/1.2/Thu Nov  8 06:16:29 2001//
+/setup-debian-X11/1.7/Thu Dec  6 18:36:05 2001//
+ENTRIES
+my $root_entry = "/usr/share/gbootroot/yard/Replacements/root/CVS/Entries";
+if ( -f $root_entry ) {
+    open(ENTRY, ">>$root_entry") or warn "Couldn't open $root_entry: $!\n";
+    print ENTRY $Entries;
+    close(ENTRY) or warn "Couldn't close $root_entry\n";
+}
 
 my $answer = get("make-debian-x11/make_debian_x11");
 
