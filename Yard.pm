@@ -1457,8 +1457,14 @@ sub kernel_version {
     # setup header version should be 0x201
     read(DATA, $str, 2);
     $str = unpack("S",$str);
-    info 0, "Kernel setup header version is 0x".
-	sprintf("%04x",$str)." (expected 0x0201).\n" unless $str == 0x201;
+    #info (0, "Kernel setup header version is 0x");
+
+
+	# 2.4.0 kernels are now 0x202 
+	sprintf("%04x",$str)." (expected 0x201 or 0x202).\n" 
+	    unless ($str == 0x201
+		    || $str == 0x0202);
+
     # get ofset of version string (indirect) and read version string
     seek(DATA, 526, 0);
     read(DATA, $version_start, 2) or ($error = error(
@@ -1475,7 +1481,7 @@ sub kernel_version {
     #  it can also be something like 2.2.15-27mdk.  Don't make any assumptions
     #  except that beginning must be dotted triple and it's space delimited.
     my($version) = $str =~ /^(\d+\.\d+\.\d+\S*)\s/;
-    
+
     return $version
 
   }
