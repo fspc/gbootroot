@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-###########################################################################
+##############################################################################
 ##
 ##  BootRoot.pm 
 ##  Copyright (C) 2000, 2001 by Jonathan Rosenbaum 
@@ -1507,10 +1507,26 @@ sub accept_button {
 			info(0, "Already bzip2 compressed.\n");
 		    }
 		    else {
+			my $command_line =
+			    "$compress -c9 $tmp/$entry_advanced[4]|";
+			info(0,"Compressing $entry_advanced[4] with $compress\n");
+			open (PLACE, ">$tmp/$entry_advanced[4].gz");
+			open (COMP,"$command_line");
+			while (<COMP>) {
+			    print PLACE $_;
+			    while (Gtk->events_pending) 
+			    { Gtk->main_iteration; }
+			}
+			close(COMP);
+			close(PLACE);
+			info(0,"Done compressing $entry_advanced[4] with $compress\n");
+=pod
 			system 
 	  "$compress -c9 $tmp/$entry_advanced[4] > $tmp/$entry_advanced[4].gz";
+=cut
 			$entry_advanced[4] = "$entry_advanced[4].gz";
 			$entry3->set_text("$tmp/$entry_advanced[4]");
+
 		    }
 		}
 		close(F);
@@ -1537,10 +1553,28 @@ sub accept_button {
 			info(0, "Already bzip2 compressed.\n");
 		    }
 		    else {
+
+			my $command_line =
+			    "$compress -c $tmp/$entry_advanced[4]|";
+			info(0,"Compressing $entry_advanced[4] with $compress\n");
+			open (PLACE, ">$tmp/$entry_advanced[4].bz2");
+			open (COMP,"$command_line");
+			while (<COMP>) {
+			    print PLACE $_;
+			    while (Gtk->events_pending) 
+			    { Gtk->main_iteration; }
+			}
+			close(COMP);
+			close(PLACE);
+			info(0,"Done compressing $entry_advanced[4] with $compress\n");
+
+=pod
 			system 
          "$compress -c $tmp/$entry_advanced[4] >  $tmp/$entry_advanced[4].bz2";
+=cut
 			$entry_advanced[4] =  "$entry_advanced[4].bz2";
 			$entry3->set_text("$tmp/$entry_advanced[4]");
+
 		    }
 		}
 		close(F);
