@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.89 2002/02/13 04:55:36 freesource Exp $</center>
+<center>$Id: index.html,v 1.90 2002/02/14 18:40:49 freesource Exp $</center>
 
 <p>
 
@@ -319,6 +319,7 @@ Documentation/sysrq.txt in the Linux sources.
 <pre>
   sysrq (Shows sysrq option values in virtual machine.)
   sysrq [0-9|b|e|i|l|m|p|r|s|t|u]
+  cad
   reboot
   halt
   config &lt;dev&gt;=&lt;config&gt; 
@@ -349,6 +350,11 @@ box to allow control of a different Linux virtual machine.
 
 "Root_Fs"&nbsp;&nbsp;Choose an uncompressed root 
 filesystem.&nbsp;&nbsp;Append with ubd?=.</p>
+
+<p>
+
+"cad"&nbsp;&nbsp;Passes [Ctr]-[Alt]-[Del] to the mconsole to reboot the
+Linux virutal machine.
 
 <p>
 
