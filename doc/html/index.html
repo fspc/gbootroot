@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.112 2003/02/07 19:57:21 freesource Exp $</center>
+<center>$Id: index.html,v 1.113 2003/02/08 02:56:40 freesource Exp $</center>
 
 <p>
 
@@ -51,6 +51,10 @@ Download gBootRoot</h3>
 <A href="http://prdownloads.sourceforge.net/gbootroot/">
 http://prdownloads.sourceforge.net/gbootroot/</A>
 
+<li>Mirror:&nbsp;&nbsp;
+<A href="http://mirror.usermodelinux.org/gbootroot/">
+http://mirror.usermodelinux.org/gbootroot/</A>
+
 <li><em>Special New Features!!</em>
 <ul>
 <li> Now run gbootroot within user-mode-linux with user-mode-linux within
@@ -68,11 +72,9 @@ Just edit the PATCH_VERSION in the Makefile.
 
 <li>Milestone version 1.3.1 dedicated to  the first ever 
 <a href="http://www.morlug.org">MORLUG</a> meeting in my
-hometown!<A>
+hometown!
 
 </ul>
-
-<br>
 
 <b>Slackware or compiling it yourself</b><br>
 <a href="http://freshmeat.net/redir/gbootroot/3075/url_tgz/gbootroot.tar.gz">gbootroot source</a><br>
@@ -117,7 +119,7 @@ bzip2<br>
 </code>
 
 <P>
-<b>Add-ons</b>
+<h3>Add-ons</h3>
 
 <p>
 
@@ -131,11 +133,17 @@ make-debian-x11 debian package</a>
 <p>
 
 
-<u>Screenshots</u><br>
+<h3>Screenshots</h3>
 <a href="images/screenshot2.jpg">1.3.6</a><br>
 <a href="images/screenshot.jpg">1.2.13</a>
 
 <p>
+
+<p><a href="#links">links</a></P>
+
+<p><a href="#contact">How to contact</a></P>
+
+<h3>Documentation</h3>
 
 <a href="#FAQ">FAQ</a>
 
@@ -143,9 +151,6 @@ make-debian-x11 debian package</a>
 
 <br><a href="#template-help">Yard Template Help</a>
 
-<p><a href="#links">links</a></P>
-
-<p><a href="#contact">How to contact</a></P>
 
 <P align="center">
 <IMG ALT="" SRC="images/gbootroot.jpg">
@@ -636,146 +641,118 @@ and things should become more clear.
 <P><IMG ALT="" SRC="images/gBSicon.jpg" align="center"> <b>FAQ</b></P>
 
 <a name ="FAQ">
-1.&nbsp;&nbsp;<a href="#1">What's the advantage of using this program?</a> 
-<br>
-2.&nbsp;&nbsp;<a href="#2">How do I use gBootRoot?</a>
-<br>
-3.&nbsp;&nbsp;<a href="#3">Oops, I can't get something to work, what should I do?</a>
-<br>
-4.&nbsp;&nbsp;<a href="#4">What are all these CVS directories doing in my replacements?</a>
-<br>
-5.&nbsp;&nbsp;<a href="#5">Can I use a program linked to uClibc in the template?</a>
-<br>
-6.&nbsp;&nbsp;<a href="#6">What do you mean by macro distribution?</a>
-<br>
-7.&nbsp;&nbsp;<a href="#7">How am I able to create root filesystems as a normal user?</a>
-<br>
-8.&nbsp;&nbsp;<a href="#8">How does this program allow a normal user to create a root filesystem larger than 8192k?</a>
-<br>
-9.&nbsp;&nbsp;<a href="#9">How can I create boot disks as a normal user?</a>
-<br>
-10.&nbsp;&nbsp;<a href="#10">What is make_debian, and how do I use it?</a>
-<br>
-11.&nbsp;&nbsp;<a href="#11">My root filesystem doesn't start in single mode when started like this:  "bootdisk 1?"</a> 
-<br>
-12.&nbsp;&nbsp;<a href="#12">What does the 2 disk compression method do?</a>
-<br>
-13.&nbsp;&nbsp;<a href="#13">I've created a root fs.&nbsp;&nbsp;Then I've tried to create the boot disk using the 2 disk compression method.&nbsp;&nbsp;The device selection is /dev/fd0, size is 1440k, but the initrd_image.gz is 715k.&nbsp;&nbsp;I don't know much about boot disks but shouldn't the boot disks contain mainly the kernel?</a>
-<br>
-14.&nbsp;&nbsp;<a href="#14">If libc is included in the boot disk, why is it needed in the root disk as well?</a>
-<br>
-15.&nbsp;&nbsp;<a href="#15">So if I understand correctly, it is not possible to copy libc from dev/ram0 to /dev/ram1 before mounting /dev/ram1 as / ?</a>
-<br>
-16.&nbsp;&nbsp;<a href="#16">There isn't enough room left on my 1440 floppy to make a Boot or Root disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing the size of the kernel?</a>
-<br>
-17.&nbsp;&nbsp;<a href="#17">Last, but not least...the boot disk boots, waits for the root disk, and now fails. "Can't open console"??? or sth like this (I'm pretty tired right now, recheck later), which appears after "VFS:ext2fs was found..."</a>
-<br>
-18.&nbsp;&nbsp;<a href="#18">What are the kernel's drivers/fs that must be directly compiled, not as modules, except ext2, floppy?  Could you attach your kernel's .config?</a>
-<br>
-19.&nbsp;&nbsp;<a href="#19">What is the root_fs_helper 2Mb file in the grootboot package?</a>
-<br>
-20.&nbsp;&nbsp;<a href="#20">
-Now the creation works, but actually the whole image is less than 1440k... Still, unclear to me is the purpose of the device/size in the main widget - is it only for the boot or also for the root disk?   After all, the root fs image size has been already entered in the ARS.</a>
-<br>
-21.&nbsp;&nbsp;<a href="#21">gBootRoot doesn't start because it can't locate Gtk.pm?</a>
-<br>
-22.&nbsp;&nbsp;<a href="#22">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
+
+<tt>
+<a href="#1">1.</a>  What's the advantage of using this program?
+<p>
+<a href="#2">2.</a>  How do I use gBootRoot?
+<p>
+<a href="#3">3.</a>  Oops, I can't get something to work, what should I do?
+<p>
+<a href="#4">4.</a>  What are all these CVS directories doing in my replacements?
+<p>
+<a href="#5">5.</a>  Can I use a program linked to uClibc in the template?
+<p>
+<a href="#6">6.</a>  What do you mean by macro distribution?
+<p>
+<a href="#7">7.</a>  How am I able to create root filesystems as a normal user?
+<p>
+<a href="#8">8.</a>  How does this program allow a normal user to create a root filesystem larger than 8192k?
+<p>
+<a href="#9">9.</a>  How can I create boot disks as a normal user?
+<p>
+<a href="#10">10.</a>  What is make_debian, and how do I use it?
+<p>
+<a href="#11">11.</a>  My root filesystem doesn't start in single mode when started like this:  "bootdisk 1?"
+<p>
+<a href="#12">12.</a>  What does the 2 disk compression method do?
+<p>
+<a href="#13">13.</a>  I've created a root fs.&nbsp;&nbsp;Then I've tried to create the boot disk using the 2 disk compression method.&nbsp;&nbsp;The device selection is /dev/fd0, size is 1440k, but the initrd_image.gz is 715k.&nbsp;&nbsp;I don't know much about boot disks but shouldn't the boot disks contain mainly the kernel?
+<p>
+<a href="#14">14.</a>  If libc is included in the boot disk, why is it needed in the root disk as well?
+<p>
+<a href="#15">15.</a>  So if I understand correctly, it is not possible to copy libc from dev/ram0 to /dev/ram1 before mounting /dev/ram1 as / ?
+<p>
+<a href="#16">16.</a>  There isn't enough room left on my 1440 floppy to make a Boot or Root disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing the size of the kernel?
+<p>
+<a href="#17">17.</a>  Last, but not least...the boot disk boots, waits for the root disk, and now fails. "Can't open console"??? or sth like this (I'm pretty tired right now, recheck later), which appears after "VFS:ext2fs was found..."
+<p>
+<a href="#18">18.</a>  What are the kernel's drivers/fs that must be directly compiled, not as modules, except ext2, floppy?  Could you attach your kernel's .config?
+<p>
+<a href="#19">19.</a>  What is the root_fs_helper 2Mb file in the grootboot package?
+<p>
+<a href="#20">20.</a>
+Now the creation works, but actually the whole image is less than 1440k... Still, unclear to me is the purpose of the device/size in the main widget - is it only for the boot or also for the root disk?   After all, the root fs image size has been already entered in the ARS.
+<p>
+<a href="#21">21.</a>  gBootRoot doesn't start because it can't locate Gtk.pm?
+<p>
+<a href="#22">22.</a>  If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.
 </a>
-<br>
-23.&nbsp;&nbsp;<a href="#23">Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still executed.</a>
-<br>
+<p>
+<a href="#23">23.</a>  Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still executed.
+<p>
+</tt>
+
 
 <P><a name="1"><b>What's the advantage of using this program?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
-<P><A href="./bootroot.html">BootRoot</A> 
-was the original program, but I decided that a GUI approach
-provided the user much more versatility and power in creating 
-distributions.&nbsp;&nbsp;Since the first gBootRoot,
-bOOTrOOT has become a full blown distribution creation program which may
-be used by a normal user.
-It may be used for the creation of root filesystems in every
-imaginable application from Embedded Systems to Mini Distributions to 
-Macro distributions to Full sized Distributions.&nbsp&nbsp;The root 
-and boot filesystems may 
-be tested long before implementation by using user-mode-linux.&nbsp;&nbsp;
-Boot Methods are provided to allow root filesystems to run from different types
-of media.&nbsp;&nbsp;
-Historically, developers have written scripts
-which have focused on providing a particular type of root 
-filesystem and boot method.&nbsp;&nbsp;Observation reveals that all these
-approaches share many commonalities.&nbsp;&nbsp;gBootRoot has been 
-designed to embrace
-these similarities, and to allow developers to create drop-in methods 
-via modules or easy to understand templates.&nbsp;&nbsp;
-gBootroot is the GIMP of distribution creation!</P>
+<P><A href="./bootroot.html">BootRoot</A> was the original program,
+but I decided that a GUI approach provided the user much more
+versatility and power in creating distributions.&nbsp;&nbsp;Since the
+first gBootRoot, bOOTrOOT has become a full blown distribution
+creation program which may be used by a normal user.  It may be used
+for the creation of root filesystems in every imaginable application
+from Embedded Systems to Mini Distributions to Macro distributions to
+Full sized Distributions.&nbsp&nbsp;The root and boot filesystems may
+be tested long before implementation by using
+user-mode-linux.&nbsp;&nbsp; Boot Methods are provided to allow root
+filesystems to run from different types of media.&nbsp;&nbsp;
+Historically, developers have written scripts which have focused on
+providing a particular type of root filesystem and boot
+method.&nbsp;&nbsp;Observation reveals that all these approaches share
+many commonalities.&nbsp;&nbsp;gBootRoot has been designed to embrace
+these similarities, and to allow developers to create drop-in methods
+via modules or easy to understand templates.&nbsp;&nbsp; gBootroot is
+the GIMP of distribution creation!</P>
 
 <P><a name="2"><b>How do I use gBootRoot?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
-<center><u>Test an existing mini distribution.</u></center>
-
-<P>1.&nbsp;&nbsp;Download 
-<a href="http://prdownloads.sourceforge.net/user-mode-linux/root_fs_tomrtbt_1.7.205.bz2">
-root_fs_tomrtbt_1.7.205.bz2</a> from 
-<a href="http://www.sourceforge.net/projects/user-mode-linux">
-user-mode-linux</a> at Sourceforge to your 
-$HOME/.gbootroot/root_filesystems. </p>
-
-
-<p>  
-
-2.&nbsp;&nbsp;bzip2 -dc root_fs_tomrtbt_1.7.205.bz2 > root_fs_tomrtbt_1.7.205.
-</p>
-
-<p>
- 
-3.&nbsp;&nbsp;Run 
-gbootroot.&nbsp;&nbsp;Click on the Advanced Root Section (ARS), click on
-the UML button. &nbsp;&nbsp;Select root_fs_tomrtbt_1.7.205, add devfs=nomount
-to the options, and click on the Submit
-button.</p>
-
-<center><u>Create a boot and root floppy for an existing mini distribution.</u></center>
+Learn how from this tutorial that focuses primarily on the Yard
+Method:
 
 <p>
 
-4.&nbsp;&nbsp;Click on the Advanced Boot 
-Section (ABS).&nbsp;&nbsp;Root_fs_tomrtbt is about 16M, so add ramdisk_size=16384 to
-the 'append=' entry.&nbsp;&nbsp;From the main box choose '2 disk compression', and
-press on the Root Filesystem button and select root_fs_tomrtbt_1.7.205.bz2.
-</p> 
-
-5.&nbsp;&nbsp;Click the Submit button on the main 
-box.&nbsp;&nbsp;Have two floppy disks ready.
+<u>Test an existing mini distribution.</u>
 
 <p>
 
-6.&nbsp;&nbsp;When you boot the boot disk you will see Lilo, you may access the menu using [Ctrl] and [Tab] to see the available images, or wait for the
-prompt to insert the root disk.</p>
+Run gbootroot.&nbsp;&nbsp;Click on the Advanced Root Section (ARS),
+click on the UML button. &nbsp;&nbsp;Select
+/usr/lib/bootroot/root_filesystem/root_fs_helper, and click on the
+Submit button.</p>
 
-
-<center><u>Test a macro distribution created by make_debian-X11.</u></center>
+<u>Test a macro distribution created by make_debian-X11.</u>
 
 
 <p>
 
  
-7.&nbsp;&nbsp;Download 
-<a href="http://sourceforge.net/project/showfiles.php?group_id=9513">
-root_fs_debian_x11-(latest revision).bz2</a>.&nbsp;&nbsp;Then follow the 
-instructions in the 
-first three steps, but don't add devfs=nomount.&nbsp;&nbsp;This root 
-filesystem was created with 
-the make_debian-X11 script from the make-debian-x11 add-on found at 
-<a href="http://sourceforge.net/project/showfiles.php?group_id=9513">
+Download <a
+href="http://sourceforge.net/project/showfiles.php?group_id=9513">
+root_fs_debian_x11-(latest revision).bz2</a>.&nbsp;&nbsp;Then follow
+the instructions in "Test an existing mini distribution."  This root
+filesystem was created with the make_debian-X11 script from the
+make-debian-x11 add-on found at <a
+href="http://sourceforge.net/project/showfiles.php?group_id=9513">
 gbootroot's</a> Sourceforge home.</p>
 
 
-<center><u>Make your own micro distribution from an existing template.</u></center>
+<u>Make your own micro distribution from an existing template.</u>
 
 <p>
 
-8.&nbsp;&nbsp;Click on the ARS if its not already opened.&nbsp;&nbsp;
-Choose Yard from the Method pull-down menu.&nbsp;&nbsp;Choose 
+Click on the ARS if its not already opened.&nbsp;&nbsp; Choose Yard
+from the Method pull-down menu.&nbsp;&nbsp;Choose
 <b>Example-Mini.yard</b>
 from the pull-down Template menu.&nbsp;&nbsp;Click on the Generate button.
 &nbsp;&nbsp;The Yard Box will pop up.&nbsp;&nbsp;Click on the Continue button
@@ -785,153 +762,169 @@ there are no links or login type files in the template.</p>
 
 <p>
 
-9.&nbsp;&nbsp;Experiment with Edit->Stages from the Yard Box menu.
-&nbsp;&nbsp;Try different types of staging behavior, and notice the 
-differences.</p>
+Experiment with Edit->Stages from the Yard Box menu.  &nbsp;&nbsp;Try
+different types of staging behavior, and notice the differences.</p>
 
 <p>
 
-10.&nbsp;&nbsp;Test your creation with the UML box as explained in step 3.
-&nbsp;&nbsp;You will want to add init=/bin/bash to the Options entry.</p>
+Test your creation with the UML box.  &nbsp;&nbsp;You will want to add
+init=/bin/bash to the Options entry.</p>
 
 <p>
 
-11.&nbsp;&nbsp;At this point you will probably want to play around a little 
-bit.&nbsp;&nbsp;Familiarize yourself with the Format Rules found 
-near the top of the template.&nbsp;&nbsp;You may want to save the template
-with a different name and experiment with changes, or create a new template
-using File->New (Shortcut: Alt-N).</p>
+At this point you will probably want to play around a little
+bit.&nbsp;&nbsp;Familiarize yourself with the Format Rules found near
+the top of the template.&nbsp;&nbsp;You may want to save the template
+with a different name and experiment with changes, or create a new
+template using File->New (Shortcut: Alt-N).</p>
 
 
-<center><u>Make your own mini distribution from an existing template.</u></center>
+<u>Make your own mini distribution from an existing template.</u>
 
 <p>
 
-12.&nbsp;&nbsp;Choose <b>Example.yard</b> from the Template menu in the ARS.
+Choose <b>Example.yard</b> from the Template menu in the ARS.
 &nbsp;&nbsp;Save it with a new name.</p>
 
 <p>
 
-13.&nbsp;&nbsp;There are two types of inittabs provided for each major 
-distribution type.&nbsp;&nbsp;The inittab with nodevfs appended doesn't use 
-the
-device fs, i.e. the devfs=nomount kernel option.&nbsp;&nbsp;Uncomment the 
-inittab, getty, and gettydefs (if required) for
-your distribution type.&nbsp;&nbsp;If you aren't using Debian make sure to 
-comment (#) out the corresponding stuff for Debian.</p>
+There are two types of inittabs provided for each major distribution
+type.&nbsp;&nbsp;The inittab with nodevfs appended doesn't use the
+device fs, i.e. the devfs=nomount kernel option.</p>
 
 <p>
 
-14.&nbsp;&nbsp;Example.yard template introduces you to Replacements like
-the inittabs described above.&nbsp;&nbsp;
-Replacements can be anywhere and are specified in the template as either 
-an absolute path or relative to $PATH
-(Edit->Settings->Path); the default path location for Replacements for users is
-$HOME/.gbootroot/yard/Replacements.
-&nbsp;&nbsp;Also, this template introduces you to links, $VERSION, 
-how library dependencies are automatically figured for binaries 
-and the automated 
-approach for finding service modules and dependencies for PAM and NSS.
-&nbsp;&nbsp;Once you learn the format rules and how they are interpreted 
-by the program you will find that making your own templates is 
-quite simple.</p>
+Example.yard template introduces you to Replacements like the inittabs
+described above.&nbsp;&nbsp; Replacements can be anywhere and are
+specified in the template as either an absolute path or relative to
+$PATH (Edit->Settings->Path); the default path location for
+Replacements for users is $HOME/.gbootroot/yard/Replacements.
+&nbsp;&nbsp;Also, this template introduces you to links, $VERSION, how
+library dependencies are automatically figured for binaries and the
+automated approach for finding service modules and dependencies for
+PAM and NSS.  &nbsp;&nbsp;Once you learn the format rules and how they
+are interpreted by the program you will find that making your own
+templates is quite simple.</p>
 
 <p>
 
-15&nbsp;&nbsp;Click on the Continue button until you finish the Space Left 
-stage.&nbsp;&nbsp;Adjust the Filesystem Size in the ARS to a size larger than 
-the Total space shown in the verbosity box.&nbsp;&nbsp;Create your 
-root_fs, 
-and make sure there was enough room left.&nbsp;&nbsp;You may have to adjust the
-size and run Create again if you are normal user, or run Copy and Create
-if a loopback device is being used as root.</p>
+Click on the Continue button until you finish the Space Left
+stage.&nbsp;&nbsp;Adjust the Filesystem Size in the ARS to a size
+larger than the Total space shown in the verbosity
+box.&nbsp;&nbsp;Create your root_fs, and make sure there was enough
+room left.&nbsp;&nbsp;You may have to adjust the size and run Create
+again if you are normal user, or run Copy and Create if a loopback
+device is being used as root.</p>
 
 <p>
 
-16&nbsp;&nbsp;Now that you have a root filesystem you may continue to 
-the Test stage and observe what is missing.&nbsp;&nbsp;Next run the root_fs 
-from the UML box.&nbsp;&nbsp;
-If things don't work correctly you will have to hunt down the cause,
-make the appropriate changes and proceed through the stages again.&nbsp;&nbsp
-If you only make a change to a Replacement, you only have to run
-the Copy and Create stage again.&nbsp;&nbsp;If you make a change to the 
-template you have to run at least the Check, Links & Deps, Copy, and Create 
-stages again.</p>
+Now that you have a root filesystem you may continue to the Test stage
+and observe what is missing.&nbsp;&nbsp;Next run the root_fs from the
+UML box.&nbsp;&nbsp; If things don't work correctly you will have to
+hunt down the cause, make the appropriate changes and proceed through
+the stages again.&nbsp;&nbsp If you only make a change to a
+Replacement, you only have to run the Copy and Create stage
+again.&nbsp;&nbsp;If you make a change to the template you have to run
+at least the Check, Links & Deps, Copy, and Create stages again.</p>
 
 
-<center><u>Make the mini distribution you just created with a different
-filesystem type.</u></center>
-
-<p>
-
-17.&nbsp;&nbsp;Now that you have successfully created a working mini
-distribution from Example.yard, re-create it with a different 
-filesystem type:  ext2, ext3, minix, reiserfs, romfs, cramfs, jffs, or jffs2.
+<u>Make the mini distribution you just created with a different
+filesystem type.</u>
 
 <p>
 
-18.&nbsp;&nbsp;Open up the Filesystem Box (Edit->'File System") and click on
-the UML Exclusively check button, and enter a filesystem command.  For this
-example <code>mkminix</code> will be used to create a minix filesystem.
-&nbsp;&nbsp;Normal users will want to keep the Preserve Ownership check
-button off.&nbsp;&nbsp;Press the submit button when finished.
+Now that you have successfully created a working mini distribution
+from Example.yard, re-create it with a different filesystem type:
+ext2, ext3, minix, reiserfs, romfs, cramfs, jffs, or jffs2.  For this
+learning experience make sure you are running gbootroot as a normal
+user .. you were already weren't you?
 
 <p>
 
-19.&nbsp;&nbsp;Adjust the Filesystem Size in the ARS larger than 8192k, you
-could also make it smaller, but the point of this exercise is to introduce
+Open up the Filesystem Box (Edit->'File System") and click on the UML
+Exclusively check button, and enter a filesystem command.  For this
+example <code>mkminix</code> will be used to create a minix
+filesystem.  &nbsp;&nbsp;Normal users will want to keep the Preserve
+Ownership check button off.&nbsp;&nbsp;Press the submit button when
+finished.
+
+<p>
+
+Adjust the Filesystem Size in the ARS larger than 8192k, you could
+also make it smaller, but the point of this exercise is to introduce
 users to how the 8192k barrier of genext2fs can be exceeded.
 
 <p>
 
-20.&nbsp;&nbsp;
-Set the staging behavior to user defined, and choose the Create check button
-if you are a normal user or if you are root and created the root_fs in stages 
-12-16 with genext2fs, otherwise, root needs to choose the Check, Links & Deps, 
-Copy, and Create check boxes.&nbsp;&nbsp;Press Continue and observe what 
-happens.&nbsp;&nbsp;Do step 16.
+
+Set the staging behavior to user defined, and choose the Check, Links
+& Deps, Copy, and Create buttons.  Press Continue and observe what
+happens.
 
 <P>
 
-21.&nbsp;&nbsp;Can we create a different filesystem type
-for the root filesystem we just altered?&nbsp;&nbsp;
-Enter <code>genromfs</code> to create a romfs filesystem.&nbsp;&nbsp;
-Set the staging behavior to user defined if this hasn't already been done, 
-turn on the Create check button,
-and press the Continue button.&nbsp;&nbsp;Assuming you've left the
-ARS open, press the UML button so that the UML box closes and reopens, and you
-will notice that your fs has _romfs appended to it.&nbsp;&nbsp;Try it out.
-&nbsp;&nbsp;
-You may 
-notice complaints on boot-up about ioctl.save, to remove these complaints you 
-could create a replacement ioctl.save, edit and save the changes to the 
-template, re-create the filesystem, and test again.
+Can we create a different filesystem type for the root filesystem we
+just altered?&nbsp;&nbsp; Enter <code>genromfs</code> to create a
+romfs filesystem.&nbsp;&nbsp; Set the staging behavior to user defined
+if this hasn't already been done, turn on the Create check button, and
+press the Continue button.&nbsp;&nbsp;Assuming you've left the ARS
+open, press the UML button so that the UML box closes and reopens, and
+you will notice that your fs has _romfs appended to it.&nbsp;&nbsp;Try
+it out.  &nbsp;&nbsp; You may notice complaints on boot-up about
+ioctl.save, to remove these complaints you could create a replacement
+ioctl.save, put it in
+$HOME/.gbootroot/yard/Replacement/etc/ioctl.save, edit and save the
+changes to the template, re-create the filesystem, and test again.
 
 <p>
 
-22.&nbsp;&nbsp;So what about devices for normal users?&nbsp;&nbsp;
-Genext2fs creates devices for normal users, however, when UML Exclusively
-is used a normal user doesn't have the capability to copy over devices
-from the host system.&nbsp;&nbsp;Instead, devfs should be used.&nbsp;&nbsp;
-If more devices are required, devfsd can be used to set them up after the
-root filesystem is booted.&nbsp;&nbsp;Did you get things to work?&nbsp;&nbsp;
-Congratulations, you have created a root filesystem without needing to 
-be root!&nbsp;&nbsp;
+So what about devices for normal users?&nbsp;&nbsp; Genext2fs creates
+devices for normal users, however, when UML Exclusively is used a
+normal user doesn't have the capability to copy over devices from the
+host system.&nbsp;&nbsp;Instead, devfs should be used.&nbsp;&nbsp; If
+more devices are required, devfsd can be used to set them up after the
+root filesystem is booted.&nbsp;&nbsp;Did you get things to
+work?&nbsp;&nbsp; Congratulations, you have created a root filesystem
+without needing to be root!&nbsp;&nbsp;
 
 <p>
 
 
-<center><u>Make your own root filesystems from your own templates.</u></center>
+<u>Create a boot and root floppy for an existing mini distribution.</u>
 
 <p>
 
-23.&nbsp;&nbsp;Now that you have done your homework, I set you free to create
-your own root filesystems from your own templates with replacements
-of your own choice.&nbsp;&nbsp;Create a root_fs which can fit on a block 
-device, and then create an emergency disk customized for your own system, 
-or create your own customized macro distribution and run it from the 
-UML box to try things you never would have dreamed of doing on your host 
-system.&nbsp;&nbsp;And that is just the beginning of the things you can do.
+Using the techniques you've learned, now create a root_fs which after
+being compressed can fit onto a floppy drive disk.  You compress your
+root_fs by by turning compression on by pressing on the off check
+button in the ARS.  For maximum compression choose bz2, and then press
+the Accept button.
+
+<P>
+
+Click the Submit button on the main box.&nbsp;&nbsp;Have two floppy
+disks ready.  Follow any additional instruction gbootroot may tell
+you.
+
+<p>
+
+When you boot the boot disk you will see Lilo, you may access the menu
+using [Ctrl] and [Tab] to see the available images, or wait for the
+prompt to insert the root disk.</p>
+
+
+<u>Make your own root filesystems from your own templates.</u>
+
+<p>
+
+Now that you have done your homework, I set you free to create your
+own root filesystems from your own templates with replacements of your
+own choice.&nbsp;&nbsp;Create a root_fs which can be used as an
+emergency disk customized for your own system, or create your own
+customized macro distribution and run it from the UML box to try
+things you never would have dreamed of doing on your host
+system.&nbsp;&nbsp;And that is just the beginning of the things you
+can do.
 
 
 <P><a name="3"><b>Oops, I can't get something to work, what should I do?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
