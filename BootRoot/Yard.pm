@@ -52,7 +52,7 @@ use BootRoot::Error;
 
 my (%Included, %replaced_by, %links_to, %is_module, %hardlinked, 
     %strippable, %lib_needed_by, @Libs, %user_defined_link);
-my %pam_repeats;
+my (%pam_repeats, $find_pam);
 my $cf_line = 0;
 my $BLKGETSIZE_ioctl = 4704; 
 my $BLKFLSBUF_ioctl  = 4705; 
@@ -494,7 +494,7 @@ sub extra_links {
 
     # First we find nss and pam stuff if asked for.
     my $find_nss   = $nss_pam->{60}{conf_nss};
-    my $find_pam   = $nss_pam->{61}{conf_pam};
+    $find_pam   = $nss_pam->{61}{conf_pam};
 
     if ( $find_nss == 1 || $find_pam == 1 ) {
 
@@ -599,6 +599,14 @@ sub library_dependencies {
 	if ( ( -f $file and -B _ and -x _ and $file_line =~ /executable/ ) ||
 	     ( $file =~ m,/security/pam_\w+\.so, )
 	     ) {
+
+	    ## Determine whether to continue with pam to keep original
+	    ## default behavior.
+	    if ( $find_pam != 1 ) {
+		if ( $file =~ m,/security/pam_\w+\.so, ) {
+		    next;
+		}
+	    }
 
 	    #####  EXECUTABLE LOADABLE BINARY
 	    #####  Run ldd to get library dependencies.
