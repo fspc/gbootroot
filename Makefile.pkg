@@ -27,6 +27,7 @@ install:
 	install -d $(DESTDIR)/usr/share/doc/gbootroot/html/images	
 	cp -fa doc/html/{*html,*4} $(DESTDIR)/usr/share/doc/gbootroot/html
 	cp -fa doc/html/images/{*jpg,*gif} $(DESTDIR)/usr/share/doc/gbootroot/html/images
+	cp -fa Changes $(DESTDIR)/usr/share/doc/gbootroot/Changes
 
 
 remove:
