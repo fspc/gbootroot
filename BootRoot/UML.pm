@@ -115,7 +115,9 @@ sub command {
     foreach my $str (@expects){
 	$str ne "-re" and push @strings, $str;
     }
-    $me->{expect_handle}->print("$cmd\n");
+
+    # adding an \r handles some buggy expectations
+    $me->{expect_handle}->print("$cmd\r\n");
     my @match = $me->{expect_handle}->expect(undef, @expects);
     defined $match[0] and $match[0]--;
     if(defined($match[1])){
