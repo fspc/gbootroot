@@ -299,7 +299,7 @@ sub library_dependencies {
     my ($contents_file) = @_;
     my $error;
 
-    info(0, "PASS 3:  Checking library dependencies...\n");
+    info(0, "PASS 4:  Checking library dependencies...\n");
     info(1, "(Ignore any 'statically linked' messages.)\n");
 
     #  Normal file X:  X in %Included.
@@ -489,7 +489,7 @@ sub library_dependencies {
 
 sub hard_links {
 
-    info(0, "PASS 4:  Recording hard links...\n");
+    info(0, "PASS 3:  Recording hard links...\n");
 
     #####  Finally, scan all files for hard links.
 
@@ -503,6 +503,7 @@ sub hard_links {
 	if (-f $file) {
 	    my($dev, $inode, $mode, $nlink) = stat(_);
 	    if ($nlink > 1) {
+		info(1,"$file is hardlinked\n");
 		$hardlinked{$file} = "$dev/$inode";
 	    }
 	}
@@ -725,6 +726,9 @@ sub space_check {
 
     info(0, "Total space needed is ", bytes_to_K($total_bytes), " Kbytes\n");
 
+    ## One interesting thought:  This isn't looking at the penalty for
+    ## ext2 filesystem info .. and other filesystems may be allowed in the
+    ## future.  8192 inodes == 1.63% penalty or at iso9660
     if (bytes_to_K($total_bytes) > $fs_size) {
 	info(0, "This is more than $fs_size Kbytes allowed.\n");
             return;
@@ -1138,7 +1142,7 @@ sub sync {
   system("sync") and die "Couldn't sync!";
 }
 
-
+## Need to put error() checking here
 #  find_file_in_path(file, path)
 #  Finds filename in path.  Path defaults to @pathlist if not provided.
 #  If file is relative, file is resolved relative to config_dest and lib_dest.
