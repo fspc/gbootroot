@@ -3720,8 +3720,17 @@ sub find_nss {
     my($nss_conf) = @_;
     my @nss_libs;
 
+    # What u know, Suse 7.3 doesn't have a libc-*, but it does have
+    # ld-*  (libc6 2.2.4) --freesource  
+
     my($libc) = yard_glob("/lib/libc-*");  ## removed 2
-    my($libc_version2, $libc_version) = $libc =~ m|/lib/libc-(\d)+\.(\d)|; ## changed 2 & . 
+    my $libcc = "libc";
+    if ( !$libc ) {
+	$libc = yard_glob("/lib/ld-*");  ## removed 2
+	my $libcc = "ld";
+    }
+
+    my($libc_version2, $libc_version) = $libc =~ m|/lib/$libcc-(\d)+\.(\d)|; ## changed 2 & . 
     if (!defined($libc_version)) {
 	info(0,"\nParsing $nss_conf:\n");
 	warning_test "Can't determine your libc version\n";
