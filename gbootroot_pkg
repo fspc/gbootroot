@@ -54,9 +54,14 @@ my $urgency = "low";
 my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
 my $packaging_place = "$user_home/gbootroot/PACKAGING";
 my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg";
+my $rpm_packaging_place = "$gbootroot_cvs/pkg/rpm";
+my $SOURCES = "/usr/src/rpm/SOURCES";
+my $SPECS = "/usr/src/rpm/SPECS";
 my $email = "freesource\@users.sourceforge.net";
 my $name = "Jonathan Rosenbaum";
 my $makefile = "Makefile.pkg";
+my @rpm_packages = qw(gbootroot.spec gbootroot-mdk.spec);
+
 
 # Other vars
 my ($real_uid, $real_gid) = (stat($user_home))[4,5];
@@ -80,6 +85,16 @@ close(CVS);
 
 
 $packaging_place = "$packaging_place/$prog-$version";
+
+# Do we want a deb, rpm or both
+
+if (!( $ARGV[0] eq "both" || $ARGV[0] eq "deb" || $ARGV[0] eq "rpm" ) ) {
+
+ die "Specify: both, deb, or rpm\n";
+
+}
+
+if ( $ARGV[0] eq "both" || $ARGV[0] eq "deb" ) { 
 
 # Make sure the directory exists.
 
@@ -243,6 +258,86 @@ if (!$stop) {
 
 
 system "debuild";
+
+
+} # both or deb
+
+
+if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
+
+
+    # Here the defined version and revision are updated ..
+    # Ofcourse maybe the revision shouldn't be touched.
+    foreach my $package ( @rpm_packages ) {
+	open (RPM_PLACE, "$rpm_packaging_place/$package" ) or 
+	    die "Couldn't open up $rpm_packaging_place/$package: $!\n";
+	my @specs = <RPM_PLACE>;
+	close(RPM_PLACE);
+
+	open (RPM_PLACE, ">$rpm_packaging_place/$package" ) or 
+	    die "Couldn't open up $rpm_packaging_place/$package: $!\n";	
+	foreach ( @specs ) {
+
+	    if ( m,^\%define\s+version\s+[\d\.]+\s*$,) {
+		print RPM_PLACE "%define version $version\n";
+
+	    }
+	    elsif ( m,^\%define\s+release\s+[\d\.]+\s*$,) {
+		if ( /mdk/ ) {
+		    print RPM_PLACE "%define release $revision" . "mdk\n";
+		}
+		else {
+		    print RPM_PLACE "%define release $revision\n";
+		}
+
+	    }
+	    else {
+		print RPM_PLACE $_;
+
+	    }
+
+	}
+	close(RPM_PLACE);
+	
+
+	# Here we create a filelist from the debian package
+	my $arch = `grep Architecture $packaging_defaults/control |\
+                    cut -d " " -f 2`; 
+	chomp $arch;
+	my $program = dirname($packaging_place) . "/" .$prog . "_" 
+	.  "$version-$revision" . "_" . $arch . ".deb";
+	die "Can't fine $program\n" if !-e $program;
+
+	my $files = "dswim -qpl $program|";
+	open (FILELIST,">$rpm_packaging_place/filelist") or
+	die "Couldn't open $rpm_packaging_place/filelist: $!\n";
+	open (FILES, $files ) or 
+	die "Couldn't open $files: $!\n";
+	while ( <FILES> ) {
+
+	    if ( m,^\./, ) {
+		s,^\.,,;
+		print FILELIST $_;
+	    }
+
+	}
+	
+	# For now will just use one definite place for SOURCES
+	my $source = dirname($packaging_place) . "/" . $prog . "_" . $version;
+	system "cp $source*tar.gz $SOURCES";
+	system "cp $rpm_packaging_place/filelist $SOURCES";
+	system "cp $gbootroot_cvs/gbootroot.xpm $SOURCES";
+	system "cp $rpm_packaging_place/$package $SPECS";
+
+	# Time for the fun
+	system "rpm -ba $SPECS/$package";
+
+
+    }
+
+}  # both or rpm 
+
+
 
 sub home_builder {
 
