@@ -46,6 +46,7 @@ sub option {
 		"preserve-ownership=s",
 		"kernel=s",
 		"kernel-version=s",
+		"genext2fs-dir=s",            #  /usr/lib/bootroot/
 		"no-stdout",
 
 		# hidden options for package making or for people who
@@ -64,12 +65,11 @@ sub option {
 		# "home" with "template" needs the additional options to
 		# choose immediate dir., for instance, genext2fs.
 
-		"home=s",                  # path relative to `pwd` usually "."
+		"home=s",                  # by itself = GUI
+		                           # path relative to `pwd` usually "."
 		"root-fs-helper-location=s", # full path or rel path 
 		                             # in Yard $ubd0
 		"expect-program=s",          # i.e. ./expect_uml
-		"genext2fs=s"                # for immediate dir creation
-		                             # commandline .. ussually "."
 
 		);
 

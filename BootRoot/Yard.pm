@@ -1602,9 +1602,9 @@ sub create_expect_uml {
         }
 	else {
 	    # This could have been done with one if statement --freesource
-	       if ( $option{genext2fs} ) {
+	       if ( $option{"genext2fs-dir"} ) {
 
-		   my $command = $option{genext2fs} . "/genext2fs/$main::makefs";
+		   my $command = $option{"genext2fs-dir"} . "$main::makefs";
 
 		   if ( sys("$command -b $fs_size -d $mount_point -D $device_table $device") !~ 
 			/^0$/ ) {
