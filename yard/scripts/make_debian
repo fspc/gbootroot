@@ -88,6 +88,7 @@ push(@required_files,@extra_files);
 #################################################################
 #           
 #     EDIT
+#    TEMPLATE
 #     BELOW 
 #  
 # Edit below $stuff = << "STUFF" to make changes to the template. 
@@ -278,7 +279,6 @@ foreach my $package_info (@required_stuff) {
 	push( @rpc, $p ); 
     }    
 }
-
 
 if (@rpc) {
     print STDERR "These are the required packages which were specified:\n\n";

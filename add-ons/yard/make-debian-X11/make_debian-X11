@@ -95,6 +95,7 @@ push(@required_files,@extra_files);
 #################################################################
 #           
 #     EDIT
+#    TEMPLATE
 #     BELOW 
 #  
 # Edit below $stuff = << "STUFF" to make changes to the template. 
