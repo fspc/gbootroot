@@ -203,8 +203,8 @@ chdir($packaging_place);
 # Using dch for the changelog .. very convenient and debian proper.
 if (!$stop) {
 
-    $ENV{MAIL} = "freesource@users.sourceforge.net";
-    $ENV{DEBFULLNAME} = "Jonathan Rosenbaum";
+    $ENV{MAIL} = $email;
+    $ENV{DEBFULLNAME} = $name;
 
     system "chown $real_uid:$real_gid $packaging_place/debian/changelog";
 
@@ -218,7 +218,7 @@ if (!$stop) {
 	    last if $what == 2;  
 	    $_  =~ s/\n/ /gm; 
 	    if ( $change_watch == 0 ) {
-		system "dch", "--newversion", "$version", "$_"; 
+		system "dch", "--newversion", "$version-$revision", "$_"; 
 	    }
 	    else {		
 		system "dch",  "$_";
@@ -234,8 +234,8 @@ if (!$stop) {
 
     $/ = "\n";
 
+    system "cp -a $packaging_place/debian/changelog $packaging_defaults";
 
-    exit;
 
 } # end if !$stop
 

@@ -1,3 +1,134 @@
+gbootroot (1.3.0-1) unstable; urgency=low
+
+  * Made the termcap check just a warning if terminfo or termcap don't
+    exist, If a terminfo directory is found, linux will need to exist or
+    the test will  return error.  This is better because the root
+    filesystem can still work  if this information doesn't exist.  A
+    minority of gettys will fail if they  use termcap or terminfo, but
+    this check was removed from the chrooted tests  several months ago
+    for the reason just cited.  Note: check_getty_type_call  was removed
+    from Yard.pm, but exists in chrooted tests without the termcap
+    check.  Also, added a close which was missing.
+  * Removed an unnecessary check from the fstab test, and improved a
+    regexp  which was failing if tabs were used in the fstab.
+  * State is saved for all check buttons when the yard box is opened and
+    closed.  Deciding whether to save state between invocations of
+    gbootroot via a file.
+  * Moved the Changelog from within gbootroot to a Changes file in
+    /usr/share/doc/gbootroot, because it is getting quite large.
+  * Improved the sizing of the UML box.
+  * Added New Template (Alt-N) capability to the Yard Box.
+  * Added several new FAQ questions,  added a lot more information on
+    "How do I use gBootRoot?"  Updated the graphics for the
+    documentation.
+  * Updated to version 2.4.14 of user-mode-linux.  Note: 2.4.15 was
+    buggy in respect to rebooting, and produced an address number at
+    login, it appears to be a bad compile.
+  * The Yard Box has new check buttons which allows the parsing behavior
+    of the nss and pam configuration files to be turned off and on
+    (default).
+  * Pam.conf and pam.d/{service names or *} can now be checked for their
+    specified service modules.  The service modules are located either
+    in /lib/security or /usr/lib/security and included with the file set
+    if they  are found on the host system.  The modules are then checked
+    for their  dependencies which are included if they haven't
+    previously been specified. Therefore, the user no longer needs to
+    specify pam modules and dependencies  in the template if the pam
+    parsing option in turned on.   Nsswitch.conf can now be checked for
+    the service modules it specifies.  The service modules pertaining to
+    the host systems libc6 are located and  automatically included.  The
+    modules are then checked for their  dependencies which are included
+    if they haven't previously been specified. Therefore, the user no
+    longer needs to specify nss modules and dependencies  in the
+    template if the pam parsing option in turned on.
+  * $ENV{RELEASE} is now initialized every time a check is run on the
+    template. Information can come from three sources, the kernel
+    version returned from a selected kernel in the main section, the
+    user defined kernel version in the ABS, or `uname -r`.  User defined
+    kernel version overrides the kernel.  The root_fs needs to be built
+    in relation to the actual kernel  modules it will run on.
+    Previously the $RELEASE value wasn't returned  properly because of
+    some bugs in kernel_version_check.  This has been fixed.
+  * The proper ldd check is now used if a dynamically linked binary is
+    detected to require uClibc rather than libc6.  The ldd from the
+    default location of  /usr/i386-linux-uclibc/bin is used for uClibc.
+    The old behavior of automatically including the default loader for
+    the host system has  been removed.
+  * Fixed pam test so that the 3rd field rather than the 4th field is
+    being  checked in the service-name files found in /etc/pam.d/.  The
+    4th field is  acceptable for pam.conf.  If a path is specified in
+    either conf format,  that path will be checked, otherwise, either
+    the pam default path of  /usr/lib/security or the FSSTD location
+    /lib/security will be checked  for a match.
+  * Fixed nss test so that it checks for the right
+    libnss_(service).so.$version if glibc 2.2 is used.  Glibc 2.0 and
+    2.1 used 1 and 2 respectively, but 2.2 uses 2.
+  * Experimental busybox and uClibc functionality included for boot_fs.
+  * Many improvements to the verbosity output.
+  * Replacements path is set just once.
+  * The Path Box only allowed extra paths to be added before the first
+    generation  of a root_fs creation, this was because the values
+    weren't allowed to be  changed after they were defined.  This has
+    been fixed.
+  * Symlinks have been vastly improved.  Fictional or real links can now
+    be  specified, and links always follow the link -> (file | directory
+    ) format  where either side can be existing dirs/files or fictional
+    dirs/files on the  system.
+  * All of Tom's templates have been replaced with new templates clearly
+    marked as Examples.
+  * Example.yard takes advantage of the automated NSS and PAM feature,
+    and can  create a devfs or nondevfs root filesystem, and has many
+    new replacements.   The inittabs reflect modern versions of dpkg,
+    rpm, and slackware based  distributions.
+  * Example-Mini.yard demonstrates the bare minimum required to create a
+    working root_fs.
+  * The documentation in the new templates has been improved  to respect
+    the way gbootroot's Yard now works, since it has been greatly
+    modified from the original, and some old features deemed unnecessary
+    have been removed.
+  * The Debian.yard example has had a name change to Example-
+    Debian.yard, and has additional documentation so the user
+    understands its prerequisites. The FAQ covers make_debian usage.
+  * Chrooted tests in the Yard Box are disabled and removed when a non-
+    root  user runs the box.
+  * ARS and YardBox error handling is much better because $error has
+    been made private, before it was mostly global in YardBox.pm which
+    meant an error value remained ERROR even when the problem was fixed
+    which caused the YardBox to fail to work properly after certain
+    errors.
+  * When the ARS hadn't been opened yet, the program reported that the
+    root device hadn't been umounted yet, this was observed with
+    genext2fs but was certainly a global bug.  This has been fixed.
+  * The majority of add-on replacements except for passwd*, shadow, and
+    ld.so.conf have a CVS Id and "make_debian replacement".
+  * Original CVS information is now preserved so that non-root users and
+    root can't edit global replacements, the basic idea  is that root
+    will usually be using an editor like Emacs in
+    $HOME/.gbootroot/yard/Replacements which respects that CVS versioned
+    files  outside of the repository are read-only (essentially because
+    the date has  changed).  Users should make copies of versioned
+    replacements which they  want to edit, for instance: fstab.debian-
+    1000  Also, they shouldn't defeat the mechanism by removing the CVS
+    directories, although, only root has write permissions.
+  * All replacements are now symlinks which is helpful to maintain
+    static  information for add-ons, anotherwards, this allows the
+    author to know that  all his replacements are updated in user
+    workspaces when he releases a new  add-on.  Because of this change
+    symlinks will now be respected in the  Replacements directory since
+    the file being pointed to will be used instead  of the actual link
+    when constructing the root filesystem.
+  * Non-root users may now create boot disks.  Boot Loaders may required
+    root  permissions for some methods, and the fstab may need to be
+    edited, see FAQ.   And some /lib/modules/`uname -r`/modules  may
+    need to be given world read  permissions.
+  * Non-root users may now create root filesystems up to 8192k in size
+    using genext2fs.  FAQ explains how to exceed this limit as a normal
+    user.
+  * Added sources.list replacement.
+  * Added /swapfile to fstab.debian.
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Sun,  9 Dec 2001 03:15:37 -0500
+
 gbootroot (1.2.14-1) unstable; urgency=low
 
   * Append field in the ABS now saves state for non-root users.  Before it only
