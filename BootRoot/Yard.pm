@@ -91,13 +91,13 @@ sub warning {
 sub verbosity { $verbosity = $_[0]; }
 sub text_insert { $text_insert = $_[0]; $red = $_[1]; $blue = $_[2]; }
 sub logadj { $logadj = $_[0]; }
-my ($ars, $kernel, $kernel_version_choice, $uml_exclusively, $preserve_permissions);
+my ($ars, $kernel, $kernel_version_choice, $uml_exclusively, $preserve_ownership);
 sub ars2 { $ars = $_[0]; 
 
 	   $kernel                    = $ars->{kernel};
 	   $kernel_version_choice     = $ars->{kernel_version_choice};
 	   $uml_exclusively           = $ars->{uml_exclusively};
-	   $preserve_permissions      = $ars->{preserve_permissions};
+	   $preserve_ownership      = $ars->{preserve_ownership};
 }
 
 
@@ -1401,7 +1401,7 @@ sub create_filesystem {
 	    my $x_count = 1;
 
 	    my $command_line = "$expect_program $ubd0 $ubd1 $options " .
-		"$mount_point $preserve_permissions $filesystem";
+		"$mount_point $preserve_ownership $filesystem";
 
 	    info(1,"\n$command_line\n\n");
 
@@ -1592,6 +1592,8 @@ sub copy_strip_file {
 		return "ERROR"if $error && $error eq "ERROR";
 	    }
 
+	    # This could be done for uml_exclusively, too 
+	    # --freesource
 	    chmod($mode, $to)      or ($error = 
 				       error("chmod: $! \($from_base\)\n"));
 	    return "ERROR"if $error && $error eq "ERROR";

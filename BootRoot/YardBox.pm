@@ -280,12 +280,12 @@ sub filesystem_size {
 	if ( $> == 0 ) {
 	    $uml_expect{uml_exclusively} = 0  if 
 		!$uml_expect{uml_exclusively};
-	    $uml_expect{preserve_permissions} = 1 if 
-		!$uml_expect{preserve_permissions};
+	    $uml_expect{preserve_ownership} = 1 if 
+		!$uml_expect{preserve_ownership};
 
 	    $ars->{uml_exclusively} =  $uml_expect{uml_exclusively};
 	    ars2($ars);			   
-	    $ars->{preserve_permissions} = $uml_expect{preserve_permissions};
+	    $ars->{preserve_ownership} = $uml_expect{preserve_ownership};
 	    ars2($ars);			   
 
 
@@ -319,10 +319,10 @@ sub filesystem_size {
 	    $ars->{uml_exclusively} =  $uml_expect{uml_exclusively};
 	    ars2($ars);			   
 
-	    $uml_expect{preserve_permissions} = 0 if
-		!$uml_expect{preserve_permissions};
+	    $uml_expect{preserve_ownership} = 0 if
+		!$uml_expect{preserve_ownership};
 
-	    $ars->{preserve_permissions} = $uml_expect{preserve_permissions};
+	    $ars->{preserve_ownership} = $uml_expect{preserve_ownership};
 	    ars2($ars);			   
 
 	}
@@ -404,31 +404,31 @@ sub file_system {
 
 
 	#_______________________________________
-	# Preserve Permissions
+	# Preserve Ownership
 	#
 	# root = selected
 	# normal user = not selected
 	#
-	my $preserve_permissions = new 
-	  Gtk::CheckButton("Preserve Permissions");
+	my $preserve_ownership = new 
+	  Gtk::CheckButton("Preserve Ownership");
 	#$uml_exclusively->signal_connect("clicked", \&which_stage, "check"); 
-	$table_filesystem->attach($preserve_permissions,2,3,1,2,['expand'],
+	$table_filesystem->attach($preserve_ownership,2,3,1,2,['expand'],
 				  ['fill','shrink'],0,0);
-	$preserve_permissions->active($uml_expect{preserve_permissions});
-        $preserve_permissions->signal_connect("button_press_event", 
+	$preserve_ownership->active($uml_expect{preserve_ownership});
+        $preserve_ownership->signal_connect("button_press_event", 
                           sub { 
-			      if ( $preserve_permissions->get_active() == 1 ) {
-				  $uml_expect{preserve_permissions} = 0;
+			      if ( $preserve_ownership->get_active() == 1 ) {
+				  $uml_expect{preserve_ownership} = 0;
 			      }
 			      else {
-				  $uml_expect{preserve_permissions} = 1;
+				  $uml_expect{preserve_ownership} = 1;
 	    
 			      }
-			      $ars->{preserve_permissions} = 
-				  $uml_expect{preserve_permissions};
+			      $ars->{preserve_ownership} = 
+				  $uml_expect{preserve_ownership};
 			      ars2($ars);			   
 			  });
-	$preserve_permissions->show;       
+	$preserve_ownership->show;       
 
 
 	#_______________________________________
