@@ -200,15 +200,11 @@ if (!$stop) {
 
     open(CHANGELOG,">$packaging_defaults/changelog") 
 	or die "Couldn't open check: $!\n";
-    for my $ct (0 .. ($#changelog - 3)) {
-	print CHANGELOG $changelog[$ct];
-    }			
     print CHANGELOG "$prog ($version-$revision) $dist; urgency=$urgency\n\n";
     print CHANGELOG "$save_doc\n";
     print CHANGELOG " -- $name <$email>  " . `822-date`;
-    for my $ct (($#changelog - 3) .. $#changelog) {
-	print CHANGELOG $changelog[$ct];
-    }			
+    print CHANGELOG "\n";
+    print CHANGELOG @changelog;
     close(CHANGELOG);
     print "\n";
 
