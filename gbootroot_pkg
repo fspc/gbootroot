@@ -23,6 +23,7 @@ use File::Find;
 
 my $user_home = "/home/mttrader";
 my $prog = "gbootroot";
+my $prog_real_name = "gbootroot";
 my $revision = 1;
 my $dist = "unstable";
 my $urgency = "low";
@@ -42,8 +43,8 @@ my ($real_uid, $real_gid) = (stat($user_home))[4,5];
 # Find the version
 
 my $version;
-open(CVS, "$gbootroot_cvs/$prog") or 
-	die "Couldn't find $prog in $gbootroot_cvs: $!\n";
+open(CVS, "$gbootroot_cvs/$prog_real_name") or 
+	die "Couldn't find $prog_real_name in $gbootroot_cvs: $!\n";
 	while (<CVS>) {
 		if (/\my \$version/) {
 			$version = (split(/=/,$_))[1];
