@@ -52,7 +52,7 @@ use File::Find;
 # or ignoring, though recognizing the -i switch .. so this has been altered.
 # It may have been because dpkg-buildpackage expects -iregexp not -i regexp.
 
-my $user_home = "/home/mttrader";
+my $user_home = "/home/freesource";
 my $prog = "gbootroot";
 my $prog_real_name = "/BootRoot/BootRoot.pm";
 my $revision = 1;
@@ -444,7 +444,7 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
 		    if ( /Changes\.gz/ ) { 
 			s/Changes\.gz/Changes/;
 		    }
-		    if ( /README\.gz/ ) { 
+		    elsif ( /README\.gz/ ) { 
 			s/README\.gz/README/;
 		    }
 		    else {

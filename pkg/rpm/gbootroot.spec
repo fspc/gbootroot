@@ -11,9 +11,9 @@
 # Update this according to version, and if you want to copy in your own
 # sources define base_dir and put them in source_dir.  You can build this 
 # package as a normal user, just make sure to adjust _topdir so that 
-# /home/mttrader is your own echo $HOME, for instance, /home/person.
+# /home/freesource is your own echo $HOME, for instance, /home/person.
 
-%define home /home/mttrader
+%define home /home/freesource
 %define _topdir %{home}/gbootroot
 %define version 1.5.0
 %define release 1
