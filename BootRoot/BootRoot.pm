@@ -47,7 +47,9 @@ $SIG{__WARN__} =
 # value for $tmp1.
 my $tmp1 = "/tmp";              # tmp should be default - Cristian
 my $lilo_conf = "/etc/lilo.conf";
-my $home = "$ENV{HOME}/.gbootroot";
+my $pwd = `pwd`; chomp $pwd;
+my $home;
+$option{home} ? ($home = $pwd) : ($home = "$ENV{HOME}/.gbootroot");
 my $uml_xterm = "xterm -e";
 
 # Don't edit from here, but you can if you want to change the HERE docs
@@ -64,7 +66,6 @@ my $uml_xterm = "xterm -e";
 my $version = "1.3.6";
 my $date = "03.10.2002";
 my $gtk_perl_version = "0.7002";
-my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
 my $home_uml_kernel = "$home/uml_kernel/";
 my $modules_directory = "/lib/modules";
@@ -861,7 +862,6 @@ if ( $option{"preserve-ownership"} ) {
     ? ($preserve_ownership = 1)
     : ($preserve_ownership = 0);
 }
-
 
 
 $ars->{uml_exclusively} = $uml_exclusively;

@@ -1,4 +1,4 @@
-############################################################################
+###########################################################################
 ##
 ##  Yard.pm combining
 ##  MAKE_ROOT_FS, CHECK_ROOT_FS, and YARD_UTILS.PL by Tom Fawcett
@@ -1514,10 +1514,16 @@ sub create_expect_uml {
 
 	    }
 
-	    my $expect_program = "/usr/lib/bootroot/expect_uml";
+
+	    my $expect_program;
+	    $option{"expect-program"} ?
+		($expect_program = $option{"expect-program"}) :
+		    ($expect_program = "/usr/lib/bootroot/expect_uml");
 	    my $version = "2.4";
-	    my $ubd0 =
-		"ubd0=/usr/lib/bootroot/root_filesystem/root_fs_helper";
+	    my $ubd0;
+	    $option{"root-fs-helper-location"} ?
+		($ubd0 = "ubd0=" . $option{"root-fs-helper-location"}) :
+	    ($ubd0 = "ubd0=/usr/lib/bootroot/root_filesystem/root_fs_helper");
 	    my $ubd1 = "ubd1=$device";
 	    my $options = "root=/dev/ubd0"; # need to keep this 1
 	    my $filesystem;

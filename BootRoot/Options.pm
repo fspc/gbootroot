@@ -46,8 +46,15 @@ sub option {
 		"preserve-ownership=s",
 		"kernel=s",
 		"kernel-version=s",
-		"no-stdout"		
-		
+		"no-stdout",
+
+		# hidden options for package making or for people who
+		# read the source Luke.  Path's relative to `pwd`.
+		"home=s",                 # path relative to `pwd` usually "."
+		"root-fs-helper-location=s", # full path or rel path 
+		                             # in Yard $ubd0
+		"expect-program=s"           # i.e. ./expect_uml
+
 		);
 
 }
