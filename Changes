@@ -1,3 +1,6 @@
+1.5.0 - 02/11/2003
+------------------
+
 Updated to 2.4.19-50um and the latest uml tools 20030202.
 
 Fixed a @INC problem with rpm packages. The fhs checks usually insert
