@@ -347,24 +347,26 @@ sub signal {
 # Cristian's idea - bug 111579 enh for brlilo
 sub norm_root_device {
 
- my $norm_root_dev = "hda1"; 
-
  if (!-d $lilo_conf) {
    if (-e $lilo_conf) { 
       open(LIL, $lilo_conf); 
-        while (<LIL>) { 
-          chomp; 
-          if ( m<   ^\s*[^#]+\s*root\s*=\s*/dev/([\w\d]+)\s*.*$
-                  | ^\s*[^#]+\s*default\s*=\s*/dev/([\w\d]+)\s*.*$ >x ) {  
-             ($1) ? ($norm_root_dev = $1) : ($norm_root_dev = $2);
-             last; 
-          } 
+      my @lilo_lines = <LIL>;
+        for (@lilo_lines) {
+          if ( m<^\s*[^#]+\s*default\s*=\s*/dev/([\w\d]+)\s*.*$> ) {  
+	        chomp, return $1;
+	  }
+	}
+        for (@lilo_lines) {
+          if ( m<^\s*[^#]+\s*root\s*=\s*/dev/([\w\d]+)\s*.*$> ) {
+	        chomp, return $1;
+	  }
+
         } 
    } 
  }
 
- return $norm_root_dev;
- 
+ return "hda1";
+
 }
 
 sub create_text {
@@ -886,9 +888,6 @@ sub lilo_put_it_together {
   # 3k sort of accounts for dev & dirs assuming dev is reasonable
   $remain_boot = $remain_boot - (stat("/boot/boot.b"))[12]/2  - 3;
   $entry5->set_text("$remain_boot k");
-
-    #
-
 
     # Write out the HEREDOCS
     open(LC, ">$mnt/brlilo.conf") or die "Couldn't write $mnt/brlilo.conf\n";
