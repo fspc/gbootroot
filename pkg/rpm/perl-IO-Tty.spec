@@ -66,18 +66,17 @@ gzip -9c ChangeLog > /usr/share/doc/perl-IO-Tty/changelog.gz
 
 %files
 %docdir /usr/share/doc/perl-IO-Tty/examples
-/usr/share/doc/perl-IO-Tty/examples/try
-/usr/share/doc/perl-IO-Tty/README
-/usr/share/doc/perl-IO-Tty/changelog.gz
-/usr/lib/perl5/site_perl/IO/Pty.pm
-/usr/lib/perl5/site_perl/IO/Tty.pm
-/usr/lib/perl5/site_perl/IO/Tty/Constant.pm
+%attr(0644, root, root) /usr/share/doc/perl-IO-Tty/examples/try
+%attr(0644, root, root) /usr/share/doc/perl-IO-Tty/README
+%attr(0644, root, root) /usr/share/doc/perl-IO-Tty/changelog.gz
+%attr(0644, root, root) /usr/lib/perl5/site_perl/IO/Pty.pm
+%attr(0644, root, root) /usr/lib/perl5/site_perl/IO/Tty.pm
+%attr(0644, root, root) /usr/lib/perl5/site_perl/IO/Tty/Constant.pm
 %attr(0644, root,  root) /usr/lib/perl5/site_perl/auto/IO/Tty/Tty.bs
 %attr(0755, root, root) /usr/lib/perl5/site_perl/auto/IO/Tty/Tty.so
-/usr/share/man/man3/IO::Pty.3pm
-/usr/share/man/man3/IO::Tty.3pm
-/usr/share/man/man3/IO::Tty::Constant.3pm
-
+%attr(0644, root, root) /usr/share/man/man3/IO::Pty.3pm
+%attr(0644, root, root) /usr/share/man/man3/IO::Tty.3pm
+%attr(0644, root, root) /usr/share/man/man3/IO::Tty::Constant.3pm
 
 %changelog
 

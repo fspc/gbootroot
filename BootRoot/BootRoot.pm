@@ -80,7 +80,7 @@ my $uml_xterm = "xterm -e";
 # apply special patches
 
 my $version = "1.5.0";
-my $date = "02.11.2003";
+my $date = "02.15.2003";
 my $gtk_perl_version = "0.7002";
 my $home_rootfs = "$home/root_filesystem/";
 

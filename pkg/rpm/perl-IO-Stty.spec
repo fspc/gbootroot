@@ -1,4 +1,4 @@
-# A SPEC to crreate a rpm package from IO-Stty-.  This should work on all
+# A SPEC to create a rpm package from IO-Stty-.  This should work on all
 # distributions using perl5.8.
 
 # Update this according to version
@@ -53,10 +53,10 @@ cp stty.pl /usr/share/doc/perl-IO-Stty/examples/stty.pl
 # will read this all from a files list %files -f filelist
 %files  
 %docdir /usr/share/doc/perl-IO-Stty
-/usr/lib/perl5/site_perl/IO/Stty.pm
-/usr/lib/perl5/site_perl/IO/stty.pl
-/usr/share/doc/perl-IO-Stty/examples/stty.pl
-/usr/share/doc/perl-IO-Stty/README
+%attr(0644, root, root) /usr/lib/perl5/site_perl/IO/Stty.pm
+%attr(0755, root, root) /usr/lib/perl5/site_perl/IO/stty.pl
+%attr(0755, root, root) /usr/share/doc/perl-IO-Stty/examples/stty.pl
+%attr(0644, root, root) /usr/share/doc/perl-IO-Stty/README
 
 
 %changelog
