@@ -168,9 +168,11 @@ sub read_contents_file {
     my $fs_type = (split(/\s/,$main::makefs))[0];
 
     # If the template changes it is time to clear all the values.
-    # Delete devices table.
-    if ( ($contents_file_tmp && $contents_file_tmp ne $contents_file) or
-	 $fs_type eq "genext2fs" ) {
+    # Delete devices table.  Actually, for fail safe operation,
+    # always clear the values when a check is done, this avoids
+    # spurious errors.
+    #if ( ($contents_file_tmp && $contents_file_tmp ne $contents_file) or
+    #	 $fs_type eq "genext2fs" ) {
 	undef %Included; 
 	undef %replaced_by;
 	undef %links_to;
@@ -180,8 +182,10 @@ sub read_contents_file {
 	undef %lib_needed_by;
 	undef @Libs;
 	undef %pam_repeats;
-    }
+	undef %user_defined_link;
+    #}
     $contents_file_tmp = $contents_file;
+
 
     kernel_version_check($kernel, $kernel_version_choice);
 
