@@ -30,6 +30,7 @@ use Exporter;
 @EXPORT =  qw(start);
 
 use strict;
+use POSIX;
 use BootRoot::Yard;
 use BootRoot::YardBox;
 use BootRoot::Error;
@@ -1676,10 +1677,10 @@ sub uml_box {
         $mtd_size->show();
         # Watch size if an actual file on open
         if ( -f  "$tmp/$entry_advanced[4]" ) {
-              my $stat_size =  (stat("$tmp/$entry_advanced[4]"))[12]/2; 
-	      my $blocks  = ($stat_size + ( $stat_size * 0.30 ))/1024;
-	      $blocks = sprintf("%.f",$blocks);
-	      $mtd_total_size = $blocks * 1024;
+               my $stat_size =  (stat("$tmp/$entry_advanced[4]"))[12]/2; 
+	       my $blocks  = ($stat_size + ( $stat_size * 0.30 ))/1024;
+	       $blocks = sprintf("%.f",$blocks);
+	       $mtd_total_size = $blocks * 1024;
 	}
         $eab3->signal_connect( "changed", sub {
 	   my $root_fs = (split(/ubd0=/,$entry_advanced[10]))[1];
@@ -1765,39 +1766,13 @@ sub uml_box {
 				          }
 					  
 					  # MTD?
-					  if ( $mtd_check->get_active() ) {
-
-					      # Check for the existence of root=/dev/ram0
-					      for ( $entry_advanced[9],$entry_advanced[10] ) {
-						  info(0,"$_");
-
-					      }
-
-					  }
-
-					  unless ($pid = fork) {
-					      unless (fork) {
-						  if ($pid == 0) {
-						      sys("$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]");
-						      Gtk->_exit($pid);
-						  }
-						  
-					      }
-					  
-					  }
-					  waitpid($pid,0);
-					  
-				      }
-				      else {
-
-
-					  # MTD? .. testing location
+					  #########
 					  if ( $mtd_check->get_active() ) {
 
 					      # Everything becomes an option for Initrd to parse
 					      # and is put on the options[9] line
 
-					      my ($initrd, $ram, $mem);
+					      my ($initrd, $ram, $mem, $root, $ramdisk_size);
 
 					      for ( $entry_advanced[10],$entry_advanced[9] ) {
 
@@ -1806,8 +1781,17 @@ sub uml_box {
 						  if ( m,root=/dev/ram, ) {
 						      $ram = 1;
 						  }
-						  
 
+						  # Check for the existence of root=/dev/ram0
+						  if ( m,ramdisk_size=, ) {
+						      $ramdisk_size = 1;
+						  }
+
+						  # Check for the existence of root=
+						  if ( m,root=, ) {
+						      $root = 1;
+						  }
+						  
 						  # Check for the existence of initrd=
 						  if ( m,initrd=, ) {
 						      m,(initrd=[/\d\w-]+),;
@@ -1839,7 +1823,6 @@ sub uml_box {
 					      }
 
 					      # Set a ram block if necessary
-	      
 					      if ( !$ram ) {
 						  for ( $entry_advanced[10],$entry_advanced[9] ) {
 						      if ( m,root=, ) {
@@ -1847,39 +1830,65 @@ sub uml_box {
 						      }
 						  }
 					      }
+					      if ( !$root ) {						  
+						  $entry_advanced[9] = "root=/dev/ram0 " . $entry_advanced[9];
+					      }
 					      
+					      
+					      # Decide what to do with initrd
+					      if ( !$initrd ) {
+						  
+						  $initrd = "initrd=Initrd";
+						  
+					      }
+					      else {						  
+						  undef $initrd;
+					      }
+
+
 
 					      # Will use this format 
 					      # initrd=Initrd mem=? mtd=type,fs_type,size,erasure
 
-					     # Tell initrd whether it is mtdram or blkmtd, and 
-					     if ( $mtd_radio_mtdram->get_active() ) {
+					      # Tell initrd whether it is mtdram or blkmtd, and 
+					      if ( $mtd_radio_mtdram->get_active() ) {
+						  
+						  # ramdisk_size
+						  if ( !$ramdisk_size ) {
+						      $ramdisk_size = "ramdisk_size=$total_size";
+						  }
+						  else {
+						      undef $ramdisk_size;
+						  }
 
-						  # default mem required by mtdram equaling total size
+						  # Memory needs to be figure out in 8192K blocks
+						  # otherwise it fails, and it needs to be at least 16384 
+						  # for uml.
+
+						  # mem
+						  my $mem_size;
+						  if ( $total_size < 16384 ) {
+						      $mem_size = 16384;
+						  }
+						  else {
+						      $mem_size = 8192 * ceil($mtd_total_size / 8192);
+						  }
+						  
 						  if ( !$mem ) {
-						      
-						      $mem = "mem=$total_size" . "K";
+						      $mem = "mem=$mem_size" . "K";
 						  }
 						  else {
 						      undef $mem;
 						  }
 
-						  if ( !$initrd ) {
-						      
-						      $initrd = "initrd=Initrd";
-						  }
-
-						  $entry_advanced[9] = "$initrd $mem " .
-						      "mtd=mtdram,$fs_type,$total_size,$erasure_size " .
-							  $entry_advanced[9]; 
+						      $entry_advanced[9] = "$initrd $mem $ramdisk_size " .
+							  "mtd=mtdram,$fs_type,$total_size,$erasure_size " .
+							      $entry_advanced[9]; 
 
 					      }
-					      else {
 
-						  if ( !$initrd ) {
-						      
-						      $initrd = "initrd=Initrd";
-						  }
+					      # blkmtd
+					      else {
 
 						  $entry_advanced[9] = "$initrd " .
 						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size " .
@@ -1887,9 +1896,29 @@ sub uml_box {
 
 					      }
 
-					      info(0,"$entry_advanced[9]\n$entry_advanced[10]\n");
+					      #info(0,"$entry_advanced[9]\n$entry_advanced[10]\n");
 
 					  } # mtd preparations
+					  #############
+
+
+					  unless ($pid = fork) {
+					      unless (fork) {
+						  if ($pid == 0) {
+						      sys("$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]");
+						      Gtk->_exit($pid);
+						  }
+						  
+					      }
+					  
+					  }
+					  waitpid($pid,0);
+					  
+				      }
+				      else {
+
+
+					  # MTD .. testing location
 
 					  if (!$entry_advanced[8]) {
 					      error_window("gBootRoot Error: " .
