@@ -1,7 +1,6 @@
 ############################################################################
 ##
 ##  Error.pm 
-##  Copyright (C) 2000 Modifications by the gBootRoot Project
 ##  Copyright (C) 2000, 2001 by Jonathan Rosenbaum
 ##                              <freesource@users.sourceforge.net>
 ##
@@ -154,8 +153,8 @@ sub err_custom {
 sub err_custom_perl {
 
    if ((split(/ /, $_[0]))[0] eq "mkdir") {
-      my $two = (split(/ /, $_[0]))[1];
-      mkdir($two,0755); # Anyone allowed in
+	my $two = (split(/ /, $_[0]))[1];
+        mkdir($two,0755);
     }
     error_window($_[1]) if ($? != 0);
     if (defined $error_window) {
@@ -163,6 +162,7 @@ sub err_custom_perl {
            return 2;
         }
     }
+
 }
 
 ###################
