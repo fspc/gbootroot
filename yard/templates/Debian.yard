@@ -19,7 +19,7 @@
 #
 # The windows will appear to freeze up while using this template, this is 
 # natural, be patient, because it will complete.  If you want to create 
-# another filesystem concurrently open up another invocation of gBootRoot.
+# another filesystem concurrently, open up another invocation of gBootRoot.
 
 # Todays Quote: Creating a root filesystem is all about stuff.
 
@@ -142,6 +142,8 @@
 /var/run
 /var/lock
 /var/log/news
+/var/lib/locate
+/var/backups
 
 # Stuff so ldconfig doesn't complain.
 /etc/ld.so.conf <= Replacements/etc/ld.so.conf
