@@ -857,7 +857,9 @@ elsif (defined $container[0] && defined $container[1] &&
        : ($container[7] = $bin_strip_check->get_active());
      !$container[7] ? ($container[7] = 4) : ($container[7] = 3);  
 
-     $obj_count == 0 ? ($container[8] = 5) : ($container[8] = 6);
+     if ($container[6] == 1) {     
+        $obj_count == 0 ? ($container[8] = 5) : ($container[8] = 6);
+     }
 
      if (@original_container) { # defined array deprecate Perl 5.6 -  zas@metaconcept.com
          # a hash check isn't perfect for two values which are the same
