@@ -1,0 +1,17 @@
+Source: make-debian-x11
+Section: utils
+Priority: optional
+Maintainer: Jonathan Rosenbaum <freesource@users.sourceforge.net>
+Build-Depends: debhelper (>> 3.0.0)
+Standards-Version: 3.5.2
+
+Package: make-debian-x11 
+Architecture: all
+Depends: gbootroot, swim 
+Description: Add-on 
+ BootRoot makes the construction/development of distributions fun and simple
+ with its Root Methods (Yard) and user-mode-linux test bed. Finish the product
+ with a Boot Method (2-disk compression supported).  Includes the make_debian
+ script to create a testable uml base Debian system.  Add-ons available,
+ see apt-cache search gbootroot.
+ .
