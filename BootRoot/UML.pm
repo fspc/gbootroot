@@ -7,6 +7,9 @@
 # Changes:
 #     12/15/2001     Changed UML to BootRoot::UML
 #                    Can now set password to "" to allow no password.     
+#
+#     02/18/2003     Now  login isn't mandatory which allows login-free 
+#                    inits like /bin/bash.
 
 package BootRoot::UML;
 
@@ -76,8 +79,11 @@ sub boot {
 	$log = $me->open_log($log_file);
 	$me->{expect_handle}->log_stdout(0);
     }
-    $me->{expect_handle}->expect(undef, "$me->{login_prompt}");
-    $me->{expect_handle}->print("$me->{login}\n");
+
+    if ( $me->{login_prompt} ne "" ) {
+	$me->{expect_handle}->expect(undef, "$me->{login_prompt}");
+	$me->{expect_handle}->print("$me->{login}\n");
+    }
 
     # It's o.k. not to have a password .. password_prompt will be ignored.
     # --freesource
@@ -86,7 +92,11 @@ sub boot {
 	$me->{expect_handle}->print("$me->{password}\n");
     }
 
+
     $me->{expect_handle}->expect(undef, "-re", "$me->{prompt}");
+    $me->{expect_handle}->print("echo Let's make you're root_fs!\r");
+    $me->{expect_handle}->print("\r");
+ 
     return($log);
 }
 

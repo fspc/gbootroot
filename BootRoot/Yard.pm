@@ -1925,10 +1925,11 @@ sub create_expect_uml {
 	    if ( !$option{template} ) {
 		$options = "root=/dev/ubd0 " . "mode=" . 
 		    BootRoot::BootRoot::skas_or_tt() . " " . 
-		    $option{"uml-options"};
+		    $option{"uml-options"} . " umid=root_fs_helper init=/bin/bash";
 	    }
 	    else {
-		$options = "root=/dev/ubd0 " . $option{"uml-options"};
+		$options = "root=/dev/ubd0 " . $option{"uml-options"} . 
+		    " umid=root_fs_helper init=/bin/bash";
 	    }
 	    my $filesystem;
 	    if ( $fs_type eq "genext2fs" ) {

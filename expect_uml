@@ -56,6 +56,8 @@ if ( !$ARGV[0] ) {
 }
 
 my $arguments = "$ARGV[0] $ARGV[1] $ARGV[2]"; 
+$ARGV[2] =~ /umid=([\w_]+)\s*/;
+my $umid = $1;
 my $mount_point = "$ARGV[3]";
 my $preserve_ownership = "$ARGV[4]";
 my $uml_kernel = "$ARGV[5]";
@@ -81,6 +83,9 @@ for ( 6 .. $#ARGV ) {
     }
 }
 
+
+
+=pod
 my $uml  = 
   BootRoot::UML->new( login_prompt    =>  "bootroot login: ",
 		      kernel          =>  $uml_kernel,
@@ -89,6 +94,19 @@ my $uml  =
 		      password_prompt =>  "Password: ",
 		      password        =>  "",
 		      prompt          =>  "bootroot:.*# ",
+		      halt            =>  "shutdown -h now"
+		      );
+=cut
+
+
+my $uml  = 
+  BootRoot::UML->new( login_prompt    =>  "",
+		      kernel          =>  $uml_kernel,
+		      arguments       =>  $arguments,
+		      login           =>  "root",
+		      password_prompt =>  "Password: ",
+		      password        =>  "",
+		      prompt          =>  ".*# ",
 		      halt            =>  "shutdown -h now"
 		      );
 
@@ -155,4 +173,7 @@ elsif ( $filesystem =~ /^mkfs\.jffs/ ) {
 }
 
 $uml->command("umount /mnt1; umount /mnt2");   
+# The fast way
+system "uml_mconsole $umid halt";
+# Fall through
 $uml->halt()

@@ -85,6 +85,11 @@ Mandrake should use the mdk rpm.  Distributions which require Gtk-Perl and
 only require perl for perl such as Red Hat should use the rpm not marked 
 as mdk. 
 
+There are some variations on this theme.  Suse is a Red Hat type of
+distribution, however it prepends perl to Gtk-Perl, so if
+perl-Gtk-Perl is installed on your system you can just add the
+--nodeps option when doing an install.
+
 
 %prep
 %setup -n gbootroot-%{version}
