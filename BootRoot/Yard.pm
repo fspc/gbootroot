@@ -36,7 +36,7 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys 
-              text_insert error logadj *LOGFILE which_tests create_fstab); 
+              text_insert error logadj *LOGFILE which_tests create_fstab);
 
 use strict;
 use File::Basename;
@@ -1664,7 +1664,7 @@ sub copy_file_with_substitution {
   }
 
   close(FROM);
-  close(TO);
+  close(TO);    
 }
 
 sub bytes_allocated {
