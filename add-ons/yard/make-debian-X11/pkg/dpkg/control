@@ -18,5 +18,4 @@ Description: BootRoot add-on.
  specifications.  This package depends on swim.  Add this line to your 
  sources.list:
  .
- deb http://prdownloads.sourceforge.net/avd ./ 
- .
+ deb http://prdownloads.sourceforge.net/avd ./
