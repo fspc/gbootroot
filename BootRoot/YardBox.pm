@@ -739,10 +739,14 @@ sub yard_box {
 
 
        $main::yard_window = new Gtk::Window "toplevel";
-       $main::yard_window->signal_connect("destroy", \&destroy_window,
-                                    \$main::yard_window);
-       $main::yard_window->signal_connect("delete_event", \&destroy_window,
-                                    \$main::yard_window);
+       $main::yard_window->signal_connect("destroy", \&destroy_window, 
+					  \$main::yard_window);
+       $main::yard_window->signal_connect("delete_event",\&destroy_window,
+					  \$main::yard_window);
+       $main::yard_window->signal_connect("destroy", sub { 
+	   $search_window->destroy if $search_window; } );
+       $main::yard_window->signal_connect("delete_event", sub { 
+	   $search_window->destroy if $search_window; });
        $main::yard_window->set_usize( 525, 450 );
        $main::yard_window->set_policy( $true, $true, $false );
        $main::yard_window->set_title( "Yard Box - $template" );
@@ -1124,6 +1128,7 @@ sub search {
 	    }
 	},
 	);
+
 	$search_window->set_policy( $true, $true, $false );
 	$search_window->set_title( "gBootRoot:  Search" );
 	$search_window->border_width(1);    
@@ -1190,7 +1195,7 @@ sub search {
 	$submit_b->signal_connect( "clicked", sub {
 	    my $keywords = $search1->get_text();
 	    
-	    # rindex
+      	    # rindex
 	    if ($search_backwards->active) {
 
 		if (!$offset) {
