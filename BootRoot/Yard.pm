@@ -532,9 +532,18 @@ sub library_dependencies {
 	    #####  Run ldd to get library dependencies.
 	    my $line;
 
-	    ## Busybox uses a different ldd
-##	    foreach $line (`/usr/i386-linux-uclibc/bin/ldd $file`) {
-	    foreach $line (`ldd $file`) {
+	    ## uClibc uses a different ldd  --freesource
+	    ## Determine which ldd to use
+	    my $ldd;
+	    my $determine_ldd = `ldd $file 2>&1 1>/dev/null`;
+	    if ( $determine_ldd =~ /BusyBox/ ) {
+		$ldd = "/usr/i386-linux-uclibc/bin/ldd";
+	    }
+	    else {
+		$ldd = "ldd";
+	    }
+
+	    foreach $line (`$ldd $file`) {
 		my($lib) = $line =~ / => (\S+)/;
 		next unless $lib;
 		my($abs_lib) = $lib;
@@ -2216,11 +2225,9 @@ sub check_pam {
       my (%file_check, $ok);
       foreach my $files ( @file ) {
 	  if (!-e "$mount_point/$files") {
-	      info(0,"NO $mount_point/$files\n");
 	      $file_check{$files} = 0;
 	  }
 	  else {
-	      info(0,"OK $mount_point/$files\n");
 	      $file_check{$files} = 1;
 	  }
       }
@@ -2272,11 +2279,9 @@ sub check_pam {
 	   my (%file_check, $ok);
 	   foreach my $files ( @file ) {
 	       if (!-e "$mount_point/$files") {
-		   info(0,"NO $mount_point/$files\n");
 		   $file_check{$files} = 0;
 	       }
 	       else {
-		   info(0,"OK $mount_point/$files\n");
 		   $file_check{$files} = 1;
 	       }
 	   }
@@ -2293,11 +2298,6 @@ sub check_pam {
 	       }
 
 	   }
-
-	#   if (!-e "$mount_point/$file") {
-	#      warning_test "$file2($.): $_\n",
-	#      	  "\tLibrary $file does not exist on root fs\n";
-	#   }
 
 	}
 	close(PF);
