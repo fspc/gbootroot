@@ -1688,15 +1688,20 @@ sub which_tests {
     $login_binary = "$mount_point" . find_file_in_path("login");
 
     #  This goes first so we define %Termcap for use in children
+    ## This now checks for ncurse setups, too.
+    return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
     check_termcap();
+    return "ERROR" if errum(sys("umount $mount_point")) == 2;
 
     #####  Here are the tests.
     my $t_fstab    = $chosen_tests->{30}{test_fstab};
     my $t_inittab  = $chosen_tests->{31}{test_inittab};
     my $t_scripts  = $chosen_tests->{32}{test_scripts};
 
+    return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
     sys("yard_chrooted_tests $mount_point $t_fstab $t_inittab $t_scripts",
 	"TESTING"); 
+    return "ERROR" if errum(sys("umount $mount_point")) == 2;
 
     return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
 
@@ -2101,31 +2106,77 @@ sub check_init_files {
 
 sub check_termcap {
   my $error;  
-  open(TERMCAP, "<$mount_point/etc/termcap") or
-   ( $error = error("No file $mount_point/etc/termcap"))
-;
-  return if $error && $error eq "ERROR";
-  while (<TERMCAP>) {
-    chomp;
-    next unless $_;
-    next if /^\#/;		# Skip comments
-    next if /^\s+/;		# Skip non-head lines
 
-    #####  Get complete logical line
-    my($def) = $_;
-    while (/\\$/) {		# Trailing backslash => continued
-      chomp($def);		# Discard backslash
-      chomp($_ = <TERMCAP>);	# Get a line, w/o newline char
-      $def .= $_;
-    }
+  # Let's first discover whether termcap or terminfo exists
+  # we can decide how to interpret the termcap info.
 
-    #####  Extract terminal names from line
-    my($names) = $def =~ /^([^:]+):/;
-    my(@terms) = split(/\|/, $names);
-    @Termcap{@terms} = (1) x ($#terms + 1);
+  # terminfo first
+  # We assume a terminfo file is not being used .. hum
+  if (-d "$mount_point/etc/terminfo") {
+
+      # There should at least be a linux entry, and infocmp needs to exist.x
+      my $infocmp = "infocmp -A $mount_point/etc/terminfo -C linux|";
+     
+      open(TERMCAP, "$infocmp") or
+	  ( $error = error("No file $mount_point/etc/terminfo/l/linux"));
+      return if $error && $error eq "ERROR";
+
+      while (<TERMCAP>) {
+	  chomp;
+	  next unless $_;
+	  next if /^\#/;		# Skip comments
+	  next if /^\s+/;		# Skip non-head lines
+
+	  #####  Get complete logical line
+	  my($def) = $_;
+	  while (/\\$/) {		# Trailing backslash => continued
+	      chomp($def);		# Discard backslash
+	      chomp($_ = <TERMCAP>);	# Get a line, w/o newline char
+	      $def .= $_;
+	  }
+
+	  #####  Extract terminal names from line
+	  my($names) = $def =~ /^([^:]+):/;
+	  my(@terms) = split(/\|/, $names);
+	  @Termcap{@terms} = (1) x ($#terms + 1);
+      }
+
   }
-  close(TERMCAP);
-}
+
+  # termcap next
+  elsif (-e "$mount_point/etc/termcap") {
+
+      open(TERMCAP, "<$mount_point/etc/termcap") or
+	  ( $error = error("No file $mount_point/etc/termcap"));
+      return if $error && $error eq "ERROR";
+
+      while (<TERMCAP>) {
+	  chomp;
+	  next unless $_;
+	  next if /^\#/;		# Skip comments
+	  next if /^\s+/;		# Skip non-head lines
+
+	  #####  Get complete logical line
+	  my($def) = $_;
+	  while (/\\$/) {		# Trailing backslash => continued
+	      chomp($def);		# Discard backslash
+	      chomp($_ = <TERMCAP>);	# Get a line, w/o newline char
+	      $def .= $_;
+	  }
+
+	  #####  Extract terminal names from line
+	  my($names) = $def =~ /^([^:]+):/;
+	  my(@terms) = split(/\|/, $names);
+	  @Termcap{@terms} = (1) x ($#terms + 1);
+      }
+      close(TERMCAP);
+  }
+  else {
+      $error = error("No termcap file or terminfo directory.");
+      return if $error && $error eq "ERROR";
+  }
+
+} # end sub check_termcap
 
 #####  END OF CHECK_ROOT_FS
 
