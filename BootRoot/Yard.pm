@@ -1105,13 +1105,27 @@ sub create_filesystem {
     info(0, "Description:  $fs_size K root file system\n");
     info(0, "Where:  $device\n");
 
-    # Maybe other fs will be represented in the future, but genext2fs is all 
-    # that exists now for non-root users.  --freesource
-    if ( $fs_type ne "genext2fs" ) {
+    # Make the file anyways because it can be used later by the
+    # normal user as ubd1, then a <=8192 root_fs created by the
+    # user can be booted as ubd0, and the ubd1 is given a filesystem,  
+    # after which everything is copied over from loopback to
+    # the new mounted filesystem ubd1.  I'll automate this in the future.
+    # --freesource
 
+    if ( $> != 0 && $fs_size > 8192 && $fs_type eq "genext2fs" ) {
 	sync();
 	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
 	sync();
+    }
+    elsif ( $fs_type ne "genext2fs" ) {
+	sync();
+	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
+	sync();
+    }
+
+    # Maybe other fs will be represented in the future, but genext2fs is all 
+    # that exists now for non-root users.  --freesource
+    if ( $fs_type ne "genext2fs" ) {
 
 	if (-f $device) {
 	    #####  If device is a plain file, it means we're using some 
@@ -1133,7 +1147,7 @@ sub create_filesystem {
 	    }
 	}
 	
-    }
+    }  # ne "genext2fs"
 
     if (!-d $mount_point) {
        return "ERROR" if errmk(sys("mkdir $mount_point")) == 2;
