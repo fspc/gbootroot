@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.66 2002/01/07 19:27:21 freesource Exp $</center>
+<center>$Id: index.html,v 1.67 2002/01/09 18:40:19 freesource Exp $</center>
 
 <p>
 
@@ -1105,19 +1105,26 @@ filesystem.</P>
 <p>
 
 If you are creating a boot disk in which the kernel knows where to
-find the root filesystem, then nothing else but a kernel is required
+find the root filesystem and the root filesystem is uncompressed, then nothing
+else but a kernel is required
 assuming it is copied in a way that is starts at block 0 on the device
 media, and then rdeved in such a way that it knows that the ramdisk and the 
 prompt
 flag are on, i.e., rdev -r /dev/fd0 49152, and that the root filesystem starts
 at block
 0 on the other floppy.&nbsp;&nbsp;
-However, the 2 disk compression method just copies over the root filesystem
+However, the 2 disk compression method copies over a compressed root 
+filesystem
 to the second disk.&nbsp&nbsp;In order to boot /dev/fd0 from /dev/fd0 when 
 the root 
-filesystem is just copied over, the kernel has to
-mount the initial boot disk, and then after the new root disk is inserted,
-it remounts that disk.&nbsp;&nbsp;In order to accomplish this an initrd is
+filesystem is compressed  the kernel has to
+mount the initial boot disk, and then after the new root disk is inserted it
+uncompresses the root filesystem and then changes over to the real root 
+device, 
+which in this case is /dev/ram1 where the uncompressed filesystem now 
+resides.
+&nbsp;&nbsp;
+In order to accomplish this an initrd is
 required.&nbsp;&nbsp;
 Initial ram disks are essentially mini filesystems with the
 bare necessities to allow a special init type file called linuxrc to
