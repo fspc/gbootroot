@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.91 2002/03/04 02:07:24 freesource Exp $</center>
+<center>$Id: index.html,v 1.92 2002/03/04 02:21:09 freesource Exp $</center>
 
 <p>
 
@@ -350,6 +350,63 @@ box to allow control of a different Linux virtual machine.
 
 "Root_Fs"&nbsp;&nbsp;Choose an uncompressed root 
 filesystem.&nbsp;&nbsp;Append with ubd?=.</p>
+
+<p>
+
+<u>MTD Emulator</u>
+
+<p>
+
+"On or Off"&nbsp;&nbsp;Turn MTD emulation on or off.
+
+<p>
+
+"mtdram"&nbsp;&nbsp;Use memory to emulate test mtd device.
+
+<p>
+
+"blkmtd"&nbsp;&nbsp;Use block device to emulate test mtd device.
+
+<p>
+
+"total size"&nbsp;&nbsp;Choose the total size for the mtd device.
+
+<p>
+
+"erasure size"&nbsp;&nbsp;Choose the erasure size for the mtd device.
+
+<p>
+
+Notes:&nbsp;&nbsp;
+
+<ul>
+
+<li>Choose a filesystem type which corresponds with the root filesystem image.
+
+<li>
+
+Default sizes are chosen for mtdram's memory (mem) and
+ramdisk size (ramdisk_size) requirements, and blkmtd's memory requirements.  
+These can be altered by passing the appropriate option to the
+kernel.
+
+<li>
+
+Runlevels are determined in this order:  mtd_init parameter
+passed as a user option, runlevel passed as a user option, 
+root filesystem's /etc/inittab's initdefault, or the default of <em>/sbin/init 2</em>.
+
+<li>
+
+mtd_init=[Kernel start-up parameter] 
+<br>
+example:&nbsp;&nbsp;mtd_init=/bin/bash
+
+</ul>
+
+<p>
+
+<u>Lower Button Bar</u>
 
 <p>
 
