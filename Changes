@@ -16,9 +16,20 @@ on the system.
 Added format rules found in Example* to the main documentation.
 
 Compiled for >= glibc 2.2.5.  Previous version was compiled >= 2.3.1
-which caused some things not to work on old distributions using 2.2.
+which caused some things not to work on old distributions using 2.2*
 
-Tested on  Debian stable, RedHat 7.3 and Mandrake ?
+Removed the -q from expect_uml because this caused the newer version
+of mkreiserfs to fail.
+
+Tested on Debian stable (2.2.5), RedHat 7.3 (2.2.5 ? and Mandrake ?,
+and known to work on Redhat 7.2 (2.2.4) and Mandrake 8.1 (2.2.4).
+
+Added /usr/info/dir and info to make_debian which makes things much
+nicer.
+
+* make a new public root_fs_dev from the uml gbootroot was made on?
+	update make-debian-x11
+
 
 1.4.0 - 01/06/2003
 ------------------

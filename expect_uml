@@ -67,7 +67,7 @@ for ( 6 .. $#ARGV ) {
 	$filesystem = "$ARGV[6]";
 	# What to do with the rieserfs command
 	if ( $filesystem eq "mkreiserfs" ) {
-	    $filesystem = $filesystem . " -f -f -q";
+	    $filesystem = $filesystem . " -f -f";
 	}
     }
     else {
