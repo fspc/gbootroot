@@ -4044,15 +4044,22 @@
 # Alternative stuff.
 /etc/alternatives/nawk
 /var/lib/dpkg/alternatives/nawk
+/usr/bin/nawk
 /etc/alternatives/w
 /var/lib/dpkg/alternatives/w
+/usr/bin/w
 /etc/alternatives/vi
 /var/lib/dpkg/alternatives/vi
+/usr/bin/vi
 /etc/alternatives/ex
 /var/lib/dpkg/alternatives/ex
+/usr/bin/ex
 /etc/alternatives/view
 /var/lib/dpkg/alternatives/view
+/usr/bin/view
 /etc/alternatives/pager
 /var/lib/dpkg/alternatives/pager
+/usr/bin/pager
 /etc/alternatives/ipfwadm
 /var/lib/dpkg/alternatives/ipfwadm
+/sbin/ipfwadm

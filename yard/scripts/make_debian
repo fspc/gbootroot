@@ -20,6 +20,8 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+use File::Basename;
+
 # You will need to get swim at http://www.sourceforge.net/projects/avd
 my $home = "$ENV{HOME}/.gbootroot";
 my $home_yard = "$home/yard";
@@ -124,6 +126,7 @@ foreach (@alternatives) {
     if ($alternatives{$_}) {
 	print DEBIAN "/etc/alternatives/", $alternatives{$_}, "\n";
 	print DEBIAN "/var/lib/dpkg/alternatives/", $alternatives{$_}, "\n";
+	print DEBIAN dirname($_), "/", $alternatives{$_}, "\n";
     }
 }
 
