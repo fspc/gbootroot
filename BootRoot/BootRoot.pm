@@ -1823,6 +1823,18 @@ sub uml_box {
 						  }
 
 
+						  if ( $mtd_radio_mtdram->get_active() ) {
+
+						      # Check for the existence mem=
+						      if ( m,mem=, ) {
+							  $mem = 1;
+						      }
+
+						  }
+
+					      }
+
+					      for ( $entry_advanced[10] ) {
 						  # Grab the file being used
 						  if ( $mtd_radio_blkmtd->get_active() ) {
 						      if ( m,(ubd\d{1}\w?=[/\d\.\+\w-]+), ) {
@@ -1841,17 +1853,8 @@ sub uml_box {
 							  }
 						      }
 					          }
-
-						  if ( $mtd_radio_mtdram->get_active() ) {
-
-						      # Check for the existence mem=
-						      if ( m,mem=, ) {
-							  $mem = 1;
-						      }
-
-						  }
-
 					      }
+
 
 					      my ($total_size, $fs_type, $erasure_size);
 						  
