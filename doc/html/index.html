@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.36 2001/12/06 17:35:18 freesource Exp $</center>
+<center>$Id: index.html,v 1.37 2001/12/06 20:04:08 freesource Exp $</center>
 
 <p>
 
@@ -49,15 +49,18 @@ their sources.list:</em><br><br>
 deb http://prdownloads.sourceforge.net/avd ./<br></p>
 
 <p align="center">Older versions found at this
-<A href="http://prdownloads.sourceforge.net/gbootroot/">site</A></P><br>
+<A href="http://prdownloads.sourceforge.net/gbootroot/">site</A></P>
 
+<p align="center"><a href="#FAQ">FAQ</a></P>
+
+<p align="center">and</P><br>
 
 <P align="center">
 <IMG ALT="" SRC="images/gbootroot.jpg">
 </P>
 
 <P align="center">
-<b>How to Use gBootRoot</b></P>
+<b>How to Use gBootRoot's UI</b></P>
 <P><IMG ALT="" SRC="images/gBS.jpg" align="right">The most important button to 
 familiarize yourself with is the Submit button which starts the whole process;
 dialogs are presented as the process continues asking you if you want to 
@@ -356,41 +359,38 @@ $HOME/.gbootroot/yard/.</p>
 
 <P><IMG ALT="" SRC="images/gBSicon.jpg" align="center"> <b>FAQ</b></P>
 
-<pre> 
+<a name ="FAQ">
+1.&nbsp;&nbsp;<a href="#1">What's the advantage of using this program?</a> 
+<br>
+2.&nbsp;&nbsp;<a href="#2">How do I use gBootRoot?</a>
+<br>
+3.&nbsp;&nbsp;<a href="#3">What are all these CVS directories doing in my replacements?</a>
+<br>
+4.&nbsp;&nbsp;<a href="#4">Can I use a program linked to uClibc in the template?</a>
+<br>
+5.&nbsp;&nbsp;<a href="#5">What do you mean by macro distribution?</a>
+<br>
+6.&nbsp;&nbsp;<a href="#6">How am I able to create root filesystems as a normal user?</a>
+<br>
+7.&nbsp;&nbsp;<a href="#7">How can a normal user create a root filesystem larger than 8192k?</a>
+<br>
+8.&nbsp;&nbsp;<a href="#8">How can I create boot disks as a normal user?</a>
+<br>
+9.&nbsp;&nbsp;<a href="#9">What is make_debian, and how do I use it?</a>
+<br>
+10.&nbsp;&nbsp;<a href="#10">My root filesystem doesn't start in single mode when started like this:  "bootdisk 1?"</a> 
+<br>
+11.&nbsp;&nbsp;<a href="#11">What does the 2 disk compression method do?</a>
+<br>
+12.&nbsp;&nbsp;<a href="#12">There isn't enough room left on my 1440 floppy to make a Boot or Root disk.  Is there any way to free up more space apart from reducing the size of the kernel?</a>
+<br>
+13.&nbsp;&nbsp;<a href="#13">gBootRoot doesn't start because it can't locate Gtk.pm?</a>
+<br>
+14.&nbsp;&nbsp;<a href="#14">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
+</a>
 
 
-What's the advantage of using this program?  [back]
-
-How can I test gBootRoot?
-
-What are all these CVS directories doing in my replacements?
-
-Can I use a program linked to uClibc in the template? 
-
-What do you mean by macro distribution?
-
-How am I able to create root filesystems as a normal user? 
-
-How can a normal user create a root filesystem larger than 8192k?
-
-How can I create boot disks as a normal user?
-
-What is make_debian, and how do I use it?
-
-My root filesystem doesn't start in single mode when started like this:  "bootdisk 1?" 
-
-What does the 2 disk compression method do?
-
-There isn't enough room left on my 1440 floppy to make a Boot or Root disk.  Is there any way to free up more space apart from reducing the size of the kernel?
-
-gBootRoot doesn't start because it can't locate Gtk.pm?
-
-If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.
-
-</pre>
-
-
-<P><b>What's the advantage of using this program?</b></P>
+<P><a name="1"><b>What's the advantage of using this program?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
 <P><A href="./bootroot.html">BootRoot</A> 
 was the original program, but I decided that a GUI approach
@@ -407,19 +407,14 @@ Boot Methods are provided to allow root filesystems to run from different types
 of media.&nbsp;&nbsp;
 Historically, developers have written scripts
 which have focused on providing a particular type of root 
-filesystem and booting method.&nbsp;&nbsp;Observation, reveals that all these
+filesystem and boot method.&nbsp;&nbsp;Observation, reveals that all these
 approaches share many commonalities.&nbsp;&nbsp;gBootRoot has been 
 designed to embrace
 these similiarities, and to allow developers to create drop-in methods 
 via modules or easy to understand templates.&nbsp;&nbsp;
 gBootroot is the GIMP of distribution creation!</P>
 
-<P><b>How can I test gBootRoot?</b></P>
-
-<p>
-
-(Note:&nbsp;&nbsp;You may run most of these tests as a normal user.&nbsp;&nbsp;
-See the exceptions which apply in the FAQ.)</p>
+<P><a name="2"><b>How do I use gBootRoot?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
 <center><u>Test an existing mini distribution.</u></center>
 
@@ -581,9 +576,7 @@ system.&nbsp;&nbsp;And that is just the beginning of the things you can do.
 
 
 
-<P>
-
-<b>What are all these CVS directories doing in my replacements?</b></p>
+<P><a name="3"><b>What are all these CVS directories doing in my replacements?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <P>
 CVS directories are deliberately put in the Replacement directories to 
@@ -610,7 +603,7 @@ not to delete the CVS directories because /usr/share is meant to be used
 for data which shouldn't be modified 
 (see <a href="http://www.pathname.com/fhs/">FHS</a>).</p>
 
-<b>Can I use a program linked to uClibc in the template?</b></p>
+<a name="4"><b>Can I use a program linked to uClibc in the template?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -621,7 +614,7 @@ is used to discover shared library dependencies, otherwise ldd is
 called without any path.</p>
 
 
-<b>What do you mean by macro distribution?</b></p>
+<a name="5"><b>What do you mean by macro distribution?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -638,7 +631,7 @@ used to run experiments safely without fear of corrupting the host system
 via user-mode-linux.</p>
 
 
-<b>How am I able to create root filesystems as a normal user?</b></p>
+<a name="6"><b>How am I able to create root filesystems as a normal user?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -654,7 +647,7 @@ can be changed when the filesystem is run from a kernel.
 
 <p>
 
-<b>How can a normal user create a root filesystem larger than 8192k?</b></p>
+<a name="7"><b>How can a normal user create a root filesystem larger than 8192k?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -724,7 +717,7 @@ don't exist.&nbsp;&nbsp;For this example, /mnt1 and
 
 <p>
 
-7.&nbsp;&nbsp;Mount the host filsystem on /mnt2:
+7.&nbsp;&nbsp;Mount the host filesystem on /mnt2:
 <pre>
    mount -t hostfs none -o /tmp/gboot_non_root_1000/loopback /mnt2
 </pre>
@@ -750,16 +743,18 @@ don't exist.&nbsp;&nbsp;For this example, /mnt1 and
 
 <p>
 
-<b>How can I create boot disks as a normal user?</b></p>
+<a name="8"><b>How can I create boot disks as a normal user?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
-Make the boot disk as you normally would.&nbsp;&nbsp;Not all boot loaders
-can be set-up as a non-root user, however, you may still continue to
+Make the boot disk as you normally would.&nbsp;&nbsp;As long as you have
+write permissions to the boot device you shouldn't run 
+into a problem.&nbsp;&nbsp;However, not all boot loaders
+can be set-up as a non-root user, but, you may still continue to
 the end of the process and set-up the boot loader later from a machine you
 have root access on.&nbsp;&nbsp;In order to use lilo while running
 gbootroot there
-are two pre-requisites your administrator will have to establish for you.
+are two prerequisites your administrator will have to establish for you.
 First, he will have to edit the fstab to allow you to mount a certain
 block device.&nbsp;&nbsp;For instance, to allow you to mount /dev/fd0, you
 have to mount the /tmp/gboot_non_root_mnt_`id -u` directory.&nbsp;&nbsp;If
@@ -772,9 +767,9 @@ your UID is 1000, then a line like this is added to the fstab:
 
 Next, the administrator needs to give you access to the 
 lilo command.&nbsp;&nbsp;Sudo is a good solution, and in gbootroot the
-$sudo variable is assigned "sudo", this can be changed by the administrator
-to some other sudo-like program.&nbsp;&nbsp;The administrator then uses
-visudo to edit the sudoers file with a line like this:
+$main::sudo variable is assigned "sudo", this can be changed by the 
+administrator to some other sudo-like program.&nbsp;&nbsp;The administrator 
+then uses visudo to edit the sudoers file with a line like this:
 
 <pre>
 user  hostname = NOPASSWD: /sbin/lilo
@@ -782,14 +777,16 @@ user  hostname = NOPASSWD: /sbin/lilo
 
 <p>
 
-Note, that NOPASSWD is used.&nbsp;&nbsp;Gbootroot won't prompt for a password,
+Note that NOPASSWD is used.&nbsp;&nbsp;Gbootroot won't prompt for a password,
 and just assumes no password in necessary.&nbsp;&nbsp;I could change this
-behavior if people request it.&nbsp;&nbsp;Now a bootdisk with lilo can be
-made.
+behavior if people request it.&nbsp;&nbsp;If modules are required for
+the boot method to work properly, you need to have read 
+permissions to them so they can be copied.&nbsp;&nbsp;Now a bootdisk with 
+lilo can be made.
 
 <p>
 
-<b>What is make_debian, and how do I use it?</b></p>
+<a name="9"><b>What is make_debian, and how do I use it?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -840,8 +837,8 @@ in the template was modified to reflect these replacements.
 </p>
 
 
-<b>My root filesystem doesn't start in single mode when started like
-this:&nbsp;&nbsp&quot;bootdisk 1?&quot;</b></P>
+<a name="10"><b>My root filesystem doesn't start in single mode when started like
+this:&nbsp;&nbsp&quot;bootdisk 1?&quot;</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
 <P>
 
@@ -864,16 +861,16 @@ down all the bugs.
 </P>
 
 
-<P><b>What does the 2 disk compression method do?</b></P>
+<P><a name="11"><b>What does the 2 disk compression method do?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 <P>This Boot Method creates a boot disk with lilo, a kernel and an initrd 
 image.&nbsp;&nbsp;The 
 initrd script mounts another root disk with a compressed (gzip or bzip2) 
 filesystem.</P>
 
 
-<p><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
+<p><a name="12"><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
 disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing 
-the size of the kernel?</b></p>
+the size of the kernel?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 Move the device size to 1722.  This is a trick that <a href="http://www.toms.net/rb/">tomsrtbt</a> uses on his famous rescue disk.</p>
@@ -907,11 +904,12 @@ to add your comments to the Feature Request.&nbsp;&nbsp;Thanks.</p>
 
 <p>
 
-<b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></P>
+<a name="13"><b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+
 <p>This program requires Gtk-Perl available from <a href="http://www.perl.com/CPAN">CPAN</a>, <a href="http://freshmeat.net/projects/gtk-perl">Freshmeat</a> or most GNU/Linux distributions.</p>
 
-<p><b>If you roll the floppy density counter down to 0 and then try go back 
-up towards 1440 and 1722, you get very funny figures.</b></p>
+<p><a name="14"><b>If you roll the floppy density counter down to 0 and then try go back 
+up towards 1440 and 1722, you get very funny figures.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 This is because of the way Gtk works.&nbsp;&nbsp;There are two adjustments, 
