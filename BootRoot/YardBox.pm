@@ -1193,7 +1193,7 @@ sub search {
 	$submit_b->grab_default;
 	$submit_b->signal_connect( "clicked", sub {
 	    my $keywords = $search1->get_text();
-	    
+
       	    # rindex
 	    if ($search_backwards->active) {
 
@@ -1202,6 +1202,9 @@ sub search {
 			if (!$tmp_ct && !$tmp_k) {
 			    ($tmp_ct = $changed_text_from_template) =~ 
 				tr/A-Z/a-z/;
+			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			}
+			if ($tmp_k && $tmp_k ne $keywords) {
 			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
 			}
 			$offset = rindex($tmp_ct, $tmp_k);
@@ -1226,6 +1229,9 @@ sub search {
 			if (!$tmp_ct && !$tmp_k) {
 			    ($tmp_ct = $changed_text_from_template) =~ 
 				tr/A-Z/a-z/;
+			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			}
+			if ($tmp_k && $tmp_k ne $keywords) {
 			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
 			}
 			$offset = rindex($tmp_ct, $tmp_k, $offset);
@@ -1260,6 +1266,9 @@ sub search {
 				tr/A-Z/a-z/;
 			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
 			}
+			if ($tmp_k && $tmp_k ne $keywords) {
+			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			}
 			$offset = index($tmp_ct, $tmp_k);
 		    }
 		    else {
@@ -1282,6 +1291,9 @@ sub search {
 			if (!$tmp_ct && !$tmp_k) {
 			    ($tmp_ct = $changed_text_from_template) =~ 
 			    tr/A-Z/a-z/;
+			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			}
+			if ($tmp_k && $tmp_k ne $keywords) {
 			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
 			}
 			$offset = index($tmp_ct, $tmp_k, $offset);
