@@ -61,6 +61,7 @@ Icon:         gbootroot.xpm
 Buildroot:   /tmp/gbootroot
 
 # Dependencies  .. can you have two alternative deps like with deb?
+# Suse uses need to change Gtk-Perl to perl-Gtk-Perl.
 PreReq: Gtk-Perl >= 0.7002
 Requires: perl-Expect, perl-IO-Stty, perl-IO-Tty
 Requires: file, ash, lilo, bzip2, binutils
