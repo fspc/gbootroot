@@ -1,0 +1,6 @@
+drwx		/dev
+crw-	4,0	/dev/console
+crw-	5,64	/dev/cua0
+crw-	5,65	/dev/cua1
+brw-	1,0	/dev/ram0
+brw-	1,1	/dev/ram1
