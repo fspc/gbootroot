@@ -1,0 +1,100 @@
+Program:  gBootRoot  pronounced "bOOtrOOt"
+License:  GNU General Public License
+
+The Makefile included with this source package doesn't attempt
+to figure out whether your system has the proper requirements.
+It may seem like a great idea to have a configure script, but
+these things can fail, besides gbootroot is a program designed for people
+who intend to build distributions and boot disks, so understanding what
+things are required to get gbootroot to work completely can be quite 
+beneficial.  At the very least, do a "make", and try gbootroot because the 
+program will tell you what things are missing - hopefully nothing - and then 
+you can refer to this README for help.
+
+Out of the box this program works with the i386 architecture, people using
+other architectures will need to compile genext2fs and user-mode-linux if
+they want full functionality.
+
+
+Perl Modules:
+#############
+
+Gtk-Perl
+--------
+
+Version 0.7002 or greater.
+http://freshmeat.net/projects/gtk-perl
+
+
+Binaries:
+#########  
+
+Genext2fs
+---------
+genext2fs/genext2fs (included and already compiled for i386)
+cd genext2fs; make  (other architectures)
+
+User-Mode-Linux
+---------------
+user-mode-linux/usr/bin/{linux, uml_*}  (included and already compiled 
+		                                              for i386)
+user-mode-linux/usr/lib/{modules*tar}   (included and already compiled 
+                                                              for i386)
+
+If you use a different architecture you will need to get kernel source
+from www.kernel.org, and then a matching uml-patch from 
+http://sourceforge.net/project/showfiles.php?group_id=429.  There's good 
+instructions on how to do this at 
+http://user-mode-linux.sourceforge.net/UserModeLinux-HOWTO-2.html.
+Then put the uml kernel and helpers in the appropriate directory; you can
+put the modules in a Replacements directory later on (see FAQ).
+
+
+Boot Methods:
+#############
+
+2 disk compression
+------------------
+
+This method will tell you when any of these utilities are missing:
+
+ash  lilo  bzip2  file
+
+
+Root Methods:
+#############
+
+Yard
+----
+
+Watch the verbosity box, it will be obvious when a required command is missing.
+Make sure you have this file installed on your system:
+
+file
+
+
+Important Configurations:
+#########################
+
+"chmod 4755 /usr/bin/uml_net" so normal users can have network capabilities.
+
+
+Documentation:
+#############
+
+Documentaion and FAQ is in doc/html/index.html
+
+
+Have fun!
+
+ -Jonathan
+
+Please feed suggestions, bug reports, insults, and $ back to:
+        Jonathan Rosenbaum <freesource@users.sourceforge.net>
+
+
+
+
+
+
+
