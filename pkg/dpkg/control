@@ -7,7 +7,7 @@ Standards-Version: 3.5.2
 
 Package: gbootroot
 Architecture: all
-Depends: libgtk-perl (>= 0.7002), ash, file, binutils, bzip2
+Depends: libgtk-perl (>= 0.7002), ash, file, binutils, bzip2, lilo
 Recommends: dswim
 Description: Boot/Root Filesystem Distribution testing and creation.
  BootRoot makes the construction and development of distributions fun and 
