@@ -3,7 +3,7 @@
 ##  Yard.pm combining
 ##  MAKE_ROOT_FS, CHECK_ROOT_FS, and YARD_UTILS.PL by Tom Fawcett
 ##  Copyright (C) 1996,1997,1998  Tom Fawcett (fawcett@croftj.net)
-##  Copyright (C) 2000 Modifications by the gBootRoot Team
+##  Copyright (C) 2000,2001 Modifications by the gBootRoot Team
 ##
 ##  This program is free software; you may redistribute it and/or modify
 ##  it under the terms of the GNU General Public License as published by
@@ -135,6 +135,10 @@ sub read_contents_file {
 
     my ($contents_file) = @_;
     my $error;
+
+    # It's a good idea to clear the text buffer in the verbosity box
+    $text_insert->backward_delete($text_insert->get_length());
+
 
     info(0, "\n\nPASS 1:  Reading $contents_file");
     info(0, "\n");
