@@ -11,10 +11,11 @@ use File::Find;
 
 # This program uses dh-make, and copies your own defaults to 
 # $packaging_place/debian from your $packaging_defaults, and updates
-# to the proper date/times.  After this you will want to run
-# debuild as a non-root user.  And finish stuff off with dpkg-scanpackages.
+# to the proper date/times in changelog and copyright.  After this you will 
+# want to run debuild from devscripts (this uses lintian) as a non-root user.
+#  And finish stuff off with dpkg-scanpackages.
 
-# User defined variables for directories
+# User defined variables for directories and package
 
 my $user_home = "/home/mttrader";
 my $prog = "gbootroot";
@@ -22,13 +23,14 @@ my $revision = 1;
 my $dist = "unstable";
 my $urgency = "low";
 my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
-my $packaging_place = "$user_home/gbootroot";
+my $packaging_place = "$user_home/gbootroot/PACKAGING";
 my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg";
 my $email = "freesource\@users.sourceforge.net";
 my $name = "Jonathan Rosenbaum";
 
 # Other vars
 my $version;
+my ($real_uid, $real_gid) = (stat($user_home))[4,5];
 
 # Find the version
 
@@ -96,7 +98,6 @@ system "cp -fa Makefile.pkg $packaging_place/Makefile";
 
 # Now we get to clean out any CVS directories and make sure that the 
 # permissions are all for the user who will be creating the package.
-my ($real_uid, $real_gid) = (stat($user_home))[4,5];
 if (-d $packaging_place) {
         finddepth sub {  
 
@@ -176,6 +177,19 @@ if (!$stop) {
 
 } # end if !$stop
 
+system "rm $packaging_place/debian/*";
+system "cp -fa $packaging_defaults/* $packaging_place/debian";
+
+# Set-up the copyright
+open(COPYRIGHT,">$packaging_defaults/copyright") 
+    or die "Couldn't open up $packaging_defaults/copyright: $?\n";
+print COPYRIGHT "This package was debianized by $name\n";
+print COPYRIGHT "$email on " , `822-date`, ".\n";
+print COPYRIGHT "Author: \n$name <$email>\n\n";
+print COPYRIGHT "Copyright:\n\n" .
+"On Debian GNU/Linux systems, the complete text of the GNU General Public\n" .
+    "License can be found in /usr/share/common-licenses/GPL\n";
+
 sub home_builder {
 
     my ($home_builder) = @_; 
@@ -191,6 +205,8 @@ sub home_builder {
 		$_ == 1 ? ($placement = "/$directory_parts[$_]")
 		    : ($placement = $placement . "/" . $directory_parts[$_]);
 		-d $placement or mkdir $placement;
+		system "chown $real_uid $placement";
+		system "chgrp $real_gid $placement";
 	    }
 	}
     }
