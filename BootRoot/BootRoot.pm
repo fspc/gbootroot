@@ -51,8 +51,8 @@ my $uml_xterm = "xterm -e";
 # I need to remember to edit this
 # and to update scripts/Debian.yard if
 # make_debian has been changed.
-my $version = "1.3.0";
-my $date = "12.12.2001";
+my $version = "1.3.1";
+my $date = "12.23.2001";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";

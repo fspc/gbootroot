@@ -44,7 +44,7 @@ use File::Find;
 
 my $user_home = "/home/mttrader";
 my $prog = "gbootroot";
-my $prog_real_name = "gbootroot";
+my $prog_real_name = "/BootRoot/BootRoot";
 my $revision = 1;
 my $dist = "unstable";
 my $urgency = "low";
