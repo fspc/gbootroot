@@ -1605,7 +1605,7 @@ sub uml_box {
 	$tooltips->set_tip( $eab4, 
                            "Pass commands to the mconsole.\n" .
 			    "1.  sysrq [0-9|b|e|i|l|m|p|r|s|t|u]  \n" . 
-			    "2.  cad   reboot   halt   \n" .
+			    "2.  cad   reboot   halt  stop  go \n" .
 			    "3.  config <dev>=<config>\n4.  remove <dev>\n" .
 			    "5.  switch <umid>\n6.  version   help",
                            "" );
@@ -1632,6 +1632,45 @@ sub uml_box {
 				       "uml_mconsole " .
 				      $umid .
 				       " cad");
+				  
+			      }
+			      
+			  }
+			  
+		      }
+
+ 		      # stop
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,stop, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "stop"
+				   ) 
+			      {
+				  sys( 
+				       "uml_mconsole " .
+				      $umid .
+				       " stop");
+				  
+			      }
+			      
+			  }
+			  
+		      }
+
+
+ 		      # go
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,go, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "go"
+				   ) 
+			      {
+				  sys( 
+				       "uml_mconsole " .
+				      $umid .
+				       " go");
 				  
 			      }
 			      

@@ -36,6 +36,8 @@ may fixes for both debs and rpms and their respective source packages.
 
 Improved documentation.
 
+Added stop and go to the uml_mconsole interface for the UML Box.
+
 * make a new public root_fs_dev from the uml gbootroot was made on?
 	update make-debian-x11
 
