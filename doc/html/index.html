@@ -429,7 +429,7 @@ Move the device size to 1722.  This is a trick that <a href="http://www.toms.net
 
 <p>
 
-(Update 10/05/2001)  <br>
+(Update 10/06/2001)  <br>
 Up until mke2fs version 1.19  you were able to do 
 `mke2fs -F /dev/fd0 1722` on a 1440 device without any problem, but since 
 then mke2fs has become much more particular about enforcing actual device 
@@ -444,8 +444,10 @@ zeroing block 1600 at end of filesystem."</p>
 
 I understand Theodore Ts'o reasoning for doing this, but I strongly believe 
 that the old behavior was very useful for people creating 
-mini-distributions so I have issued Feature Request (#) at 
-(here).&nbsp;&nbsp;It should 
+mini-distributions so I have issued 
+<a href="
+http://sourceforge.net/tracker/index.php?func=detail&aid=468652&group_id=2406&atid=352406">Feature Request #468652</a> at e2fsprogs site 
+at Sourceforge.&nbsp;&nbsp;It should 
 be noted that fdformat is an unacceptable solution because it tends
 to be machine specific, and the original mke2fs behavior made floppies that
 worked 
