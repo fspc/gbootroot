@@ -3262,7 +3262,7 @@ sub find_nss {
     my @nss_libs;
 
     my($libc) = yard_glob("/lib/libc-*");  ## removed 2
-    my($libc_version) = $libc =~ m|/lib/libc-\d+\.(\d)|; ## changed 2 & . 
+    my($libc_version2, $libc_version) = $libc =~ m|/lib/libc-(\d)+\.(\d)|; ## changed 2 & . 
     if (!defined($libc_version)) {
 	info(0,"\nParsing $nss_conf:\n");
 	warning_test "Can't determine your libc version\n";
@@ -3270,13 +3270,23 @@ sub find_nss {
 	info(0,"\nParsing $nss_conf:\n");
 	info(0, "Using NSS libraries from $libc\n");
     }
+
    
-    ## glibc 2.2 uses version 2 for its services  --freesource
+    ## glibc 2.(2) uses version 2 for its services  --freesource
     ## 
     my $X;
     if ( $libc_version == 2 ) {
 	$X = $libc_version;  
     }
+    ## glic 2.(3) uses version 3 for its services --freesource
+    elsif ( $libc_version2 == 2 && $libc_version == 3 ) {
+	$X = $libc_version2;  		
+    }
+    ## hopefully should work when (2).4 or greater comes
+    elsif ( $libc_version2 >= 2 ) {
+	$X = $libc_version2;  		
+    }
+    ## annoying reality which means things have to be hardcoded --freesource
     else {
 	$X = $libc_version + 1;
     }
@@ -3308,7 +3318,7 @@ sub find_nss {
 	
 	return @nss_libs;
     } 
-    
+
 
 } # end sub find_nss
 
