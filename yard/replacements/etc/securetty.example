@@ -1,7 +1,7 @@
 # /etc/securetty: list of terminals on which root is allowed to login.
 # See securetty(5) and login(1).
 #
-# $Id$
+# $Id: securetty.example,v 1.1 2001/12/03 05:41:58 freesource Exp $
 # Used by the Example.yard template.
 
 # devfs
@@ -18,6 +18,10 @@ serial/0
 serial/1
 serial/2
 serial/3
+vc/0
+vc/1
+vc/2
+vc/3 
 
 # nodevfs
 tty0
@@ -33,3 +37,12 @@ serial0
 serial1
 serial2
 serial3
+vcs0
+vcs1
+vcs2
+vcs3
+
+
+
+
+
