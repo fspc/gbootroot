@@ -1,8 +1,10 @@
 #! /bin/sh
 #
-# $Id$
+# $Id: reboot.example,v 1.1 2001/12/03 19:00:21 freesource Exp $
 #
 # Used by Example.yard
+
+mount -n -o remount,ro /
 
 echo -n "Rebooting... "
 reboot -d -f -i
