@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id$
+# $Id: setup-debian-X11,v 1.6 2001/11/08 06:16:29 freesource Exp $
 # make_debian-X11 replacement
 
 # This is usually enough for a minimalistic system
@@ -13,12 +13,7 @@ dpkg-reconfigure make-debian-x11
 # directories and add a few files.
 #dpkg-reconfigure --all
 
-chown user /home/user
-chgrp user /home/user
-chown user /home/user/*
-chgrp user /home/user/*
-chown user /home/user/.*
-chgrp user /home/user/.*
+chown -v -R user:user /home/user
 chmod 777 /tmp
 
 # swim --initdb
@@ -28,3 +23,4 @@ chmod 777 /tmp
 #rm /usr/bin/linux
 
 /etc/cron.daily/find
+
