@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.35 2001/12/06 07:32:02 freesource Exp $</center>
+<center>$Id: index.html,v 1.36 2001/12/06 17:35:18 freesource Exp $</center>
 
 <p>
 
@@ -102,7 +102,8 @@ or on again.&nbsp;&nbsp;At times it may be advantageous to turn off the
 verbosity box 
 since large quantities of output to this box may cause gbootroot to use too 
 much cpu power; however, output may still be found in the text file "verbose" 
-in /tmp/gbootroot_tmp'time-date'.</p>
+in /tmp/gbootroot_tmp'time-date' or /tmp/gboot_non_root_`id -u` for
+normal users.</p>
 
 <br><br><br><br><br><br><br><br>
 
@@ -355,7 +356,7 @@ $HOME/.gbootroot/yard/.</p>
 
 <P><IMG ALT="" SRC="images/gBSicon.jpg" align="center"> <b>FAQ</b></P>
 
-<!-- 
+<pre> 
 
 
 What's the advantage of using this program?  [back]
@@ -386,7 +387,7 @@ gBootRoot doesn't start because it can't locate Gtk.pm?
 
 If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.
 
-                                              -->
+</pre>
 
 
 <P><b>What's the advantage of using this program?</b></P>
@@ -739,8 +740,8 @@ don't exist.&nbsp;&nbsp;For this example, /mnt1 and
 
 9.&nbsp;&nbsp;Change UIDs and GIDs to the appropriate user:
 <pre>
-  chown -v -R 0:0 /mnt1/*
-  chown -v -R 1002:1002 /mnt1/home
+  chown -v -R 0:0 /mnt1
+  chown -v -R 1002:1002 /mnt1/home/user
 </pre>
 
 <p>
@@ -751,9 +752,42 @@ don't exist.&nbsp;&nbsp;For this example, /mnt1 and
 
 <b>How can I create boot disks as a normal user?</b></p>
 
+<p>
+
+Make the boot disk as you normally would.&nbsp;&nbsp;Not all boot loaders
+can be set-up as a non-root user, however, you may still continue to
+the end of the process and set-up the boot loader later from a machine you
+have root access on.&nbsp;&nbsp;In order to use lilo while running
+gbootroot there
+are two pre-requisites your administrator will have to establish for you.
+First, he will have to edit the fstab to allow you to mount a certain
+block device.&nbsp;&nbsp;For instance, to allow you to mount /dev/fd0, you
+have to mount the /tmp/gboot_non_root_mnt_`id -u` directory.&nbsp;&nbsp;If
+your UID is 1000, then a line like this is added to the fstab:
+<pre>
+/dev/fd0   /tmp/gboot_non_root_mnt_1000   auto   defaults,user,noauto   0   0
+</pre>
 
 <p>
 
+Next, the administrator needs to give you access to the 
+lilo command.&nbsp;&nbsp;Sudo is a good solution, and in gbootroot the
+$sudo variable is assigned "sudo", this can be changed by the administrator
+to some other sudo-like program.&nbsp;&nbsp;The administrator then uses
+visudo to edit the sudoers file with a line like this:
+
+<pre>
+user  hostname = NOPASSWD: /sbin/lilo
+</pre>
+
+<p>
+
+Note, that NOPASSWD is used.&nbsp;&nbsp;Gbootroot won't prompt for a password,
+and just assumes no password in necessary.&nbsp;&nbsp;I could change this
+behavior if people request it.&nbsp;&nbsp;Now a bootdisk with lilo can be
+made.
+
+<p>
 
 <b>What is make_debian, and how do I use it?</b></p>
 
