@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.48 2001/12/22 05:39:58 freesource Exp $</center>
+<center>$Id: index.html,v 1.49 2001/12/22 07:14:46 freesource Exp $</center>
 
 <p>
 
@@ -610,11 +610,63 @@ the Create stage again.&nbsp;&nbsp;If you make a change to the template you
 have to run at least the Check, Links & Deps, and Create stages again.</p>
 
 
+<center><u>Make the mini distribution you just created with a different
+filesystem type.</u></center>
+
+<p>
+
+17.&nbsp;&nbsp;Now that you have successfully created a working mini
+distribution from Example.yard, re-create it with a different 
+filesystem type:  ext2, minix, reiserfs, romfs or cramfs.
+
+<p>
+
+18.&nbsp;&nbsp;Open up the Filesystem Box (Edit->'File System") and click on
+the UML Exclusively check button, and enter a filesystem command.  For this
+example <code>genromfs</code> will be used to create a read-only romfs.
+&nbsp;&nbsp;Normal users will want to keep the Preserve Permissions check
+button off.&nbsp;&nbsp;Press the submit button when finished.
+
+<p>
+
+19.&nbsp;&nbsp;Adjust the Filesystem Size in the ARS larger than 8192k, you
+could also make it smaller, but the point of this exercise is to introduce
+users to how the 8192k barrier of genext2fs can be exceeded.
+
+<p>
+
+20.&nbsp;&nbsp;Normal users should make sure the staging behavior is user 
+defined, and press on the Create check button on the Yard Box.&nbsp;&nbsp;
+Press Continue and observe what happens.&nbsp;&nbsp;Root users should have
+made the original filesystem with genext2fs, if not, they need to go
+through steps 12-16 again after entering <code>genext2fs -z -r0</code> in the 
+Filesystem Box.
+
+<P>
+
+21.&nbsp;&nbsp;Do step 16.&nbsp;&nbsp;You may notice complaints on boot-up
+about ioctl.save, to remove these complaints you could create a replacement
+ioctl.save, edit the template, re-create the filesystem, and test again.
+
+<p>
+
+22.&nbsp;&nbsp;So what about devices for normal users?&nbsp;&nbsp;
+Genext2fs creates devices for normal users, however, when UML Exclusively
+is used a normal user doesn't have the capability to copy over devices
+from the host system.&nbsp;&nbsp;Instead, devfs should be used.&nbsp;&nbsp;
+If more devices are required, devfsd can be used to set them up after the
+root filesystem is booted.&nbsp;&nbsp;Did you get things to work?&nbsp;&nbsp;
+Congratulations, you have created a root filesystem larger than 8192k without
+needing to be root!&nbsp;&nbsp;
+
+<p>
+
+
 <center><u>Make your own root filesystems from your own templates.</u></center>
 
 <p>
 
-17.&nbsp;&nbsp;Now that you have done your homework, I set you free to create
+23.&nbsp;&nbsp;Now that you have done your homework, I set you free to create
 your own root filesystems from your own templates with replacements
 of your own choice.&nbsp;&nbsp;Create a root_fs which can fit on a block 
 device, and then create an emergency disk customized for your own system, 
