@@ -526,8 +526,8 @@ if ( $> == 0 ) {
 }
 else {
 
-    # The Administrator just needs to add a line like below to the fstab for
-    # each non-root user who wants to be able to create root_fs.
+    # The Administrator just needs to add a line like the one below to the 
+    # fstab for each non-root user who wants to be able to create root_fs.
     # Ofcourse, the user is locked into the ext2 fs in this example, and 
     # `id -u` has to be the actual effective numeric user id.
     #
