@@ -2,7 +2,7 @@
 # distributions using perl5.8.
 
 # Update this according to version
-%define version .02
+%define version .02perl5.8
 %define release 1
 
 
