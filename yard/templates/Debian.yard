@@ -608,9 +608,6 @@
 /usr/lib/libdb3.so.3.0.2
 /usr/lib/libdb3.so.3
 /usr/lib/libdb-3.so
-/usr/lib/libgdbm.so.1.7.3
-/usr/lib/libgdbm.so.1
-/usr/lib/libgdbm.so.2
 /lib/libncurses.so.5.2
 /usr/lib/libpanel.so.5.2
 /usr/lib/libform.so.5.2
@@ -2213,10 +2210,6 @@
 /var/lib/dpkg/info/libdb3.list
 /var/lib/dpkg/info/libdb3.shlibs
 /var/lib/dpkg/info/libdb3.md5sums
-/var/lib/dpkg/info/libgdbmg1.postinst
-/var/lib/dpkg/info/libgdbmg1.prerm
-/var/lib/dpkg/info/libgdbmg1.list
-/var/lib/dpkg/info/libgdbmg1.shlibs
 /var/lib/dpkg/info/libncurses5.postinst
 /var/lib/dpkg/info/libncurses5.prerm
 /var/lib/dpkg/info/libncurses5.list
@@ -2291,6 +2284,7 @@
 /var/lib/dpkg/info/passwd.conffiles
 /var/lib/dpkg/info/passwd.md5sums
 /var/lib/dpkg/info/passwd.config
+/var/lib/dpkg/info/passwd.templates
 /var/lib/dpkg/info/perl-base.postinst
 /var/lib/dpkg/info/perl-base.prerm
 /var/lib/dpkg/info/perl-base.list
@@ -2370,6 +2364,7 @@
 /var/lib/dpkg/info/debconf.conffiles
 /var/lib/dpkg/info/debconf.md5sums
 /var/lib/dpkg/info/debconf.config
+/var/lib/dpkg/info/debconf.templates
 /var/lib/dpkg/info/nvi.preinst
 /var/lib/dpkg/info/nvi.postinst
 /var/lib/dpkg/info/nvi.prerm
@@ -2397,6 +2392,7 @@
 /var/lib/dpkg/info/netbase.conffiles
 /var/lib/dpkg/info/netbase.md5sums
 /var/lib/dpkg/info/netbase.config
+/var/lib/dpkg/info/netbase.templates
 /var/lib/dpkg/info/tcpd.postinst
 /var/lib/dpkg/info/tcpd.prerm
 /var/lib/dpkg/info/tcpd.list
@@ -2423,6 +2419,7 @@
 /var/lib/dpkg/info/netkit-inetd.conffiles
 /var/lib/dpkg/info/netkit-inetd.md5sums
 /var/lib/dpkg/info/netkit-inetd.config
+/var/lib/dpkg/info/netkit-inetd.templates
 /var/lib/dpkg/info/ifupdown.preinst
 /var/lib/dpkg/info/ifupdown.postinst
 /var/lib/dpkg/info/ifupdown.prerm
@@ -2431,6 +2428,7 @@
 /var/lib/dpkg/info/ifupdown.conffiles
 /var/lib/dpkg/info/ifupdown.md5sums
 /var/lib/dpkg/info/ifupdown.config
+/var/lib/dpkg/info/ifupdown.templates
 /var/lib/dpkg/info/less.postinst
 /var/lib/dpkg/info/less.prerm
 /var/lib/dpkg/info/less.postrm
