@@ -29,11 +29,11 @@ my $email = "freesource\@users.sourceforge.net";
 my $name = "Jonathan Rosenbaum";
 
 # Other vars
-my $version;
 my ($real_uid, $real_gid) = (stat($user_home))[4,5];
 
 # Find the version
 
+my $version;
 open(CVS, "$gbootroot_cvs/$prog") or 
 	die "Couldn't find $prog in $gbootroot_cvs: $!\n";
 	while (<CVS>) {
@@ -132,8 +132,8 @@ close (CHANGELOG);
 
 my $stop;
 foreach (@changelog) {
-    if (/$version/) {
-	print "\nThe changelog for $version already exists, this may mean\n" .
+    if (/$version-$revision/) {
+	print "\nThe changelog for $version-$revision already exists, this may mean\n" .
         "that this is the first invocation or that you haven't changed the\n" .
 	"version in the $prog program.\n";	
 	$stop = 1;
