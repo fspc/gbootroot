@@ -31,17 +31,48 @@ use Yard;
 use Error;
 
 my $yard_window;
+my $item_factory;
+my $accel_group;
 my $true = 1;
 my $false = 0;
+
+my @menu_items = ( { path        => '/File',
+		     type        => '<Branch>' },
+		   { path        => '/File/file_tearoff',
+		     type        => '<Tearoff>' },
+                   { path        => '/File/_Save',
+                     accelerator => '<control>S',
+                     callback    => sub { print "hello"; } },
+                   { path        => '/File/Save _As ...',
+		     accelerator => '<alt>A',
+		     callback    => sub { print "hello\n"; } },
+                   { path        => '/File/file_separator',
+                     type        => '<Separator>' },
+		   { path        => '/File/_Close',
+		     callback    => sub { destroy $yard_window; }},
+
+                   { path        => '/_Edit',
+                     type        => '<Branch>' },
+
+                   { path        => '/_Create',
+                     type        => '<Branch>' },
+
+                   { path        => '/_Tests',
+                     type        => '<Branch>' },
+
+                   { path        => '/_Help',
+                     type        => '<LastBranch>' },
+                   { path        => '/_Help/Tutorial' },
+                   { path        => '/_Help/Shortcuts' } );
 
 ######
 # YARD
 ###### 
 sub yard {
-
+    
     my ($kernel,$template_dir,$template) = @_;
     my $error;
-
+    
     # Error handling in Yard will take some strategy
     if (!-d $kernel && -f $kernel) {
         $error = kernel_version_check($kernel);  
@@ -64,7 +95,7 @@ sub yard {
 
     $error = read_contents_file("$template_dir$template");
     return if $error && $error eq "ERROR";
-
+    
 ##    $error = extra_links("$template_dir$template");
 ##    return if $error && $error eq "ERROR";
 
@@ -99,11 +130,16 @@ sub yard_box {
        $yard_window->add( $main_vbox );
        $main_vbox->show();
 
-       my $vbox = new Gtk::HBox( $false, 50 );
-       $vbox->border_width( 10 );
-       $main_vbox->pack_start( $vbox, $false, $true, 0 );
+       my $vbox = new Gtk::VBox( $false, 0 );
+       $vbox->border_width( 0 );
+       $main_vbox->pack_start( $vbox, $false, $false, 0 );
        $vbox->show();
 
+       # Item::Factory
+       my $menubar = yard_menu($yard_window);
+       $vbox->pack_start( $menubar, $false, $true, 0 );
+       $menubar->show();
+       
        $vbox = new Gtk::VBox( $false, 10 );
        $vbox->border_width( 10 );
        $main_vbox->pack_start( $vbox, $true, $true, 0 );
@@ -206,10 +242,39 @@ sub yard_box {
        				sub { destroy $yard_window; } );
        $vbox->pack_start( $button, $true, $true, 0 );
        $button->show();
-
+    
        show $yard_window;
 
 } # end sub yard_box
 
+sub print_hello { 
+    my ($menu_item, $action, $date) = @_;
+
+    $menu_item->set_active($true);
+    print $menu_item; 
+
+
+}
+
+sub yard_menu {
+
+    my ($window) = @_;
+
+    $accel_group = new Gtk::AccelGroup();
+    $item_factory = new Gtk::ItemFactory( 'Gtk::MenuBar', '<main>', 
+                                             $accel_group );
+    $accel_group->attach($window);
+    $item_factory->create_items(@menu_items);
+
+    # Manipulate Gtk::ItemFactory - The trick here is to use the real path.
+    ##my $checkbox = $item_factory->get_item("/File/CheckBox");
+    ##$checkbox->set_active($true);
+
+    return ( $item_factory->get_widget( '<main>' ) );
+
+} 
 
 1;
+
+
+
