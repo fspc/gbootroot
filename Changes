@@ -1,3 +1,7 @@
+If the sources created from the template had a symlink in them from a previous
+creation, you couldn't just press create again without symlink() complaining 
+(for instance, for genext2f and the new uml_exclusively).  This has been fixed.
+
 Compiled 2.4.16-2um linux and modules to specification for root_fs_helper.
 Makefile properly edited to copy over the config used.  Ext2, cramfs, minix,
 reiserfs, and romfs are built-in to the kernel.
