@@ -361,6 +361,7 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
 
     my $source = dirname($packaging_place) . "/" . $prog . "-" . $version;
     chdir($packaging_place);
+    system "make clean";
     system "make clean-sources";
 
     foreach my $package ( @rpm_packages ) {
@@ -414,7 +415,8 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
         "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Entries\n", 1, 
         "/usr/share/doc/gbootroot/Changes.gz\n", 1, 
         "/usr/share/doc/gbootroot/copyright\n", 1, 
-        "/usr/share/doc/gbootroot/changelog.Debian.gz\n", 1
+        "/usr/share/doc/gbootroot/changelog.Debian.gz\n", 1,
+	"/usr/share/doc/gbootroot/README.gz\n", 1		    
 
 			      );
 
@@ -438,6 +440,9 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
 		    if ( /Changes\.gz/ ) { 
 			s/Changes\.gz/Changes/;
 		    }
+		    if ( /README\.gz/ ) { 
+			s/README\.gz/README/;
+		    }
 		    else {
 			next;
 		    }
@@ -457,7 +462,6 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
 	chdir($packaging_place_orig);
 	system "tar cvfz  $pristine_source_package $prog-$version";
 	system "cp $source.tar.gz $SOURCES";
-
 	# Time for the fun
 	system "rpm -ba $SPECS/$package";
     }

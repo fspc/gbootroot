@@ -18,7 +18,7 @@
 %define version 1.4.0
 %define release 1mdk
 %define kversion 2.4.19
-%define patch_version 40
+%define patch_version 46
 %define util_ver 20021103
 %define kernel_source linux-%{kversion}.tar.bz2
 %define patch_1 uml-patch-%{kversion}-%{patch_version}.bz2
@@ -81,7 +81,9 @@ as mdk.
 %prep
 %setup -n gbootroot-%{version}
 #chown -R root:root .
-mkdir /tmp/gbootroot
+if [ ! -e /tmp/gbootroot ] ; then
+    mkdir /tmp/gbootroot;
+fi;
 install -d $HOME/gbootroot/RPMS/i386
 install -d $HOME/gbootroot/BUILD
 install -d $HOME/gbootroot/SOURCES

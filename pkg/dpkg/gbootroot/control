@@ -10,7 +10,7 @@ Architecture: i386
 Depends:  ${perl:Depends}, perl-modules, libgtk-perl (>= 0.7002), libc6 (>= 2.1.2), libexpect-perl, ash, file, binutils, bzip2
 Recommends: dswim, lilo
 Suggests: make-debian-x11
-Conflicts: gbootroot-nest1
+Conflicts: uml-utilities
 Description: Boot/Root Filesystem Distribution testing and creation.
  BootRoot makes the construction and development of distributions fun and 
  simple with its Root Methods (Yard) and user-mode-linux test bed.  Finish 

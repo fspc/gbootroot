@@ -64,7 +64,7 @@ my $uml_xterm = "xterm -e";
 # and to make sure modules are correct in Initrd.gz
 # apply special patches
 
-my $version = "1.4.0";
+my $version = "1.4.1";
 my $date = "01.14.2003";
 my $gtk_perl_version = "0.7002";
 my $home_rootfs = "$home/root_filesystem/";
