@@ -1083,6 +1083,8 @@ sub advanced_root_section {
 
 sub uml_box {
 
+    if (not defined $uml_window) {
+
 	$uml_window = Gtk::Window->new("toplevel");
 	$uml_window->signal_connect("destroy", \&destroy_window,
 	\$uml_window);
@@ -1255,7 +1257,12 @@ sub uml_box {
 				     $uml_window->destroy() if $uml_window;
 				 } );
 
-	$uml_window->show();
+   }
+   if (!visible $uml_window) {
+       $uml_window->show();
+   } else {
+       $uml_window->destroy;
+   }
 
 }
 
