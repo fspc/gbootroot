@@ -1,4 +1,4 @@
-#############################################################################
+############################################################################
 ##
 ##  YardBox.pm 
 ##  Copyright (C) 2000 by Jonathan Rosenbaum
@@ -155,14 +155,14 @@ my @menu_items = ( { path        => '/File',
 		     action      => 16,
 		     type        => '<CheckItem>',
 		     callback    => \&check_stage },
-		   { path        => '/Create/Replacements/rc',
-		     action      => 17,
-		     type        => '<CheckItem>',
-		     callback    => \&check_stage },
-		   { path        => '/Create/Replacements/fstab directory name',
-		     action      => 18,
-		     type        => '<Title>',
-		     callback    => \&check_stage },
+##		   { path        => '/Create/Replacements/rc',
+##		     action      => 17,
+##		     type        => '<CheckItem>',
+##		     callback    => \&check_stage },
+##		   { path        => '/Create/Replacements/fstab directory name',
+##		     action      => 18,
+##		     type        => '<Title>',
+##		     callback    => \&check_stage },
 
 			 
 		   { path        => '/_Tests',
@@ -659,7 +659,7 @@ sub tests {
     else {
 	$tests{$action}{$label[0]} = 1;
     }
-    print "$label[0]", $tests{$action}{$label[0]} , "\n";
+##    print "$label[0]", $tests{$action}{$label[0]} , "\n";
 
 }
 
@@ -677,12 +677,12 @@ my %checks = (
 	    16 => {
 		fstab => 0,
 	    },
-	    18 => {
-		fstab_directory_name => 0,
-	    },
-	    17 => { 
-		rc => 0,
-	    }	
+##	    18 => {
+##		fstab_directory_name => 0,
+##	    },
+##	    17 => { 
+##		rc => 0,
+##	    }	
 );
 
 # try show hide & use variables
@@ -694,26 +694,35 @@ sub check_stage {
     # off
     if ($checks{$action}{$label[0]} == 1) {
 	$checks{$action}{$label[0]} = 0;
-	if ($label[0] eq "fstab") {
-	    $item_factory->delete_item
-		('/Create/Replacements/fstab directory name');
-	}
+##	if ($label[0] eq "fstab") {
+##	    $item_factory->delete_item
+##		('/Create/Replacements/fstab directory name');
+##	}
     }
     # on
     else {
 	$checks{$action}{$label[0]} = 1;
 	# Fancy, but not quite what I want
-	if ($label[0] eq "fstab") {
-	    $item_factory->delete_item
-		('/Create/Replacements/fstab directory name');
-	    $item_factory->create_item
-		 (['/Create/Replacements/fstab directory name', 
-		    undef, undef, <Item>]);
-	}
+##	if ($label[0] eq "fstab") {
+##	    $item_factory->delete_item
+##		('/Create/Replacements/fstab directory name');
+##	    $item_factory->create_item
+##		 (['/Create/Replacements/fstab directory name', 
+##		    undef, undef, <Item>]);
+##	}
     }
-    print "$label[0]", $checks{$action}{$label[0]} , "\n";
+#  print "$label[0]", $checks{$action}{$label[0]} , "\n";
+
+    if ($label[0] eq "fstab") {
+	if ($checks{$action}{$label[0]} == 1) {
+
+	    create_fstab("$main::global_yard/Replacements/etc/fstab.new");
+
+        }
+    }
 
 }
+
 
 ###########
 # YARDBOX #
@@ -794,6 +803,9 @@ sub yard_box {
        #            Check Stage Variables HOH = %checks
        #            -----------------------------------
        # 16 fstab              1            0 (default)
+       ## These next two were removed, because there isn't any
+       ## script to make rc, and I can't remember what the
+       # fstab directory name entry was for. :*?
        # 17 rc                 1            0 (default
        # 18 'fstab directory name'  if fstab == 0
        #
@@ -1249,6 +1261,8 @@ sub Replacements {
 	#_______________________________________
 	# Submit button
 	my $submit_b = button(0,1,2,3,"Submit",$table_replacements);
+	#$submit_b->can_default($true);
+	#$submit_b->grab_default();
 	$submit_b->signal_connect( "clicked", sub {
 	    if ($entry[0] && $entry[1]) {
 
@@ -1278,6 +1292,7 @@ sub Replacements {
 		}
 		waitpid($pid,0);
 	    }
+
 	} );
 
 	#_______________________________________
@@ -1405,6 +1420,8 @@ sub file_ok_sel {
     destroy $file_dialog;
 
 }
+
+###### Replacement Stuff
 
 
 1;
