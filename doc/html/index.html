@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.45 2001/12/14 09:03:06 freesource Exp $</center>
+<center>$Id: index.html,v 1.46 2001/12/22 04:39:22 freesource Exp $</center>
 
 <p>
 
@@ -25,6 +25,12 @@ testing of distributions fun and simple.</P>
 <b>Download gBootRoot</b></P>
 <P align="center">
 <b>Newest version</b><br>
+
+(Milestone version 1.3.1 dedicated to  the first ever 
+<a href="http://www.morlug.org">MORLUG</a> meeting in my
+hometown!)
+
+<br><br>
 
 <a href="http://freshmeat.net/redir/gbootroot/3075/url_tgz/gbootroot.orig.tar.gz">gbootroot source (type make to install)</a><br>
 <a href="http://freshmeat.net/redir/gbootroot/3075/url_deb/gbootroot_all.deb">
@@ -414,7 +420,7 @@ $HOME/.gbootroot/yard/.</p>
 <br>
 7.&nbsp;&nbsp;<a href="#7">How am I able to create root filesystems as a normal user?</a>
 <br>
-8.&nbsp;&nbsp;<a href="#8">How can a normal user create a root filesystem larger than 8192k?</a>
+8.&nbsp;&nbsp;<a href="#8">How does this program allow a normal user to create a root filesystem larger than 8192k?</a>
 <br>
 9.&nbsp;&nbsp;<a href="#9">How can I create boot disks as a normal user?</a>
 <br>
@@ -724,15 +730,30 @@ can be changed when the filesystem is run from a kernel.
 
 <p>
 
-<a name="8"><b>How can a normal user create a root filesystem larger than 8192k?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+<a name="8"><b>How does this program allow a normal user to create a root filesystem larger than 8192k?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
 Although genext2fs only allows a normal user to create a UID/GID 0 root
-filesystem up to a maximum size of 8192k, there is an easy solution to
-creating root filesystems larger than this limit.&nbsp;&nbsp;Eventually,
-I'll automate the steps required, but for now you will have to do it
-manually.
+filesystem up to a maximum size of 8192k, this program exceeds this barrier by
+taking advantage of the unique characteristics of user-mode-linux, allowing
+normal users to explore things they never could before&nbsp;&nbsp;
+User-mode-linux is used to boot up a root_fs helper, the program then
+communicates with the user linux system via expect to automatically
+create a UID/GID 0 filesystem from the files copied over from the
+/tmp/gboot_non_root_`id -u1/loopback directory.&nbsp;&nbsp;The steps will
+vary slightly depending on which filsystem command is chosen, however, the same
+concept is used.&nbsp;&nbsp;You may appy this to filesystems smaller than
+8192 by adjusting the settings in the Filesystem Box.&nbsp;&nbsp;
+If you want to learn how to do this manually, look at the ten steps below.
+
+<p>
+
+<em>The root_fs helper used by gbootroot is completely root-free</em>.
+
+<p>
+
+<u>Ten steps to manually make a >8192 fs as a normal user.</u>
 
 <p>
 
