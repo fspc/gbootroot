@@ -485,6 +485,9 @@ sub read_contents_file {
 	    }
 	}
     }				# End of FILE loop
+
+      while (Gtk->events_pending) { Gtk->main_iteration; }
+
   }				# End of LINE loop
 
 
@@ -492,7 +495,7 @@ sub read_contents_file {
 	close(DEVICE_TABLE);
     }
 
-    info(0, "\nDone with $contents_file\n\n");
+    info(0, "\nDone with Check stage for $contents_file\n\n");
     close(CONTENTS) or ($error = error("close on $contents_file: $!"));
     return "ERROR"if $error && $error eq "ERROR";
 
@@ -563,6 +566,8 @@ sub extra_links {
 		}
 	    }
 
+	    while (Gtk->events_pending) { Gtk->main_iteration; }
+
 	} # for loop
 
     }  # end for nss pam
@@ -573,6 +578,8 @@ sub extra_links {
 
         # watch for "" - freesource
 	include_file($contents_file, $file) if $file ne "";
+	while (Gtk->events_pending) { Gtk->main_iteration; }
+
     }
 
     %Included = (%Included, %user_defined_link); # --freesource
@@ -703,6 +710,9 @@ sub library_dependencies {
 		push(@{$lib_needed_by{$abs_lib}}, $file);
 	    }
 	}
+
+	while (Gtk->events_pending) { Gtk->main_iteration; }
+
     }
 
     ####################################
@@ -779,6 +789,8 @@ sub library_dependencies {
 		#####  eg, $full_name{"libc.so"} = "/lib/libc.so.5.2.18"
 		$full_name{$lib_stem} = $lib;
 	    }
+
+	    while (Gtk->events_pending) { Gtk->main_iteration; }
 	}
     }
 
@@ -842,6 +854,9 @@ sub hard_links {
 		$hardlinked{$file} = "$dev/$inode";
 	    }
 	}
+
+	while (Gtk->events_pending) { Gtk->main_iteration; }
+
     }
 
     info(0, "Done.\n\n");
@@ -1185,7 +1200,9 @@ sub create_filesystem {
 		info(1, "\tCreating $newdir as a link target for $file\n");
 	    }
 	}
-	
+
+	while (Gtk->events_pending) { Gtk->main_iteration; }	
+
     }
 
 
@@ -1227,6 +1244,8 @@ sub create_filesystem {
 	    delete $Included{$file}; # Get rid of it so next pass doesn't copy it
 	    
 	}
+
+	while (Gtk->events_pending) { Gtk->main_iteration; }
 
     }
 
@@ -1293,6 +1312,9 @@ sub create_filesystem {
 	    #  The 'R' flag here allows cp command to handle devices and FIFOs.
 	    sys("cp -dpR $file $floppy_file");
 	}
+
+	while (Gtk->events_pending) { Gtk->main_iteration; }
+
     }
 
 
@@ -1393,6 +1415,9 @@ sub include_file {
 	    }
 	}
 	$file = $abs_target;	# For next iteration of while loop
+
+	##while (Gtk->events_pending) { Gtk->main_iteration; }
+
     }
 }
 
