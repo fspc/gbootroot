@@ -1599,6 +1599,8 @@ sub start_logging_output {
 #####  and STDERR.
 sub sys {
     my $error;
+
+    ##info(1,"@_\n");  # This could be verbosity 3, i.e. 2.
     
     # when using sys on yard_chrooted_tests
     my $dont = pop @_;
@@ -2755,7 +2757,7 @@ sub check_termcap {
   # We assume a terminfo file is not being used .. hum
   if (-d "$mount_point/etc/terminfo") {
 
-      # There should at least be a linux entry, and infocmp needs to exist.x
+      # There should at least be a linux entry, and infocmp needs to exist.
       my $infocmp = "infocmp -A $mount_point/etc/terminfo -C linux|";
      
       open(TERMCAP, "$infocmp") or

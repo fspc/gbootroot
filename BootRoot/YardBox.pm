@@ -724,11 +724,12 @@ sub test {
     # Need to know whether genext2fs is being used
     my $fs_type = (split(/\s/,$main::makefs))[0];
 
-    if ( $fs_type ne "genext2fs" ) {
-	$tests{30}{test_fstab} = 0;
-	$tests{31}{test_inittab} = 0;
-	$tests{32}{test_scripts} = 0;
-    }
+    # unecessary logic
+##    if ( $fs_type ne "genext2fs" ) {
+##	$tests{30}{test_fstab} = 0;
+##	$tests{31}{test_inittab} = 0;
+##	$tests{32}{test_scripts} = 0;
+##    }
 
     my $error = which_tests(\%tests); 
     return if $error && $error eq "ERROR";
