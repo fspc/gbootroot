@@ -67,8 +67,6 @@ open(SWIM,$swim_packages) or die "Couldn't open swim_packages: $?\n";
 my @required_packages = <SWIM>; chomp @required_packages;
 close(SWIM);
 
-push(@required_packages,@extra_packages);
-
 # All the files
 open(SWIM,$swim_list) or die "Couldn't open swim_list: $!\n";
 my @required_files = <SWIM>; chomp @required_files;
@@ -249,6 +247,58 @@ return $stuff;
 } # end sub stuff
 #################################################################
 #################################################################
+
+###################
+## Package Check ##
+###################
+ 
+# Better tell the user what required and extra packages don't exist.
+
+my $required_packages_check = "swim -q @required_packages|";
+open (CHECK,$required_packages_check) 
+    or die "Couldn't find any required packages: $?\n";
+my @rpc;
+while (<CHECK>) {
+    if (/^package/) {
+        my $rpc = (split(/\s/))[1];
+	push(@rpc,$rpc);
+
+    }
+}
+close (CHECK);
+
+if (@rpc) {
+    print "There are the required packages which were specified:\n\n";
+    $, = " ";
+    print @required_packages, "\n\n";
+    print "This is what wasn't installed on your system:\n\n";
+    print @rpc , "\n\n";
+    $, = "";
+}
+
+my $extra_packages_check = "swim -q @extra_packages|";
+open (CHECK,$extra_packages_check) 
+    or die "Couldn't find any required packages: $?\n";
+my @epc;
+while (<CHECK>) {
+    if (/^package/) {
+        my $epc = (split(/\s/))[1];
+	push(@epc,$epc);
+    }
+}
+close (CHECK);
+
+if (@epc) {
+    print "There are the extra packages which were specified:\n\n";
+    $, = " ";
+    print @extra_packages, "\n\n";
+    print "This is what wasn't installed on your system:\n\n";
+    print @epc , "\n\n";
+    $, = "";
+}
+
+push(@required_packages,@extra_packages);
+
 
 #######################
 ## Template Creation ##
