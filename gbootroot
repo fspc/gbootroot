@@ -3550,9 +3550,11 @@ in /tmp/gbootroot_tmp'time-date'.
 
 Advanced Boot Section:
 
-"Stripping"  On by default for libraries and binaries.  The stripping 
-behavior for libraries may be changed by clicking on the right mouse button 
-to change from --strip-debug to --strip-all.
+Libraries & Binaries & Modules check boxes:  Turn off and on the
+stripping of symbols.   The stripping behavior for libraries may be
+changed by clicking on the right mouse button to change --strip-debug
+to --strip-all.   Binaries default to --strip-all and Modules default to
+--strip-debug.
 
 "Devel Device"  If the device used for development is different than the 
 actual boot device, use this field to indicate that device.  You will have to 
@@ -3565,6 +3567,24 @@ kernel to function properly.  Put a space between each device.  For instance,
 
 "append ="  Add append options to brlilo.conf.  If you are using a frame
 buffer device you could add something like video=matrox:vesa:402,depth:16.
+
+"Kernel Module"  Add the modules found in /lib/modules/kernel-version 
+which are necessary for the Boot Method to work properly.   If these 
+modules aren't found in the modules directory it is assumed that they 
+either are in the kernel or they do not exist.   In the case of 2 disk 
+compression, floppy needs to be included in the kernel or included as a 
+module.    Kmod inserts the modules, and kmod needs to be built into the 
+kernel along with initrd and ramdisk."
+
+"Kernel Version"  Override the kernel version number found in the
+kernel header.  This will change the /lib/modules/kernel-version
+directory.
+
+System.map:  When a non-running kernel is chosen it is important to 
+include a copy of that kernel's System.map file so that depmod can
+use the correct set of kernel symbols to resolve kernel references 
+in each module.  This can be found in the kernel's source code after
+compilation. 
 
 Advanced Root Section:
 
