@@ -39,14 +39,18 @@
 %define __os_install_post %{nil}
 
 
-Summary: Boot/Root Filesystem Distribution testing and creation.
-Name: gbootroot Version: %{version} Release: %{release} Copyright: GPL
-# was Utilities/System or Development/System Group: Development/Other
-Source:
-http://prdownloads.sourceforge.net/gbootroot/gbootroot-%{version}.tar.gz
-URL: http://gbootroot.sourceforge.net Distribution: BootRoot Vendor:
-Free Software Packager: Jonathan Rosenbaum
-<freesource@users.sourceforge.net>
+Summary:      Boot/Root Filesystem Distribution testing and creation.
+Name:         gbootroot
+Version:      %{version}
+Release:      %{release}
+Copyright:    GPL
+#	      was Utilities/System  or Development/System
+Group:        Development/Other
+Source:       http://prdownloads.sourceforge.net/gbootroot/gbootroot-%{version}.tar.gz
+URL:          http://gbootroot.sourceforge.net
+Distribution: BootRoot
+Vendor:       Free Software
+Packager:     Jonathan Rosenbaum <freesource@users.sourceforge.net>
 
 
 # Place icon in rpm sources directory prior to build

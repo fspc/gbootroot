@@ -369,6 +369,7 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
     system "rm -rf debian/";
 
     foreach my $package ( @rpm_packages ) {
+
 	open (RPM_PLACE, "$rpm_packaging_place/$package" ) or 
 	    die "Couldn't open up $rpm_packaging_place/$package: $!\n";
 	my @specs = <RPM_PLACE>;
