@@ -41,7 +41,7 @@ my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
 my ($replacements_window, $filesystem_window, $path_window, $shortcut);
-my ($search_window, $question_window);
+my ($search_window, $question_window, $offset);
 my $Shortcuts;
 my @entry;
 my $file_dialog;
@@ -1178,7 +1178,7 @@ sub search {
 	#_______________________________________
 	# Search button
 
-	my ($keywords, $old_keywords, $offset);
+	my ($keywords, $old_keywords);
 	my ($tmp_ct, $tmp_k);
 
 	my $submit_b = button(0,1,3,4,"Search",$table_search);
@@ -1332,7 +1332,8 @@ sub search {
 		    else {
 			question_window("End of document reached;"
 					. " continue from beginning?", 
-					$search_window,$submit_b);
+					$search_window,$submit_b,
+					length($changed_text_from_template));
 		    }
 		}
 
@@ -1361,7 +1362,7 @@ sub search {
 # Just a universal dialog box with OK and Cancel
 sub question_window {
 
-    my ($output,$widget,$widget_button) = @_;
+    my ($output,$widget, $widget_button, $tmp_offset) = @_;
     my ($ok_button, $c_button);
 
     if (not defined $question_window) {
@@ -1376,6 +1377,7 @@ sub question_window {
 	    my $event = pop @_; 
 	    if ($event->{'keyval'}) {
 		    if ($event->{'keyval'} == 65307) {
+			$offset = $tmp_offset;
 			$question_window->destroy 
 		    }
 		    elsif ($event->{'keyval'} == 65293) {
@@ -1407,6 +1409,7 @@ sub question_window {
     #----------------------------------------
     $c_button = new Gtk::Button("Cancel");
     $c_button->signal_connect("clicked", sub {
+	$offset = $tmp_offset;
 	$question_window->destroy if $question_window;
     });
     $question_window->action_area->pack_start($c_button, $false, $false,0);
