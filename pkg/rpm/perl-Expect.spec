@@ -1,8 +1,8 @@
-# A SPEC to crreate a rpm package from Expect.  This should work on all
-# distributions using >= perl5.
+# A SPEC to create a rpm package from Expect.  This should work on all
+# distributions using perl5.8.
 
 # Update this according to version
-%define version 1.12
+%define version 1.15
 %define release 1
 
 
@@ -39,6 +39,8 @@ It is now possible to interconnect multiple file handles (and processes) much
 like Tcl's expect. An attempt was made to enable all the features of Tcl's
 expect without forcing Tcl on the victim programmer :-) .
 
+Compiled for perl 5.8.
+
 
 %prep
 %setup -n Expect-%{version}
@@ -53,11 +55,13 @@ make
 %install
 make install
 install -d /usr/share/doc/perl-Expect/examples/kibitz
+install -d /usr/share/man/man3
+cp -fa blib/man3/Expect.3pm /usr/share/man/man3
 cp -fa README /usr/share/doc/perl-Expect/README
 gzip -9c Changes > /usr/share/doc/perl-Expect/changelog.gz
 cp Expect.pod /usr/share/doc/perl-Expect/Expect.pod
 cp -fa tutorial/* /usr/share/doc/perl-Expect/examples
-cp -fa examples/kibitz/* /usr/share/doc/perl-Expect
+cp -fa examples/kibitz/* /usr/share/doc/perl-Expect/examples/kibitz
 
 # nothing to clean
 %clean

@@ -1,5 +1,5 @@
 # A SPEC to crreate a rpm package from IO-Stty-.  This should work on all
-# distributions using >= perl5.
+# distributions using perl5.8.
 
 # Update this according to version
 %define version .02
@@ -26,7 +26,7 @@ AutoReqProv: no
 
 %description
 This is a generic interface to handle secure pseudo terminals by perl
-scripts, such as the expect library. 
+scripts, such as the expect library.  Compiled for Perl 5.8. 
 
 
 

@@ -1,4 +1,4 @@
-# $Id: Helper.yard,v 1.2 2002/12/12 01:10:23 freesource Exp $
+# $Id: Helper.yard,v 1.3 2003/02/07 18:29:26 freesource Exp $
 #  Helper.yard
 #
 #############################################################################
@@ -212,7 +212,9 @@ du
 rmdir
 less
 dircolors
-grep         
+grep
+egrep
+msg         
 tail       
 mknod		   	
 ##ps			   	

@@ -1,4 +1,4 @@
-#  $Id: Example.yard,v 1.21 2003/02/08 06:29:57 freesource Exp $
+#  $Id: Example.yard,v 1.22 2003/02/10 17:38:34 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with
@@ -340,6 +340,7 @@ less
 dircolors
 grep         
 egrep
+msg
 tail       
 mknod		   	
 ps			   	
