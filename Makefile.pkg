@@ -10,6 +10,7 @@ install:
 	cp -fa expect_uml $(DESTDIR)/usr/lib/bootroot/expect_uml
 	install -d $(DESTDIR)/usr/lib/bootroot/root_filesystem
 	cp -fa root_filesystem/root_fs_helper $(DESTDIR)/usr/lib/bootroot/root_filesystem
+	cp -fa root_filesystem/Initrd.gz $(DESTDIR)/usr/lib/bootroot/root_filesystem
 	cp -fa yard/scripts/make_debian $(DESTDIR)/usr/bin/make_debian
 	install -d $(DESTDIR)/usr/share/perl5/BootRoot
 	cp -fa BootRoot/*.pm $(DESTDIR)/usr/share/perl5/BootRoot

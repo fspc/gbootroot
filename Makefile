@@ -11,6 +11,7 @@ install:
 	install -d /usr/lib/bootroot/root_filesystem
 	chmod 0666 root_filesystem/root_fs_helper
 	cp -fa root_filesystem/root_fs_helper /usr/lib/bootroot/root_filesystem
+	cp -fa root_filesystem/Initrd.gz /usr/lib/bootroot/root_filesystem
 	cp -fa yard/scripts/make_debian /usr/bin/make_debian
 	install -d /usr/share/perl5/BootRoot
 	cp -fa BootRoot/*.pm /usr/share/perl5/BootRoot
