@@ -31,9 +31,9 @@ package Yard;
 use vars qw(@ISA @EXPORT %EXPORT_TAGS);
 use Exporter;
 @ISA = qw(Exporter);
-@EXPORT =  qw(start_logging_output kernel_version_check read_contents_file 
-              extra_links library_dependencies hard_links space_check
-              create_filesytem);
+@EXPORT =  qw(start_logging_output kernel_version_check 
+              read_contents_file extra_links library_dependencies hard_links 
+              space_check create_filesytem);
 
 use strict;
 use File::Basename;
@@ -52,6 +52,7 @@ my $EXT2_BLOCK_SIZE  = 1024;
 my $INODE_SIZE       = 1024;
 my $objcopy = "objcopy";
 my($Warnings) = 0;
+my $verbosity;
 
 STDOUT->autoflush(1);
 
@@ -94,7 +95,6 @@ sub kernel_version_check {
 
     } elsif (defined($ENV{'RELEASE'} = kernel_version($kernel))) {
 	info(0, "Version probe of $kernel returns: $ENV{'RELEASE'}\n");
-
     } else {
 	warning "Can't determine kernel version of $kernel\n";
 	my($release) = `uname -r`;
@@ -855,7 +855,8 @@ my($proc_dev) = (stat("/proc"))[0];
 
 sub info {
   my($level, @msgs) = @_;
-  (print @msgs) if $::verbosity >= $level;
+
+  (print @msgs) if $verbosity >= $level;
   print LOGFILE @msgs;
 }
 
@@ -868,8 +869,9 @@ sub error {
 
 sub start_logging_output {
 
-  my ($yard_temp) = @_;
+  my ($yard_temp,$verb_level) = @_;
   my $logfile;
+  $verbosity = $verb_level;
 
   if (defined($yard_temp) and $yard_temp) {
     $logfile = $yard_temp;
@@ -1075,7 +1077,6 @@ sub flush_device_buffer_cache {
   open(FD, $device) && ioctl(FD, $BLKFLSBUF_ioctl, $junk);
   close(FD);
 }
-
 
 #####  This is a kludge but is probably the best way to check for
 #####  module support.
