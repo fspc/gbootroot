@@ -9,7 +9,7 @@
 
 
 # Update this according to version
-%define version 1.3.4
+%define version 1.3.5
 %define release 1
 
 
