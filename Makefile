@@ -14,5 +14,10 @@ install:
 	cp -fa yard/templates/*.yard /usr/share/gbootroot/yard/templates	
 	cp -fa user-mode-linux/usr/bin/uml_* /usr/bin
 	cp -fa user-mode-linux/usr/bin/linux /usr/bin/linux
+	install -d /etc/gbootroot
+	cp -fa gbootrootrc /etc/gbootroot/gbootrootrc
 
 remove:
+
+
+
