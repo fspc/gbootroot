@@ -7,7 +7,7 @@ Standards-Version: 3.5.2
 
 Package: make-debian-x11 
 Architecture: all
-Depends: gbootroot, swim 
+Depends: gbootroot, swim, debconf
 Description: Add-on 
  BootRoot makes the construction/development of distributions fun and simple
  with its Root Methods (Yard) and user-mode-linux test bed. Finish the product
