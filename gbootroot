@@ -1405,7 +1405,8 @@ sub accept_button {
 			info(0, "Already bzip2 compressed.\n");
 		    }
 		    else {
-			system "$compress $tmp/$entry_advanced[4]";
+			system 
+	  "$compress -c9 $tmp/$entry_advanced[4] > $tmp/$entry_advanced[4].gz";
 			$entry_advanced[4] = "$entry_advanced[4].gz";
 			$entry3->set_text("$tmp/$entry_advanced[4]");
 		    }
@@ -1431,7 +1432,8 @@ sub accept_button {
 			info(0, "Already bzip2 compressed.\n");
 		    }
 		    else {
-			system "$compress $tmp/$entry_advanced[4]";
+			system 
+         "$compress -c $tmp/$entry_advanced[4] >  $tmp/$entry_advanced[4].bz2";
 			$entry_advanced[4] =  "$entry_advanced[4].bz2";
 			$entry3->set_text("$tmp/$entry_advanced[4]");
 		    }
