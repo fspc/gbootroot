@@ -31,7 +31,9 @@ package Yard;
 use vars qw(@ISA @EXPORT %EXPORT_TAGS);
 use Exporter;
 @ISA = qw(Exporter);
-@EXPORT =  qw();
+@EXPORT =  qw(kernel_version_check read_contents_file extra_links 
+              library_dependencies hard_links space_check
+              create_filesytem);
 
 use strict;
 use File::Basename;
@@ -39,75 +41,23 @@ use File::Path;
 use FileHandle;
 use Cwd; #  I am not even sure if this is being used here now
 use English;  # I think this can be ditched for portability
-#use lib "@config_dest@", "@lib_dest@";
-#use yardconfig;# this exports these things $scripts_dest 
-                # $lib_dest $config_dest %_path
 use File::Find; # used by check_root_fs
 
-# YARDCONFIG.PM
-##########################################
-##########################################
-
-#$scripts_dest = "@scripts_dest@";
-#$lib_dest     = "@lib_dest@";
-#$config_dest  = "@config_dest@";
-
-#unshift(@::INC, $config_dest);
-
-# Ironically this is only used once for objcopy.    
-#%_path =( 'perl'	 => '@PERL@',
-#	  'ldd'		 => '@LDD@',
-#	  'ldconfig'	 => '@LDCONFIG@',
-#	  'chroot'	 => '@CHROOT@',
-#	  'sync'	 => '@SYNC@',
-#	  'mount'	 => '@MOUNT@',
-#	  'umount'	 => '@UMOUNT@',
-#	  'rm'		 => '@RM@',
-#	  'dd'		 => '@DD@',
-#	  'mke2fs'	 => '@MKE2FS@',
-#	  'rdev'	 => '@RDEV@',
-#	  'gzip'	 => '@GZIP@',
-#	  'uname'	 => '@UNAME@',
-#	  'objcopy'	 => '@OBJCOPY@'
-#	);
-
-############################################
-############################################
-# Probably will make this local .. actually don't need them
-
-# FROM YARD_UTILS.PL
-
-# constant.pm not introduced until 5.003_96, so these are
-# just global variables.
-# Constants from /usr/src/linux/arch/i386/kernel/setup.c:
-#$::RAMDISK_IMAGE_START_MASK   =	0x07FF;
-#$::RAMDISK_PROMPT_FLAG        =	0x8000;
-#$::RAMDISK_LOAD_FLAG          = 0x4000;
-
-# ioctls from /usr/include/linux/fs.h:
-#$::BLKGETSIZE_ioctl = 4704;
-#$::BLKFLSBUF_ioctl  = 4705;
-
-# ext2 fs constants, both in bytes
-#$::EXT2_BLOCK_SIZE   = 1024;
-#$::INODE_SIZE        = 1024;
-
-##########################
-###########################
-
-# BEGIN { require "yard_utils.pl"; }
-# Supplied by gBootroot
-#require "Config.pl";
+my (%Included, %replaced_by, %links_to, %is_module, %hardlinked, 
+    %strippable, %lib_needed_by, @Libs);
+my $cf_line = 0;
+my $BLKGETSIZE_ioctl = 4704; 
+my $BLKFLSBUF_ioctl  = 4705; 
+my $EXT2_BLOCK_SIZE  = 1024; 
+my $INODE_SIZE       = 1024;
+my $objcopy = "objcopy";
 
 STDOUT->autoflush(1);
 
-start_logging_output();
+#@@ start_logging_output();
 
-info(0, "root_fs\n");
-info(1, "(running under Perl $PERL_VERSION)\n");
-
-#my($objcopy) = $_path{'objcopy'}; # Define objcopy path if executable exists
-my $objcopy = "objcopy";
+#@@ info(0, "root_fs\n");
+#@@ info(1, "(running under Perl $PERL_VERSION)\n");
 
 my($Warnings) = 0;
 sub warning {
@@ -144,649 +94,707 @@ sub warning {
 # gBootRoot, but it may be restrictive since sometimes it is a 
 # good thing to mount a whole device .. cdroms for instance.
 #  Check for sane device choice before we start using it.
-check_device();
+#@@ check_device();
 
 #  Make sure $::device isn't already mounted and $::mount_point is free
-load_mount_info();
+#@@ load_mount_info();
 
-if (defined($::mounted{$::device})) {
+## This is put here for reference, and is from Config.pl
+## loopback is the standard for building a filesytem in gBootRoot.
+##  No choice here.
+#  $device: string (device name)
+#
+#  The device for building the filesystem.  This can be /dev/ram0 or a        
+#  spare partition.  You can turn off swapping temporarily and use the
+#  swap partition on your hard disk.  You can use a loopback device if
+#  your kernel supports them -- see the section "Using a Loopback
+#  Device" in the Yard documentation for instructions.
+#  It should not be a symbolic link.                
+#                                    
+#$device =           "/dev/ram0";
 
-  if ($::mounted{$::device} eq $::mount_point) {
-    #info(1, "Device $::device is already mounted on $::mount_point\n");
-    info(1, "Unmounting it automatically.\n");
-    sys("umount $::mount_point");
+#if (defined($::mounted{$::device})) {
 
-  } else {
-    error("$::device is already mounted elsewhere (on $::mounted{$::device})\n",
-	  "Unmount it first.\n");
-  }
+#  if ($::mounted{$::device} eq $::mount_point) {
+#    #info(1, "Device $::device is already mounted on $::mount_point\n");
+#    info(1, "Unmounting it automatically.\n");
+#    sys("umount $::mount_point");
 
-} elsif (defined($::mounted{$::mount_point})) {
-  error("Some other device is already mounted on $::mount_point\n");
-}
+#  } else {
+#    error("$::device is already mounted elsewhere (on $::mounted{$::device})\n",
+#	  "Unmount it first.\n");
+#  }
+
+#} elsif (defined($::mounted{$::mount_point})) {
+#  error("Some other device is already mounted on $::mount_point\n");
+#}
+
 
 #  Have to test this every time so we can work around.
-test_glob();
+## This will get replaced with a readdir loop, no sense relying on people's
+## shells.  Anotherwards, yard_glob get changed.
+#@@ test_glob();
 
 #####  Determine release of $::kernel for modules.
 #####  Set RELEASE environment variable for use in contents.
-if (defined($::kernel_version)) {
-   #  Check to see if it agrees
-   my($version_guess) = kernel_version($::kernel);
-   if ($version_guess ne $::kernel_version) {
-     # info(0, 
-     # "You declared kernel ($::kernel) to be version $::kernel_version\n",
-     # "\teven though a probe says $version_guess.",
-     # "\tI'll assume you're right.\n";)
-   }
-  $ENV{'RELEASE'} = $::kernel_version;
+## Still need an option for this, may become part of beginners section.
 
-} elsif (defined($ENV{'RELEASE'} = kernel_version($::kernel))) {
-  info(0, "Version probe of $::kernel returns: $ENV{'RELEASE'}\n");
+## uses kernel_version .. will probably just run these in relation to
+## gBootRoots checks.
+## 'use Yard; $kernel = "/root/HDB/vmlinuz-2.2.14-ncr"; $kernel_version = "1.2"; kernel_version_check();
+## requires $kernel && $kernel_version
+sub kernel_version_check {
 
-} else {
-  warning "Can't determine kernel version of $::kernel\n";
-  my($release) = `uname -r`;
-  if ($release) {
-    chomp($release);
-    info(0, "Will use version of current running kernel ($release)\n",
-	    "Make sure this is OK\n");
-    $ENV{'RELEASE'} = $release;
-  } else {
-    error("And can't determine running kernel's version either!\n");
-  }
-}
+    if (defined($::kernel_version)) {
+	#  Check to see if it agrees
+	my($version_guess) = kernel_version($::kernel);
+	if ($version_guess ne $::kernel_version) {
+            ## Is this really necessary, it can be assumed a person knows
+            ## what they are doing.
+	    info(0, 
+	    "You declared kernel $::kernel to be version $::kernel_version\n",
+	    "even though a probe says $version_guess.",
+	    "  I'll assume you're right.\n")
+	}
+	$ENV{'RELEASE'} = $::kernel_version;
 
-warn_about_module_dependencies($ENV{'RELEASE'});
-
-if ($::disk_set !~ /^(single|double|base\+extra)$/) {
-  error("Config variable disk_set is set to \"$::disk_set\"\n",
-	"which is not a valid value.\n");
-}
-
-##############################################################################
-#####  READ IN CONTENTS FILE                                             #####
-##############################################################################
-my($contents_file) = resolve_file($::contents_file);
-info(0, "\n\nPASS 1:  Reading $::contents_file");
-#info 0, " ($contents_file)" if $contents_file ne $::contents_file;
-info(0, "\n");
-
-my(%Included);
-my(%replaced_by);
-my(%links_to);
-my(%is_module);
-
-open(CONTENTS, "<$contents_file") or error("$contents_file: $!");
-
-my($cf_line) = 0;
-my($line);
-
-LINE: while (defined($line = <CONTENTS>)) {
-  my(@files);
-  $cf_line++;
-  chomp $line;
-  $line =~ s/[\#%].*$//;	# Kill comments
-  next if $line =~ /^\s*$/;	# Ignore blank/empty line
-
-  $line =~ s/^\s+//;		# Delete leading/trailing whitespace
-  $line =~ s/\s+$//;
-
-#  if ($line =~ /\$RELEASE/) {
-#    cf_warn($line, "Make sure \$RELEASE ($ENV{'RELEASE'}) is correct " .
-#	           "for $::kernel");
-#    }
-
-  if ($line =~ /->/) {	#####  EXPLICIT LINK
-    if ($line =~ /[\*\?\[]/) {
-      cf_warn($line, "Can't use wildcards in link specification!");
-      next LINE;
-    }
-    my($file, $link) = $line =~ /^(\S+)\s*->\s*(\S+)\s*$/;
-    if (!defined($link)) {
-      cf_warn($line, "Can't parse this link");
-      next LINE;
-    }
-    #####  The '->' supersedes file structure on the disk, so don't
-    #####  call include_file until pass two after all explicit links
-    #####  have been seen.
-    my($abs_file) = find_file_in_path($file);
-    $Included{$abs_file} = 1;
-    ####   Have to be careful here.  Record the rel link for use
-    ####   in setting up the root fs, but use the abs_link in @files
-    ####   so next loop gets any actual files.
-    my($abs_link) = make_link_absolute($abs_file, $link);
-    my($rel_link) = make_link_relative($abs_file, $link);
-    $links_to{$abs_file} = $rel_link;
-    info(1, "$line links $abs_file to $rel_link\n");
-    @files = ($abs_link);
-
-  } elsif ($line =~ /<=/) {	#####  REPLACEMENT SPEC
-    cf_die($line, "Can't use wildcard in replacement specification") if
-	$line =~ /[\*\?\[]/;
-
-    my($file, $replacement) = $line =~ /^(\S+)\s*<=\s*(\S+)\s*$/;
-
-    if (!defined($replacement)) {
-      cf_warn($line, "Can't parse this replacement spec");
-      next LINE;
+    } elsif (defined($ENV{'RELEASE'} = kernel_version($::kernel))) {
+	info(0, "Version probe of $::kernel returns: $ENV{'RELEASE'}\n");
 
     } else {
-      must_be_abs($file);
-      (-d $file) and cf_warn($line, "left-hand side can't be directory");
-      my($abs_replacement) = find_file_in_path($replacement);
-      if (!(defined($abs_replacement) and -e $abs_replacement)) {
-	cf_warn($line, "Can't find $replacement");
+	warning "Can't determine kernel version of $::kernel\n";
+	my($release) = `uname -r`;
+	if ($release) {
+	    chomp($release);
+	    info(0, "Will use version of current running kernel ($release)\n",
+		 "Make sure this is OK\n");
+	    $ENV{'RELEASE'} = $release;
+	} else {
+	    error("And can't determine running kernel's version either!\n");
+	}
+    }
 
-      } elsif ($replacement =~ m|^/dev/(?!null)|) {
-	#  Allow /dev/null but no other devices
-	cf_warn($line, "Can't replace a file with a device");
+} # end sub kernel_version 
 
-      } else {
-	$replaced_by{$file} = $abs_replacement;
-	$Included{$file} = 1;
-      }
+## This checks lib/modules/$version for rd.o, ext2.o, floppy.o
+## Perhaps just extra stuff, this could be made real fancy, too.
+#@@warn_about_module_dependencies($ENV{'RELEASE'});
+
+## gBootRoot does this as a separate process
+#if ($::disk_set !~ /^(single|double|base\+extra)$/) {
+#  error("Config variable disk_set is set to \"$::disk_set\"\n",
+#	"which is not a valid value.\n");
+#}
+
+############################
+#####  READ IN CONTENTS FILE
+############################
+
+## uses info, resolve_file, error, cf_warn, make_link_absolute,
+## make_link_relative, cf_die, must_be_abs, replaced_by, yard_glob,
+## include_file
+## requires $contents_file
+
+sub read_contents_file {
+
+    my($contents_file) = resolve_file($::contents_file);
+    info(0, "\n\nPASS 1:  Reading $::contents_file");
+    #info 0, " ($contents_file)" if $contents_file ne $::contents_file;
+    info(0, "\n");
+
+    #my(%Included);
+    #my(%replaced_by);
+    #my(%links_to);
+    #my(%is_module);
+
+    open(CONTENTS, "<$contents_file") or error("$contents_file: $!");
+
+    my($line);
+
+  LINE: while (defined($line = <CONTENTS>)) {
+      my(@files);
+      $cf_line++;
+      chomp $line;
+      $line =~ s/[\#%].*$//;	# Kill comments
+      next if $line =~ /^\s*$/;	# Ignore blank/empty line
+
+      $line =~ s/^\s+//;		# Delete leading/trailing whitespace
+      $line =~ s/\s+$//;
+
+      if ($line =~ /->/) {	#####  EXPLICIT LINK
+	  if ($line =~ /[\*\?\[]/) {
+	      cf_warn($line, "Can't use wildcards in link specification!");
+	      next LINE;
+	  }
+	  my($file, $link) = $line =~ /^(\S+)\s*->\s*(\S+)\s*$/;
+	  if (!defined($link)) {
+	      cf_warn($line, "Can't parse this link");
+	      next LINE;
+	  }
+	  #####  The '->' supersedes file structure on the disk, so don't
+	  #####  call include_file until pass two after all explicit links
+	  #####  have been seen.
+	  my($abs_file) = find_file_in_path($file);
+	  $Included{$abs_file} = 1;
+	  ####   Have to be careful here.  Record the rel link for use
+	  ####   in setting up the root fs, but use the abs_link in @files
+	  ####   so next loop gets any actual files.
+	  my($abs_link) = make_link_absolute($abs_file, $link);
+	  my($rel_link) = make_link_relative($abs_file, $link);
+	  $links_to{$abs_file} = $rel_link;
+	  info(1, "$line links $abs_file to $rel_link\n");
+	  @files = ($abs_link);
+	  
+      } elsif ($line =~ /<=/) {	#####  REPLACEMENT SPEC
+	  cf_die($line, "Can't use wildcard in replacement specification") if
+	      $line =~ /[\*\?\[]/;
+
+	  my($file, $replacement) = $line =~ /^(\S+)\s*<=\s*(\S+)\s*$/;
+
+	  if (!defined($replacement)) {
+	      cf_warn($line, "Can't parse this replacement spec");
+	      next LINE;
+
+	  } else {
+	      must_be_abs($file);
+	      (-d $file) and cf_warn($line, "left-hand side can't be directory");
+	      my($abs_replacement) = find_file_in_path($replacement);
+	      if (!(defined($abs_replacement) and -e $abs_replacement)) {
+		  cf_warn($line, "Can't find $replacement");
+		  
+	      } elsif ($replacement =~ m|^/dev/(?!null)|) {
+		#  Allow /dev/null but no other devices
+		cf_warn($line, "Can't replace a file with a device");
+
+	      } else {
+		  $replaced_by{$file} = $abs_replacement;
+		  $Included{$file} = 1;
+          }
 
       next LINE;
-    }			#  End of replacement spec
+    } #  End of replacement spec
 
-  } elsif ($line =~ /(<-|=>)/) {
+    } elsif ($line =~ /(<-|=>)/) {
     cf_warn($line, "Not a valid arrow.");
     next LINE;
 
-  } else {
-
-    @files = ();
-    my($expr);
-    for $expr (split(' ', $line)) {
-      my(@globbed) = yard_glob($expr);
-      if ($#globbed == -1) {
-	cf_warn($line, "Warning: No files matched $expr");
-      } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
-	info(1, "Expanding $expr to @globbed\n");
-      }
-      push(@files, @globbed);
-    }
-  }
-
-  my($file);
- FILE: foreach $file (@files) {
-
-    if ($file =~ m|^/|) {	#####  Absolute filename
-
-      if (-l $file and readlink($file) =~ m|^/proc/|) {
-	info(1, "Recording proc link $file -> ", readlink($file), "\n");
-	$Included{$file} = 1;
-	$links_to{$file} = readlink($file);
-
-      } elsif (-e $file) {
-
-	$Included{$file} = 1;
-
-      } elsif ($file =~ m|^$::oldroot/(.*)$|o and -e "/$1") {
-	### Don't complain about links to files that will be mounted
-	### under $oldroot, the hard disk root mount point.
-	next FILE;
-
-      } else {
-	cf_warn($line, "Absolute filename $file doesn't exist");
-      }
-
-    } else {		##### Relative filename
-      my($abs_file) = find_file_in_path($file);
-      if ($abs_file) {
-	info(1, "Found $file at $abs_file\n");
-	$Included{$abs_file} = 1;
-      } else {
-	cf_warn($line, "Didn't find $file anywhere in path");
-      }
-    }
-  }				# End of FILE loop
-}				# End of LINE loop
-
-info(0, "\nDone with $contents_file\n\n");
-
-if ($::disk_set eq "base+extra") {
-  include_file(find_file_in_path("tar"))
-}
-
-close(CONTENTS) or error("close on $contents_file: $!");
-
-
-##############################################################################
-info(0, "\n\nPASS 2:  Picking up extra files from links...\n");
-
-for (keys %Included) {
-  include_file($_);
-}
-
-info(0, "Done.\n\n");
-
-##############################################################################
-
-info(0, "PASS 3:  Checking library dependencies...\n");
-info(1, "(Ignore any 'statically linked' messages.)\n");
-
-#  Normal file X:  X in %Included.
-#  X -> Y:  X in %links_to, Y in %Included
-#  X <= Y:  X in %Included and %replaced_by
-
-my(%strippable);
-my(%lib_needed_by);
-
-my($file);
-foreach $file (keys %Included) {
-
-  ##### Use replacement file if specified
-  $file = $replaced_by{$file} if defined($replaced_by{$file});
-
-  ##### Skip links (target will be checked)
-  next if defined($links_to{$file}); # Symbolic (declared)
-  next if -l $file;		     # Symbolic (on disk)
-
-  my($file_line) = `file $file`;
-  #####  See whether it's strippable and make a note.
-  #####  This will prevent us from wasting time later running objcopy
-  #####  on binaries that are already stripped.
-  if ($file_line =~ m/not stripped/) {
-     $strippable{$file} = 1;
-  }
-  #####  See whether it's a module and mark the info for later
-  #####  so that we strip it correctly.
-  if ($file_line =~ m/relocatable/) {
-     info(1, "Marking $file as a module\n");
-     $is_module{$file} = 1;
-
-  } elsif ($file_line =~ m/shared object/) {
-     #####  Any library (shared object) seen here was explicitly included
-     #####  by the user.
-
-     push(@{$lib_needed_by{$file}}, "INCLUDED BY USER");
-  }
-
-  if (-f $file and -B _ and -x _ and $file_line =~ /executable/) {
-
-    #####  EXECUTABLE LOADABLE BINARY
-    #####  Run ldd to get library dependencies.
-    foreach $line (`ldd $file`) {
-      my($lib) = $line =~ / => (\S+)/;
-      next unless $lib;
-      my($abs_lib) = $lib;
-
-      if ($lib =~ /not found/) {
-	warning "File $file needs library $lib, which does not exist!";
-      } else {
-
-	#####  Right-hand side of the ldd output may be a symbolic link.
-	#####  Resolve the lib absolutely.
-	#####  include_file follows links and adds each file;
-	#####  the while loop makes sure we get the last.
-	$abs_lib = $lib;
-	include_file($lib);
-	while (1) {
-	  if (defined($links_to{$abs_lib})) {
-	    $abs_lib = make_link_absolute($abs_lib,
-					  $links_to{$abs_lib});
-	  }
-	  if (defined($replaced_by{$abs_lib})) {
-	    $abs_lib = $replaced_by{$abs_lib};
-	  }
-	  last unless -l $abs_lib;
-	  my($link) = readlink($abs_lib) or
-	      error("readlink($abs_lib): $!");
-	  $abs_lib = make_link_absolute($abs_lib, $link);
-
-	}
-      }
-      if (!defined($lib_needed_by{$abs_lib})) {
-	info(0, "\t$abs_lib\n");
-      }
-      push(@{$lib_needed_by{$abs_lib}}, $file);
-    }
-  }
-}
-
-##############################################################################
-#####  Check libraries and loader(s)                                     #####
-##############################################################################
-my(@Libs) = keys %lib_needed_by;
-
-my($seen_ELF_lib, $seen_AOUT_lib);
-my(%full_name);
-
-if (@Libs) {
-    info(1, "\nYou need these libraries:\n");
-
-    my($lib);
-    foreach $lib (@Libs) {
-	my($size)      = bytes_to_K(-s $lib);
-	my($line)      = " " x 15;
-	my($file_output) = `file $lib`;
-
-	if ($file_output =~ m/symbolic link/) {
-	  error("Yiiiiii, library file $lib is a symbolic link!\n",
-		"This shouldn't happen!\n",
-		"Please report this error(to the Yard author\n");
-	}
-
-	my($lib_type)  = $file_output =~ /:\s*(ELF|Linux)/m;
-
-	#####  All libraries are strippable
-	$strippable{$lib} = 1;
-
-	info(1, "$lib (type $lib_type, $size K) needed by:\n");
-
-	my($binary);
-	for $binary (sort map(basename($_), @{$lib_needed_by{$lib}})) {
-	    if (length($line) + length($binary) > 78) {
-		info(1, $line, "\n");
-		$line = " " x 15;
-	    }
-	    $line .= $binary . " ";
-	}
-	#info(1, $line, "\n" if $line);
-
-	if (!($seen_ELF_lib and $seen_AOUT_lib)) {
-
-	    #####  Check library to make sure we have the right loader.
-	    #####  (A better way is to do "ldconfig -p" and parse the output)
-	    #####  Strings from /usr/lib/magic of file 3.19
-
-	    if (!defined($lib_type)) {
-		error("Didn't understand `file` output for $lib:\n",
-			`file $lib`, "\n");
-
-	    } elsif ($lib_type eq 'ELF') {
-		$seen_ELF_lib = 1;
-
-	    } elsif ($lib_type eq 'Linux') { # ie, a.out
-		$seen_AOUT_lib = 1;
-	    }
-	}
-
-	#####  See if some other version of this library file is
-	#####  being loaded, eg libc.so.3.1.2 and libc.so.5.2.18.
-	#####  Not an error, but worth warning the user about.
-
-	my($lib_stem) = basename($lib) =~ /^(.*?\.so)/;
-	if (defined($full_name{$lib_stem})) {
-	    warning "You need both $lib and $full_name{$lib_stem}\n",
-		    "Check log file for details.\n";
-	} else {
-	    #####  eg, $full_name{"libc.so"} = "/lib/libc.so.5.2.18"
-	    $full_name{$lib_stem} = $lib;
-	}
-    }
-}
-
-info(1, "\n");
-if ($seen_ELF_lib) {
-  #  There's no official way to get the loader file, AFAIK.
-  #  This expression should get the latest version, and Yard will grab any
-  #  hard-linked file.
-  my($ld_file) = (yard_glob("/lib/ld-linux.so.?"))[-1];	# Get last one
-  if (defined($ld_file)) {
-     info(1, "Adding loader $ld_file for ELF libraries\n");
-     include_file($ld_file);
-  } else {
-     info(0, "Can't find ELF loader /lib/ld-linux.so.?");
-  }
-}
-if ($seen_AOUT_lib) {
-  #  Was: yard_glob("/lib/ld.so*")
-  #  Same as above, but ld.so seems to have no version number appended.
-  my($ld_file);
-  foreach $ld_file (yard_glob("/lib/ld.so")) {
-    info(1, "Adding loader $ld_file for a.out libraries\n");
-    include_file($ld_file);
-  }
-}
-
-info(0, "Done\n\n");
-
-info(0, "PASS 4:  Recording hard links...\n");
-
-#####  Finally, scan all files for hard links.
-my(%hardlinked);
-foreach $file (keys %Included) {
-
-    next if $links_to{$file} or $replaced_by{$file};
-    #####  $file is guaranteed to be absolute and not symbolically linked.
-
-    #####  Record hard links on plain files
-    if (-f $file) {
-	my($dev, $inode, $mode, $nlink) = stat(_);
-	if ($nlink > 1) {
-	    $hardlinked{$file} = "$dev/$inode";
-	}
-    }
-}
-
-info(0, "Done.\n\n");
-
-##############################################################################
-info(0, "Checking space needed.\n");
-my($total_bytes) = 0;
-my(%counted);
-
-foreach $file (keys %Included) {
-
-   my($replacement, $devino);
-   if ($replacement = $replaced_by{$file}) {
-      #####  Use the replacement file instead of this one.  In the
-      #####  future, improve this so that replacement is resolved WRT
-      #####  %links_to
-      info(1, "Counting bytes of replacement $replacement\n");
-      $total_bytes += bytes_allocated($replacement);
-
-   } elsif (-l $file or $links_to{$file}) {
-      #####  Implicit or explicit symbolic link.  Only count link size.
-      #####  I don't think -l test is needed.
-     my($size) = (-l $file) ? length(readlink($file))
-	 : length($links_to{$file});
-     info(1, "$file (link) size $size\n");
-     $total_bytes += $size;
-
-   } elsif ($devino = $hardlinked{$file}) {
-      #####  This file is hard-linked to another.  We don't necessarily
-      #####  know that the others are going to be in the file set.  Count
-      #####  the first and mark the dev/inode so we don't count it again.
-      if (!$counted{$devino}) {
-	 info(1, "Counting ", -s _, " bytes of hard-linked file $file\n");
-	 $total_bytes += bytes_allocated($file);
-	 $counted{$devino} = 1;
-      } else {
-	 info(1, "Not counting bytes of hard-linked file $file\n");
-      }
-
-   } elsif (-d $file) {
-      $total_bytes += $::INODE_SIZE;
-      info(1, "Directory $file = ", $::INODE_SIZE, " bytes\n");
-
-   } elsif ($file =~ m|^/proc/|) {
-      #####  /proc files screw us up (eg, /proc/kcore), and there's no
-      #####  Perl file test that will detect them otherwise.
-      next;
-
-   } elsif (-f $file) {
-      #####  Count space for plain files
-      info(1, "$file size ", -s _, "\n");
-      $total_bytes += bytes_allocated($file);
-   }
-}
-
-#  Libraries are already included in the count
-
-info(0, "Total space needed is ", bytes_to_K($total_bytes), " Kbytes\n");
-
-if (bytes_to_K($total_bytes) > $::fs_size) {
-    info(0, "This is more than $::fs_size Kbytes allowed.\n");
-    if ($::strip_objfiles) {
-	info(0, "But since object files will be stripped, more space\n",
-		"may become available.  Continuing...\n");
     } else {
-	error("You need to trim some files out and try again.\n");
+
+	@files = ();
+	my($expr);
+	for $expr (split(' ', $line)) {
+	    my(@globbed) = yard_glob($expr);
+	    if ($#globbed == -1) {
+		cf_warn($line, "Warning: No files matched $expr");
+	    } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
+		info(1, "Expanding $expr to @globbed\n");
+	    }
+	    push(@files, @globbed);
+	}
     }
+
+      my($file);
+    FILE: foreach $file (@files) {
+
+	if ($file =~ m|^/|) {	#####  Absolute filename
+
+	    if (-l $file and readlink($file) =~ m|^/proc/|) {
+		info(1, "Recording proc link $file -> ", readlink($file), "\n");
+		$Included{$file} = 1;
+		$links_to{$file} = readlink($file);
+
+	    } elsif (-e $file) {
+
+		$Included{$file} = 1;
+
+	    } elsif ($file =~ m|^$::oldroot/(.*)$|o and -e "/$1") {
+		### Don't complain about links to files that will be mounted
+		### under $oldroot, the hard disk root mount point.
+		next FILE;
+
+	    } else {
+		cf_warn($line, "Absolute filename $file doesn't exist");
+	    }
+
+	} else {		##### Relative filename
+	    my($abs_file) = find_file_in_path($file);
+	    if ($abs_file) {
+		info(1, "Found $file at $abs_file\n");
+		$Included{$abs_file} = 1;
+	    } else {
+		cf_warn($line, "Didn't find $file anywhere in path");
+	    }
+	}
+    }				# End of FILE loop
+  }				# End of LINE loop
+
+    info(0, "\nDone with $contents_file\n\n");
+
+##if ($::disk_set eq "base+extra") {
+##  include_file(find_file_in_path("tar"))
+##}
+
+    close(CONTENTS) or error("close on $contents_file: $!");
+
+## may or may not include this in read_contents_file
+
+} # end read_contents_file
+
+#####################################
+
+sub extra_links {
+
+    info(0, "\n\nPASS 2:  Picking up extra files from links...\n");
+
+    for (keys %Included) {
+	include_file($_);
+    }
+
+    info(0, "Done.\n\n");
 }
 
-info(0, "\n");
 
-##############################################################################
+#####################################
+
+sub library_dependencies {
+
+    info(0, "PASS 3:  Checking library dependencies...\n");
+    info(1, "(Ignore any 'statically linked' messages.)\n");
+
+    #  Normal file X:  X in %Included.
+    #  X -> Y:  X in %links_to, Y in %Included
+    #  X <= Y:  X in %Included and %replaced_by
+
+    my($file);
+    foreach $file (keys %Included) {
+
+	##### Use replacement file if specified
+	$file = $replaced_by{$file} if defined($replaced_by{$file});
+
+	##### Skip links (target will be checked)
+	next if defined($links_to{$file}); # Symbolic (declared)
+	next if -l $file;		     # Symbolic (on disk)
+
+	my($file_line) = `file $file`;
+	#####  See whether it's strippable and make a note.
+	#####  This will prevent us from wasting time later running objcopy
+	#####  on binaries that are already stripped.
+	if ($file_line =~ m/not stripped/) {
+	    $strippable{$file} = 1;
+	}
+	#####  See whether it's a module and mark the info for later
+	#####  so that we strip it correctly.
+	if ($file_line =~ m/relocatable/) {
+	    info(1, "Marking $file as a module\n");
+	    $is_module{$file} = 1;
+
+	} elsif ($file_line =~ m/shared object/) {
+	    #####  Any library (shared object) seen here was explicitly included
+	    #####  by the user.
+
+	    push(@{$lib_needed_by{$file}}, "INCLUDED BY USER");
+	}
+
+	if (-f $file and -B _ and -x _ and $file_line =~ /executable/) {
+
+	    #####  EXECUTABLE LOADABLE BINARY
+	    #####  Run ldd to get library dependencies.
+	    my $line;
+	    foreach $line (`ldd $file`) {
+		my($lib) = $line =~ / => (\S+)/;
+		next unless $lib;
+		my($abs_lib) = $lib;
+
+		if ($lib =~ /not found/) {
+		    warning "File $file needs library $lib, which does not exist!";
+		} else {
+
+		    #####  Right-hand side of the ldd output may be a symbolic link.
+		    #####  Resolve the lib absolutely.
+		    #####  include_file follows links and adds each file;
+		    #####  the while loop makes sure we get the last.
+		    $abs_lib = $lib;
+		    include_file($lib);
+		    while (1) {
+			if (defined($links_to{$abs_lib})) {
+			    $abs_lib = make_link_absolute($abs_lib,
+			    $links_to{$abs_lib});
+			}
+			if (defined($replaced_by{$abs_lib})) {
+			    $abs_lib = $replaced_by{$abs_lib};
+			}
+			last unless -l $abs_lib;
+			my($link) = readlink($abs_lib) or
+			    error("readlink($abs_lib): $!");
+			$abs_lib = make_link_absolute($abs_lib, $link);
+
+		    }
+		}
+		if (!defined($lib_needed_by{$abs_lib})) {
+		    info(0, "\t$abs_lib\n");
+		}
+		push(@{$lib_needed_by{$abs_lib}}, $file);
+	    }
+	}
+    }
+
+    ####################################
+    #####  Check libraries and loader(s)
+    ####################################
+    (@Libs) = keys %lib_needed_by;
+
+    my($seen_ELF_lib, $seen_AOUT_lib);
+    my(%full_name);
+
+    if (@Libs) {
+	info(1, "\nYou need these libraries:\n");
+
+	my($lib);
+	foreach $lib (@Libs) {
+	    my($size)      = bytes_to_K(-s $lib);
+	    my($line)      = " " x 15;
+	    my($file_output) = `file $lib`;
+
+	    if ($file_output =~ m/symbolic link/) {
+		error("Yiiiiii, library file $lib is a symbolic link!\n",
+		      "This shouldn't happen!\n",
+		      "Please report this error(to the Yard author\n");
+	    }
+
+	    my($lib_type)  = $file_output =~ /:\s*(ELF|Linux)/m;
+
+	    #####  All libraries are strippable
+	    $strippable{$lib} = 1;
+
+	    info(1, "$lib (type $lib_type, $size K) needed by:\n");
+
+	    my($binary);
+	    for $binary (sort map(basename($_), @{$lib_needed_by{$lib}})) {
+		if (length($line) + length($binary) > 78) {
+		    info(1, $line, "\n");
+		    $line = " " x 15;
+		}
+		$line .= $binary . " ";
+	    }
+	    ##info(1, $line, "\n" if $line);
+
+	    if (!($seen_ELF_lib and $seen_AOUT_lib)) {
+
+		#####  Check library to make sure we have the right loader.
+		#####  (A better way is to do "ldconfig -p" and parse the output)
+		#####  Strings from /usr/lib/magic of file 3.19
+
+		if (!defined($lib_type)) {
+		    error("Didn't understand `file` output for $lib:\n",
+			  `file $lib`, "\n");
+
+		} elsif ($lib_type eq 'ELF') {
+		    $seen_ELF_lib = 1;
+
+		} elsif ($lib_type eq 'Linux') { # ie, a.out
+		    $seen_AOUT_lib = 1;
+		}
+	    }
+
+	    #####  See if some other version of this library file is
+	    #####  being loaded, eg libc.so.3.1.2 and libc.so.5.2.18.
+	    #####  Not an error, but worth warning the user about.
+
+	    my($lib_stem) = basename($lib) =~ /^(.*?\.so)/;
+	    if (defined($full_name{$lib_stem})) {
+		warning "You need both $lib and $full_name{$lib_stem}\n",
+		"Check log file for details.\n";
+	    } else {
+		#####  eg, $full_name{"libc.so"} = "/lib/libc.so.5.2.18"
+		$full_name{$lib_stem} = $lib;
+	    }
+	}
+    }
+
+    info(1, "\n");
+    if ($seen_ELF_lib) {
+	#  There's no official way to get the loader file, AFAIK.
+	#  This expression should get the latest version, and Yard will grab any
+	#  hard-linked file.
+	my($ld_file) = (yard_glob("/lib/ld-linux.so.?"))[-1];	# Get last one
+	if (defined($ld_file)) {
+	    info(1, "Adding loader $ld_file for ELF libraries\n");
+	    include_file($ld_file);
+	} else {
+	    info(0, "Can't find ELF loader /lib/ld-linux.so.?");
+	}
+    }
+    if ($seen_AOUT_lib) {
+	#  Was: yard_glob("/lib/ld.so*")
+	#  Same as above, but ld.so seems to have no version number appended.
+	my($ld_file);
+	foreach $ld_file (yard_glob("/lib/ld.so")) {
+	    info(1, "Adding loader $ld_file for a.out libraries\n");
+	    include_file($ld_file);
+	}
+    }
+
+    info(0, "Done\n\n");
+
+} # end sub library_dependencies
+
+sub hard_links {
+
+    info(0, "PASS 4:  Recording hard links...\n");
+
+    #####  Finally, scan all files for hard links.
+
+    my($file);
+    foreach $file (keys %Included) {
+
+	next if $links_to{$file} or $replaced_by{$file};
+	#####  $file is guaranteed to be absolute and not symbolically linked.
+
+	#####  Record hard links on plain files
+	if (-f $file) {
+	    my($dev, $inode, $mode, $nlink) = stat(_);
+	    if ($nlink > 1) {
+		$hardlinked{$file} = "$dev/$inode";
+	    }
+	}
+    }
+
+    info(0, "Done.\n\n");
+
+} # end sub hard_links
+
+##########################
+
+sub space_check {
+
+    info(0, "Checking space needed.\n");
+    my($total_bytes) = 0;
+    my(%counted);
+
+    my ($file);
+    foreach $file (keys %Included) {
+
+	my($replacement, $devino);
+	if ($replacement = $replaced_by{$file}) {
+	    #####  Use the replacement file instead of this one.  In the
+	    #####  future, improve this so that replacement is resolved WRT
+	    #####  %links_to
+	    info(1, "Counting bytes of replacement $replacement\n");
+	    $total_bytes += bytes_allocated($replacement);
+
+	} elsif (-l $file or $links_to{$file}) {
+	    #####  Implicit or explicit symbolic link.  Only count link size.
+	    #####  I don't think -l test is needed.
+	    my($size) = (-l $file) ? length(readlink($file))
+		: length($links_to{$file});
+	    info(1, "$file (link) size $size\n");
+	    $total_bytes += $size;
+
+	} elsif ($devino = $hardlinked{$file}) {
+	    #####  This file is hard-linked to another.  We don't necessarily
+	    #####  know that the others are going to be in the file set.  Count
+	    #####  the first and mark the dev/inode so we don't count it again.
+	    if (!$counted{$devino}) {
+		info(1, "Counting ", -s _, " bytes of hard-linked file $file\n");
+		$total_bytes += bytes_allocated($file);
+		$counted{$devino} = 1;
+	    } else {
+		info(1, "Not counting bytes of hard-linked file $file\n");
+	    }
+
+	} elsif (-d $file) {
+	    $total_bytes += $INODE_SIZE;
+	    info(1, "Directory $file = ", $INODE_SIZE, " bytes\n");
+
+	} elsif ($file =~ m|^/proc/|) {
+	    #####  /proc files screw us up (eg, /proc/kcore), and there's no
+	    #####  Perl file test that will detect them otherwise.
+	    next;
+
+	} elsif (-f $file) {
+	    #####  Count space for plain files
+	    info(1, "$file size ", -s _, "\n");
+	    $total_bytes += bytes_allocated($file);
+	}
+    }
+
+    #  Libraries are already included in the count
+
+    info(0, "Total space needed is ", bytes_to_K($total_bytes), " Kbytes\n");
+
+    if (bytes_to_K($total_bytes) > $::fs_size) {
+	info(0, "This is more than $::fs_size Kbytes allowed.\n");
+	if ($::strip_objfiles) {
+	    info(0, "But since object files will be stripped, more space\n",
+		 "may become available.  Continuing...\n");
+	} else {
+	    error("You need to trim some files out and try again.\n");
+	}
+    }
+
+    info(0, "\n");
+
+} # end sub space_check
+
+#######################
 #####  Create filesystem
-##############################################################################
-sync();
-sys("dd if=/dev/zero of=$::device bs=1k count=$::fs_size");
-sync();
-
-#info(0, "Creating ${::fs_size}K ext2 file system on $::device\n");
-
-if (-f $::device) {
-    #####  If device is a plain file, it means we're using some loopback
-    #####  device.  Use -F switch in mke2fs so it won't complain.
-    sys("mke2fs -F -m 0 -b 1024 $::device $::fs_size");
-} else {
-    sys("mke2fs -m 0 -b 1024 $::device $::fs_size");
-}
-
-&mount_device;
-##### lost+found on a ramdisk is pointless
-sys("rm -rf $::mount_point/lost+found");
-
-sync();
+########################
+#@@sync();
+#@@sys("dd if=/dev/zero of=$::device bs=1k count=$::fs_size");
+#@@sync();
 
 
-#####  Setting up the file structure is tricky.  Given a tangled set
-#####  of symbolic links and directories, we have to create the
-#####  directories, symlinks and files in the right order so that no
-#####  dependencies are missed.
+# This could be broken up into a lot of functions
+sub create_filesystem {
 
-#####  First, create directories for symlink targets that are supposed
-#####  to be directories.  Symlink targets can't be superseded so
-#####  sorting them by path length should give us a linear ordering.
-info(0, "Creating directories for symlink targets\n");
+    my $file;
 
-for $file (sort { path_length($a) <=> path_length($b) }
-		  keys %links_to) {
-  my($link_target) = $links_to{$file};
-  my($abs_file) = make_link_absolute($file, $link_target);
-  if (-d $abs_file) {
-    my($floppy_file) = $::mount_point . $abs_file;
-    my($newdir);
-    foreach $newdir (mkpath($floppy_file)) {
-      info(1, "\tCreating $newdir as a link target for $file\n");
+    ##info(0, "Creating ${::fs_size}K ext2 file system on $::device\n");
+
+    if (-f $::device) {
+	#####  If device is a plain file, it means we're using some loopback
+	#####  device.  Use -F switch in mke2fs so it won't complain.
+	sys("mke2fs -F -m 0 -b 1024 $::device $::fs_size");
+    } else {
+	sys("mke2fs -m 0 -b 1024 $::device $::fs_size");
     }
-  }
-}
 
+    &mount_device;
+    ##### lost+found on a ramdisk is pointless
+    sys("rm -rf $::mount_point/lost+found");
 
-#####  Next, set up actual symlinks, plus any directories that weren't
-#####  created in the first pass.  Sorting by path length ensures that
-#####  parent symlinks get set up before child traversals.
-info(0, "Creating symlinks and remaining directories.\n");
-for $file (sort { path_length($a) <=> path_length($b) }
-	   keys %Included) {
+    sync();
 
-  my($target);
-  if (defined($target = $links_to{$file})) {
-    my($floppy_file) = $::mount_point . $file;
-    mkpath(dirname($floppy_file));
-    info(1, "\tLink\t$floppy_file -> $target\n");
-    symlink($target, $floppy_file) or
-	error("symlink($target, $floppy_file): $!\n");
-    delete $Included{$file}; # Get rid of it so next pass doesn't copy it
+    #####  Setting up the file structure is tricky.  Given a tangled set
+    #####  of symbolic links and directories, we have to create the
+    #####  directories, symlinks and files in the right order so that no
+    #####  dependencies are missed.
 
-  } elsif (-d $file) {
-    my($floppy_file) = $::mount_point . $file;
-    my($newdir);
-    foreach $newdir (mkpath($floppy_file)) {
-      info(1, "\tCreate\t$newdir\n");
+    #####  First, create directories for symlink targets that are supposed
+    #####  to be directories.  Symlink targets can't be superseded so
+    #####  sorting them by path length should give us a linear ordering.
+    info(0, "Creating directories for symlink targets\n");
+
+    for $file (sort { path_length($a) <=> path_length($b) }
+	       keys %links_to) {
+	my($link_target) = $links_to{$file};
+	my($abs_file) = make_link_absolute($file, $link_target);
+	if (-d $abs_file) {
+	    my($floppy_file) = $::mount_point . $abs_file;
+	    my($newdir);
+	    foreach $newdir (mkpath($floppy_file)) {
+		info(1, "\tCreating $newdir as a link target for $file\n");
+	    }
+	}
     }
-    delete $Included{$file}; # Get rid of it so next pass doesn't copy it
-  }
-}
 
 
-#####  Tricky stuff is over with, now copy the remaining files.
+    #####  Next, set up actual symlinks, plus any directories that weren't
+    #####  created in the first pass.  Sorting by path length ensures that
+    #####  parent symlinks get set up before child traversals.
+    info(0, "Creating symlinks and remaining directories.\n");
+    for $file (sort { path_length($a) <=> path_length($b) }
+	       keys %Included) {
 
-info(0, "\nCopying files to $::device\n");
+	my($target);
+	if (defined($target = $links_to{$file})) {
+	    my($floppy_file) = $::mount_point . $file;
+	    mkpath(dirname($floppy_file));
+	    info(1, "\tLink\t$floppy_file -> $target\n");
+	    symlink($target, $floppy_file) or
+		error("symlink($target, $floppy_file): $!\n");
+	    delete $Included{$file}; # Get rid of it so next pass doesn't copy it
 
-my(%copied);
-
-my($file);
-while (($file) = each %Included) {
-  my($floppy_file) = $::mount_point . $file;
-
-  my($replacement);
-  if (defined($replacement = $replaced_by{$file})) {
-    $file = $replacement;
-  }
-
-  if ($file =~ m|^/proc/|) {
-    #####  Ignore /proc files
-    next;
-
-  } elsif (-f $file) {
-    #####  A normal file.
-    mkpath(dirname($floppy_file));
-
-    #####  Maybe a hard link.
-    my($devino, $firstfile);
-    if (defined($devino = $hardlinked{$file})) {
-      #####  It's a hard link - see if the linked file is already
-      #####  on the root filesystem.
-      if (defined($firstfile = $copied{$devino})) {
-	#####  YES - just hard link it to existing file.
-	info(1, "Hard linking $floppy_file to $firstfile\n");
-	sys("ln $firstfile $floppy_file");
-	next;		# Skip copy
-
-      } else {
-	#####  NO - copy it.
-	$copied{$devino} = $floppy_file;
-      }
+	} elsif (-d $file) {
+	    my($floppy_file) = $::mount_point . $file;
+	    my($newdir);
+	    foreach $newdir (mkpath($floppy_file)) {
+		info(1, "\tCreate\t$newdir\n");
+	    }
+	    delete $Included{$file}; # Get rid of it so next pass doesn't copy it
+	}
     }
-    info(1, "$file -> $floppy_file\n");
-    copy_strip_file($file, $floppy_file);
-
-  } elsif (-d $file) {
-    #####  A directory.
-    info(1, "Creating directory $floppy_file\n");
-    mkpath($floppy_file);
-
-  } elsif ($file eq '/dev/null' and
-	   $floppy_file ne "$::mount_point/dev/null") { # I hate this
-    info(1, "Creating empty file $floppy_file\n");
-    mkpath(dirname($floppy_file));
-    sys("touch $floppy_file");
-
-  } else {
-    #####  Some special file.
-    info(1, "Copying special $file to $floppy_file\n");
-    mkpath(dirname($floppy_file));
-    #  The 'R' flag here allows cp command to handle devices and FIFOs.
-    sys("cp -dpR $file $floppy_file");
-  }
-}
 
 
-##############################################################################
+    #####  Tricky stuff is over with, now copy the remaining files.
 
-info(0, "\nFinished creating root filesystem.\n");
+    info(0, "\nCopying files to $::device\n");
 
-if (@Libs) {
+    my(%copied);
 
-   info(0, "Re-generating /etc/ld.so.cache on root fs.\n");
-   info(1, "Ignore warnings about missing directories\n");
+    while (($file) = each %Included) {
+	my($floppy_file) = $::mount_point . $file;
 
-   sys("ldconfig -v -r $::mount_point");
-}
+	my($replacement);
+	if (defined($replacement = $replaced_by{$file})) {
+	    $file = $replacement;
+	}
 
-info(0, "\nDone with $PROGRAM_NAME.  $Warnings warnings.\n",
-	"$::device is still mounted on $::mount_point\n");
+	if ($file =~ m|^/proc/|) {
+	    #####  Ignore /proc files
+	    next;
 
-exit( $Warnings>0 ? -1 : 0);
+	} elsif (-f $file) {
+	    #####  A normal file.
+	    mkpath(dirname($floppy_file));
 
-
+	    #####  Maybe a hard link.
+	    my($devino, $firstfile);
+	    if (defined($devino = $hardlinked{$file})) {
+		#####  It's a hard link - see if the linked file is already
+		#####  on the root filesystem.
+		if (defined($firstfile = $copied{$devino})) {
+		    #####  YES - just hard link it to existing file.
+		    info(1, "Hard linking $floppy_file to $firstfile\n");
+		    sys("ln $firstfile $floppy_file");
+		    next;		# Skip copy
+
+		} else {
+		    #####  NO - copy it.
+		    $copied{$devino} = $floppy_file;
+		}
+	    }
+	    info(1, "$file -> $floppy_file\n");
+	    copy_strip_file($file, $floppy_file);
+
+	} elsif (-d $file) {
+	    #####  A directory.
+	    info(1, "Creating directory $floppy_file\n");
+	    mkpath($floppy_file);
+
+	} elsif ($file eq '/dev/null' and
+		 $floppy_file ne "$::mount_point/dev/null") { # I hate this
+	    info(1, "Creating empty file $floppy_file\n");
+	    mkpath(dirname($floppy_file));
+	    sys("touch $floppy_file");
+
+	} else {
+	    #####  Some special file.
+	    info(1, "Copying special $file to $floppy_file\n");
+	    mkpath(dirname($floppy_file));
+	    #  The 'R' flag here allows cp command to handle devices and FIFOs.
+	    sys("cp -dpR $file $floppy_file");
+	}
+    }
+
+
+    info(0, "\nFinished creating root filesystem.\n");
+
+    if (@Libs) {
+
+	info(0, "Re-generating /etc/ld.so.cache on root fs.\n");
+	info(1, "Ignore warnings about missing directories\n");
+
+	sys("ldconfig -v -r $::mount_point");
+    }
+
+    info(0, "\nDone with $PROGRAM_NAME.  $Warnings warnings.\n",
+	 "$::device is still mounted on $::mount_point\n");
+
+    exit( $Warnings>0 ? -1 : 0);
+
+} # end sub create_filesystem
+
 #############################################################################
 #####  Utility subs for make_root_fs.pl
 #############################################################################
@@ -900,15 +908,14 @@ sub copy_strip_file {
 ##############################################################
 ##############################################################
 ##############################################################
-
 ###############################################################
 ###############################################################
 
-##############################################################################
+########################################################
 ##
 ##      YARD_UTILS.PL -- Utilities for the Yard scripts.
 ##
-##############################################################################
+########################################################
 
 
 # Get device number of /proc filesystem
@@ -1124,7 +1131,7 @@ sub get_device_size_K  {
 
   my($result) = pack("L", 0);
   open(FD, $device) or die "open($device): $!";
-  my($return) = ioctl(FD, $::BLKGETSIZE_ioctl, $result);
+  my($return) = ioctl(FD, $BLKGETSIZE_ioctl, $result);
   close(FD);
   if ($return) {
     my($bytes) = unpack("L", $result) * $DEV_BSIZE;
@@ -1147,7 +1154,7 @@ sub flush_device_buffer_cache {
   my($device) = @_;
   my($junk) = "stuff";
 
-  open(FD, $device) && ioctl(FD, $::BLKFLSBUF_ioctl, $junk);
+  open(FD, $device) && ioctl(FD, $BLKFLSBUF_ioctl, $junk);
   close(FD);
 }
 
@@ -1243,7 +1250,7 @@ sub kernel_version {
     #  it can also be something like 2.2.15-27mdk.  Don't make any assumptions
     #  except that beginning must be dotted triple and it's space delimited.
     my($version) = $str =~ /^(\d+\.\d+\.\d+\S*)\s/;
-    $version
+    return $version
   }
 }
 
@@ -1378,10 +1385,10 @@ sub bytes_allocated {
 
   my($size) = -s $file;
 
-  if ($size % $::EXT2_BLOCK_SIZE == 0) {
+  if ($size % $EXT2_BLOCK_SIZE == 0) {
     $size
   } else {
-    (int($size / $::EXT2_BLOCK_SIZE) + 1) * $::EXT2_BLOCK_SIZE
+    (int($size / $EXT2_BLOCK_SIZE) + 1) * $EXT2_BLOCK_SIZE
   }
 }
 
@@ -1976,4 +1983,4 @@ sub check_termcap {
 }
 
 #####  END OF CHECK_ROOT_FS
-=end
+=cut
