@@ -39,11 +39,24 @@ use File::Find;
 use File::Path;
 use BootRoot::Options;
 
-option();
+
 
 $SIG{__WARN__} = 
     sub { warn @_ unless $_[0] =~ /Subroutine [\w:]+ redefined/io 
 	      || $_[0] =~ /Use of uninitialized value in concatenation/};
+
+
+# Important option setting up
+option();
+$::commandline = \%option if %option;
+$::commandline = $ARGV[0] if $ARGV[0];
+    
+if ( $option{home} && !$option{template} ) {
+    undef $::commandline;
+    $option{gui_mode} = $option{home};
+    undef $option{home};
+}
+
 
 # If you want gBootRoot to do it's stuff somewhere else, change the
 # value for $tmp1.

@@ -250,17 +250,11 @@ BEGIN {
 
 }
 
+
+use strict;
+use BootRoot::BootRoot;
 use BootRoot::Options;
 option();
-
-$::commandline = \%option if %option;
-$::commandline = $ARGV[0] if $ARGV[0];
-    
-if ( $option{home} && !$option{template} ) {
-    undef $::commandline;
-    $option{gui_mode} = $option{home};
-    undef $option{home};
-}
 
 if ( $Getopt::Long::error > 0 ) {
 	
@@ -280,8 +274,6 @@ if ( !%option || $option{gui_mode} ) {
 
 }
 
-use strict;
-use BootRoot::BootRoot;
 
 $main::editor = "emacs --font 6x13";
 $main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
