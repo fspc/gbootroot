@@ -2,7 +2,7 @@
 
 #    gBootRoot Copyright (C) 2000
 #    Lead Developer and Project Coordinator
-#    Jonathan Rosenbaum <mttrader@access.mountain.net>
+#    Jonathan Rosenbaum <freesource@users.sourceforge.net>
 #
 #    Developer
 #    Cristian Ionescu-Idbohrn <cii@axis.com>
@@ -389,14 +389,14 @@ button("Device Selection",$entry4,"Device Selection",3,$true);
 
 # Fifth row
 hbox("what");
-my $adj = Gtk::Adjustment->new( 1722.0, 0.0, 360000000.0, 282.0, 360.0, 0.0 );
+my $adj = Gtk::Adjustment->new( 1440.0, 0.0, 360000000.0, 282.0, 360.0, 0.0 );
 my $spinner = Gtk::SpinButton->new( $adj, 0, 0 );
 $tooltips->set_tip( $spinner, "Choose the Device Size.", "" );
 $spinner->set_wrap( $true );
 $spinner->set_numeric( $true );
 $spinner->set_shadow_type( 'in' );
 $spinner->show();
-$container[SIZE] = 1722; # A better value - a rtbt trick.
+$container[SIZE] = 1440; # A better value - a rtbt trick.
 $adj->signal_connect( "value_changed", sub {
     $container[SIZE] = $spinner->get_value_as_int();
     $adj2->set_value($container[SIZE]) if defined $adj2;});
@@ -751,7 +751,7 @@ sub advanced_root_section {
        # Root Device Size
        # gBootRoot methods
        label_advanced("Root Device Size:",0,1,1,2,$table_advanced_root);
-       $adj2 = Gtk::Adjustment->new( 1722.0, 0.0, 360000000.0, 282.0, 
+       $adj2 = Gtk::Adjustment->new( 1440.0, 0.0, 360000000.0, 282.0, 
                                     360.0, 0.0 );
        $spinner_advanced = Gtk::SpinButton->new( $adj2, 0, 0 );
        $table_advanced_root->attach($spinner_advanced,1,2,1,2,
@@ -764,7 +764,7 @@ sub advanced_root_section {
        $spinner_advanced->set_numeric( $true );
        $spinner_advanced->set_shadow_type( 'in' );
        $spinner_advanced->show();
-       $root_device_size = 1722 if !$root_device_size;
+       $root_device_size = 1440 if !$root_device_size;
        $adj2->signal_connect( "value_changed", sub {
 	       $root_device_size = $spinner_advanced->get_value_as_int();});
         # For some reason $container[SIZE] is tranforming into [3] when
@@ -2430,7 +2430,7 @@ sub message {
 my $message = << "MESSAGE";
 
 gBootRoot $version $date GNU GPL
-mailto:  Jonathan Rosenbaum <mttrader\@access.mountain.net>
+mailto:  Jonathan Rosenbaum <freesource\@users.sourceforge.net>
 
 Press [Ctrl] to see the lilo prompt.
 
@@ -2459,7 +2459,7 @@ sub help {
 << "HELP";
 
 gBootRoot $version $date GNU GPL
-email contact -> Jonathan Rosenbaum <mttrader\@access.mountain.net>
+email contact -> Jonathan Rosenbaum <freesource\@users.sourceforge.net>
 Homepage -> http://the.netpedia.net/gBootRoot.html
 Submit a Bug -> http://sourceforge.net/bugs/?group_id=9513
 Development site -> http://sourceforge.net/projects/gbootroot
