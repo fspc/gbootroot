@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.61 2001/12/26 04:46:09 freesource Exp $</center>
+<center>$Id: index.html,v 1.62 2002/01/06 09:52:52 freesource Exp $</center>
 
 <p>
 
@@ -478,11 +478,13 @@ and things should become more clear.
 <br>
 12.&nbsp;&nbsp;<a href="#12">What does the 2 disk compression method do?</a>
 <br>
-13.&nbsp;&nbsp;<a href="#13">There isn't enough room left on my 1440 floppy to make a Boot or Root disk.  Is there any way to free up more space apart from reducing the size of the kernel?</a>
+13.&nbsp;&nbsp;<a href="#13">I've created a root fs.&nbsp;&nbsp;Then I've tried to create the boot disk using the 2 disk compression method.&nbsp;&nbsp;The device selection is /dev/fd0, size is 1440k, but the initrd_image.gz is 715k.&nbsp;&nbsp;I don't know much about boot disks but shouldn't the boot disks contain mainly the kernel?</a>
 <br>
-14.&nbsp;&nbsp;<a href="#14">gBootRoot doesn't start because it can't locate Gtk.pm?</a>
+14.&nbsp;&nbsp;<a href="#14">There isn't enough room left on my 1440 floppy to make a Boot or Root disk.  Is there any way to free up more space apart from reducing the size of the kernel?</a>
 <br>
-15.&nbsp;&nbsp;<a href="#15">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
+15.&nbsp;&nbsp;<a href="#15">gBootRoot doesn't start because it can't locate Gtk.pm?</a>
+<br>
+16.&nbsp;&nbsp;<a href="#16">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
 </a>
 
 
@@ -1096,8 +1098,54 @@ image.&nbsp;&nbsp;The
 initrd script mounts another root disk with a compressed (gzip or bzip2) 
 filesystem.</P>
 
+<p><a name="13"><b>I've created a root fs.&nbsp;&nbsp;Then I've tried to create the boot disk using the 2 disk compression method.&nbsp;&nbsp;The device selection is /dev/fd0, size is 1440k, but the initrd_image.gz is 715k.&nbsp;&nbsp;I don't know much about boot disks but shouldn't the boot disks contain mainly the kernel?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
-<p><a name="13"><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
+<p>
+
+If you are creating a single boot disk in which the kernel knows where to
+find the root filesystem, then nothing else but a kernel is required
+assuming it is copied in a way that is starts at block 0 on the device
+media.&nbsp;&nbsp;
+However, in order to boot /dev/fd0 from /dev/fd0 the kernel has to
+mount the initial boot disk, and then after the new root disk is inserted,
+it remounts that disk.&nbsp;&nbsp;In order to accomplish this, an initrd is
+required.&nbsp;&nbsp;
+Initial ram disks are essentially mini filesystems with the
+bare necessities to allow a special init type file called linuxrc to
+perform similar types of duties as an init, but in a much more esoteric 
+fashion than
+an init.&nbsp;&nbsp;
+During a kernels initrd stage it looks for linuxrc, and during
+normal boot it looks for init or a specified init passed as an option to
+the kernel. 
+
+<p>
+
+So you are probably wondering what all this has to do with the large initrd 
+size when using the 2 disk compression method.&nbsp;&nbsp; 
+Linuxrc can be anything, from a statically-linked executable to a script
+which requires the dynamically-linked ash executable.&nbsp;&nbsp;
+In the case of the 2
+disk compression method, the later method is employed, and this uses
+information found directly from your host system.&nbsp;&nbsp;You may have 
+noticed 
+the libraries required by ash found from your host system 
+can be quite large even after being stripped assuming you are using a major 
+distribution or derivative of 
+one.&nbsp&nbsp;
+The advantage of a two disk boot/root
+system is related to the fact that modern kernels are themselves quite
+large, leaving very little room for a root filesystem.&nbsp;&nbsp;
+The present ABS
+(boot section) is descended from some pretty old historic code from the
+original bootroot and is due
+for a major upgrade to allow a lot more flexibility in creating
+streamlined boot disks from a variety of user definable methods.
+Unfortunately (or fortunately for root filesystem making, a process which
+used to take days), I've been devoting a lot of time to the ARS, but
+hopefully I'll be adding major changes to the ABS in the near future.
+
+<p><a name="14"><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
 disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing 
 the size of the kernel?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
@@ -1133,11 +1181,11 @@ to add your comments to the Feature Request.&nbsp;&nbsp;Thanks.</p>
 
 <p>
 
-<a name="14"><b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+<a name="15"><b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
 <p>This program requires Gtk-Perl available from <a href="http://www.perl.com/CPAN">CPAN</a>, <a href="http://freshmeat.net/projects/gtk-perl">Freshmeat</a> or most GNU/Linux distributions.</p>
 
-<p><a name="15"><b>If you roll the floppy density counter down to 0 and then try go back 
+<p><a name="16"><b>If you roll the floppy density counter down to 0 and then try go back 
 up towards 1440 and 1722, you get very funny figures.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
