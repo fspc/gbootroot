@@ -255,7 +255,7 @@ my ($hbox_advanced);
 my $separator_advanced;
 my @entry_advanced;
 my $entry_advanced;
-my ($ea1,$ea2,$ea3,$ea4,$ea5); # entry advanced boot  
+my ($ea1,$ea2,$ea3,$ea4,$ea5,$ea6); # entry advanced boot  
 my ($ear1,$ear2,$ear3,$ear4); # entry advanced root
 my ($eab1,$eab2,$eab3); # entry advanced uml
 my $uml_window;
@@ -914,18 +914,32 @@ sub advanced_boot_section {
        my $append; (undef,undef,$append) = gdkbirdaao();
        $tooltips->set_tip( $ea4, "Add append options to brlilo.conf.", "");
        $ea4->set_text($append) if defined $append;
-       $ea4->set_text($entry_advanced[2]) if defined $entry_advanced[1];
+       $ea4->set_text($entry_advanced[2]) if defined $entry_advanced[2];
 
        #_______________________________________ 
        # Kernel Version
        label_advanced("Kernel Version:",0,1,5,6,$table_advanced);
        $ea5 = entry_advanced(1,2,5,6,12,$table_advanced);
+       $ea6 = entry_advanced(2,3,5,6,13,$table_advanced);
+     
        $tooltips->set_tip( $ea5, "Override the kernel version number found" .
 			         " in the kernel header.  This will change" .
                                  " the /lib/modules/kernel-version directory",
                                     "");
        $ea5->set_text($entry_advanced[12]) if defined $entry_advanced[12];
 
+
+=pod
+       #_______________________________________ 
+       # Kernel Version
+       label_advanced(":",0,1,5,6,$table_advanced);
+       $ea6 = entry_advanced(2,3,5,6,13,$table_advanced);
+       $tooltips->set_tip( $ea6, "Override the kernel version number found" .
+			         " in the kernel header.  This will change" .
+                                 " the /lib/modules/kernel-version directory",
+                                    "");
+       $ea6->set_text($entry_advanced[13]) if defined $entry_advanced[13];
+=cut
 
        $button_count++;
     }
@@ -3294,7 +3308,7 @@ compact
 
 # bootdisk
 image = kernel
-append = "load_ramdisk=1 debug"
+append = "load_ramdisk=1 debug $entry_advanced[2]"
 initrd = $initrd
 root = $device
 label = bootdisk
