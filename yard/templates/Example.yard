@@ -1,4 +1,4 @@
-#  $Id: Example.yard,v 1.14 2001/12/13 03:01:15 freesource Exp $
+#  $Id: Example.yard,v 1.15 2001/12/13 03:02:18 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with getty.  
@@ -83,7 +83,7 @@
 ##############################################################################
 
 # init - parent of all processes
-# Choose an inittab to compliment the traditional init in the page below.
+# Choose an inittab farther below in the page.
 /sbin/init 		   	
 telinit
 /sbin/shutdown
@@ -97,7 +97,7 @@ telinit
 
 # Login stuff
 /bin/login 
-/sbin/sulogin # used by inittab.debian-min
+/sbin/sulogin
 /etc/securetty <= Replacements/etc/securetty.example
 /root/.bashrc <= Replacements/root/.bashrc.debian
 /root/.profile <= Replacements/root/.profile.debian
@@ -122,8 +122,9 @@ telinit
 #/etc/shadow <= Replacements/etc/shadow.debian
 /etc/login.defs
 
-#  Specify these binaries absolutely because boot scripts need them to be here.
-/bin/echo # for inittab.debian.sample
+#  Specify these binaries absolutely because some boot scripts may 
+#  need them to be here.
+/bin/echo
 /bin/mount 
 /bin/umount
 /bin/cat
@@ -135,9 +136,7 @@ telinit
 /usr/bin/find
 
 #####  SHELLS
-#    Bash is huge and requires libncurses.so.
-#    Many people use a smaller lightweight shell, like ash or kiss,
-#    and use that instead.
+#
 /bin/sh -> bash 
 /bin/sash 
 #
@@ -197,8 +196,8 @@ telinit
 /dev/loop[0-2]
 /dev/fd0
 
-#####  utmp and wtmp.  
-# Made by rcS if they don't exist.
+#####  utmp and wtmp (Made by rcS if they don't exist.)
+# Utilities which use them.
 w
 last
 
@@ -216,6 +215,7 @@ reset
 # /usr/lib/kbd/keymaps/i386/qwerty/defkeymap.kmap.gz
 
 #####  Empty directories
+/dev
 /proc               
 /tmp                
 /var/tmp
@@ -234,11 +234,9 @@ modprobe
 /etc/modules.conf
 #
 #  Modules from your host system.  
+#  Select the ones required.
 #
-#  You probably want to be more selective than this
-#  Do a "lsmod" and include the modules you use.
-#
-#/lib/modules/$RELEASE/*/*.o
+#/lib/modules/$RELEASE/*
 #
 #  User-Mode-Linux modules
 #
@@ -258,8 +256,7 @@ modprobe
 #/modules-2.2.tar  <=  Replacements/lib/modules/modules-2.2.tar  
 #/modules-2.4.tar  <=  Replacements/lib/modules/modules-2.4.tar
 
-#####  ESSENTIAL SYSTEM UTILITIES
-# (your rescue disk may not boot if these are not present.)
+#####  SYSTEM UTILITIES
 chmod		   	
 chown
 chroot
@@ -272,8 +269,6 @@ rm
 stty		   	
 sync          
 uname
-
-#####  NON-ESSENTIAL BUT USEFUL UTILITIES
 which
 ldd
 du			   	
@@ -317,3 +312,9 @@ badblocks
 #debugreiserfs
 #unpack
 #resize_reiserfs
+
+
+
+
+
+
