@@ -1,4 +1,4 @@
-$Id: README,v 1.26 2003/02/15 08:25:39 freesource Exp $
+$Id: README,v 1.27 2003/02/16 00:46:21 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -81,8 +81,8 @@ REQUIREMENTS TO RUN GBOOTROOT
 
 PERL MODULES
 
-Gtk-Perl (Required for GUI)
---------------------------
+Gtk-Perl (Required for CLI/GUI)
+-------------------------------
 
 Version 0.7002 or greater.
 http://freshmeat.net/projects/gtk-perl
