@@ -1,0 +1,219 @@
+#!/usr/bin/perl -w
+
+package YardChroot;
+
+#############################################################################
+##
+##  YARD_CHROOT_TEST
+##  Code from CHECK_ROOT_FS by Tom Fawcett
+##  Copyright (C) 1996,1997,1998  Tom Fawcett (fawcett@croftj.net)
+##  Copyright (C) 2000 Modifications by the gBootRoot Team
+##
+##  This program is free software; you may redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation; either version 2 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##  GNU General Public License for more details.
+##
+##  You should have received a copy of the GNU General Public License
+##  along with this program; if not, write to the Free Software
+##  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+##
+#####
+##
+##  The purpose of this program is to run chrooted processes separately from
+##  gBootRoot so that gBootRoot can continue to operate on "/", not on the 
+### chroot "/".
+##
+##############################################################################
+
+use strict;
+use Yard;
+use File::Path;
+use File::Find;
+
+my $login_binary;
+my $mount_point = $ARGV[0];
+
+which_test();
+
+sub which_test {
+
+    $login_binary = "$mount_point" . find_file_in_path("login");
+    check_termcap();
+
+    my $test_fstab   = $ARGV[1];
+    my $test_inittab = $ARGV[2];
+    my $test_scripts = $ARGV[3];
+
+    fork_chroot_and(\&check_fstab)   if $test_fstab   == 1;
+    fork_chroot_and(\&check_inittab) if $test_inittab == 1;
+    fork_chroot_and(\&check_scripts) if $test_scripts == 1;
+
+}
+
+#  This takes a procedure call, forks off a subprocess, chroots to
+#  $mount_point and runs the procedure.
+sub fork_chroot_and {
+   my($call) = @_;
+
+   my($Godot) = fork;
+
+   unless (defined $Godot) {
+ 
+      my $error = error("Can't fork: $!"); 
+      return "ERROR" if $error && $error eq "ERROR";
+   }
+
+   if (!$Godot) {
+      # Child process
+      chdir($mount_point);
+      chroot($mount_point); #####  chroot to the root filesystem
+      &$call;
+      exit;
+   } else {
+      # Parent here
+      waitpid($Godot, 0);
+   }
+}
+
+sub check_fstab {
+  my($FSTAB) = "/etc/fstab";
+  my($proc_seen);
+
+
+   open(FSTAB, "<$FSTAB") or error ("$FSTAB: $!");
+  print "\nChecking $FSTAB\n";
+
+  while (<FSTAB>) {
+      chomp;
+      next if /^\#/ or /^\s*$/;
+
+      my($dev, $mp, $type, $opts) = split;
+      next if $mp eq 'none' or $type eq 'swap';
+      next if $dev eq 'none';
+
+      if (!-e $mp) {
+	  print "$FSTAB($.): $_\n\tCreating $mp on root filesystem\n";
+	  mkpath($mp);
+      }
+
+      if ($dev !~ /:/ and !-e $dev) {
+	  warning("$FSTAB($.): $_\n\tDevice $dev does not exist "
+	      . "on root filesystem\n");
+      }
+
+      #####  If you use the file created by create_fstab, these tests
+      #####  are superfluous.
+
+      if ($dev =~ m|^/dev/hd| and $opts !~ /noauto/) {
+	  warning("\t($.):  You probably should include \"noauto\" option\n",
+	  "\tin the fstab entry of a hard disk.  When the rescue floppy\n",
+	  "\tboots, the \"mount -a\" will try to mount $dev\n");
+
+      } elsif ($dev eq $::floppy and $type ne 'ext2' and $type ne 'auto') {
+	  warning("\t($.): You've declared your floppy drive $::floppy",
+	       " to hold\n",
+	       "\ta $type filesystem, which is not ext2.  The rescue floppy\n",
+	       "\tis ext2, which may confuse 'mount -a' during boot.\n");
+
+      } elsif ($type eq 'proc') {
+	  $proc_seen = 1;
+
+      }
+  }
+  close(FSTAB);
+  warning("\tNo /proc filesystem defined.\n") unless $proc_seen;
+  print "Done with $FSTAB\n";
+}
+
+
+sub check_inittab {
+  my($INITTAB) =  "/etc/inittab";
+  print "\nChecking $INITTAB\n";
+
+  if (!open(INITTAB, "<$INITTAB")) {
+     warning("$INITTAB: $!\n");
+     return
+  }
+
+  my($default_rl, $saw_line_for_default_rl);
+
+  while (<INITTAB>) {
+    chomp;
+    my($line) = $_;		# Copy for errors
+    s/\#.*$//;			# Delete comments
+    next if /^\s*$/;		# Skip empty lines
+
+    my($code, $runlevels, $action, $command) = split(':');
+
+    if ($action eq 'initdefault') { #####   The initdefault runlevel
+      $default_rl = $runlevels;
+      next;
+    }
+    if ($runlevels =~ /$default_rl/) {
+      $saw_line_for_default_rl = 1;
+    }
+    if ($command) {
+      my($exec, @args) = split(' ', $command);
+
+      if (!-f $exec) {
+	warning("$INITTAB($.): $line\n",
+		"\t$exec: non-existent or non-executable\n");
+
+      } elsif (!-x $exec) {
+	  print "$INITTAB($.): $line\n";
+	print "\tMaking $exec executable\n";
+	chmod(0777, $exec) or error("chmod failed: $!");
+
+      } else {
+	#####  executable but not binary ==> script
+	scan_command_file($exec, @args) if !-B $exec;
+      }
+
+      if ($exec =~ m|getty|) {	# matches *getty* call
+	check_getty_type_call($exec, @args);
+      }
+    }
+  }
+  close(INITTAB) or error("close(INITTAB): $!");
+
+  if (!$saw_line_for_default_rl) {
+    warning("\tDefault runlevel is $default_rl, but no entry for it.\n");
+  }
+  print "Done with $INITTAB\n";
+}
+
+sub check_scripts {
+  print "\nChecking script interpreters\n";
+  local($::prog);
+
+  sub check_interpreter {
+    if (-x $File::Find::name and -f _ and -T _) {
+      open(SCRIPT, $File::Find::name)		or error "$File::Find::name: $!";
+      my($prog, $firstline);
+      chomp($firstline = <SCRIPT>);
+      if (($prog) = $firstline =~ /^\#!\s*(\S+)/) {
+	if (!-e $prog) {
+	  warning "Warning: $File::Find::name needs $prog, which is missing\n";
+	} elsif (!-x $prog) {
+	  warning "Warning: $File::Find::name needs $prog, " .
+	      "which is not executable.\n";
+	}
+      }
+      close(SCRIPT);
+    }
+  };				# End of sub check_interpreter
+
+  find(\&check_interpreter, "/");
+}
+
+
+
+
+
+
