@@ -1113,6 +1113,8 @@ sub uml_box {
 				     remove_matching_process($entry_advanced[10]);
 				     # Debian
 				     remove_matching_process("Virtual Console");
+				     # Good to remove uml_\w*
+				     remove_matching_process("uml_\w*");
 				     # Again for good measure :)
 				     remove_matching_process($entry_advanced[10]);
 				     }
