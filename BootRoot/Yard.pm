@@ -2798,7 +2798,7 @@ sub check_termcap {
   else {
 
       return warning_test("Warning: No file $mount_point/etc/terminfo/l/linux"
-                          . " or $mount_point/etc/termcap");
+                          . " or $mount_point/etc/termcap\n");
   }
 
 } # end sub check_termcap
