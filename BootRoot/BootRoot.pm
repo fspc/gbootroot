@@ -379,6 +379,21 @@ if ( !%option || $option{gui_mode} ) {
 # /tmp
 home_builder($tmp1);
 
+if ( $home_uml_kernel =~ /user-mode-linux/ &&
+     $option{home} ) {
+
+    if (!-e "$home_uml_kernel/.options") {
+	open(OPTIONS,">$home_uml_kernel/.options") 
+	    or die "Couldn't write $home_uml_kernel/.options at $?\n";
+	# I removed mem=16M to make sure the optimal mem size was being 
+	# chosen for the MTD Emulator
+	# in case the user didn't know any better.
+	print OPTIONS "umid=bootroot root=/dev/ubd0\n";
+	close(OPTIONS);
+    }
+
+}
+
 if ( !( $option{help} || $option{h} ) && 
      $home_uml_kernel !~ /user-mode-linux/ &&
      !$option{home} ) {
