@@ -133,16 +133,16 @@ telinit
 
 #####  SHELLS
 #    Bash is huge and requires libncurses.so.
-#    Most people use a smaller lightweight shell, like ash or kiss,
+#    Many people use a smaller lightweight shell, like ash or kiss,
 #    and use that instead.
 /bin/sh -> bash 
-#  This could be made the init=sash
 /bin/sash 
 #
 /etc/profile		    
 /etc/shells # Make sure all included shells are listed.
 
 #   PROVISIONS FOR PAM: 
+/etc/pam.d/other
 /etc/pam.d/login
 # /etc/pam.conf
 
@@ -152,13 +152,12 @@ telinit
 #
 /etc/nsswitch.conf <=  Replacements/etc/nsswitch.conf.example
 
-## some of these may use gettydefs .. find out which?
 
 ##### INITTAB and GETTY
 # These inittab and getty pairs are based on major distributions.
 # If your distribution isn't mentioned here, one of these inittabs may still work
 # Check your /etc/inittab to confirm, or create a new inittab replacement and
-# edit as required.
+# edit as required.  Some gettys require /etc/gettydefs.
 #
 # Choose the *-nodevfs version if you don't want to use the device fs (devfs=nomount)
 #
@@ -167,20 +166,17 @@ telinit
 #/etc/inittab	<= Replacements/etc/inittab.example-deb-nodevfs
 /sbin/getty
 #
-#===== MANDRAKE uses mingetty
-#/etc/inittab	<= Replacements/etc/inittab.mingetty.example-mdrk
-#/etc/inittab	<= Replacements/etc/inittab.mingetty.example-mdrk-nodevfs
+#===== MANDRAKE, REDHAT  and many other modern RH based DISTS use mingetty:
+#/etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm
+#/etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm-nodevfs
 #/sbin/mingetty
+#/etc/gettydefs
 #
 #===== SLACKWARE uses agetty:
-#/etc/inittab	<= Replacements/etc/inittab.agetty.example-slack
-#/etc/inittab	<= Replacements/etc/inittab.agetty.example-slack-nodevfs
+#/etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
+#/etc/inittab	<= Replacements/etc/inittab.example.agetty-slack-nodevfs
 #/sbin/agetty
-#
-#===== REDHAT uses getty
-#/etc/inittab	<= Replacements/etc/inittab.example-rh
-#/etc/inittab	<= Replacements/etc/inittab.example-rh-nodevfs
-#/sbin/getty
+#/etc/gettydefs
 
 # Devices - If devfs isn't desired use the kernel option devfs=nomount 
 /dev/console
@@ -213,6 +209,7 @@ reset
 # Designate a keyboard map of choice if you want to load one for 
 # the text console.  Edit rcS to point to it.
 # /usr/share/keymaps/i386/qwerty/defkeymap.kmap.gz
+# /usr/lib/kbd/keymaps/i386/qwerty/defkeymap.kmap.gz
 
 #####  Empty directories
 /proc               
