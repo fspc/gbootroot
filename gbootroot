@@ -1159,7 +1159,7 @@ sub uml_box {
 	$eab3 = entry_advanced(1,2,2,3,10,$table_uml);
 	button_fileselect_advanced(2,3,2,3,"Selection",$eab3,"Selection",14,
 				   $table_uml,$home_rootfs);
-	$eab3->set_text("ubd0=$tmp/$entry_advanced[4]") 
+	$eab3->set_text("ubd0=$tmp/$entry_advanced[4] mem=16M") 
 	    if -e "$tmp/$entry_advanced[4]";
 	$tooltips->set_tip( $eab3, 
                            "Choose an uncompressed root filesystem." .
