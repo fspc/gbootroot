@@ -128,7 +128,7 @@ my $lilo_conf = "/etc/lilo.conf";
 my $home = "$ENV{HOME}/.gbootroot";
 my $uml_xterm = "xterm -e";
 $main::editor = "emacs --font 6x13";
-$main::makefs = "/sbin/mke2fs -F -m0 -i8192"; # Root Disk
+$main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
 
 # CHANGES
 #
@@ -504,19 +504,46 @@ my ($sec,$min,$hour,$day,$month,$year) = (localtime)[0,1,2,3,4,5];
 my $time = sprintf("%02d:%02d:%02d-%02d-%02d-%04d", 
 		   $hour, $min, $sec, $month+1, $day, $year+1900);
 #print "$time\n";
-if (!-d "$tmp1/gbootroot_tmp$time") {   
-  $tmp = "$tmp1/gbootroot_tmp$time" if err_custom_perl(
-         "mkdir $tmp1/gbootroot_tmp$time",
-         "gBootRoot: ERROR: Could not make temporary directory") != 2;
+
+# Here's where stuff gets weird, to provide a predicatable place for non-root
+# users to mount the loop device via fstab when making a root_fs (because
+# $tmp is used), one place has to be designated.
+
+if ( $< == 0 ) {
+
+    if (!-d "$tmp1/gbootroot_tmp$time") {   
+	$tmp = "$tmp1/gbootroot_tmp$time" if err_custom_perl(
+		"mkdir $tmp1/gbootroot_tmp$time",
+		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
+    }
+    if (!-d "$tmp1/gbootroot_mnt$time") {
+	$mnt = "$tmp1/gbootroot_mnt$time" if err_custom_perl(
+	       "mkdir $tmp1/gbootroot_mnt$time",
+               "gBootRoot: ERROR: Could not make mount directory") != 2;
+    }
+
+    # Why?
+    $tmp = "$tmp1/gbootroot_tmp$time";
+
 }
-if (!-d "$tmp1/gbootroot_mnt$time") {
- $mnt = "$tmp1/gbootroot_mnt$time" if err_custom_perl(
-        "mkdir $tmp1/gbootroot_mnt$time",
-        "gBootRoot: ERROR: Could not make mount directory") != 2;
+else {
+
+    # Hopefully only one user at a time.
+    if (!-d "$tmp1/gboot_non_root") {   
+	$tmp = "$tmp1/gboot_non_root" if err_custom_perl(
+		"mkdir $tmp1/gboot_non_root",
+		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
+    }
+    $tmp = "$tmp1/gboot_non_root";
+
+    if (!-d "$tmp1/gbootroot_mnt$time") {
+	$mnt = "$tmp1/gbootroot_mnt$time" if err_custom_perl(
+	       "mkdir $tmp1/gbootroot_mnt$time",
+               "gBootRoot: ERROR: Could not make mount directory") != 2;
+    }
+
 }
 
-# Why?
-$tmp = "$tmp1/gbootroot_tmp$time";
 
 # Verbosity is universal for all methods, and controlled by a scale slider. 
 # Yard 
@@ -526,6 +553,7 @@ my $verbosity = 1; # info & sys use this as Global
 
 ## One hard copy log file is saved for the session, and the user can also 
 ## save from the verbosity box including saving a selection.
+
 my $verbosefn = "$tmp/verbose"; # All verbosity
 #my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
 
