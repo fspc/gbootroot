@@ -1712,7 +1712,6 @@ sub yard_glob {
 sub device_table {
 
     my ( @devices ) = @_;
-    my $mnt = shift @devices;
     my $error;
 
     
