@@ -13,7 +13,7 @@ install:
 	install -d $(DESTDIR)/usr/share/gbootroot/yard/Replacements
 	cp -fa yard/replacements/* $(DESTDIR)/usr/share/gbootroot/yard/Replacements
 	install -d $(DESTDIR)/usr/share/gbootroot/yard/templates
-	cp -fa yard/templates/*.yard $(DESTDIR)/usr/share/gbootroot/yard/templates	
+	cp -fa yard/templates/Example* $(DESTDIR)/usr/share/gbootroot/yard/templates	
 	cp -fa user-mode-linux/usr/bin/uml_*  $(DESTDIR)/usr/bin
 	cp -fa user-mode-linux/usr/bin/linux $(DESTDIR)/usr/bin/linux
 	install -d $(DESTDIR)/etc/gbootroot
