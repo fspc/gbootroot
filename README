@@ -3,14 +3,15 @@ License:  GNU General Public License
 
 The Makefile included with this source package doesn't figure out whether 
 your system has the proper requirements.  However, it isn't difficult to 
-understand what is necessary to get gbootroot to work.  First type "make" and 
-then run gbootroot.  The program will indicate to you whether anything is 
-missing.  If it doesn't work at all, it's generally due to not having gtk-perl
-installed.  If the user-mode-linux kernel doesn't work, it may be an 
-architecture issue.  If you need to customize the kernel, there are general 
-directions in this README.  If a boot or root method are missing required 
-programs, pop-up dialog boxes and information from the verbosity box will 
-give a good indication of what is causing the problem.
+understand what is necessary to get gbootroot to work.  First type "make",
+follow the instructions in the "Important Configurations" section near the
+bottom of this page, and then run gbootroot.  The program will indicate to you
+whether anything is missing.  If it doesn't work at all, it's generally due to
+not having gtk-perl installed.  If the user-mode-linux kernel doesn't work, it
+may be an architecture issue.  If you need to customize the kernel, there are 
+general directions in the README.  If a boot or root method are missing 
+required programs, pop-up dialog boxes and information from the verbosity box 
+will give a good indication of what is causing the problem.  
 
 Out of the box this program works with the i386 architecture, for other 
 architectures genext2fs and user-mode-linux will need to be compiled if
@@ -104,13 +105,14 @@ file
 Important Configurations:
 #########################
 
-"chmod 4755 /usr/bin/uml_net" so normal users can have network capabilities.
+"chown 0:0 /usr/bin/uml_net; chmod 4755 /usr/bin/uml_net" so normal users can 
+have network capabilities.
 
 
 Documentation:
 #############
 
-Documentaion and FAQ is in doc/html/index.html
+Documentaion and FAQ are in doc/html/index.html
 
 
 Have fun!
