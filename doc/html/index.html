@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.37 2001/12/06 20:04:08 freesource Exp $</center>
+<center>$Id: index.html,v 1.38 2001/12/06 22:01:20 freesource Exp $</center>
 
 <p>
 
@@ -50,6 +50,8 @@ deb http://prdownloads.sourceforge.net/avd ./<br></p>
 
 <p align="center">Older versions found at this
 <A href="http://prdownloads.sourceforge.net/gbootroot/">site</A></P>
+
+<p align="center"><a href="images/screenshot.jpg">Screenshot</a></P>
 
 <p align="center"><a href="#FAQ">FAQ</a></P>
 
@@ -352,9 +354,6 @@ files.&nbsp;&nbsp; Presently it creates
 an fstab configuration file as Replacements/etc/fstab.new in 
 $HOME/.gbootroot/yard/.</p>
 
-<P>Little things you may want to know:</P>
-
-<P>* gBootRoot requires ash for initrd.&nbsp;&nbsp;Ash is a feather weight version of Bash.</P>
 <br>
 
 <P><IMG ALT="" SRC="images/gBSicon.jpg" align="center"> <b>FAQ</b></P>
@@ -364,29 +363,31 @@ $HOME/.gbootroot/yard/.</p>
 <br>
 2.&nbsp;&nbsp;<a href="#2">How do I use gBootRoot?</a>
 <br>
-3.&nbsp;&nbsp;<a href="#3">What are all these CVS directories doing in my replacements?</a>
+3.&nbsp;&nbsp;<a href="#3">Oops, I can't get something to work, what should I do?</a>
 <br>
-4.&nbsp;&nbsp;<a href="#4">Can I use a program linked to uClibc in the template?</a>
+4.&nbsp;&nbsp;<a href="#4">What are all these CVS directories doing in my replacements?</a>
 <br>
-5.&nbsp;&nbsp;<a href="#5">What do you mean by macro distribution?</a>
+5.&nbsp;&nbsp;<a href="#5">Can I use a program linked to uClibc in the template?</a>
 <br>
-6.&nbsp;&nbsp;<a href="#6">How am I able to create root filesystems as a normal user?</a>
+6.&nbsp;&nbsp;<a href="#6">What do you mean by macro distribution?</a>
 <br>
-7.&nbsp;&nbsp;<a href="#7">How can a normal user create a root filesystem larger than 8192k?</a>
+7.&nbsp;&nbsp;<a href="#7">How am I able to create root filesystems as a normal user?</a>
 <br>
-8.&nbsp;&nbsp;<a href="#8">How can I create boot disks as a normal user?</a>
+8.&nbsp;&nbsp;<a href="#8">How can a normal user create a root filesystem larger than 8192k?</a>
 <br>
-9.&nbsp;&nbsp;<a href="#9">What is make_debian, and how do I use it?</a>
+9.&nbsp;&nbsp;<a href="#9">How can I create boot disks as a normal user?</a>
 <br>
-10.&nbsp;&nbsp;<a href="#10">My root filesystem doesn't start in single mode when started like this:  "bootdisk 1?"</a> 
+10.&nbsp;&nbsp;<a href="#10">What is make_debian, and how do I use it?</a>
 <br>
-11.&nbsp;&nbsp;<a href="#11">What does the 2 disk compression method do?</a>
+11.&nbsp;&nbsp;<a href="#11">My root filesystem doesn't start in single mode when started like this:  "bootdisk 1?"</a> 
 <br>
-12.&nbsp;&nbsp;<a href="#12">There isn't enough room left on my 1440 floppy to make a Boot or Root disk.  Is there any way to free up more space apart from reducing the size of the kernel?</a>
+12.&nbsp;&nbsp;<a href="#12">What does the 2 disk compression method do?</a>
 <br>
-13.&nbsp;&nbsp;<a href="#13">gBootRoot doesn't start because it can't locate Gtk.pm?</a>
+13.&nbsp;&nbsp;<a href="#13">There isn't enough room left on my 1440 floppy to make a Boot or Root disk.  Is there any way to free up more space apart from reducing the size of the kernel?</a>
 <br>
-14.&nbsp;&nbsp;<a href="#14">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
+14.&nbsp;&nbsp;<a href="#14">gBootRoot doesn't start because it can't locate Gtk.pm?</a>
+<br>
+15.&nbsp;&nbsp;<a href="#15">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
 </a>
 
 
@@ -575,8 +576,25 @@ UML box to try things you never would have dreamed of doing on your host
 system.&nbsp;&nbsp;And that is just the beginning of the things you can do.
 
 
+<P><a name="3"><b>Oops, I can't get something to work, what should I do?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
-<P><a name="3"><b>What are all these CVS directories doing in my replacements?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+If something isn't working for you, I want to know!&nbsp;&nbsp;In fact, unlike
+some developers who don't want to be deluged with bugs, I heartily encourage
+users to send me all their problems.&nbsp;&nbsp;Why?&nbsp;&nbsp;I love bugs,
+and I have experience working in Quality Assurance, so I know that a 
+program like gbootroot is loaded with glitches unforeseen
+ by the developer.&nbsp;&nbsp;I consider
+anything a bug which effects the user negatively, 
+whether it is a user interface (UI) which is hard to understand
+or use, documentation which seems misleading, or if the program doesn't
+seem to deliver results as it should.&nbsp;&nbsp;Even if you think 
+your problem may be due to your own lack of understanding, I still 
+recommend that you contact me after reasonable attempts, because what 
+you may be experiencing is what "MANY" may be experiencing.&nbsp;&nbsp;At the
+bottom of this page is the contact information.&nbsp;&nbsp;Your problem
+will help gbootroot become a better program for all!
+
+<P><a name="4"><b>What are all these CVS directories doing in my replacements?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <P>
 CVS directories are deliberately put in the Replacement directories to 
@@ -603,7 +621,7 @@ not to delete the CVS directories because /usr/share is meant to be used
 for data which shouldn't be modified 
 (see <a href="http://www.pathname.com/fhs/">FHS</a>).</p>
 
-<a name="4"><b>Can I use a program linked to uClibc in the template?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+<a name="5"><b>Can I use a program linked to uClibc in the template?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -614,7 +632,7 @@ is used to discover shared library dependencies, otherwise ldd is
 called without any path.</p>
 
 
-<a name="5"><b>What do you mean by macro distribution?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+<a name="6"><b>What do you mean by macro distribution?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -631,7 +649,7 @@ used to run experiments safely without fear of corrupting the host system
 via user-mode-linux.</p>
 
 
-<a name="6"><b>How am I able to create root filesystems as a normal user?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+<a name="7"><b>How am I able to create root filesystems as a normal user?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -647,7 +665,7 @@ can be changed when the filesystem is run from a kernel.
 
 <p>
 
-<a name="7"><b>How can a normal user create a root filesystem larger than 8192k?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+<a name="8"><b>How can a normal user create a root filesystem larger than 8192k?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -743,7 +761,7 @@ don't exist.&nbsp;&nbsp;For this example, /mnt1 and
 
 <p>
 
-<a name="8"><b>How can I create boot disks as a normal user?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+<a name="9"><b>How can I create boot disks as a normal user?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -786,7 +804,7 @@ lilo can be made.
 
 <p>
 
-<a name="9"><b>What is make_debian, and how do I use it?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+<a name="10"><b>What is make_debian, and how do I use it?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
@@ -837,7 +855,7 @@ in the template was modified to reflect these replacements.
 </p>
 
 
-<a name="10"><b>My root filesystem doesn't start in single mode when started like
+<a name="11"><b>My root filesystem doesn't start in single mode when started like
 this:&nbsp;&nbsp&quot;bootdisk 1?&quot;</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
 <P>
@@ -861,14 +879,14 @@ down all the bugs.
 </P>
 
 
-<P><a name="11"><b>What does the 2 disk compression method do?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+<P><a name="12"><b>What does the 2 disk compression method do?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 <P>This Boot Method creates a boot disk with lilo, a kernel and an initrd 
 image.&nbsp;&nbsp;The 
 initrd script mounts another root disk with a compressed (gzip or bzip2) 
 filesystem.</P>
 
 
-<p><a name="12"><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
+<p><a name="13"><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
 disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing 
 the size of the kernel?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
@@ -904,11 +922,11 @@ to add your comments to the Feature Request.&nbsp;&nbsp;Thanks.</p>
 
 <p>
 
-<a name="13"><b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+<a name="14"><b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
 <p>This program requires Gtk-Perl available from <a href="http://www.perl.com/CPAN">CPAN</a>, <a href="http://freshmeat.net/projects/gtk-perl">Freshmeat</a> or most GNU/Linux distributions.</p>
 
-<p><a name="14"><b>If you roll the floppy density counter down to 0 and then try go back 
+<p><a name="15"><b>If you roll the floppy density counter down to 0 and then try go back 
 up towards 1440 and 1722, you get very funny figures.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
