@@ -1273,7 +1273,8 @@ sub uml_box {
 	$uml_window->signal_connect("delete_event", \&destroy_window,
 				      \$uml_window);
 	##$uml_window->set_usize( 500, 95 );  # 450 175 || 500 600
-	$uml_window->set_default_size( 525, 95 );  # 450 175 || 500 600
+	$uml_window->set_default_size( 525, 165 );  # 525 95 || 450 175 
+                                                   # 525 135 || 500 600
 	$uml_window->set_policy( $true, $true, $false );
 	$uml_window->set_title( "UML Box" );
 	$uml_window->border_width(1);    
@@ -1283,7 +1284,7 @@ sub uml_box {
 	$main_vbox->show();
 
 	##my $table_uml = Gtk::Table->new( 4, 3, $true );
-	my $table_uml = Gtk::Table->new( 5, 6, $false );
+	my $table_uml = Gtk::Table->new( 5, 8, $false );
 	##$main_vbox->pack_start( $table_uml, $true, $true, 0 );
 	$main_vbox->pack_start( $table_uml, $true, $false, 0 );
 	$table_uml->show();
@@ -1576,7 +1577,8 @@ sub uml_box {
 	# MTD device emulation - mtdram or blkmtd
 
         # Which?
-	label_advanced("MTD:",0,1,3,4,$table_uml);
+	my $mtd_label = label_advanced("MTD",0,1,4,5,$table_uml);
+        $mtd_label->set_pattern("___");
         my $mtd_check_on;
         if ( $mtd_check ) {
            if ( $mtd_check->get_active() ) {
@@ -1588,8 +1590,8 @@ sub uml_box {
                            "Turn MTD emulation on or off.",
                            "" );
         $mtd_check->set_active( $true ) if $mtd_check_on;
-        $table_uml->attach($mtd_check,1,2,3,4, 
-			  ['expand','fill'],['fill','shrink'],0,0);
+        $table_uml->attach($mtd_check,1,2,4,5, 
+			  ['expand','shrink'],['fill','shrink'],0,0);
         $mtd_check->show();
 
 
@@ -1610,8 +1612,8 @@ sub uml_box {
 	$tooltips->set_tip( $mtd_radio, 
                            "Use memory to emulate test mtd device.",
                            "" );
-        $table_uml->attach($mtd_radio,2,3,3,4, 
-			  ['shrink','expand','fill'],['fill','shrink'],0,0);       
+        $table_uml->attach($mtd_radio,2,3,4,5, 
+			  ['shrink','expand'],['fill','shrink'],0,0);       
         $mtd_radio->show();
 
         # blkmtd
@@ -1621,8 +1623,8 @@ sub uml_box {
 	$tooltips->set_tip( $mtd_radio, 
                            "Use block device to emulate test mtd device.",
                            "" );
-        $table_uml->attach($mtd_radio,3,4,3,4, 
-			  ['shrink','expand','fill'],['fill','shrink'],0,0);   
+        $table_uml->attach($mtd_radio,3,4,4,5, 
+			  ['shrink','expand'],['fill','shrink'],0,0);   
         $mtd_radio->show();
 
 
@@ -1631,7 +1633,7 @@ sub uml_box {
 	$tooltips->set_tip( Gtk::Combo::entry($mtd_fs_type_combo), 
                            "Choose filesystem type used by root filesystem.",
                            "" );
-        $table_uml->attach($mtd_fs_type_combo,4,5,3,4, 
+        $table_uml->attach($mtd_fs_type_combo,4,5,4,5, 
 			  ['shrink','expand','fill'],['fill','shrink'],20,0);
         if ( !$mtd_fs_type ) {
             @fs_types = qw(jffs2 jffs ext2 ext3 minix cramfs romfs reiserfs);
@@ -1653,14 +1655,52 @@ sub uml_box {
         $mtd_fs_type_combo->set_usize(20,0);
         $mtd_fs_type_combo->show();
 
+	my $mtd_emul = label_advanced("Emulator",0,1,5,6,$table_uml);
+        $mtd_emul->set_pattern("________");
 
+        # total size
+        label_advanced("total size:",1,2,5,6,$table_uml);
+        my $mtd_adj = Gtk::Adjustment->new( 8192.0, 0.0, 1000000000.0, 128.0, 
+                                    1024.0, 0.0 );
+        my $mtd_size = Gtk::SpinButton->new( $mtd_adj, 0, 0 );
+        $table_uml->attach($mtd_size,2,3,5,6,
+                            ['shrink','fill','expand'],['fill','shrink'],
+                            0,0);
+        $tooltips->set_tip( $mtd_size, 
+                           "Choose the total size for the mtd device.",
+                            "" );
+        $mtd_size->set_wrap( $true );
+        $mtd_size->set_numeric( $true );
+        $mtd_size->set_shadow_type( 'in' );
+        $mtd_size->show();
+               
 
-        $table_uml->set_row_spacing( 4, 6);       
+        # erasure size
+	label_advanced("erasure size:",3,4,5,6,$table_uml);
+	my $mtd_erasure = entry_advanced(4,5,5,6,15,$table_uml);
+        $tooltips->set_tip( $mtd_erasure, 
+                           "Choose the erasure size for the mtd device.",
+                            "" );
+
+        my $mtd_separator1 =  Gtk::HSeparator->new();
+        $table_uml->attach($mtd_separator1,0,5,3,4,
+                            ['shrink','fill','expand'],['fill','shrink'],
+                            0,5);
+        $mtd_separator1->show();
+        
+
+        my $mtd_separator2 =  Gtk::HSeparator->new();
+        $table_uml->attach($mtd_separator2,0,5,6,7,
+                            ['shrink','fill','expand'],['fill','shrink'],
+                            0,5);
+        $mtd_separator2->show();
+
+        $table_uml->set_row_spacing( 6, 8);       
 
 
 	#_______________________________________
 	# Submit Button
-	my $submit_b = button_advanced(0,1,5,6,"Submit",$table_uml);
+	my $submit_b = button_advanced(0,1,7,8,"Submit",$table_uml);
 	$tooltips->set_tip( $submit_b, 
                            "Start uml kernel processes.",
                            "" );
@@ -1730,7 +1770,7 @@ sub uml_box {
         # This is the hard kill when all else fails, it also cleans up
         # lingering processess, but is considered a last resort, and
         # can be dangerous, it has even taken down a WM.
-	my $abort_b = button_advanced(3,4,5,6,"Abort",$table_uml);
+	my $abort_b = button_advanced(3,4,7,8,"Abort",$table_uml);
 	$tooltips->set_tip( $abort_b, 
                            "Abort uml kernel processes." .
                            "This serves three purposes:\n" .
@@ -1760,7 +1800,7 @@ sub uml_box {
 
 	#_______________________________________
 	# Reboot Button - mconsole
-	my $reboot_b = button_advanced(1,2,5,6,"Reboot",$table_uml);
+	my $reboot_b = button_advanced(1,2,7,8,"Reboot",$table_uml);
 	$tooltips->set_tip( $reboot_b, 
                            "Passes the reboot command to the mconsole.",
                            "" );
@@ -1778,7 +1818,7 @@ sub uml_box {
 
 	#_______________________________________
 	# Halt Button - mconsole
-	my $halt_b = button_advanced(2,3,5,6,"Halt",$table_uml);
+	my $halt_b = button_advanced(2,3,7,8,"Halt",$table_uml);
 	$tooltips->set_tip( $halt_b, 
                            "Passes the halt command to the mconsole. " .
                            "If this fails use the Abort button.",
@@ -1796,7 +1836,7 @@ sub uml_box {
 
 	#_______________________________________
 	# Cancel button also kills UML kernel if still open
-	my $cancel_b = button_advanced(4,5,5,6,"Close",$table_uml);
+	my $cancel_b = button_advanced(4,5,7,8,"Close",$table_uml);
 	$tooltips->set_tip( $cancel_b, 
                            "Close uml box.",
                            "" );
@@ -2159,6 +2199,7 @@ sub Generate {
     # 12 = Kernel Version  .. from the Boot Method
     # 13 = System.map      .. from the Boot Method
     # 14 = mcosole         .. from the UML Box
+    # 15 = erasure size    .. from the UML Box
 
     # $root_device_size;
     # $filesystem_size;
@@ -2315,6 +2356,7 @@ sub label_advanced {
     $label_advanced->set_justify( "fill" );
     $_[5]->attach($label_advanced,$_[1],$_[2],$_[3],$_[4], ['expand'],['fill','shrink'],0,0);
     $label_advanced->show();
+    return $label_advanced;
 
 }
 
