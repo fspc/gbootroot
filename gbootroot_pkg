@@ -8,14 +8,18 @@ use File::Find;
 # needs to be run as root.  The advantage of this program is that the 
 # archive will always represent the Makefile which is being tested
 # when development isn't being done with perl -I . ./gbootroot.
+# This program can be adapted for other packages.
 
 # This program uses dh-make, and copies your own defaults to 
 # $packaging_place/debian from your $packaging_defaults, and updates
 # to the proper date/times and data in changelog and copyright.  
 # After this debuild from devscripts (this uses lintian) runs. 
-# Now all you do is finish stuff off with dpkg-scanpackages.
+# Now all you do is finish stuff off with dpkg-scxanpackages ..
+# something like this:
+# dpkg-scanpackages . override | gzip > Packages.gz
 
 # User defined variables for directories and package
+# Makefile.pkg in $gbootroot_cvs in used as the packages Makefile.
 
 my $user_home = "/home/mttrader";
 my $prog = "gbootroot";
@@ -30,6 +34,7 @@ my $packaging_place = "$user_home/gbootroot/PACKAGING";
 my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg";
 my $email = "freesource\@users.sourceforge.net";
 my $name = "Jonathan Rosenbaum";
+my $makefile = "Makefile.pkg";
 
 # Other vars
 my ($real_uid, $real_gid) = (stat($user_home))[4,5];
@@ -99,7 +104,7 @@ foreach (@make_lines) {
         }
 }
 
-system "cp -fa Makefile.pkg $packaging_place/Makefile";
+system "cp -fa $makefile $packaging_place/Makefile";
 
 # Now we get to clean out any CVS directories and make sure that the 
 # permissions are all for the user who will be creating the package.
