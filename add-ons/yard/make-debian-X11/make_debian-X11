@@ -51,7 +51,8 @@ perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils
 binutils bzip2 file libbz2-1.0 libfreetype6 libglib1.2 libgtk-perl 
 libgtk1.2 make xfonts-base xfree86-common xlibmesa3 xlibs 
 xserver-common xterm xutils zlib1g libgdbmg1 libxaw7 gbootroot
-flwm libfltk1 xnest make-debian-x11 ash libterm-readline-gnu-perl); 
+flwm libfltk1 xnest make-debian-x11 ash libterm-readline-gnu-perl
+libexpect-perl libio-stty-perl libio-pty-perl); 
 # NEXT EDIT TEMPLATE 
 
 #################################################################
@@ -267,7 +268,7 @@ return $stuff;
 use strict;
 use File::Basename;
 my $rm = "\$";
-$main::Id = "# \$Id: make_debian-X11,v 1.41 2001/12/14 04:38:43 freesource Exp $rm"; 
+$main::Id = "# \$Id: make_debian-X11,v 1.42 2001/12/22 19:01:20 freesource Exp $rm"; 
 my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
 if ($sbin == 0) {
     $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
