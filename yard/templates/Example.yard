@@ -6,8 +6,8 @@
 #  (Mandrake,  RedHat, etc.) by using the proper inittab (edit) and getty.
 # 
 #  Create either as a normal user or root.  When using genext2fs it's necessary to specify a
-#  root filesystem size larger than the actual size because genext2fs uses different accounting
-#  information than mke2fs.
+#  root filesystem slightly larger than the actual size shown in Space Left because genext2fs
+#   uses different accounting information than mke2fs.
 #
 #  Works both with and without devfs, i.e devfs=nomount.
 
@@ -64,8 +64,8 @@
 #     configuration files.  The configuration files are then parsed and the corresponding 
 #     service modules are included in the file set if they exist on the host system, tests 
 #     (see Tests menu) can be run to find out which ones don't exist.   The service modules are
-#     checked for library dependencies.  What this means is that the user only needs
-#     to specify the configuration files in the template, and doesn't need to concern themselves
+#     checked for library dependencies.  What this means is that the users only needs
+#     to specify the configuration files in the template, and don't need to concern themselves
 #     with the service modules or libraries involved.  The new behavior is recommended, 
 #     but if the old behavior is desired switch off Edit->Settings->"NSS Conf" and 
 #     Edit->Settings->"PAM Conf".
@@ -87,6 +87,7 @@
 /sbin/reboot
 /etc/init.d/reboot  # make this into a replacement
 /etc/rc   <=    Replacements/etc/rc.debian-min # need two of these and put them in init.d
+/etc/init.d/rcS <= Replacements/etc/rcS.example
 
 # Login stuff .. password not used. 
 /bin/login 
@@ -126,6 +127,7 @@
 /bin/ls			   	
 /bin/more
 /bin/mv			   	
+/usr/bin/find
 
 #####  SHELLS
 #    Bash is huge and requires libncurses.so.
@@ -140,6 +142,7 @@
 
 #   PROVISIONS FOR PAM: 
 /etc/pam.d/login
+# /etc/pam.conf
 
 #   PROVISIONS FOR NSS
 #   If you use the old libc5, or uClibc you don't need this.  Comment out this line.
@@ -209,11 +212,14 @@
 #/dev/mouse
 
 #####  utmp and wtmp.  
-# No need for this.
+# Made by rcS if they don't exist.
 
 #####  terminfo entries for programs which need terminal capabilities like vi and nano.
-/usr/share/terminfo/v/vt100    # make these replacements
-/usr/share/terminfo/l/linux        # this too
+/usr/share/terminfo/v/vt100    
+/usr/share/terminfo/l/linux  
+# The old way
+#/etc/termcap <= Replacements/etc/termcap
+reset
 
 # If you want to load a special keytable, add the filename here:
 #/usr/lib/kbd/keytables/defkeymap.map
@@ -270,6 +276,9 @@ touch
 whoami
 diff
 wc
+w
+last
+date
 	   	
 # Editors
 vi
