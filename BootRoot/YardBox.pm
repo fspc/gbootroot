@@ -313,7 +313,7 @@ sub filesystem_size {
 		!$uml_expect{preserve_permissions};
 	}
 
-} # end fileystem_size
+} # end sub fileystem_size
 
 # This allows the user to choose a different filesystem besides ext2.
 # The space_check inode percentage formula can be altered.  Default 2%.
@@ -426,24 +426,58 @@ sub file_system {
 	$submit_b->signal_connect( "clicked", sub {
 	    if ($entry[2]) {
 		# Check to see if it actually exists
+		# unless UML Exclusively is used, then
+		# supported fs types can be used even if they
+		# don't exist on the host system.
+
 		my $executable = (split(/\s+/,$entry[2]))[0];
-		if (!find_file_in_path(basename($executable))) {
-		    if ( $executable ne "genext2fs" ) {
-			error_window
-			    ("gBootRoot: ERROR: Enter a valid command");
+
+		if ( $uml_expect{uml_exclusively} == 0 ) {
+
+		    if (!find_file_in_path(basename($executable))) {
+			if ( $executable ne "genext2fs" ) {
+			    error_window
+				("gBootRoot: ERROR: Enter a valid command");
+			    return;
+			}
+		    }
+		    if ($executable =~ m,/,) {
+			if (! -e $executable) {
+			    error_window("gBootRoot: ERROR: " .
+					 "Enter a valid path for the command.");
+			    return;
+			}
+		    }
+		    
+		
+		}
+
+		# usinng uml_exlusively
+		else {
+		    my %uml_helper_fs_types = qw(mke2fs 1 mkcramfs 1 genromfs 1
+					      mkfs.minix 1 mkminix 1
+					      mkreiserfs 1);
+
+		    if ( !$uml_helper_fs_types{$executable} ) {
+
+			error_window("ROOT_FS_HELPER ERROR: " .
+				     "These are supported " .
+				     "make fs commands:\n\nmke2fs  mkcramfs" .
+                              "  genromfs  mkfs.minix  mkminix  mkreiserfs");
+
 			return;
 		    }
+
+
+
 		}
-		if ($executable =~ m,/,) {
-		    if (! -e $executable) {
-			error_window("gBootRoot: ERROR: " .
-				     "Enter a valid path for the command.");
-			return;
-		    }
-		}
+
+
 		$main::makefs = $entry[2];
 		info(1,"Filesystem Command is $entry[2]\n");
 	    }
+
+
 	} );
 
 
