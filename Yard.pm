@@ -57,6 +57,7 @@ my($Warnings) = 0;
 my $verbosity;
 my ($text_insert,$red,$blue); 
 my $logadj;
+my $mount_point;
 
 # This solves an annoying problem with the new Perl-5.6 built in glob,
 # allowing earlier versions of Perl to run.
@@ -281,7 +282,7 @@ sub extra_links {
 
     my ($contents_file) = @_;
     
-    info(0, "\n\nPASS 2:  Picking up extra files from links...\n");
+    info(0, "PASS 2:  Picking up extra files from links...\n");
 
     for (keys %Included) {
         # watch for "" - GBteam
@@ -747,17 +748,18 @@ sub create_filesystem {
 	$strip_bin, $strip_module, $obj_count) = @_;
         
     my $device = "$mnt/$filename";
-    my $mount_point = "$mnt/loopback";
+    $mount_point = "$mnt/loopback";
 
     my $file;
     my $error;
 
+    info(0, "Creating root filesystem.\n");
+    info(0, "Description:  $fs_size K ext2 file system\n");
+    info(0, "Where:  $device\n");
 
     sync();
     sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
     sync();
-
-    info(0, "Creating $fs_size K ext2 file system on $device\n");
 
     if (-f $device) {
 	#####  If device is a plain file, it means we're using some loopback
@@ -912,9 +914,10 @@ sub create_filesystem {
     }
 
     ## Probably will want to umount here
+    return "ERROR" if errum(sys("umount $mount_point")) == 2;
 
-    info(0, "\nDone with $PROGRAM_NAME.  $Warnings warnings.\n",
-	 "$device is still mounted on $mount_point\n\n");
+    info(0, "\nDone making the root filesystem.  $Warnings warnings.\n",
+	 "$device is now umounted from $mount_point\n\n");
 
 } # end sub create_filesystem
 
@@ -1002,41 +1005,73 @@ sub copy_strip_file {
        $strip_lib, $strip_bin, $strip_module) = @_;
     my $error;
 
-    if ($strip_objfiles and defined($objcopy) and $strippable{$from}) {
-	#  Copy it stripped
+    if ($strippable{$from}) {
+        #  Copy it stripped
 
-
-	if (defined($lib_needed_by{$from}) && $strip_lib) {
+	if ($strip_lib) {
+	    if (defined($lib_needed_by{$from})) {	
 		#  It's a library
-	    if ($strip_objfiles == 1) {
-		info(1, "Copy/stripping library $from to $to\n");
-		sys("$objcopy --strip-all $from $to");
-	    }
-	    elsif ($strip_objfiles == 0) {
-		info(1, "Copy/stripping library $from to $to\n");
-		sys("$objcopy --strip-debug $from $to");
-	    }
-	 }   elsif (defined($is_module{$from}) && $strip_module) {
+		if ($strip_objfiles == 1) {
+		    info(1, "Copy/stripping library $from to $to\n");
+		    sys("$objcopy --strip-all $from $to");
+		}
+		elsif ($strip_objfiles == 0) {
+		    info(1, "Copy/stripping library $from to $to\n");
+		    sys("$objcopy --strip-debug $from $to");
+		}
+	    }   
+
+	# Copy file perms and owner
+	my($mode, $uid, $gid);
+	(undef, undef, $mode, undef, $uid, $gid) = stat $from;
+	my $from_base = basename($from);
+	chown($uid, $gid, $to) or ($error = 
+				   error("chown: $! \($from_base\)\n"));
+	return "ERROR"if $error && $error eq "ERROR";
+	chmod($mode, $to)      or ($error = 
+				   error("chmod: $! \($from_base\)\n"));
+        return "ERROR"if $error && $error eq "ERROR";
+	}
+	elsif ($strip_module) {
 	    info(1, "Copy/stripping module $from to $to\n");
 	    sys("$objcopy --strip-debug $from $to");
 
+	    # Copy file perms and owner
+	    my($mode, $uid, $gid);
+	    (undef, undef, $mode, undef, $uid, $gid) = stat $from;
+	    my $from_base = basename($from);
+	    chown($uid, $gid, $to) or ($error = 
+				       error("chown: $! \($from_base\)\n"));
+	    return "ERROR"if $error && $error eq "ERROR";
+	    chmod($mode, $to)      or ($error = 
+				       error("chmod: $! \($from_base\)\n"));
+	    return "ERROR"if $error && $error eq "ERROR";
 	} elsif ($strip_bin) {
 	    #  It's a binary executable
 	    info(1, "Copy/stripping binary executable $from to $to\n");
 	    sys("$objcopy --strip-all $from $to");
-	}
-	# Copy file perms and owner
-	my($mode, $uid, $gid);
-	(undef, undef, $mode, undef, $uid, $gid) = stat $from;
-	chown($uid, $gid, $to) or ($error = error("chown: $!"));
-	return "ERROR"if $error && $error eq "ERROR";
-	chmod($mode, $to)      or ($error = error("chmod: $!"));
-        return "ERROR"if $error && $error eq "ERROR";
 
-    } else {
+	    # Copy file perms and owner
+	    my($mode, $uid, $gid);
+	    (undef, undef, $mode, undef, $uid, $gid) = stat $from;
+	    my $from_base = basename($from);
+	    chown($uid, $gid, $to) or ($error = 
+				       error("chown: $! \($from_base\)\n"));
+	    return "ERROR"if $error && $error eq "ERROR";
+	    chmod($mode, $to)      or ($error = 
+				       error("chmod: $! \($from_base\)\n"));
+	    return "ERROR"if $error && $error eq "ERROR";
+	}
+	else {
+	#  Normal copy, no strip
+	sys("cp $from $to");
+	}
+    }
+    else {
 	#  Normal copy, no strip
 	sys("cp $from $to");
     }
+
 }
 
 
@@ -1114,7 +1149,8 @@ sub sys {
   0;				# like system()
 }
 
-## history
+# Maybe history but @mount_device_if_necessary() uses it.
+# Just need to add error_window.
 sub load_mount_info {
   undef %::mounted;
   undef %::fs_type;
@@ -1578,23 +1614,15 @@ __END__
 ##
 ##############################################################################
 
-#BEGIN { require "yard_utils.pl" }
-#require "Config.pl";
-
 ###  GLOBAL VARIABLES
 my(%Termcap);			# Defs from /etc/termcap
 my($checked_for_getty_files);	# Scalar -- have we checked getty files yet?
 my(%checked);			# Hash table of files we've already checked
 #  This is a little crude.  Technically we should read /etc/conf.getty
 #  to make sure we're not supposed to be using a different login binary.
-my($login_binary) = "$::mount_point/bin/login";
+my($login_binary) = "$mount_point/bin/login";
 
-
-STDOUT->autoflush(1);
-
-# Won't have to do this.
-##@ start_logging_output();
-#info(0, "check_root_fs @yard_version@\n");
+## Maybe this
 ##@mount_device_if_necessary();
 
 #  This goes first so we define %Termcap for use in children
@@ -1609,16 +1637,18 @@ check_passwd();
 check_pam();
 check_nss();
 
-info(0, "All done.\n");
-info(0, "If this is acceptable, continue with write_rescue_disk\n");
-exit;
+info(0, "All done!\n");
+info(0, "You can run more tests with the UML kernel,\n 
+         or construct a distribution by using this root\n
+         filesystem with a boot method.");
 
-
-##############################################################################
-sub warning {
-    info(0, "\n", @_);
+##########################
+
+# I think we will just add all warnings together
+#sub warning {
+#    info(0, "\n", @_);
 #    $Warnings++;
-}
+#}
 
 
 #  This takes a procedure call, forks off a subprocess, chroots to

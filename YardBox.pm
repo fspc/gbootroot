@@ -243,11 +243,11 @@ sub file_system {
 
 my $lib_strip_all;
 my $lib_strip_debug;
-my $strip_bool = "strip-all";
+my $strip_bool = 1;
 sub strip_all {
 
     $lib_strip_debug->active(0);
-    $strip_bool = "strip-all";
+    $strip_bool = 1;
     print "$strip_bool\n";
 
 }
@@ -255,7 +255,7 @@ sub strip_all {
 sub strip_debug {
 
     $lib_strip_all->active(0);
-    $strip_bool = "strip-debug";
+    $strip_bool = 0;
     print "$strip_bool\n";
 
 }
@@ -384,14 +384,11 @@ sub which_stage {
 	    }
 	}
 
-    } # end if one-by-one or continuous
-    elsif ($stages_bool eq "user-defined") {
-
-
-    }
-
-
     for (keys %$continue) { print $_, "=>", $continue->{$_}, "\n"; }
+
+    } # end if one-by-one or continuous
+
+
 
 }
 
@@ -453,11 +450,51 @@ sub continue {
 	    $continue->{create} = 1;
 	    return if $stages_bool eq "one-by-one";
 	}
+        if ( $continue->{test} == 0 ) {
+	    test();
+	    foreach $thing (@check_boxes) {
+		$thing->hide();
+		$thing->active($false);
+		$thing->show();
+	    }   
+	    $continue->{test} = 1;
+	    return if $stages_bool eq "one-by-one";
+	}	
 
     }
     elsif ($stages_bool eq "user-defined") {
-	
-    
+
+	if ($check->get_active()) {
+	    check();
+	    $check->hide();
+	    $check->active($false);
+	    $check->show();
+	}
+	if ($dep->get_active()) {
+	    links_deps();
+	    $dep->hide();
+	    $dep->active($false);
+	    $dep->show();
+	}
+	if ($space->get_active()) {
+	    space_left();
+	    $space->hide();
+	    $space->active($false);
+	    $space->show();
+	}
+	if ($create->get_active()) {
+	    create();
+	    $create->hide();
+	    $create->active($false);
+	    $create->show();
+	}
+	if ($test->get_active()) {
+	    test();
+	    $test->hide();
+	    $test->active($false);
+	    $test->show();
+	}
+
     }
 
 }
@@ -487,7 +524,6 @@ sub space_left {
     $lib_bool = "" if $lib_bool eq 0;
     $bin_bool = "" if $bin_bool eq 0;
     $mod_bool = "" if $mod_bool eq 0;
-    $strip_bool eq "strip-all" ? ($strip_bool = 1) : ($strip_bool = 0);
 
     $error = space_check($filesystem_size, 
               $lib_bool, $bin_bool, $mod_bool,
@@ -501,7 +537,7 @@ sub create {
     $lib_bool = "" if $lib_bool eq 0;
     $bin_bool = "" if $bin_bool eq 0;
     $mod_bool = "" if $mod_bool eq 0;
-    $strip_bool eq "strip-all" ? ($strip_bool = 1) : ($strip_bool = 0);
+
     $error = create_filesystem($filename,$filesystem_size,$filesystem_type,
 			       $inode_size,$mnt,$lib_bool,$bin_bool,
 			       $mod_bool,$strip_bool);
