@@ -53,7 +53,7 @@
 #
 #    Genext2fs
 #    Xavier Bestel <xavier.bestel@free.fr>
-#    Erik Andersen    
+#    Erik Andersen <andersen@codepoet.org>   
 #
 #    Perl
 #    Larry Wall <larry@wall.org>
@@ -1498,7 +1498,7 @@ sub uml_box {
 	\$uml_window);
 	$uml_window->signal_connect("delete_event", \&destroy_window,
 				      \$uml_window);
-	#$uml_window->set_usize( 450, 175 );  # 500 600
+	$uml_window->set_usize( 500, 95 );  # 450 175 || 500 600
 	$uml_window->set_policy( $true, $true, $false );
 	$uml_window->set_title( "UML Box" );
 	$uml_window->border_width(1);    
@@ -1507,8 +1507,10 @@ sub uml_box {
 	$uml_window->add( $main_vbox );
 	$main_vbox->show();
 
-	my $table_uml = Gtk::Table->new( 4, 3, $true );
-	$main_vbox->pack_start( $table_uml, $true, $true, 0 );
+	##my $table_uml = Gtk::Table->new( 4, 3, $true );
+	my $table_uml = Gtk::Table->new( 4, 3, $false );
+	##$main_vbox->pack_start( $table_uml, $true, $true, 0 );
+	$main_vbox->pack_start( $table_uml, $true, $false, 0 );
 	$table_uml->show();
 
 	#_______________________________________
@@ -2027,8 +2029,8 @@ sub button_fileselect_advanced {
 
     my $button = Gtk::Button->new($text);
     $widget->attach($button,$left_attach,$right_attach,
-                                 $top_attach,$bottom_attach, 
-                            ['shrink','fill','expand'],['fill','shrink'],2,2);
+		    $top_attach,$bottom_attach, 
+		    ['shrink','fill','expand'],['fill','shrink'],2,2);
 
     # example
     if ($order == 12) {
@@ -4358,7 +4360,7 @@ Homepage -> http://gbootroot.sourceforge.net
 Submit a Bug -> http://sourceforge.net/bugs/?group_id=9513
 Devel. & Releases  -> http://sourceforge.net/projects/gbootroot
 
-           Places to talk - email lists are more popular.
+Places to talk:
 
 gbootroot-{devel,user} mailing lists -> http://sourceforge.net/mail/?group_id=9513
 Help forum -> http://sourceforge.net/forum/forum.php?forum_id=29639
