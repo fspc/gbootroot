@@ -48,7 +48,6 @@ set_locale Gtk;
 # Gtk-Perl.   A good reference can be found at 
 # http://projects.prosa.it/gtkperl/reference.html
 
-
 # If you want gBootRoot to do it's stuff somewhere else, change the
 # value for $tmp1.
 my $tmp1 = "/tmp";              # tmp should be default - Cristian
@@ -734,6 +733,7 @@ sub advanced_boot_section {
        #_______________________________________        
        # lib_strip_check
        label_advanced("Stripping:",0,1,0,1,$table_advanced);
+
        !defined $lib_strip_check ? ($boolean = 1) 
          : ($boolean = $lib_strip_check->get_active());
        $lib_strip_check = Gtk::CheckButton->new("Libraries");
@@ -874,8 +874,10 @@ sub advanced_root_section {
        # gBootRoot methods
        label_advanced("Root Filename:",0,1,2,3,$table_advanced_root);
        $ear2 = entry_advanced(1,2,2,3,4,$table_advanced_root);
-       $ear2->set_text("root_fs");
-       $ars->{filename} = "root_fs";
+       $ear2->set_text("root_fs") if !$entry_advanced[4];
+       $ars->{filename} = "root_fs" if !$entry_advanced[4];
+       $ear2->set_text($entry_advanced[4]) if $entry_advanced[4];
+       $ars->{filename} = $entry_advanced[4] if $entry_advanced[4];
        ars($ars);       
        $tooltips->set_tip( $ear2, "Give the Root Filesystem file a name.", 
                            "" );
@@ -1424,6 +1426,8 @@ sub save_as {
     $button->signal_connect("clicked", sub {
 
 	$entry_advanced[4] = $new_template;
+	$ars->{filename} = $new_template;
+	ars($ars);       
 
 	# This is a renaming deal and this time doesn't exist in the archive
         # or $tmp.
