@@ -5,11 +5,31 @@ the module path (Debian std. path) into @INC via a BEGIN {}, but the
 new BootRoot::Options was trying to be loaded before the fact because
 it had been placed within the BEGIN{}.
 
-*Fixed a glibc with uml_mconsole and genext2fs for distributions using
+*Fix glibc with uml_mconsole and genext2fs for distributions using
  libc6 2.2.5 since the version previously included was being compiled
- for 2.3.1.  Accomplished this by making gbootroot within redhat 7.3.
+ for 2.3.1.  Accomplished this by making gbootroot within redhat 7.3
+ or stable Debian
 
 * make libc6 dep for debian >= 2.3.1. .. good idea?
+
+* Helper and Initrd need to take into consideration getties for mdk
+  and redhat.
+
+* mdk is now history, but will still be supported
+
+* add [ %if {} %else {} ] logic to templates this allows one template
+  to work properly on a variety of distributions 
+
+  # don't place files with \(){} characters in the logic
+  # can put "#" comments within {}
+
+  \ if ( file ) { file } elsif (file) { file } else { file } \
+
+* (later) add a debootstrap method, tried rootstrap and it is quite
+  buggy, all the infrastructure is in place to have this, and I need
+  these root_fs to run tests from anyways!
+
+* system-auth is now another required redhat pam.d/file
 
 1.4.0 - 01/06/2003
 ------------------
