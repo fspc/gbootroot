@@ -817,7 +817,7 @@ sub advanced_boot_section {
 	my $boolean;
 
        # The table section
-       $table_advanced = Gtk::Table->new( 6, 3, $true );
+       $table_advanced = Gtk::Table->new( 7, 3, $true );
        $vbox_advanced->pack_start( $table_advanced, $true, $true, 0 );
        $table_advanced->show();
 
@@ -928,17 +928,19 @@ sub advanced_boot_section {
        $ea5->set_text($entry_advanced[12]) if defined $entry_advanced[12];
 
 
-=pod
        #_______________________________________ 
-       # Kernel Version
-       label_advanced(":",0,1,5,6,$table_advanced);
-       $ea6 = entry_advanced(2,3,5,6,13,$table_advanced);
-       $tooltips->set_tip( $ea6, "Override the kernel version number found" .
-			         " in the kernel header.  This will change" .
-                                 " the /lib/modules/kernel-version directory",
+       # System.map
+       label_advanced("System.map:",0,1,6,7,$table_advanced);
+       $ea6 = entry_advanced(1,2,6,7,13,$table_advanced);
+       $tooltips->set_tip( $ea6, "When a non-running kernel is chosen it is " .
+			         " important to include a copy of that" .
+                                 " kernel's System.map file so that depmod" .
+			         " can use the correct set of kernel symbols" .
+                                 " to resolve kernel references in each" .
+                                 " module.  This can be found in the" .
+                                 " kernel's source code after compilation.",
                                     "");
        $ea6->set_text($entry_advanced[13]) if defined $entry_advanced[13];
-=cut
 
        $button_count++;
     }
