@@ -160,11 +160,27 @@ sub read_contents_file {
     }
     $contents_file_tmp = $contents_file;
 
-    unlink("$mnt/device_table.txt") if -e "$mnt/device_table.txt";
-
 
     # Need to know whether genext2fs is being used
     my $fs_type = (split(/\s/,$main::makefs))[0];
+
+    # Open DEVICE_TABLE
+    if ( $fs_type eq "genext2fs" ) {
+
+	unlink("$mnt/device_table.txt") if -e "$mnt/device_table.txt";   
+	system "rm -rf $mnt/loopback";
+
+	#<path> <type> <mode> <uid> <gid> <major> <minor> <start><inc><count> 
+	# /dev is always needs to be made automatically
+	open(DEVICE_TABLE, ">$mnt/device_table.txt") or
+	    ($error = error("$mnt/device_table.txt: $!"));
+	return "ERROR"if $error && $error eq "ERROR";
+	
+	print DEVICE_TABLE 
+	    "# <path>\t<type>\t<mode>\t<uid>\t<gid>\t<major>\t<minor>" .
+		"\t<start>\t<inc>\t<count>\n"; 
+	print DEVICE_TABLE "/dev\t\td\t0755\t-\t-\t-\t-\t-\t-\t-\n";
+    }
 
     info(0, "\n\nPASS 1:  Reading $contents_file");
     info(0, "\n");
@@ -201,43 +217,47 @@ sub read_contents_file {
 		  
 		  ,x ) {
 
-	      my ($expr, $tmp_line);
-	      for $expr (split(' ', $line)) {
-		  if (  $expr && $expr =~ m,^/dev$|^/dev/, ) {
+	      if ( $line !~ m,<=|->, ) {            # avoid repeats
 
-		      # Do something here		      
-		      my(@globbed) = yard_glob($expr);
-		      if ($#globbed == -1) {
-			  cf_warn($contents_file, $expr, 
-				  "Warning: No files matched $expr");
-		      } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
-			  info(1, "Expanding $expr to @globbed\n");
-		      }
+		  my ($expr, $tmp_line);
+		  for $expr (split(' ', $line)) {
+		      if (  $expr && $expr =~ m,^/dev$|^/dev/, ) {
+
+			  # Do something here		      
+			  my(@globbed) = yard_glob($expr);
+			  if ($#globbed == -1) {
+			      cf_warn($contents_file, $expr, 
+				      "Warning: No files matched $expr");
+			  } elsif (!($#globbed == 0 and 
+				     $globbed[0] eq $expr)) {
+			      info(1, "Expanding $expr to @globbed\n");
+			  }
 		      
-		      # make device table
-		      device_table($mnt,@globbed);
+			  # make device table
+			  device_table($mnt,@globbed);
 
-		  }
-		  else {
-
-		      if ( $tmp_line ) {
-			  $tmp_line  = $tmp_line . " $expr";
 		      }
 		      else {
-			  $tmp_line = $expr;
+			  
+			  if ( $tmp_line ) {
+			      $tmp_line  = $tmp_line . " $expr";
+			  }
+			  else {
+			      $tmp_line = $expr;
+			  }
+			  
 		      }
-		      
-		  }
 		  
-	      }
+		  }
 
-	      if ( $tmp_line ) {
-		  $line = $tmp_line;
+		  if ( $tmp_line ) {
+		      $line = $tmp_line;
+		  }
+		  else {
+		      next LINE;
+		  }
 	      }
-	      else {
-		  next LINE;
-	      }
-
+	      
 	  }
 
       }
@@ -371,6 +391,11 @@ sub read_contents_file {
 	}
     }				# End of FILE loop
   }				# End of LINE loop
+
+
+    if ( $fs_type eq "genext2fs" ) {
+	close(DEVICE_TABLE);
+    }
 
     info(0, "\nDone with $contents_file\n\n");
     close(CONTENTS) or ($error = error("close on $contents_file: $!"));
@@ -1687,10 +1712,6 @@ sub device_table {
     my $mnt = shift @devices;
     my $error;
 
-    # /dev is always needs to be made automatically
-    open(DEVICE_TABLE, ">>$mnt/device_table.txt") or
-	($error = error("$mnt/device_table.txt: $!"));
-    return "ERROR"if $error && $error eq "ERROR";
     
     #<path>  <type>  <mode>  <uid>  <gid>  <major> <minor> <start><inc><count> 
     # start and inc are the tricky parts with the glob so they are being
@@ -1698,44 +1719,48 @@ sub device_table {
     
     foreach my $device (@devices) {
 	my ( $mode, $uid, $gid ) = (stat($device))[2,4,5];
-	$mode  = sprintf( "%04o", $mode );
-	$mode =~ /^(\d*)(\d{4})$/;
-	my $type = $1; 
-	$mode = $2;			 			 
-	my $maj_min = `file $device`;
 
-	# print only if it is one of these types
-	if ( !-l $device ) {
-	    if ( $type == 2 ) {
-		$type = "c";
+	if ( $mode ) {
+
+	    $mode  = sprintf( "%04o", $mode );
+	    $mode =~ /^(\d*)(\d{4})$/;
+	    my $type = $1; 
+	    $mode = $2;			 			 
+	    my $maj_min = `file $device`;
+
+	    # print only if it is one of these types
+	    if ( !-l $device ) {
+		if ( $type == 2 ) {
+		    $type = "c";
+		}
+		elsif ( $type == 6 ) {
+		    $type = "b";
+		}
+		elsif ( $type == 1 ) {
+		    $type = "p";
+		}
 	    }
-	    elsif ( $type == 6 ) {
-		$type = "b";
+
+	    my ($major, $minor);
+	    if ( $maj_min =~ /special/ ) {
+		$maj_min =~ m,\((\d+)/(\d+)\),;
+		$major = $1;
+		$minor = $2;
 	    }
-	    elsif ( $type == 1 ) {
-		$type = "p";
+	    elsif ( $maj_min =~ /fifo/ ) {
+		$major = "-";
+		$minor = "-";
 	    }
-	}
+	    
+	    if ( $type eq "c" || $type eq "b" || $type eq "p" ) {
+		print DEVICE_TABLE 
+		    "$device\t$type\t$mode\t$uid\t$gid\t$major\t$minor" .
+			"\t-\t-\t-\n";
+	    }
 
-	my ($major, $minor);
-	if ( $maj_min =~ /special/ ) {
-	    $maj_min =~ m,\((\d+)/(\d+)\),;
-	    $major = $1;
-	    $minor = $2;
 	}
-	elsif ( $maj_min =~ /fifo/ ) {
-	    $major = "-";
-	    $minor = "-";
-	}
-
-	if ( $type eq "c" || $type eq "b" || $type eq "p" ) {
-	    print DEVICE_TABLE 
-		"$device\t$type\t$mode\t$uid\t$gid\t$major\t$minor\t-\t-\t-\n";
-	}
-
     }
 
-    close(DEVICE_TABLE);
 
 } # end sub device_table
 
