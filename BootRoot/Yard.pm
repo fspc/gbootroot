@@ -408,8 +408,11 @@ sub read_contents_file {
 
 	  } else {
 	      must_be_abs($file);
-	      (-d $file) and cf_warn($contents_file, $line, 
-                                     "left-hand side can't be directory");
+	      # This doesn't make too much sense, since directories can
+	      # be replacements, and this is just checking the hostfs
+	      # --freesource
+##	      (-d $file) and cf_warn($contents_file, $line, 
+##                                   "left-hand side can't be directory");
 #	      my($abs_replacement) = find_file_in_path($replacement,$main::global_yard);
 	      my($abs_replacement) = find_file_in_path($replacement);
 
