@@ -3,9 +3,10 @@ all:
 
 install:
 	install -d /usr/bin
-	cp -fa gBootRoot /usr/bin/gBootRoot
-	install -d /usr/share/perl5/gBootRoot
-	cp -fa *.pm /usr/share/perl5/gBootRoot
+	cp -fa gbootroot /usr/bin/gbootroot
+	cp -fa yard_chrooted_tests /usr/bin/yard_chrooted_tests
+	install -d /usr/share/perl5/BootRoot
+	cp -fa BootRoot/*.pm /usr/share/perl5/BootRoot
 	install -d /usr/share/gbootroot/yard/replacements
 	cp -fa yard/replacements/* /usr/share/gbootroot/yard/replacements
 	install -d /usr/share/gbootroot/yard/templates
