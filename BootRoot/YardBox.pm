@@ -92,6 +92,16 @@ my @menu_items = ( { path        => '/File',
 		     type        => '<Tearoff>' },
 		   { path        => '/Edit/Settings/Path' },
 		   { path        => '/Edit/Settings/Stripping/' },
+
+##		   { path        => '/Edit/Settings/edit_separator',
+##                     type        => '<Separator>' },
+##		   { path        => '/Edit/Settings/Replacements',
+##		     action      => "4",
+##		     type        => '<CheckItem>' },
+##		   { path        => '/Edit/Settings/Modules',
+##		     action      => "5",
+##		     type        => '<CheckItem>' },
+
 		   { path        => '/Edit/Settings/Stripping/edit_tearoff',
 		     type        => '<Tearoff>' },
 		   { path        => '/Edit/Settings/Stripping/Libraries',
@@ -113,14 +123,6 @@ my @menu_items = ( { path        => '/File',
                    { path        => '/Edit/Settings/Stripping/Modules',
 		     action      => '3',
                      type        => '<CheckItem>' },
-                   { path        => '/Edit/Settings/edit_separator',
-                     type        => '<Separator>' },
-		   { path        => '/Edit/Settings/Replacements',
-		     action      => "4",
-		     type        => '<CheckItem>' },
-		   { path        => '/Edit/Settings/Modules',
-		     action      => "5",
-		     type        => '<CheckItem>' },
 		   { path        => '/Edit/Stages/' },
 		   { path        => '/Edit/Stages/one-by-one',
 		     action      => 13,
@@ -198,6 +200,8 @@ my @menu_items = ( { path        => '/File',
 		     type        => '<Tearoff>' },
                    { path        => '/_Help/Tutorial' },
                    { path        => '/_Help/Shortcuts' } );
+
+
 
 ######
 # YARD
@@ -817,39 +821,39 @@ sub yard_box {
        # Checking - Replacements and/or Modules?
 
        # Replacements
-       my $replacement_check = $item_factory->get_item
-	   ('/Edit/Settings/Replacements');
-       $replacement_check->active($true);
-       $replacement_check->signal_connect( "activate", 
-				   sub { 
+##       my $replacement_check = $item_factory->get_item
+##	   ('/Edit/Settings/Replacements');
+##      $replacement_check->active($true);
+##       $replacement_check->signal_connect( "activate", 
+##				   sub { 
 					 # off
-					 if ($replacement_bool == 1) {
-					     $replacement_bool--;
-				         }
+##					 if ($replacement_bool == 1) {
+##					     $replacement_bool--;
+##				         }
 					 # on
-					 else {
-					     $replacement_bool++;
-					 }
-					 print "$replacement_bool\n";
-				     }
-				 );        
+##					 else {
+##					     $replacement_bool++;
+##					 }
+##					 print "$replacement_bool\n";
+##				     }
+##				 );        
 
        # Modules
-       my $modules_check = $item_factory->get_item('/Edit/Settings/Modules');
-       $modules_check->active($true);
-       $modules_check->signal_connect( "activate", 
-				   sub { 
+##       my $modules_check = $item_factory->get_item('/Edit/Settings/Modules');
+##       $modules_check->active($true);
+##       $modules_check->signal_connect( "activate", 
+##				   sub { 
 					 # off
-					 if ($module_bool == 1) {
-					     $module_bool--;
-				         }
+##					 if ($module_bool == 1) {
+##					     $module_bool--;
+##				         }
 					 # on
-					 else {
-					     $module_bool++;
-					 }
-					 print "$module_bool\n";
-				     }
-				 );        
+##					 else {
+##					     $module_bool++;
+##					 }
+##					 print "$module_bool\n";
+##				     }
+##				 );        
 
        # Tests
        my $test_fstab = $item_factory->get_item('/Tests/fstab'); 
