@@ -370,7 +370,9 @@ symlink_builder("/usr/bin/linux","$home_uml_kernel/linux");
 if (!-e "$home_uml_kernel/.options") {
     open(OPTIONS,">$home_uml_kernel/.options") 
 	or die "Couldn't write $home_uml_kernel/.options at $?\n";
-    print OPTIONS "umid=bootroot root=/dev/ubd0 mem=16M\n";
+    # I removed mem=16M to make sure the optimal mem size was being chosen for the MTD Emulator
+    # in case the user didn't know any better.
+    print OPTIONS "umid=bootroot root=/dev/ubd0\n";
     close(OPTIONS);
 }
 

@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.96 2002/03/11 20:43:44 freesource Exp $</center>
+<center>$Id: index.html,v 1.97 2002/03/13 05:29:04 freesource Exp $</center>
 
 <p>
 
@@ -355,6 +355,14 @@ filesystem.&nbsp;&nbsp;Append with ubd?=.</p>
 
 <p>
 
+
+<!-- 
+Default sizes are chosen for mtdram's memory (mem) and
+ramdisk size (ramdisk_size) requirements, and blkmtd's memory requirements.  
+These can be altered by passing the appropriate option to the
+kernel.
+-->
+
 <u>MTD Emulator</u>
 
 <p>
@@ -392,10 +400,11 @@ chroot in order for the filsystem to properly boot.
 
 <li>
 
-Default sizes are chosen for mtdram's memory (mem) and
-ramdisk size (ramdisk_size) requirements, and blkmtd's memory requirements.  
-These can be altered by passing the appropriate option to the
-kernel.
+The program automatically determines an optimal memory size (mem=nn[KMG]) to
+allow mtdram or blkmtd to work properly.&nbsp;&nbsp;This may be overridden by 
+manually adding the mem  parameter to the Options section in the 
+UML Box or by removing the mem parameter which causes the program to return
+back to the default setting.
 
 <li>
 
