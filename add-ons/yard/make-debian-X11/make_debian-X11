@@ -326,11 +326,11 @@ while (<CHECK>) {
 close (CHECK);
 
 if (@rpc) {
-    print "There are the required packages which were specified:\n\n";
+    print STDERR "These are the required packages which were specified:\n\n";
     $, = " ";
-    print @required_packages, "\n\n";
-    print "This is what wasn't installed on your system:\n\n";
-    print @rpc , "\n\n";
+    print STDERR @required_packages, "\n\n";
+    print STDERR "This is what wasn't installed on your system:\n\n";
+    print STDERR @rpc , "\n\n";
     $, = "";
 }
 
@@ -347,11 +347,11 @@ while (<CHECK>) {
 close (CHECK);
 
 if (@epc) {
-    print "There are the extra packages which were specified:\n\n";
+    print STDERR "These are the extra packages which were specified:\n\n";
     $, = " ";
-    print @extra_packages, "\n\n";
-    print "This is what wasn't installed on your system:\n\n";
-    print @epc , "\n\n";
+    print STDERR @extra_packages, "\n\n";
+    print STDERR "This is what wasn't installed on your system:\n\n";
+    print STDERR @epc , "\n\n";
     $, = "";
 }
 
@@ -364,19 +364,20 @@ push(@required_packages,@extra_packages);
 
 # Ask some questions first.
 my $doc_reply = "nothing";
-print "The default is to remove /usr/share/{doc,man,info}? [yes or no]: ";
+print  "The default is to remove /usr/share/{doc,man,info}? [yes or no]: ";
 while (<STDIN>) {
     $doc_reply = $_;
+    print $doc_reply;
     last if $doc_reply eq "yes\n";
     last if $doc_reply eq "no\n";
     if ($doc_reply eq "\n") { $doc_reply = "yes\n"; last; }
     if ($doc_reply ne "yes\n" || $doc_reply  ne "no\n") { 
-	print "The default is to remove /usr/share/{doc,man,info}? [yes or no]: ";
+	print  "The default is to remove /usr/share/{doc,man,info}? [yes or no]: ";
     }
 }
 
-print "\nThe default is to remove everything in /usr/share/zoneinfo\n" .
-    "except for your local settings found in /etc/locatime? [yes or no]: ";
+print  "\nThe default is to remove everything in /usr/share/zoneinfo\n" .
+    "except for your local settings found in /etc/localtime? [yes or no]: ";
 my $localtime_reply = "nothing";
 while (<STDIN>) {
     $localtime_reply = $_;
@@ -384,7 +385,7 @@ while (<STDIN>) {
     last if $localtime_reply eq "no\n";
     if ($localtime_reply eq "\n") { $localtime_reply = "yes\n"; last; }
     if ($localtime_reply ne "yes\n" || $localtime_reply  ne "no\n") { 
-	print "The default is to remove everything in /usr/share/zoneinfo\n" .
+	print  "The default is to remove everything in /usr/share/zoneinfo\n" .
 	    "except for your local settings found in /etc/locatime? [yes or no]: ";
     }
 }
@@ -460,7 +461,7 @@ foreach (@alternatives) {
 }
 
 close(DEBIAN);
-print "All done making your $debian_yard template.\n";
+print STDERR "All done making your $debian_yard template.\n";
 
 #########################
 # END TEMPLATE CREATION #
