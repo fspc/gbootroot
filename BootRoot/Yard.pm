@@ -286,6 +286,8 @@ sub read_contents_file {
       #      ls cd bash 
       #       echo \
 
+
+
       # First line found with \ &&  may be an if ()
       if ( $line =~ /\s*\\/  ) {
 
@@ -293,7 +295,7 @@ sub read_contents_file {
 	  $control_structure{WATCH}++;
 
 
-	  if ( $line !~ /\s*if\s*/  ) {
+	  if ( $line !~ /\s*if\s*/ ) {
 	      next LINE;
 	  }
 	  else {
@@ -324,10 +326,17 @@ sub read_contents_file {
 			      $control_structure{if_true} = 1;
 			      next LINE;
 			  }
-
+			 
 		      }
 		      
+
 		  } # end for glob condition
+
+
+		  if ( file_exists( $globbed[0] ) eq "FALSE" ) {
+		      next LINE;
+		  }
+
 		  
 		  # Couldn't find a condition
 		  if ( !@globbed ) {
@@ -356,7 +365,6 @@ sub read_contents_file {
 	  }  # line equaled if
 	      	
       }
-
 
       # Next line if it exists between \ \
       elsif ( %control_structure && $control_structure{WATCH} < 2 ) {
@@ -428,12 +436,18 @@ sub read_contents_file {
 				  $control_structure{if_true} = 1;
 				  next LINE;
 			      }
-
+			      
+			      #next LINE;
 
 			  }
 		      
 		      } # end for glob condition
 		  
+
+		      if ( file_exists( $globbed[0] ) eq "FALSE" ) {
+			  next LINE;
+		      }
+
 		      # Couldn't find a condition
 		      if ( !@globbed ) {
 			  cf_warn($contents_file, $line, 
@@ -472,7 +486,7 @@ sub read_contents_file {
 	      if ( $line =~ m,\s*else\s*|\s*elsif\s*, ) {
 
 #########
-		  if ( $line =~ m,\s*elsif\s*\(.*\)\s*, ) {
+		  if ( $line =~ m,\s*elsif\s*, ) {
 
 
 		      $control_structure{elsif}++;
@@ -502,10 +516,15 @@ sub read_contents_file {
 				      next LINE;
 				  }
 				  
+				  #next LINE;
 			      }
 		      
 			  } # end for glob condition
 			  
+			  if ( file_exists( $globbed[0] ) eq "FALSE" ) {
+			      next LINE;
+			  }
+
 			  # Couldn't find a condition
 			  if ( !@globbed ) {
 			      cf_warn($contents_file, $line, 
@@ -539,15 +558,27 @@ sub read_contents_file {
 		  next LINE;
 	      }
 
-
 	  }
 
-
+##
 
       }
 
+
+      # Control Structure Trap
+      # If a condition is false the control structure falls through until it
+      # reaches a true condtion,  this prevents that.
+      if ( 
+	   $line =~ m,\s*if\(.*\)|\s*elsif\(.*\)|\s*else\s*, ) {
+
+	  print "$line IMADEITHERE\n";
+	 
+	  next LINE;
+      }
+
+
       # last line found with ending \ can be besides a statement or by itself
-      elsif ( %control_structure && $control_structure{WATCH} == 2 ) {
+      if ( %control_structure && $control_structure{WATCH} == 2 ) {
 	  
 	  # Better make sure we actually get here
 
