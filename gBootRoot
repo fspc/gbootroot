@@ -280,7 +280,7 @@ my $window = new Gtk::Window("toplevel");
 # special policy
 $window->set_policy( $false, $true, $true );
 $window->set_title("gBootRoot");
-$window->set_position('center');
+$window->set_position('none');
 $window->signal_connect("destroy",
                         sub {
                           unlink "$verbosefn", "$tmp/initrd_image.gz";
@@ -1163,17 +1163,62 @@ sub yard_box {
                        [ 'expand', 'shrink', 'fill' ], 0, 0 );
        $vscrollbar->show();
 
+       #_______________________________________ 
+       # Separator
        my $separator = new Gtk::HSeparator();
        $main_vbox->pack_start( $separator, $false, $true, 0 );
        $separator->show();
 
+       #_______________________________________ 
+       # Check stage boxes
+       # check | links & deps | space | create | test
+       $vbox = new Gtk::HBox( $false, 0 );
+       $vbox->border_width( 0 );
+       $main_vbox->pack_start( $vbox, $false, $true, 0 );
+       $vbox->show();
+
+       my $check = new Gtk::CheckButton("Check");
+       $vbox->pack_start( $check, $true, $true, 10 );
+       show $check;       
+
+       my $dep = new Gtk::CheckButton("Links & Deps");
+       $vbox->pack_start( $dep, $true, $true, 0 );
+       show $dep;       
+
+       my $space = new Gtk::CheckButton("Space Left");
+       $vbox->pack_start( $space, $true, $true, 0 );
+       show $space;       
+
+       my $create = new Gtk::CheckButton("Create");
+       $vbox->pack_start( $create, $true, $true, 0 );
+       show $create;       
+
+       my $test = new Gtk::CheckButton("Test");
+       $vbox->pack_start( $test, $true, $true, 0 );
+       show $test;       
+
+##       $tooltips->set_tip( $lib_strip_check, 
+##                           "This is generally a good idea.  Press the" .
+##                           " right mouse button to change from" .
+##                           " [objcopy --strip-debug] to" . 
+##                           " [objcopy --strip-all].", "" );
+##                               ['expand'],['fill','shrink'],0,0);
+
+
+
+       #_______________________________________ 
+       # Separator
+       $separator = new Gtk::HSeparator();
+       $main_vbox->pack_start( $separator, $false, $true, 0 );
+       $separator->show();
+
+       #_______________________________________ 
+       # Continue - Cancel - Save Buttons
        $vbox = new Gtk::HBox( $false, 10 );
        $vbox->border_width( 10 );
        $main_vbox->pack_start( $vbox, $false, $true, 0 );
        $vbox->show();
 
-       # Continue - Cancel - Save Buttons
-       ##################################
        my $button = new Gtk::Button( "Continue" );
        $button->signal_connect( 'clicked', 
        				sub { destroy $yard_window; } );
