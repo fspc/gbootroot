@@ -749,7 +749,7 @@ sub space_check {
 
 sub create_filesystem {
 
-    my ($filename, $fs_size, $fs_type, $inode_size, $mnt, $strip_lib, 
+    my ($filename, $fs_size, $mnt, $strip_lib, 
 	$strip_bin, $strip_module, $obj_count) = @_;
         
     $device = "$mnt/$filename";
@@ -771,15 +771,18 @@ sub create_filesystem {
 	#####  device.  Use -F switch in mke2fs so it won't complain.
 	## Options here can be changed.
 	## Originally, this was -b 1024 switched with the inode approach.
-	    if (sys("mke2fs -F -m 0 -i $inode_size $device $fs_size") !~ 
+	    if (sys("$main::makefs $device $fs_size") !~ 
 		/^0$/ ) {
-		$error = error("Can not make $fs_type filesystem");
+		my $fs_type = (split(/\s/,$main::makefs))[0];
+		$error = error("Can not $fs_type filesystem");
 		return "ERROR" if $error && $error eq "ERROR";
+
 	    }
     } else {
-	    if (sys("mke2fs -m 0 -i $inode_size $device $fs_size") !~ 
+	    if (sys("$main::makefs $device $fs_size") !~ 
 		/^0$/ ) {
-		$error = error("Can not make $fs_type filesystem");
+		my $fs_type = (split(/\s/,$main::makefs))[0];
+		$error = error("Can not $fs_type filesystem");
 		return "ERROR" if $error && $error eq "ERROR";
 	    }
     }
