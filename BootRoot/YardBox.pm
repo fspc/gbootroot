@@ -909,8 +909,20 @@ sub yard_box {
     $one_by_one =  $item_factory->get_item('/Edit/Stages/one-by-one');
     $continuous = $item_factory->get_item('/Edit/Stages/continuous');
     $user_defined = $item_factory->get_item('/Edit/Stages/user defined');
-    $continuous->active(0);
-    $user_defined->active(0);
+    info(1,"STAGES $stages_bool\n");
+    if ( $stages_bool eq "one-by-one" ) {
+	$continuous->active(0);
+	$user_defined->active(0);
+    }
+    elsif ( $stages_bool eq "continuous" ) {
+	$one_by_one->active(0);
+	$user_defined->active(0);
+    }
+    elsif ( $stages_bool eq "user-defined" ) {
+	$one_by_one->active(0);
+	$continuous->active(0);
+    }
+
 
     # Stripping
     
