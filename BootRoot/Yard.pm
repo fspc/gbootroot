@@ -1107,7 +1107,7 @@ sub info {
   if ($level != 3) {
       print LOGFILE @msgs; 
   }
-  $level = 0x if $level == 3;
+  $level = 0 if $level == 3;
 
   my $output = join("",@msgs);
   if ($verbosity >= $level) {
@@ -2159,7 +2159,6 @@ BLARD
 	    ##  - Add a 'noauto' option if it doesn't already have one
 	    ##  - Put mountpoint under oldroot
 	    $options .= ',noauto' unless $options =~ /\bnoauto\b/;
-	    print "$device $mpt\n";
 	    if ($mpt eq '/') {
 		$mpt = "/"; # limitation of mount cmd
 	    } else {

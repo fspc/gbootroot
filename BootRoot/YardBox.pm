@@ -331,7 +331,7 @@ sub strip_all {
 
     $lib_strip_debug->active(0);
     $strip_bool = 1;
-    print "$strip_bool\n";
+#    print "$strip_bool\n";
 
 }
 
@@ -339,7 +339,7 @@ sub strip_debug {
 
     $lib_strip_all->active(0);
     $strip_bool = 0;
-    print "$strip_bool\n";
+#    print "$strip_bool\n";
 
 }
 
@@ -356,7 +356,7 @@ sub stages_one_by_one {
     $continuous->active(0);
     $user_defined->active(0);
     $stages_bool = "one-by-one";
-    print "$stages_bool\n";
+#    print "$stages_bool\n";
     
 
 }
@@ -366,7 +366,7 @@ sub stages_continuous {
     $one_by_one->active(0);
     $user_defined->active(0);
     $stages_bool = "continuous";
-    print "$stages_bool\n";
+#    print "$stages_bool\n";
 
 }
 
@@ -375,7 +375,7 @@ sub stages_user_defined {
     $one_by_one->active(0);
     $continuous->active(0);
     $stages_bool = "user-defined";
-    print "$stages_bool\n";
+#    print "$stages_bool\n";
 }
 
 
@@ -455,7 +455,7 @@ sub which_stage {
 	    }
 	}
 
-    for (keys %$continue) { print $_, "=>", $continue->{$_}, "\n"; }
+#    for (keys %$continue) { print $_, "=>", $continue->{$_}, "\n"; }
 
     } # end if one-by-one or continuous
 
@@ -847,7 +847,7 @@ sub yard_box {
 					 else {
 					     $lib_bool++;               
 					 }
-					 print "$lib_bool\n";
+					 #print "$lib_bool\n";
 				     }
                                    ); 
 
@@ -875,7 +875,7 @@ sub yard_box {
 					 else {
 					     $bin_bool++;
 					 }
-					 print "$bin_bool\n";
+					 #print "$bin_bool\n";
 				     }
 				 ); 
 
@@ -897,7 +897,7 @@ sub yard_box {
 					 else {
 					     $mod_bool++;
 					 }
-					 print "$mod_bool\n";
+					 #print "$mod_bool\n";
 				     }
 				 ); 
 
