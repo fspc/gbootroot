@@ -1071,18 +1071,35 @@ sub uml_box {
 				      # xterm -e linux ubd#=root_fs 
                                       # root=/dev/ubd# 
 				      my $pid; 
+				      if ($entry_advanced[8] && 
+					  $entry_advanced[10]) {
 				      unless ($pid = fork) {
 					  unless (fork) {
 					      if ($pid == 0) {
 					      sys("$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]");
 				      Gtk->_exit($pid);
-					  }
+					       }
 
 					  }
 
 				      }
 				      waitpid($pid,0);
+				      }
+				      else {
+					  if (!$entry_advanced[8]) {
+					      error_window("gBootRoot Error: " .
+					      "Enter a xterm, and executable " .
+							   "option.");
+					      return;
+					  }
+					  if (!$entry_advanced[10]) {
+					      error_window("gBootRoot Error: " .
+					      "Enter the ubd?=Root_Filesystem " .
+					      "and its location.");
+					      return;
+					  }
 
+				      }
 				  } );
 
 
