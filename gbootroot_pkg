@@ -364,6 +364,9 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
     chdir($packaging_place);
     system "make clean";
     system "make clean-sources";
+    # Not required for unstable Debian
+    system "rm *stamp";
+    system "rm -rf debian/";
 
     foreach my $package ( @rpm_packages ) {
 	open (RPM_PLACE, "$rpm_packaging_place/$package" ) or 
