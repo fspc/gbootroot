@@ -250,8 +250,8 @@ BEGIN {
 
     }
 
-    
-    if ( !%option || $option{gui_mode}) {
+
+    if ( !%option || $option{gui_mode} ) {
 	if ( !$::commandline  ) {
 
 	    use Gtk;
@@ -261,7 +261,6 @@ BEGIN {
 	}	
 
     }
-
 
 }
 
@@ -284,3 +283,4 @@ if ( !%option || $option{gui_mode} ) {
  
     }
 }
+

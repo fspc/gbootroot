@@ -68,7 +68,10 @@ my $version = "1.4.0";
 my $date = "11.19.2002";
 my $gtk_perl_version = "0.7002";
 my $home_rootfs = "$home/root_filesystem/";
-my $home_uml_kernel = "$home/uml_kernel/";
+my $home_uml_kernel;
+$option{gui_mode} ? ($home_uml_kernel = "$home/user-mode-linux/usr/bin/")
+    :  ($home_uml_kernel = "$home/uml_kernel/");
+$option{"uml-kernel"} = $home_uml_kernel . "linux" if !$option{"uml-kernel"};
 my $modules_directory = "/lib/modules";
 my $Initrd;
 $option{gui_mode} ?
@@ -843,8 +846,8 @@ else {
 
 # Let's read in the ARGV
 
-    die "specify a template found in $template_dir\nuse --template\n" 
-	if !$option{template};
+###    die "specify a template found in $template_dir\nuse --template\n" 
+###	if !$option{template};
 
     start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
     

@@ -1550,7 +1550,8 @@ sub create_expect_uml {
 	    my $x_count = 1;
 
 	    my $command_line = "$expect_program $ubd0 $ubd1 $options " .
-		"$mount_point $preserve_ownership $filesystem";
+		"$mount_point $preserve_ownership " . 
+		$option{"uml-kernel"} . " $filesystem";
 
 	    info(0,"\nUsing helper root_fs to $fs_type the filesystem:\n\n");
 	    info(0,"$command_line\n\n");

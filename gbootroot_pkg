@@ -53,6 +53,7 @@ my $urgency = "low";
 #my $priority = "optional";
 my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
 my $packaging_place = "$user_home/gbootroot/PACKAGING";
+my $packaging_place_orig = $packaging_place;
 my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg";
 my $email = "freesource\@users.sourceforge.net";
 my $name = "Jonathan Rosenbaum";
@@ -146,6 +147,9 @@ foreach (@make_lines) {
 
 # Stuff not in the Makefile
 system "cp -fa $makefile $packaging_place/Makefile";
+
+#  Basically this is stuff we want in the source package, but not the normal
+#  package
 system "cp -fa README $packaging_place/README";
 system "cp -fa user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch $packaging_place/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch";
 
@@ -171,6 +175,16 @@ if (-d $packaging_place) {
          } , $packaging_place ;
 }
 
+# At this point we should make a normal tar.gz source package.  This is
+# a necessary step for packagers who don't want a pre-conditioned package,
+# however there will be sections of the Makefile set-up for my own
+# personal automation used by this program.
+
+my $pristine_source_package = "$packaging_place_orig/$prog-$version" . 
+".tar.gz";
+print "$pristine_source_package $packaging_place\n";
+system "tar cvfz  $pristine_source_package $packaging_place";
+exit;
 
 # Now we to the dh_make thing, and setup the time, version, and defaults. 
 
