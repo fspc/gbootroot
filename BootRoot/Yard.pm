@@ -1584,7 +1584,8 @@ sub copy_strip_file {
 	(undef, undef, $mode, undef, $uid, $gid) = stat $from;
 	my $from_base = basename($from);
 
-	if ( $> == 0 || $fs_type eq "genext2fs" ) {
+	if ( $> == 0 || $fs_type eq "genext2fs" ||
+	     $uml_exclusively == 1 ) {
 	    
 	    if ( $> == 0 ) {
 		chown($uid, $gid, $to) or ($error = 
@@ -1592,8 +1593,6 @@ sub copy_strip_file {
 		return "ERROR"if $error && $error eq "ERROR";
 	    }
 
-	    # This could be done for uml_exclusively, too 
-	    # --freesource
 	    chmod($mode, $to)      or ($error = 
 				       error("chmod: $! \($from_base\)\n"));
 	    return "ERROR"if $error && $error eq "ERROR";

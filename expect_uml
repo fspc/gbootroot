@@ -52,8 +52,6 @@ $uml->command("mount -t hostfs none -o $mount_point /mnt2");
 $uml->command("cp -a /mnt2/* /mnt1");
 if ( $preserve_permissions == 0 ) {
     $uml->command("chown -R 0:0 /mnt1");
-    $uml->command("chmod 0755 /mnt1/lib/libc\.*");
-    $uml->command("chmod 0755 /mnt1/lib/ld-*");
 }
 $uml->command("umount /mnt1; umount /mnt2");   
 $uml->halt();
