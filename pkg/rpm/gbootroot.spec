@@ -15,11 +15,11 @@
 
 %define home /home/mttrader
 %define _topdir %{home}/gbootroot
-%define version 1.4.0
+%define version 1.5.0
 %define release 1
 %define kversion 2.4.19
-%define patch_version 46
-%define util_ver 20021103
+%define patch_version 50
+%define util_ver 20030202
 %define kernel_source linux-%{kversion}.tar.bz2
 %define patch_1 uml-patch-%{kversion}-%{patch_version}.bz2
 %define utilities uml_utilities_%{util_ver}.tar.bz2
