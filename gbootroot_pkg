@@ -147,6 +147,7 @@ foreach (@make_lines) {
 # Stuff not in the Makefile
 system "cp -fa $makefile $packaging_place/Makefile";
 system "cp -fa README $packaging_place/README";
+system "cp -fa user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch $packaging_place/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch";
 
 # Now we get to clean out any CVS directories and make sure that the 
 # permissions are all for the user who will be creating the package.
