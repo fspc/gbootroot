@@ -1,8 +1,2 @@
-#!/bin/bash
-
-# This is what I use to set-up the network from within uml using tap. Edit it to 
-# your own requirments
-
-ifconfig eth0 192.168.1.2 up
-route add -net 192.168.1.0 gw 192.168.1.5 netmask 255.255.255.0
-route add default gw 192.168.1.5
+Edit /etc/network/interfaces to the requirements of your network
+to bring up your interfaces.  
