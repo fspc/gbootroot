@@ -520,28 +520,6 @@ sub extra_links {
 
     for my $file (keys %Included) {
 
-
-	##### Use replacement file if specified
-	$file = $replaced_by{$file} if defined($replaced_by{$file});
-
-	## Here's where some cool stuff happens
-	## This can be turned on/off from the YardBox
-	## NSS
-	if ( $file =~ m,/nsswitch.conf, ) {
-
-	    my @nss_libs = find_nss($file);
-	    foreach ( @nss_libs ) {
-		$Included{$_} = 1;  # adding on the run
-	    }
-
-	}
-
-	## PAM
-	if ( $file =~ m,/pam\.conf|/pam\.d/, ) {
-	    info(0,"PAM $file\n");
-
-	}
-
         # watch for "" - freesource
 	include_file($contents_file, $file) if $file ne "";
     }
@@ -2953,7 +2931,7 @@ sub find_nss {
 		next if $entry =~ /^\[/; # ignore action specifiers
 		my($lib) = "/lib/libnss_${entry}.so.${X}";
 		if ( -e $lib) {
-		    info(0,"[$line]  ='s  $lib\n");
+		    info(1,"[$line]  ='s  $lib\n");
 		    push(@nss_libs,$lib) if !$nss_repeats{$lib};
 		    $nss_repeats{$lib} = 1;
 		}
