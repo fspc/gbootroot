@@ -2,7 +2,7 @@
 # buildroot, UML, and gbootroot.
 
 VERSION=2.4.19
-PATCH_VERSION=50
+PATCH_VERSION=51
 UTIL_VER=20030202
 
 BASE_DIR=${shell pwd}

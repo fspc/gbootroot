@@ -1,7 +1,7 @@
 1.5.0 - 02/24/2003
 ------------------
 
-Updated to 2.4.19-50um and the latest uml tools 20030202.
+Updated to 2.4.19-51um and the latest uml tools 20030202.
 
 Fixed a @INC problem with rpm packages. The fhs checks usually insert
 the module path (Debian std. path) into @INC via a BEGIN {}, but the
