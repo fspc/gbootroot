@@ -1521,9 +1521,9 @@ sub find_file_in_path {
 
   my($file, @path) = @_;
 
-  if (!@path) {
+  ## if (!@path) {
     #####  Initialize @pathlist if necessary
-    if (!@pathlist) {
+    ## if (!@pathlist) {
       @pathlist = split(':', $ENV{'PATH'});
       if (defined(@::additional_dirs)) {
 	unshift(@pathlist, @::additional_dirs);
@@ -1531,10 +1531,10 @@ sub find_file_in_path {
 	$ENV{"PATH"} = join(":", @::additional_dirs) .
 	    ":$ENV{'PATH'}";
       }
-      info(1, "Using search path:\n", join(" ", @pathlist), "\n");
-    }
+      ##info(1, "Using search path:\n", join(" ", @pathlist), "\n");
+    ## }
     @path = @pathlist;
-  }
+  ## }
 
 
   if ($file) {
