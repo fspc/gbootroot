@@ -1498,7 +1498,8 @@ sub uml_box {
 	\$uml_window);
 	$uml_window->signal_connect("delete_event", \&destroy_window,
 				      \$uml_window);
-	$uml_window->set_usize( 500, 95 );  # 450 175 || 500 600
+	##$uml_window->set_usize( 500, 95 );  # 450 175 || 500 600
+	$uml_window->set_default_size( 500, 95 );  # 450 175 || 500 600
 	$uml_window->set_policy( $true, $true, $false );
 	$uml_window->set_title( "UML Box" );
 	$uml_window->border_width(1);    
