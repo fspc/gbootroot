@@ -33,6 +33,7 @@
 use Gtk;
 use strict;
 use Yard;
+use File::Basename;
 init Gtk;
 
 
@@ -108,7 +109,6 @@ my $date = "09.03.2000";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $template_dir = "./";
-use File::Basename;
 
 my $initrd;
 my $compress;
@@ -248,6 +248,8 @@ if (!-d "$tmp1/gbootroot_mnt$$") {
 #  0 --> only the important messages.
 #  1 --> all messages.
 my $verbosity = 1; # info & sys use this as Global
+
+## Both of these files are used, but that will be changed
 my $verbosefn = "$tmp/verbose"; # gBootRoot
 my $yard_temp = "/tmp/yard_verbose";  # Yard - always logged, but 0&1 = STDOUT
 start_logging_output($yard_temp,$verbosity); # Yard "tmp dir name" 
@@ -717,7 +719,7 @@ sub advanced_root_section {
        # gBootRoot methods
 
 
-       my $hbox_between = new Gtk::HBox(1,1);
+       my $hbox_between = new Gtk::HBox(0,1);
        $table_advanced_root->attach($hbox_between,0,3,4,5,
                               ['fill'],
 			      ['fill','shrink'],15,0 );
@@ -735,7 +737,7 @@ sub advanced_root_section {
                            "Choose Compression used on the Filesystem.", "" );
        $gz_toggle_root = $rbutton;
        $rbutton->set_active( $true );
-       $hbox_between->pack_start( $rbutton, $false, $false, 0 );
+       $hbox_between->pack_start( $rbutton, $true, $false, 0 );
        $rbutton->show();
 
        # bz2
@@ -743,14 +745,14 @@ sub advanced_root_section {
        $tooltips->set_tip( $rbutton, 
                            "Choose Compression used on the Filesystem.", "" );
        $bz2_toggle_root = $rbutton;
-       $hbox_between->pack_start( $rbutton, $false, $false, 0 );
+       $hbox_between->pack_start( $rbutton, $true, $false, 0 );
        $rbutton->show();
 
        # compression off
        $compression_off = new Gtk::CheckButton( "off");
        $tooltips->set_tip( $compression_off, 
                            "Turn Compression off.", "" );
-       $hbox_between->pack_start( $compression_off, $false, $false, 0 );
+       $hbox_between->pack_start( $compression_off, $true, $false, 0 );
        $compression_off->show();
 
 
@@ -992,10 +994,11 @@ sub yard {
         return;
     }
     read_contents_file("$template_dir$template");
+
     extra_links("$template_dir$template");
     library_dependencies("$template_dir$template");
     hard_links();
-    space_check();
+    space_check($tmp);
 
 } # end sub yard
 
@@ -1014,8 +1017,6 @@ sub button_advanced {
 }
 
 sub button_fileselect_advanced {
-
-
 
     # cretzu should like this
     # $order does matter because it fills in $container[$order].
@@ -1124,10 +1125,10 @@ sub create_text {
 
        $text->freeze();
        if ($text_type eq "help") {
-       $text->insert( undef, undef, undef, help() );
+	   $text->insert( undef, undef, undef, help() );
        }
        elsif ($text_type eq "yard") {
-       $text->insert( undef, undef, undef, "Stuff coming soon" );
+	   $text->insert( undef, undef, undef, "Stuff coming soon" );
        }
        $text->thaw();
 
@@ -1209,7 +1210,7 @@ sub file_ok_sel {
 
     # auto-detect compression if system has file
     if ($container[2]) {
-        my $file = system "which file > /dev/null 2>&1";
+        my $file = sys("which file");
         if ($file == 0) {
            open(F,"file $container[2]|"); # no error check here
              while (<F>) {
@@ -1281,7 +1282,7 @@ sub entry {
      
                  # auto-detect compression if system has file
                  if ($num == 2) {
-                     my $file = system "which file > /dev/null 2>&1";
+                     my $file = sys("which file");
                      if ($file == 0) {
 		       if ($container[2]) {
                        open(F,"file $container[2]|"); # no error check here 
@@ -1349,7 +1350,7 @@ sub submit {
       open (MTAB, "/etc/mtab") or die "no mtab!\n";
       while (<MTAB>) {
          if (m,$mnt,) {
-           system "umount $mnt >> $verbosefn 2>&1";
+           sys("umount $mnt");
          }
       }
       close(MTAB);
@@ -1545,127 +1546,11 @@ elsif (defined $container[0] && defined $container[1] &&
 
 } # end sub submit
 
-sub error_window {
-    my ($error) = @_;
-
-    if (not defined $error_window) {
-    $error_window = new Gtk::Dialog;
-    $error_window->signal_connect("destroy", \&destroy_window,
-                                  \$error_window);
-    $error_window->signal_connect("delete_event", \&destroy_window, 
-                                  \$error_window);
-    $error_window->set_title("gBootRoot ERROR");
-    $error_window->border_width(15);
-    my $label = new Gtk::Label($error);
-    $label->set_justify("left") if $_[1];
-    $error_window->vbox->pack_start( $label, $true, $true, 15 );
-    $label->show();
-    my $button = new Gtk::Button("OK");
-    $button->signal_connect("clicked", sub {destroy $error_window});
-    $button->can_default(1);
-    $error_window->action_area->pack_start($button, $false, $false,0);
-    $button->grab_default;
-    $button->show;
-   }
-     if (!visible $error_window) {
-         show $error_window;
-     }
-     else {
-        destroy $error_window;
-     }
-
-} # end sub error_window
-
-sub errmk {
-   error_window("gBootRoot: ERROR: Could not make important directories") if $? != 0;
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub errcp {
-   error_window("gBootRoot: ERROR: Could not copy over important stuff") if $? != 0;
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub errum {
-   error_window("gBootRoot: ERROR: Could not umount the device") if $? != 0;
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub errm {
-   error_window("gBootRoot: ERROR: Could not mount device") if $? != 0;
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub errrm {
-   error_window("gBootRoot: ERROR: Could not remove a directory or file")
-                if $? != 0;
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub err {
-   error_window("gBootRoot: ERROR: Not enough space after all") if ($? > 0);
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub err_custom {
-
-    if (defined $_[2]) {
-         system("$_[0] > /dev/null 2>&1");
-    }
-    else {
-     system("$_[0] >> $verbosefn 2>&1");
-    }
-    error_window($_[1]) if ($? != 0);
-    if (defined $error_window) {
-        if ($error_window->visible) {
-           return 2;
-        }
-    }
-}
-
-sub err_custom_perl {
-
-   if ((split(/ /, $_[0]))[0] eq "mkdir") {
-      my $two = (split(/ /, $_[0]))[1];
-      mkdir($two,0755); # Anyone allowed in
-    }
-    error_window($_[1]) if ($? != 0);
-    if (defined $error_window) {
-        if ($error_window->visible) {
-           return 2;
-        }
-    }
-}
-
 sub lilo {
 
   # Do a little cleanup just in case
-  system "rm $tmp/initrd_image.gz 2> /dev/null" if $ok == 1;
-  system "umount $tmp/initrd_mnt 2> /dev/null";
+  sys("rm $tmp/initrd_image.gz") if $ok == 1;
+  sys("umount $tmp/initrd_mnt");
 
   $kernel = $container[1];
   $root_image = $container[2];
@@ -1701,39 +1586,38 @@ sub lilo_put_it_together {
   }
 
    # Better do this first
-  #V#print "Copy over initrd ramdisk\n";
+  info(0, "Copy over initrd ramdisk\n");
   return if err_custom("cp $tmp/$initrd $mnt/$initrd","gBootRoot: ERROR: Could not copy over initrd") == 2;
   pb($B,2);
 
-  #V#print "Copying over kernel\n";
+  info(0, "Copying over kernel\n");
   return if
   err_custom("rm -rf $mnt/lost+found; cp $kernel $mnt/kernel",
                "gBootRoot: ERROR: Could not copy over the kernel") == 2;
   pb($B,3);
 
-  #V#print "Making stuff for lilo\n";
-  return if err(system "mkdir $mnt/{boot,dev} >> $verbosefn 2>&1; cp -a /dev/{null,fd?,hda1} $mnt/dev >> $verbosefn 2>&1") == 2;
+  info(0, "Making stuff for lilo\n");
+   # will be 0 if mkdir fails, but 0 if cp succeeds ?
+  return if err(sys("mkdir $mnt/{boot,dev}")) == 2; 
+  return if err(sys("cp -a /dev/{null,fd?,hda1} $mnt/dev")) == 2;
 
   # Hopefully, this works, but have never tested it
   if ($device !~ m,/dev/fd\d{1}$,) {
-     return if err(
-     system "cp -a $device $mnt/dev >> $verbosefn 2>&1") == 2;
+     return if err(sys("cp -a $device $mnt/dev")) == 2;
   }
 
   # This adds that next device
   ($norm_root_device) = gdkbirdaao();
   if (!-e "$mnt/dev/$norm_root_device") {
-    return if err(
-    system "cp -a /dev/$norm_root_device $mnt/dev >> $verbosefn 2>&1") == 2;
+    return if err(sys("cp -a /dev/$norm_root_device $mnt/dev")) == 2;
   }
 
   # For frame buffer devices and the like.
   if ($entry_advanced[1]) {
-      return if errcp(system "cp -a $entry_advanced[1] $mnt/dev >> $verbosefn 2>&1") == 2;
+      return if errcp(sys("cp -a $entry_advanced[1] $mnt/dev")) == 2;
   }
 
-  #pb($B,3);
-  #V#print "Copy over important lilo stuff\n";
+  info(0, "Copy over important lilo stuff\n");
   return if
   err_custom("cp /boot/boot.b $mnt/boot",
   "gBootRoot: ERROR: Not enough space or can't find /boot/boot.b") == 2;
@@ -1754,12 +1638,12 @@ sub lilo_put_it_together {
 
   # Got to umount,mount, and umount again to make sure everything is
   # copied over before doing lilo
-  return if errum(system "umount $mnt >> $verbosefn 2>&1") == 2;
-  #V#print "Umount device\n";
-  #V#print "Remount device\n";
+  return if errum(sys("umount $mnt")) == 2;
+  info(0, "Umount device\n");
+  info(0, "Remount device\n");
   pb($B,6);
-  return if errm(system "mount -t ext2 $entry_advanced[0] $mnt >> $verbosefn 2>&1") == 2;
-  #V#print "Configuring lilo\n";
+  return if errm(sys("mount -t ext2 $entry_advanced[0] $mnt")) == 2;
+  info(0, "Configuring lilo\n");
   pb($B,7);
   chdir("$mnt"); #"boot_root: ERROR: Could not change directories\n";
   if ($device eq $entry_advanced[0]) {
@@ -1775,13 +1659,13 @@ sub lilo_put_it_together {
 
   chdir($pwd); # or die "boot_root: ERROR: Could not change directories\n";
 
-  #V#print "Umounting $mnt\n";
-  my $um = errum(system "umount $mnt >> $verbosefn 2>&1");
+  info(0, "Umounting $mnt\n");
+  my $um = errum(sys("umount $mnt"));
   pb($B,10);
 
   if ($ok == 1 || $ok == 2) {
    return if
-   errrm(system "rmdir $tmp/initrd_mnt >> $verbosefn 2>&1") == 2;
+   errrm(sys("rmdir $tmp/initrd_mnt")) == 2;
   }
 
 # Here's where we copy over that compressed filesystem
@@ -1809,9 +1693,8 @@ sub device2 {
       $entry5->set_text("$remain_root k");
   }
 
-
-     #V#print "Copy over the compressed filesystem\n";
-     return if errrm(system "rmdir $mnt/lost+found >> $verbosefn 2>&1") == 2;
+     info(0, "Copy over the compressed filesystem\n");
+     return if errrm(sys("rmdir $mnt/lost+found")) == 2;
      my $broot_image = basename($root_image);
 
      my $FS = "filesystem";
@@ -1833,7 +1716,7 @@ sub device2 {
      err_custom("umount $mnt",
       "gBootRoot: ERROR: Root disk did not properly umount") == 2;
      pb($FS,$count,$line_count);
-     #V#print "Finished!\n";
+     info(0, "Finished!\n");
 
 } # end sub device 2
 
@@ -1852,17 +1735,17 @@ sub stripper {
              ($_[1] eq "lib" && $lib_strip_check->active)) {
              # --strip-all works for initrd
              if ($obj_count == 0) {
-	           system "objcopy --strip-debug $_[0] $tmp/$filename"; 
+	           sys("objcopy --strip-debug $_[0] $tmp/$filename"); 
 	           return ( "$tmp/$filename", 1 );
              }
              elsif ($obj_count == 1) {
-	           system "objcopy --strip-all $_[0] $tmp/$filename"; 
+	           sys("objcopy --strip-all $_[0] $tmp/$filename"); 
 	           return ( "$tmp/$filename", 1 );
 	     }
          }
          elsif (($_[1] eq "bin" && !defined $bin_strip_check) or
                 ($_[1] eq "bin" && $bin_strip_check->active)) {
-	     system "objcopy --strip-all $_[0] $tmp/$filename"; 
+	     sys("objcopy --strip-all $_[0] $tmp/$filename"); 
 	     return ( "$tmp/$filename", 1 );
          }
      }
@@ -1879,7 +1762,7 @@ sub initrd_size {
   my ($linuxrc_size) = @_;
   my ($what,$lib);
   my ($path,$value);
-  #V#print "Checking size needed for initrd\n";
+  info(0, "Checking size needed for initrd\n");
 
   # the size of the loop device should be at least 1.63% larger than what
   # it will contain (i.e. 8192 inode), but to keep on the safe size it will
@@ -1895,21 +1778,20 @@ sub initrd_size {
 
   # add other executables here
   my @initrd_stuff = qw(ash gzip mount umount);
+
   foreach (@initrd_stuff) {
-     ($path,$value) = stripper("/bin/$_","bin");
+     ($path,$value) = stripper(find_file_in_path($_),"bin");
      $initrd_size =  $initrd_size + ((stat($path))[12]/2);
      unlink($path) if $value == 1;
   }
 
-  # path for bzip2 assumes too much
-  if ($compress eq "bzip2" && -e "/usr/bin/$compress") {
-     ($path,$value) = stripper("/usr/bin/$compress","bin");
+  if ($compress eq "bzip2" && -e find_file_in_path($compress)) {
+     ($path,$value) = stripper(find_file_in_path($compress),"bin");
      $initrd_size = $initrd_size + ((stat($path))[12]/2);
      unlink($path) if $value == 1;
   }
 
-  # lib sizes
-  # for testing purposes change $lib_place value
+  # lib sizes  This is going to be improved later with library_dependencies
   open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd
    while (<L>) {
       $lib = (split(/=>/,$_))[0];
@@ -1978,58 +1860,62 @@ sub initrd {
   my $size_needed = initrd_size((stat("$tmp/linuxrc"))[12]/2);
   unlink("$tmp/linuxrc");
 
-  #print V "Using loop device to make initrd\n";
-  #V#print V "Make sure you have loop device capability in your running kernel\n";
-  system "dd if=/dev/zero of=$tmp/$initrd bs=1024 count=$size_needed >> $verbosefn 2>&1";
+  info(0, "Using loop device to make initrd\n");
+  info(0, "Make sure you have loop device capability in your running kernel\n");
+  sys("dd if=/dev/zero of=$tmp/$initrd bs=1024 count=$size_needed");
   pb($I,2);
   # no need to enter y every time .. could use -F
   open(T,"|mke2fs -m0 -i8192 $tmp/$initrd >> $verbosefn 2>&1") or die "Problem here: $!\n";  print T "y\n"; close(T);
   pb($I,3);
-  #V#print V "Mounting initrd in tmp\n";
+  info(0, "Mounting initrd in tmp\n");
 
-return if errmk(system "mkdir $tmp/initrd_mnt >> $verbosefn 2>&1; mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt >> $verbosefn 2>&1") == 2;
+  return if errmk(sys("mkdir $tmp/initrd_mnt")) == 2;
+  return if errmk(sys("mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt"))
+          == 2;
   pb($I,4);
 
-  #V#print "Putting everything together\n";
+  info(0, "Putting everything together\n");
   open(LC, ">$tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to loop device\n";
   print LC initrd_heredoc($broot_image); close(LC);
   # I could test this but somebody's system may do permissions differently
-  system "chmod 755 $tmp/initrd_mnt/linuxrc >> $verbosefn 2>&1";
-  system "rmdir $tmp/initrd_mnt/lost+found >> $verbosefn 2>&1";
+  sys("chmod 755 $tmp/initrd_mnt/linuxrc");
+  sys("rmdir $tmp/initrd_mnt/lost+found");
   pb($I,5);
 
-  #V#print "... the dirs\n";
-  return if errmk(system "mkdir $tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr} >> $verbosefn 2>&1; mkdir $tmp/initrd_mnt/usr/lib >> $verbosefn 2>&1") == 2;
+  info(0, "... the dirs\n");
+  return if errmk(
+      sys("mkdir $tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr}")) == 2; 
+  return if errmk(sys("mkdir $tmp/initrd_mnt/usr/lib")) == 2;
   pb($I,6);
 
-  return if errcp(system "cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev >> $verbosefn 2>&1") == 2;
-  return if errcp(system "cp -a $device $tmp/initrd_mnt/dev >> $verbosefn 2>&1") == 2;
+  return if errcp(
+  sys("cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev")) == 2;
+  return if errcp(sys("cp -a $device $tmp/initrd_mnt/dev")) == 2;
   pb($I,7);
 
-  #V#print ".. the bins\n";
+  info(0, ".. the bins\n");
   my @initrd_stuff = qw(ash gzip mount umount);
   foreach (@initrd_stuff) {
-     ($path,$value) = stripper("/bin/$_","bin");
+     ($path,$value) = stripper(find_file_in_path($_),"bin");
      $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-     return if errcp(system "$tool $path $tmp/initrd_mnt/bin >> $verbosefn 2>&1") == 2;
+     return if errcp(sys("$tool $path $tmp/initrd_mnt/bin")) == 2;
   }
 
-  # path for bzip2 assumes too much
-  if ($compress eq "bzip2" && -e "/usr/bin/$compress") {
-     ($path,$value) = stripper("/usr/bin/$compress","bin");
+  if ($compress eq "bzip2" && -e find_file_in_path($compress)) {
+     ($path,$value) = stripper(find_file_in_path($compress),"bin");
      $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-     return if errcp(system "$tool $path $tmp/initrd_mnt/bin >> $verbosefn 2>&1") == 2;
+     return if errcp(sys("$tool $path $tmp/initrd_mnt/bin")) == 2;
   }
 
   # Testing if init is sufficient for grabbing the correct libraries for the
   # executables immediately above.  This could be modified to test a
   # list of executables.
-  #V#print ".. the libs\n";
-  open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd
+  info(0, ".. the libs\n");
+  open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd, this is going to be fixed later with library_dependencies
    while (<L>) {
       $lib = (split(/=>/,$_))[0];
       $lib =~ s/\s+//;
-      $lib = basename($lib);
+      $lib = basename($lib); 
       $lib =~ s/\s+$//;
       open (SL,"ls -l /lib/$lib|") or die "humm: $!\n";
         while (<SL>) {
@@ -2038,26 +1924,26 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $verbosefn 2>&1; mount -o loop 
             $what = (split(/\s+/,$_))[10];
             ($path,$value) = stripper("/lib/$lib","lib");
             $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-            return if errcp(system "$tool $path $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
+            return if errcp(sys("$tool $path $tmp/initrd_mnt/lib")) == 2;
 	    ($path,$value) = stripper("/lib/$what","lib");
 	    $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-            return if errcp(system "$tool $path $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
+            return if errcp(sys("$tool $path $tmp/initrd_mnt/lib")) == 2;
           }
           # no symbolic link
           else {
 	    ($path,$value) = stripper("/lib/$lib","lib");
-            return if errcp(system "cp -a $path $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
+            return if errcp(sys("cp -a $path $tmp/initrd_mnt/lib")) == 2;
           }
         }
    }
 
 
-  #V#print "Determine run-time link bindings\n";
+  info(0, "Determine run-time link bindings\n");
   # Has a return code of 0 regardless
-  system "ldconfig -r $tmp/initrd_mnt";
-  #V#print "Umounting loop device, and compressing initrd";
-  return if errum(system "umount $tmp/initrd_mnt >> $verbosefn 2>&1") == 2;
-  system "gzip -f9 $tmp/$initrd >> $verbosefn 2>&1";
+  sys("ldconfig -r $tmp/initrd_mnt");
+  info(0, "Umounting loop device, and compressing initrd");
+  return if errum(sys("umount $tmp/initrd_mnt")) == 2;
+  sys("gzip -f9 $tmp/$initrd");
   pb($I,10); # This takes the longest.
 
   $initrd = $initrd . ".gz";
@@ -2190,6 +2076,10 @@ sub gdkbirdaao
 
 } # end sub gdkbirdaao
 
+#########
+# Mtab area
+#########
+
 sub mtab_window {
 # Will just use a dialog box.
     my ($dialog,$error,$count,$pattern) = @_;
@@ -2276,19 +2166,149 @@ mtab_window($dialog,$error,$count) if $error == 0;
   # Keep asking until they are.
   if ($error == 1) {
    destroy $mtab;
-   system "mke2fs -m0 -i8192 $entry_advanced[0] $size >> $verbosefn 2>&1";
+   sys("mke2fs -m0 -i8192 $entry_advanced[0] $size");
    if ($? != 0) {
     $dialog = "gBootRoot: ERROR: You need to insert a disk\n";
      mtab_window($dialog,$error,$count);
      return;
    }
-   return if errm(system "mount -t ext2  $entry_advanced[0] $mnt >> $verbosefn 2>&1") == 2;
+   return if errm(sys("mount -t ext2  $entry_advanced[0] $mnt")) == 2;
    lilo_put_it_together() if $count == 0;
    device2() if $count == 1;
   }
 
 } # end sub mtab_check
 
+#############
+# Error Section
+#############
+# The biggest problem here is that err? are hardwired, perhaps one
+# could be used and message could just be $!, err_custom is nice.
+# All err? report errors if $? > 0.
+
+sub error_window {
+    my ($error) = @_;
+
+    if (not defined $error_window) {
+    $error_window = new Gtk::Dialog;
+    $error_window->signal_connect("destroy", \&destroy_window,
+                                  \$error_window);
+    $error_window->signal_connect("delete_event", \&destroy_window, 
+                                  \$error_window);
+    $error_window->set_title("gBootRoot ERROR");
+    $error_window->border_width(15);
+    my $label = new Gtk::Label($error);
+    $label->set_justify("left") if $_[1];
+    $error_window->vbox->pack_start( $label, $true, $true, 15 );
+    $label->show();
+    my $button = new Gtk::Button("OK");
+    $button->signal_connect("clicked", sub {destroy $error_window});
+    $button->can_default(1);
+    $error_window->action_area->pack_start($button, $false, $false,0);
+    $button->grab_default;
+    $button->show;
+   }
+     if (!visible $error_window) {
+         show $error_window;
+     }
+     else {
+        destroy $error_window;
+     }
+
+} # end sub error_window
+
+sub errmk {
+   error_window("gBootRoot: ERROR: Could not make important directories") if $? != 0;
+   if (defined $error_window) {
+       if ($error_window->visible) {
+          return 2;
+       }
+   }
+}
+
+sub errcp {
+   error_window("gBootRoot: ERROR: Could not copy over important stuff") if $? != 0;
+   if (defined $error_window) {
+       if ($error_window->visible) {
+          return 2;
+       }
+   }
+}
+
+sub errum {
+   error_window("gBootRoot: ERROR: Could not umount the device") if $? != 0;
+   if (defined $error_window) {
+       if ($error_window->visible) {
+          return 2;
+       }
+   }
+}
+
+sub errm {
+   error_window("gBootRoot: ERROR: Could not mount device") if $? != 0;
+   if (defined $error_window) {
+       if ($error_window->visible) {
+          return 2;
+       }
+   }
+}
+
+sub errrm {
+   error_window("gBootRoot: ERROR: Could not remove a directory or file")
+                if $? != 0;
+   if (defined $error_window) {
+       if ($error_window->visible) {
+          return 2;
+       }
+   }
+}
+
+sub err {
+   error_window("gBootRoot: ERROR: Not enough space after all") if ($? > 0);
+   if (defined $error_window) {
+       if ($error_window->visible) {
+          return 2;
+       }
+   }
+}
+
+sub err_custom {
+
+    if (defined $_[2]) {
+         system("$_[0] > /dev/null 2>&1");
+    }
+    else {
+     sys("$_[0] >> $verbosefn 2>&1");
+    }
+    error_window($_[1]) if ($? != 0);
+    if (defined $error_window) {
+        if ($error_window->visible) {
+           return 2;
+        }
+    }
+}
+
+sub err_custom_perl {
+
+   if ((split(/ /, $_[0]))[0] eq "mkdir") {
+      my $two = (split(/ /, $_[0]))[1];
+      mkdir($two,0755); # Anyone allowed in
+    }
+    error_window($_[1]) if ($? != 0);
+    if (defined $error_window) {
+        if ($error_window->visible) {
+           return 2;
+        }
+    }
+}
+
+#################
+# End Error Section
+#################
+
+################
+# Here Doc Section
+################
 
 sub initrd_heredoc {
 
