@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.85 2002/01/20 17:29:44 freesource Exp $</center>
+<center>$Id: index.html,v 1.86 2002/02/04 18:23:43 freesource Exp $</center>
 
 <p>
 
@@ -26,54 +26,91 @@ testing of distributions fun and simple.</P>
 
 <br>
 
-<P align="center">
-<b>Download gBootRoot</b></P>
-<P align="center">
+<H3>
+Download gBootRoot</h3>
+
+Note: On some browsers you may have to press Shift+Button1 to download.
+
+<P>
 <b>Newest version</b><br>
 
-(Version 1.3.3 dedicated to Liav Asseraf for pointing out a mistake in the
-FAQ, and asking more good questions.)
+<em>1.3.4</em> available in tar.gz, deb, and rpm formats.
+
 <br>
 
-(Version 1.3.2 dedicated to Liav Asseraf for an important bug report and questions.)
-<br>
+Main repository:&nbsp;&nbsp;
+<A href="http://prdownloads.sourceforge.net/gbootroot/">
+http://prdownloads.sourceforge.net/gbootroot/</A><br>
 
-(Milestone version 1.3.1 dedicated to  the first ever 
+Milestone version 1.3.1 dedicated to  the first ever 
 <a href="http://www.morlug.org">MORLUG</a> meeting in my
-hometown!)
+hometown!
 
 <br><br>
 
-<a href="http://freshmeat.net/redir/gbootroot/3075/url_tgz/gbootroot.orig.tar.gz">gbootroot source (type make to install)</a><br>
+<b>Slackware or just doing it by hand</b><br>
+<a href="http://freshmeat.net/redir/gbootroot/3075/url_tgz/gbootroot.orig.tar.gz">gbootroot source</a><br>
+<em>Instructions:</em><br>
+README and type make to install
+
+
+<p>
+
+<b>Debian based distributions</b><br>
 <a href="http://freshmeat.net/redir/gbootroot/3075/url_deb/gbootroot_i386.deb">
-gbootroot debian package</a></p>
+gbootroot debian package</a><br>
+<em>Instructions:</em><br>
+apt-get --yes install gbootroot or dswim -xyz gbootroot<br>
+after adding these lines to your sources.list:<br>
+<code>deb http://prdownloads.sourceforge.net/gbootroot ./<br>
+deb http://prdownloads.sourceforge.net/avd ./</code><br></p>
 
-<P align="center">
-<b>Add-ons</b><br>
 
+<p>
+
+<b>RPM based distributions</b><br>
+<a href="http://prdownloads.sourceforge.net/gbootroot/gbootroot-1.3.4-1mdk.i386.rpm">
+Mandrake and Mandrake-type distributions</a><br>
+<a href="http://prdownloads.sourceforge.net/gbootroot/gbootroot-1.3.4-1.i386.rpm">
+Red Hat and related distributions</a><br>
+<em>Instructions:</em><br>
+Mandrake-type distribution require <code>perl-GTK >= 0.7002</code><br>
+Red Hat type distributions require <code>Gtk-Perl >= 0.7002</code><br>
+All RPM based distributions require perl-Expect and friends available from the main repostiory:<br>
+<a href="http://prdownloads.sourceforge.net/gbootroot/perl-Expect-1.12-1.i386.rpm">perl-Expect</a><br>
+<a href="http://prdownloads.sourceforge.net/gbootroot/perl-IO-Tty-0.04-1.i386.rpm">perl-IO-Tty</a><br>
+<a href="http://prdownloads.sourceforge.net/gbootroot/perl-IO-Stty-.02-1.i386.rpm">perl-IO-Stty</a><br>
+Other requirements include:<br>
+<code>
+file<br>  
+ash<br>  
+lilo<br>  
+bzip2<br>
+</code>
+
+
+<P>
+<b>Add-ons</b>
+
+<p>
+
+<b>Debian based distributions</b><br>
 <a href="http://freshmeat.net/redir/make-debian-x11/18842/url_tgz/make-debian-x11.orig.tar.gz">
 make-debian-x11 source (type make to install)</a><br>
 <a href="http://freshmeat.net/redir/make-debian-x11/18842/url_deb/make-debian-x11_all.deb">
 make-debian-x11 debian package</a>
+
+
 <p>
 
 
-<p align="center">
+<p><a href="images/screenshot.jpg">Old screenshot</a></P>
 
-<em>Users who use packaging tools which support apt should add these lines to 
-their sources.list:</em><br><br>
+<p><a href="#FAQ">FAQ</a></P>
 
-<align>deb http://prdownloads.sourceforge.net/gbootroot ./<br>
-deb http://prdownloads.sourceforge.net/avd ./<br></p>
+<p><a href="#links">links</a></P>
 
-<p align="center">Older versions found at this
-<A href="http://prdownloads.sourceforge.net/gbootroot/">site</A></P>
-
-<p align="center"><a href="images/screenshot.jpg">Old screenshot</a></P>
-
-<p align="center"><a href="#FAQ">FAQ</a></P>
-
-<p align="center">and</P><br>
+<p><a href="#contact">How to contact</a></P>
 
 <P align="center">
 <IMG ALT="" SRC="images/gbootroot.jpg">
@@ -1451,12 +1488,43 @@ compressed filesystem, this will change in the future; however, actual
 compression is done either in the ABS (not yet) or the ARS, the main
 section is just used to put together the parts.
 
-<p>
 
-<IMG ALT="Larry Ewing's Penguin celebrates in gBootRoot." SRC="images/peng-movie.4.gif">
+<h2><a name="links">Links</h2>
+
+<ul>
+
+<li><a href="http://gbootroot.sourceforge.net">
+gBootRoot</a> and
+<a href="http://www.sourceforge.net/projects/gbootroot">
+site at SourceForge</a>
+
+<li><a href="http://www.linuxdoc.org/HOWTO/Bootdisk-HOWTO/index.html">
+BootDisk-HOWTO</a>
+
+<li><a href="http://user-mode-linux.sourceforge.net">
+User Mode Linux</a>
+
+<li><a href="http://www.stearns.org/mkrootfs/rootfs.html">
+Bills UML Root filesystems</a>
+
+<li><a href="http://umlbuilder.sourceforge.net">
+UML Builder</a>
+
+<li><a href="http://busybox.lineo.com">
+BusyBox</a>
+
+<li><a href="http://trinux.sourceforge.net">
+Trinux</a>
+
+<li><a href="http://www.toms.net/rb/">
+tomsrtbt</a>
+
+</ul>
+
 
 <br><br><br>
-Contact me:&nbsp;&nbsp;Jonathan Rosenbaum&nbsp;&nbsp;<<a href="mailto:freesource@users.sourceforge.net">freesource@users.sourceforge.net</a>>
+<a name="contact">
+Contact me:&nbsp;&nbsp;Jonathan Rosenbaum&nbsp;&nbsp;<a href="mailto:freesource@users.sourceforge.net">freesource@users.sourceforge.net</a>
 <br>
 Submit a Bug:&nbsp;&nbsp;<a href="http://sourceforge.net/bugs/?group_id=9513">gBootRoot Bug System</a>
 <br>
@@ -1464,9 +1532,26 @@ Join or browse the mailing lists:&nbsp;&nbsp;<a href="http://sourceforge.net/mai
 <br>
 Ask a question:&nbsp;&nbsp;<a href="http://sourceforge.net/forum/forum.php?forum_id=29639">Help Forum</a>
 <br>
-Start a discussion:&nbsp;&nbsp;<a href="http://sourceforge.net/forum/forum.php?forum_id=29638">Open Discussion Forum</a>
+Start a discussion:&nbsp;&nbsp;<a href="http://sourceforge.net/forum/forum.php?forum_id=29638">Open Discussion Forum</a></a>
 
 <p>
 
+<br><br><br><br><br>
+
+
+<p align="center">
+<IMG ALT="Larry Ewing's Penguin celebrates in gBootRoot." SRC="images/peng-movie.4.gif"></p>
+
+<p>
 
 </body></html>
+
+
+
+
+
+
+
+
+
+
