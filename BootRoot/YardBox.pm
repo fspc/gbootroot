@@ -39,7 +39,7 @@ my $error;
 my ($continue_button,$close_button,$save_button);
 my($check,$dep,$space,$create,$test);
 my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
-my ($text, $changed_text);
+my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
 
 my $filesystem_type = "ext2";
@@ -218,7 +218,7 @@ sub yard {
 	return "ERROR"if $error && $error eq "ERROR";
 	my @template = <CONTENTS>;
 	close(CONTENTS);
-	$changed_text = join("",@template);
+	$changed_text_from_template = join("",@template);
 	yard_box();
 
     #}
@@ -874,7 +874,7 @@ sub yard_box {
        $text->set_editable($true);
        $text->signal_connect("activate", sub { 
 	   my $new_length =  $text->get_length();
-	   $changed_text = $text->get_chars(0,$new_length);
+	   $changed_text_from_template = $text->get_chars(0,$new_length);
        } );
        $table->attach( $text, 0, 1, 0, 1,
                        [ 'expand', 'shrink', 'fill' ],
@@ -884,7 +884,7 @@ sub yard_box {
        $text->show();
 
        $text->freeze();
-       $text->insert( undef, undef, undef, $changed_text);
+       $text->insert( undef, undef, undef, $changed_text_from_template);
        $text->thaw();
 
        $start_length = $text->get_length();
@@ -998,7 +998,7 @@ sub saved {
 	    open(NEW,">$new") or 
 		($error = error("gBootRoot: ERROR: Can't create $new"));
 	    return if $error && $error eq "ERROR";    
-	    print NEW $changed_text;
+	    print NEW $changed_text_from_template;
 	    close(NEW);
 	    rename($new, "$template_dir$template") or
 		($error = error("gBootRoot: ERROR: Can't rename $new to " .
@@ -1071,7 +1071,7 @@ sub save_as {
 	    # Here's where we get to undef Yard variable and start over at 
 	    # check
 	my $new = "$template_dir$new_template";
-	print "$new && $template_dir$template\n";
+
 	if (!basename($new)) {
 	    if ( file_mode("$template_dir$template") =~ /l/ ) {
 		error_window("gBootRoot: ERROR: $template_dir$template is not " .
@@ -1091,7 +1091,7 @@ sub save_as {
 	open(NEW,">$new") or 
 		($error = error("gBootRoot: ERROR: Can't create $new"));
 	return if $error && $error eq "ERROR";    
-	print NEW $changed_text;
+	print NEW $changed_text_from_template;
 	close(NEW);
 	$template = $new_template;
 
