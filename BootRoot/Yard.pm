@@ -146,9 +146,14 @@ sub read_contents_file {
     # It's a good idea to clear the text buffer in the verbosity box
     $text_insert->backward_delete($text_insert->get_length());
 
+
+    # Need to know whether genext2fs is being used
+    my $fs_type = (split(/\s/,$main::makefs))[0];
+
     # If the template changes it is time to clear all the values.
     # Delete devices table.
-    if ($contents_file_tmp && $contents_file_tmp ne $contents_file) {
+    if ( ($contents_file_tmp && $contents_file_tmp ne $contents_file) or
+	 $fs_type eq "genext2fs" ) {
 	undef %Included; 
 	undef %replaced_by;
 	undef %links_to;
@@ -160,9 +165,6 @@ sub read_contents_file {
     }
     $contents_file_tmp = $contents_file;
 
-
-    # Need to know whether genext2fs is being used
-    my $fs_type = (split(/\s/,$main::makefs))[0];
 
     # Open DEVICE_TABLE
     if ( $fs_type eq "genext2fs" ) {
@@ -882,7 +884,7 @@ sub create_filesystem {
 
     my $fs_type = (split(/\s/,$main::makefs))[0];
 
-    info(0, "Creating root filesystem.\n");
+    info(0, "Creating root filesystem with $fs_type.\n");
     info(0, "Description:  $fs_size K root file system\n");
     info(0, "Where:  $device\n");
 
@@ -1230,10 +1232,11 @@ sub copy_strip_file {
 				       error("chmod: $! \($from_base\)\n"));
 	    return "ERROR"if $error && $error eq "ERROR";
 	}
-	else {
-	    sys("$main::sudo chown $uid $gid $to");
-	    sys("$main::sudo chmod $mode $to");
-	}
+
+	## else {
+	##     sys("$main::sudo chown $uid $gid $to");
+	##     sys("$main::sudo chmod $mode $to");
+	## }
 
     }
     else {
