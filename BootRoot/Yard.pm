@@ -531,8 +531,10 @@ sub library_dependencies {
 	    #####  EXECUTABLE LOADABLE BINARY
 	    #####  Run ldd to get library dependencies.
 	    my $line;
-##
-	    foreach $line (`/usr/i386-linux-uclibc/bin/ldd $file`) {
+
+	    ## Busybox uses a different ldd
+##	    foreach $line (`/usr/i386-linux-uclibc/bin/ldd $file`) {
+	    foreach $line (`ldd $file`) {
 		my($lib) = $line =~ / => (\S+)/;
 		next unless $lib;
 		my($abs_lib) = $lib;
