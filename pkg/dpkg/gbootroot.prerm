@@ -4,3 +4,6 @@
 if [ -e /usr/share/gbootroot/yard/Replacements/dev/ubd0 ]; then 
     rm /usr/share/gbootroot/yard/Replacements/dev/ubd0
 fi
+
+#DEBHELPER#
+
