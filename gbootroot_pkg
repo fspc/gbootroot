@@ -42,6 +42,15 @@ use File::Find;
 # User defined variables for directories and package
 # Makefile.pkg in $gbootroot_cvs in used as the packages Makefile.
 
+# To get this to work properly I had to make two changes to the debian system
+# In dpkg-buildpackage noclean=false was changed to noclean=true, this is
+# to avoid the initial clean which is done, but if you turn noclean off with
+# a cmdline switch only an build is done.
+#
+# In dpkg-source I added '.*bz2$| to $diff_ignore_default_regexp because the
+# -i switch seemed to ignore anything I added to it, either failing 
+# or ignoring, though recognizing the -i switch .. so this has been altered.
+
 my $user_home = "/home/mttrader";
 my $prog = "gbootroot";
 my $prog_real_name = "/BootRoot/BootRoot.pm";
@@ -163,14 +172,20 @@ chdir($gbootroot_cvs) or die "Couldn't change to $gbootroot_cvs: $!\n";
 
 foreach (@make_lines) {
 	s/\t//;
-	if (/cp/) {
+	if (/cp|mkdir/) {
 	 my $dir = ((split))[2];
 	 my $base;
          	if ($dir =~ m,/,) {
 	 	$base = dirname($dir);
 		home_builder("$packaging_place/$base");
 		}
-	 system "cp -fa $dir $packaging_place/$base";
+         if ( $_ =~ /cp/ ) {
+	       system "cp -fa $dir $packaging_place/$base";
+         }
+         else {
+	       system "install -d $packaging_place/$dir";
+         }
+
 	}
 	else {
                if (!/mknod|dev/) {
@@ -313,8 +328,9 @@ if (!$stop) {
 
 } # end if !$stop
 
-
-system "debuild";
+# dpkg-buildpackage  .. no sense dl the sources
+system "cp -fa $gbootroot_cvs/sources/*bz2 $packaging_place/sources/";
+system "debuild -rfakeroot -i\`.*bz2$\` -k2DAB7037";
 
 
 } # both or deb

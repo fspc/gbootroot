@@ -4,25 +4,21 @@ all: install
 install:
 	install -d /usr/bin
 	cp -fa gbootroot /usr/bin/gbootroot
-	install -d /usr/lib/bootroot
+	install -d /usr/lib/bootroot	
+	mkdir -f user-mode-linux/usr/bin
+	mkdir -f root_filesystem
 	cp -fa yard_chrooted_tests /usr/lib/bootroot/yard_chrooted_tests
-	cp -fa genext2fs/genext2fs /usr/lib/bootroot/genext2fs
 	cp -fa expect_uml /usr/lib/bootroot/expect_uml
 	install -d /usr/lib/bootroot/root_filesystem
-	chmod 0666 root_filesystem/root_fs_helper
-	cp -fa root_filesystem/root_fs_helper /usr/lib/bootroot/root_filesystem
-	cp -fa root_filesystem/Initrd.gz /usr/lib/bootroot/root_filesystem
 	cp -fa yard/scripts/make_debian /usr/bin/make_debian
 	install -d /usr/share/perl5/BootRoot
 	cp -fa BootRoot/*.pm /usr/share/perl5/BootRoot
 	install -d /usr/share/gbootroot/yard/Replacements
 	cp -fa yard/replacements/* /usr/share/gbootroot/yard/Replacements
 	install -d /usr/lib/bootroot/yard/Replacements/lib/modules
-	cp -fa user-mode-linux/usr/lib/uml/modules* /usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/config /usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/CVS /usr/lib/bootroot/yard/Replacements/lib/modules/CVS
 	install -d /usr/lib/uml
-	cp -fa user-mode-linux/usr/lib/uml/port-helper /usr/lib/uml/port-helper
 	install -d /usr/share/gbootroot/yard/templates
 	chmod 0444 yard/templates/*.yard
 	cp -fa yard/templates/Example* /usr/share/gbootroot/yard/templates
@@ -32,11 +28,6 @@ install:
 	cp -fa genext2fs/genext2fs.c /usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/Makefile /usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/dev* /usr/share/gbootroot/genext2fs
-	cp -fa user-mode-linux/usr/bin/uml_* /usr/bin
-	chown 0:0 /usr/bin/uml_*
-	chmod 4755 /usr/bin/uml_net
-	cp -fa user-mode-linux/usr/bin/tunctl /usr/bin/tunctl
-	cp -fa user-mode-linux/usr/bin/linuxbr /usr/bin/linuxbr
 	install -d /etc/gbootroot
 	cp -fa gbootrootrc /etc/gbootroot/gbootrootrc
 	install -d /usr/X11R6/include/X11/pixmaps

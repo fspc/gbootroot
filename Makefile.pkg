@@ -56,13 +56,15 @@ sources: $(BASE_DIR)
 		while [ ! -f $(SOURCE_DIR)/$(PATCH_1) ] ; do \
 			wget -P $(SOURCE_DIR) --passive $(PATCH_1_SITE)/$(PATCH_1); \
 		done; \
-		if [ ! -d $(KERNEL_DIR) ] ; then \
-			tar xvfj $(SOURCE_DIR)/$(KERNEL_SOURCE); \
-		fi; \
+	fi;
+	@if [ ! -d $(KERNEL_DIR) ] ; then \
+		tar xvfj $(SOURCE_DIR)/$(KERNEL_SOURCE); \
 		bzcat $(SOURCE_DIR)/$(PATCH_1) | patch -d $(KERNEL_DIR) -p1; \
 		patch -d $(KERNEL_DIR) -p1 < $(PATCH_2); \
 		perl -i -p -e "s/^ARCH :=.*/ARCH=um/g" $(KERNEL_DIR)/Makefile; \
-	fi;
+	fi; 
+
+
 
 
 kernel: 
@@ -133,6 +135,7 @@ tools:
 genext2fs: tools
 	@if [ ! -f $(GENEXT2_DIR)/genext2fs ] ; then \
 		$(MAKE) -C $(GENEXT2_DIR); \
+		strip -s $(GENEXT2_DIR)/genext2fs; \
 	fi;
 
 clean:

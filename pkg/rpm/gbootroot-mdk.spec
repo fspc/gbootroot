@@ -72,8 +72,9 @@ chown -R root:root .
 %install
 make
 
-# nothing to clean
 %clean
+make clean
+make clean-sources
 
 
 # Update this as necessary

@@ -1,3 +1,19 @@
+gbootroot (1.4.0-1) unstable; urgency=low
+
+  * Had to add user-mode-linux/usr/lib/uml to the path to allow --home
+    to find port-helper, or otherwise root_fs complain.  Have no idea
+    why this change exists with port-helper because wasn't the case
+    before. Also, added path for user-mode-linux/usr/bin to find the
+    other tools.
+  * When root_fs_helper was running with the newer Expect.pm, and
+    consequentially the newer uml kernel it became necessary to get out
+    when the kernel shuts down with a last function right when it says
+    "Power down."
+  * Checks for the proper version for newer libc6 linkers.  Hopefully,
+    should work properly with libc6 > 2.3.1, too.
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Wed, 18 Dec 2002 02:26:53 -0500
+
 gbootroot (1.3.6-1) unstable; urgency=low
 
   * Updated to 2.4.18-2um and the latest uml tools 20020212, including

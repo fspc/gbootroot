@@ -2,10 +2,10 @@ Source: gbootroot
 Section: utils
 Priority: optional
 Maintainer: Jonathan Rosenbaum <freesource@users.sourceforge.net>
-Build-Depends: debhelper (>> 3.0.0)
+Build-Depends: debhelper (>> 3.0.0), binutils, fileutils (>= 4.0), gcc | c-compiler, make, libc-dev, bin86, wget
 Standards-Version: 3.5.2
 
-Package: gbootroot
+Package: gbootroot 
 Architecture: i386 
 Depends:  ${perl:Depends}, perl-modules, libgtk-perl (>= 0.7002), libc6 (>= 2.1.2), libexpect-perl, ash, file, binutils, bzip2
 Recommends: dswim, lilo
@@ -23,3 +23,6 @@ Description: Boot/Root Filesystem Distribution testing and creation.
  .	
  deb http://prdownloads.sourceforge.net/gbootroot ./
  deb http://prdownloads.sourceforge.net/avd ./
+ .
+ See manual for instructions on how to add lines to your sources.list so that
+ apt-get may be used for both binary and source packages.

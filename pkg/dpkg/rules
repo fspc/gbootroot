@@ -11,9 +11,8 @@ export DH_COMPAT=3
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-	# Add here commands to configure the package.
 	
-
+	# Add here commands to configure the package.	
 	touch configure-stamp
 
 build: configure-stamp build-stamp
@@ -33,6 +32,7 @@ clean:
 
 	# Add here commands to clean up after the build process.
 	-$(MAKE) clean
+	-$(MAKE) clean-sources
 
 	dh_clean
 
