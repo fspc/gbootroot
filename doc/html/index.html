@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.65 2002/01/07 19:24:44 freesource Exp $</center>
+<center>$Id: index.html,v 1.66 2002/01/07 19:27:21 freesource Exp $</center>
 
 <p>
 
@@ -1104,13 +1104,20 @@ filesystem.</P>
 
 <p>
 
-If you are creating a single boot disk in which the kernel knows where to
+If you are creating a boot disk in which the kernel knows where to
 find the root filesystem, then nothing else but a kernel is required
 assuming it is copied in a way that is starts at block 0 on the device
-media.&nbsp;&nbsp;
-However, in order to boot /dev/fd0 from /dev/fd0 the kernel has to
+media, and then rdeved in such a way that it knows that the ramdisk and the 
+prompt
+flag are on, i.e., rdev -r /dev/fd0 49152, and that the root filesystem starts
+at block
+0 on the other floppy.&nbsp;&nbsp;
+However, the 2 disk compression method just copies over the root filesystem
+to the second disk.&nbsp&nbsp;In order to boot /dev/fd0 from /dev/fd0 when 
+the root 
+filesystem is just copied over, the kernel has to
 mount the initial boot disk, and then after the new root disk is inserted,
-it remounts that disk.&nbsp;&nbsp;In order to accomplish this, an initrd is
+it remounts that disk.&nbsp;&nbsp;In order to accomplish this an initrd is
 required.&nbsp;&nbsp;
 Initial ram disks are essentially mini filesystems with the
 bare necessities to allow a special init type file called linuxrc to
@@ -1137,7 +1144,10 @@ distribution or derivative of
 one.&nbsp&nbsp;
 The advantage of a two disk boot/root
 system is related to the fact that modern kernels are themselves quite
-large, leaving very little room for a root filesystem.&nbsp;&nbsp;
+large, leaving very little room for a root filesystem, but at the same
+time it is convenient to have a boot loader like lilo because it allows
+you to boot other root filesystems which is useful in emergency 
+situations.&nbsp;&nbsp;
 The present ABS
 (boot section) is descended from some pretty old historic code from the
 original bootroot and is due
