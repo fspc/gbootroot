@@ -1,0 +1,18 @@
+# Default runlevel.
+id:5:initdefault:
+
+# Run rc when system boots
+si:S:sysinit:/etc/rc
+
+# NOTE: THIS IS FOR DEBIAN ONLY!  Other versions of agetty
+#        use a different argument order that will cause agetty to
+#        hang.
+#        Check these calls against your own /etc/inittab !
+c1:1235:respawn:/sbin/getty 38400 tty1
+c2:1235:respawn:/sbin/getty 38400 tty2
+c3:5:respawn:/sbin/getty 38400 tty3
+c4:5:respawn:/sbin/getty 38400 tty4
+c5:5:respawn:/sbin/getty 38400 tty5
+c6:45:respawn:/sbin/getty 38400 tty6
+
+ca::ctrlaltdel:/sbin/shutdown -t5 -rfn now

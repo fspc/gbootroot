@@ -1,0 +1,17 @@
+# Default runlevel.
+id:2:initdefault:
+
+# Run rc when system boots
+si:I:sysinit:/etc/rc
+
+# NOTE: THIS IS FOR SUSE MINGETTY ONLY!
+#       Check these calls against your own /etc/inittab !
+#
+1:123:respawn:/sbin/mingetty --noclear tty1
+2:123:respawn:/sbin/mingetty tty2
+3:123:respawn:/sbin/mingetty tty3
+4:123:respawn:/sbin/mingetty tty4
+5:123:respawn:/sbin/mingetty tty5
+6:123:respawn:/sbin/mingetty tty6
+
+ca::ctrlaltdel:/sbin/shutdown -t5 -rfn now
