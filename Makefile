@@ -36,6 +36,7 @@ install:
 	install -d /usr/X11R6/include/X11/pixmaps
 	cp -fa gbootroot.xpm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm
 	install -d /usr/share/doc/gbootroot/html/images
+	cp -fa README	/usr/share/doc/gbootroot/README
 	cp -fa doc/html/{*html,*4} /usr/share/doc/gbootroot/html
 	cp -fa doc/html/images/{*jpg,*gif} /usr/share/doc/gbootroot/html/images
 	cp -fa Changes /usr/share/doc/gbootroot/Changes
