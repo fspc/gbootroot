@@ -147,7 +147,6 @@ my $button_count_root = 0;
 my $obj_count = 0;
 my $obj_count_root = 0;
 my ($lib_strip_check,$bin_strip_check);
-my ($lib_strip_check_root,$bin_strip_check_root,$module_strip_check_root);
 my ($bz2_toggle,$gz_toggle);
 my ($bz2_toggle_root,$gz_toggle_root,$compression_off);
 my ($combo);
@@ -592,24 +591,6 @@ sub objcopy_right_click_advanced {
 		  $obj_count--;
 	      }
           }
-	  if (defined $lib_strip_check_root) {
-	      if ($obj_count_root == 0) {
-		  $tooltips->set_tip( $lib_strip_check_root, 
-				      "This is generally a good idea." .
-				      " Press the right mouse button to" .
-				      " change from [objcopy --strip-all]" .
-				      " to [objcopy --strip-debug].", "" );
-		  $obj_count_root++;
-	      }
-	      else {
-		  $tooltips->set_tip( $lib_strip_check_root, 
-				      "This is generally a good idea." .
-				      " Press the right mouse button to" .
-				      " change from [objcopy --strip-debug]". 
-				      " to [objcopy --strip-all].", "" );
-		  $obj_count_root--;
-	      }
-          }
       }
   }
 
@@ -971,13 +952,29 @@ sub Generate {
     # 1 = Optional Devices
     # 2 = Append Options
     #------------------
-    $root_device = $entry_advanced[3]; # 3 = Root Device
-    $root_filename = $entry_advanced[4];  # 4 = Root Filename
+    # 3 = Root Device
+    # 4 = Root Filename
     # 5 = UML Kernel
     $method = $entry_advanced[6];         # 6 = Method
-    $template = $entry_advanced[7];       # 7 = Template
+    # 7 = Template
     # $root_device_size;
     # $filesystem_size;
+
+    # Stuff univeral for all root filesystem methods
+    # Compression, UML Kernel, and Method only need to be known by the Dock.
+    my $ars = { "device"             => $entry_advanced[3],
+		"device_size"        => $root_device_size,		    
+		"filename"           => $entry_advanced[4],
+		"filesystem_size"    => $filesystem_size,
+	        "kernel"             => $container[1],
+		"template_directory" => $template_dir,
+		"template"           => $entry_advanced[7],
+		"tmp"                => $tmp
+	       };
+
+    my $template = $ars->{template};
+    $root_device = $ars->{device};
+    $root_filename = $ars->{filename};
 
     if (!$root_device || $root_device eq "") {
 	error_window("gBootRoot: ERROR: Root Device not defined");	
@@ -1002,12 +999,9 @@ sub Generate {
 	return;
     }
 
-    # Stuff univeral for all root filesystem methods
-    my @method_stuff = qw($filesystem_size $obj_count_root $tmp);
 
     if ($method eq "yard") {
-	my $kernel = $container[1];
-	yard($kernel,$template_dir,$template);
+	yard($ars);
     }
 
 
