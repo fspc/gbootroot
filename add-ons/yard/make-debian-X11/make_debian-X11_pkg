@@ -2,7 +2,7 @@
 
 ###########################################################################
 ##
-##  make_debian-X11__pkg
+##  make_debian-X11_pkg
 ##  Copyright (C) 2001 by Jonathan Rosenbaum <freesource@users.sourceforge.net>
 ##
 ##  This program is free software; you may redistribute it and/or modify
@@ -201,17 +201,14 @@ if (!$stop) {
     }
 
 
+    # We need to print at the top.
     open(CHANGELOG,">$packaging_defaults/changelog") 
 	or die "Couldn't open check: $!\n";
-    for my $ct (0 .. ($#changelog - 3)) {
-	print CHANGELOG $changelog[$ct];
-    }			
     print CHANGELOG "$prog ($version-$revision) $dist; urgency=$urgency\n\n";
     print CHANGELOG "$save_doc\n";
     print CHANGELOG " -- $name <$email>  " . `822-date`;
-    for my $ct (($#changelog - 3) .. $#changelog) {
-	print CHANGELOG $changelog[$ct];
-    }			
+    print CHANGELOG "\n";
+    print CHANGELOG @changelog;
     close(CHANGELOG);
     print "\n";
 
@@ -227,9 +224,9 @@ print COPYRIGHT "This package was debianized by $name\n";
 print COPYRIGHT "$email on " , `822-date`, ".\n";
 print COPYRIGHT "Author: \n$name <$email>\n\n";
 print COPYRIGHT "Copyright:\n\n" .
+close(COPYRIGHT);
 "On Debian GNU/Linux systems, the complete text of the GNU General Public\n" .
     "License can be found in /usr/share/common-licenses/GPL\n";
-close(COPYRIGHT);
 system "chown $real_uid $packaging_defaults/copyright";
 system "chgrp $real_gid $packaging_defaults/copyright";
 
