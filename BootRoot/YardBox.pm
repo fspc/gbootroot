@@ -31,7 +31,6 @@ use BootRoot::Error;
 use BootRoot::lsMode;
 use File::Basename;
 
-#my $main::yard_window;
 my $item_factory;
 my $true = 1;
 my $false = 0;
