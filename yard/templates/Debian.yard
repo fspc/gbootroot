@@ -2,11 +2,12 @@
 
 # This template creates a complete Debian system which is more streamlined 
 # than the base.tgz used for normal installations.  Once everything is made, 
-# you can use user-mode-linux to tweak the system, as well as apt. 
-# Make-debian generates all the information you need, you will need swim and 
+# you can use user-mode-linux and apt to tweak the system. 
+# Make-debian generates all the information you need.  You will need swim and 
 # file-rc installed, and you will have to be running a Debian system to make 
-# this template.  Make-debian ditches info, man, and doc files by default,
-# use the "doc" option to make documentation.  
+# this template.  Make_debian ditches info, man, and doc files by default
+# and timezone info not found on the host system, but gives you the choice
+# to decide otherwise.  
 
 # Characteristics:  user: root passwd: root 
 #                   user: user passwd: user
@@ -103,7 +104,7 @@
 /etc/resolv.conf 
 /etc/hosts <= Replacements/etc/hosts
 /root/umlnet <= Replacements/root/umlnet # Example network setup script
-/etc/network <= Replacements/etc/network
+/etc/networks <= Replacements/etc/networks
 /etc/network/if-down.d      # empty
 /etc/network/if-post-down.d # ""
 /etc/network/if-pre-up.d    # ""
@@ -2471,12 +2472,18 @@
 /var/lib/dpkg/info/debconf-utils.md5sums
 
 # Alternative stuff.
+/etc/alternatives/awk
+/var/lib/dpkg/alternatives/awk
+/usr/bin/awk
 /etc/alternatives/nawk
 /var/lib/dpkg/alternatives/nawk
 /usr/bin/nawk
 /etc/alternatives/w
 /var/lib/dpkg/alternatives/w
 /usr/bin/w
+/etc/alternatives/editor
+/var/lib/dpkg/alternatives/editor
+/usr/bin/editor
 /etc/alternatives/vi
 /var/lib/dpkg/alternatives/vi
 /usr/bin/vi
