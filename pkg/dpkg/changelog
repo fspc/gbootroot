@@ -1,3 +1,40 @@
+gbootroot (1.3.3-1) unstable; urgency=low
+
+  * During the boot stage the filsystem type was used to determine
+    whether to use the genext2fs (non-root) method or the normal method
+    used by root.   Now the user type is used, this is better because it
+    prevents conflicts if a different filesystem type is chosen, or if a
+    non-root user changes to a different filesystem type in the
+    filesystem box and forgets to change back to genext2fs; however, it
+    prevents root from using the genext2fs method, which isn't a
+    problem.  The sudo requirement for lilo is too much of a
+    requirement, and will be changed in future versions.
+  * Fixed another non-root boot/root bug.  The info had it correct, but
+    the actual copy with genext2fs was being done from the wrong
+    location.  This has been  fixed.  This method may be ditched for a
+    far better one in the near future.
+  * Had some testing code which was providing the wrong value for
+    $compress, this made non-root booting fail for bzip2 because bunzip2
+    didn't exist in the  initrd.
+  * Added another technique in the FAQ to show how space can be saved on
+    the  root_fs by using the libraries from the initrd.  Liav
+    instigated this by asking a question related to FAQ question 14, "So
+    if I understand correctly,  it is not possible to copy libc from
+    /dev/ram0 to /dev/ram1 before mounting  /dev/ram1 as / ?
+  * Liav pointed out how Yard can make boot/root floppies with a
+    compressed root  filesystem.  Edited FAQ question 13 to correctly
+    reflect how gz compressed  root filesystems may be booted without an
+    initrd.
+  * State is saved for the Compression off check box and the Root
+    Filename save  check box.
+  * The UML Kernel entry box in the ARS remembers state now.
+  * Changed the behavior of save_as so that when compression is chosen,
+    the entry won't be the same as that found in Root Filename, but
+    instead reflects the newly compressed file.  This change was
+    precipitated by the previous  change to the Accept behavior.
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Tue, 15 Jan 2002 13:50:08 -0500
+
 gbootroot (1.3.2-1) unstable; urgency=low
 
   * Updated linux and modules to 2.4.17-4um.  Made jffs and jffs2 part
