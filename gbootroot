@@ -106,7 +106,7 @@ my $lilo_conf = "/etc/lilo.conf";
 my $home = "$ENV{HOME}/.gbootroot";
 my $uml_xterm = "xterm -e";
 $main::editor = "emacs --font 6x13";
-$main::makefs = "mke2fs -F -m0 -i8192";
+$main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
 
 # CHANGES
 #
@@ -116,6 +116,8 @@ $main::makefs = "mke2fs -F -m0 -i8192";
 #                  kernel modules, and made important changes to the 2 disk 
 #                  compression code.
 #                * Advanced Section is now Advanced Boot Section (ABS).
+#                * Properly handles two different block devices with two 
+#                  different sizes.  Tested on /dev/fd?.
 #                * Advanced Root Section (ARS) added. Includes root device and
 #                  size, root filesystem name with Save or Save As, filesystem
 #                  size, gzip/bzip2/none compression, user-mode-linux kernel
@@ -225,7 +227,10 @@ my $initrd;
 my $compress;
 my $false = 0;
 my $true = 1;
-my $ok;
+
+# Helps determine what procedure to follow for the Boot Disk
+my $ok; 
+
 my $box2;
 my $label;
 my $label_advanced;
@@ -269,7 +274,6 @@ my ($hbox_advanced);
 my $separator_advanced;
 
 my @entry_advanced;
-my $entry_advanced;
 my ($ea1,$ea2,$ea3,$ea4,$ea5,$ea6); # entry advanced boot  
 my ($ear1,$ear2,$ear3,$ear4); # entry advanced root
 my ($eab1,$eab2,$eab3); # entry advanced uml
@@ -287,8 +291,10 @@ my ($bz2_toggle_root,$gz_toggle_root,$compression_off);
 #my ($main::combo); made this totally global
 my ($adj2,$adj3);
 my @strings;
-my $kernel_version;
-#
+
+# Value set by kernel_modules
+my $kernel_version;  
+
 # $entry_advanced[3] is the Root Device
 # $filesystem_size and root_device_size are important globals for ARS,
 # there weren't put into entry_advanced because they are spin buttons.
@@ -2435,12 +2441,12 @@ sub lilo {
   sys("umount $tmp/initrd_mnt");
 
   my $kernel = $container[KERNEL];
-  my $root_image = $container[ROOT_FS];
+  my $root_fs = $container[ROOT_FS];
   my $device = $container[BOOT_DEVICE];
   my $size = $container[SIZE];
 
   if ($ok == 1 || $ok == 2) {
-    my $value = initrd($kernel,$root_image,$device,$size);
+    my $value = initrd($kernel,$root_fs,$device,$size);
     mtab(0) if defined $value;
   }
   elsif ($ok == 0) {
@@ -2475,7 +2481,7 @@ sub lilo_put_it_together {
 
   info(0, "Copying over kernel\n");
   return if
-  err_custom("rm -rf $mnt/lost+found; cp $container[KERNEL]} $mnt/kernel",
+  err_custom("rm -rf $mnt/lost+found; cp $container[KERNEL] $mnt/kernel",
                "gBootRoot: ERROR: Could not copy over the kernel") == 2;
   pb($B,3);
 
@@ -2530,7 +2536,8 @@ sub lilo_put_it_together {
   pb($B,7);
   chdir("$mnt"); #"boot_root: ERROR: Could not change directories\n";
 
-  # This enforces SAMENESS
+  # This enforces that lilo is only ran on a bootable drive,
+  # otherwise the user has to do it manually.
   if ($container[BOOT_DEVICE] eq $entry_advanced[0]) {
     if (err_custom("lilo -v -C brlilo.conf -r $mnt",
                    "gBootRoot: ERROR: lilo failed") == 2) {
@@ -2555,7 +2562,7 @@ sub lilo_put_it_together {
 
 # Here's where we copy over that compressed filesystem
 # We could separate $container[BOOT_DEVICE] = boot,root allowing two
-# different devices to be used. -- not there is $entry_advanced[3] which
+# different devices to be used. -- now there is $entry_advanced[3] which
 # is the ROOT_DEVICE
 if ($um == 0 ) {
     mtab(1);
@@ -3267,33 +3274,76 @@ sub mtab_check {
     my $error = 1;
 
 # Check to see if $device is mounted
-open (MTAB, "/etc/mtab") or die "no mtab!\n";
-while (<MTAB>) {
-    if (m,$entry_advanced[0],) {
-        # Safety Check:
-       $dialog = "Please umount the device first.\nPress OK when you are ready.";
-       $error = 0;
-    }
-}
-close(MTAB);
+    open (MTAB, "/etc/mtab") or die "no mtab!\n";
+    while (<MTAB>) {
 
-mtab_window($dialog,$error,$count) if $error == 0;
+	if  ($count == 1) {
+
+	    # ROOT_DEVICE
+	    if (m,$entry_advanced[3],) {
+		# Safety Check:
+		$dialog = 
+	       "Please umount the device first.\nPress OK when you are ready.";
+		$error = 0;
+	    }
+	    
+	}
+
+	elsif ($count == 0) {
+
+	    # BOOT_DEVICE
+	    if (m,$entry_advanced[0],) {
+		# Safety Check:
+		$dialog = 
+	       "Please umount the device first.\nPress OK when you are ready.";
+		$error = 0;
+	    }
+	    
+	}
+
+    }
+    close(MTAB);
+
+    mtab_window($dialog,$error,$count) if $error == 0;
 
   # Make sure the drive and storage medium are accessible
   # Keep asking until they are.
   if ($error == 1) {
-   destroy $mtab;
-   # $size has to be determined by boot disk or root disk
-   sys("mke2fs -F -m0 -i8192 $entry_advanced[0] $container[SIZE]");
-   if ($? != 0) {
-    $dialog = "gBootRoot: ERROR: You need to insert a disk\n";
-     mtab_window($dialog,$error,$count);
-     return;
-   }
-   return if errm(sys("mount -t ext2  $entry_advanced[0] $mnt")) == 2;
-   lilo_put_it_together() if $count == 0;
-   device2() if $count == 1;
-  }
+      destroy $mtab;
+
+      # $size has to be determined by boot disk or root disk
+
+      # ROOT_DEVICE - test with a loop device
+      if ($count == 1) {
+	  sys("mke2fs -F -m0 -i8192 $entry_advanced[3] $root_device_size");
+      }
+
+      # BOOT_DEVICE
+      elsif ($count == 0) {
+	  sys("mke2fs -F -m0 -i8192 $entry_advanced[0] $container[SIZE]");
+      }
+
+      if ($? != 0) {
+	  $dialog = "gBootRoot: ERROR: You need to insert a disk\n";
+	  mtab_window($dialog,$error,$count);
+	  return;
+      }
+
+      # ROOT_DEVICE
+      if ($count == 1) {
+	  return if errm(sys("mount -t ext2  $entry_advanced[3] $mnt")) == 2;
+      }
+
+      # BOOT_DEVICE
+      elsif ($count == 0) {
+	  return if errm(sys("mount -t ext2  $entry_advanced[0] $mnt")) == 2;
+      }
+
+
+      lilo_put_it_together() if $count == 0;  # mtab(1) runs from here
+      device2() if $count == 1;
+
+  } # if $error == 1
 
 } # end sub mtab_check
 
