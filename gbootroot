@@ -2730,7 +2730,6 @@ sub lilo_put_it_together {
   # DEVICES SECTION
   my @devices;
   my $device_table  = "$tmp/boot_device_table.txt";
-  my $norm_root_dev;
   if ( $fs_type eq "genext2fs" ) {
 
 	info(0, "Making $device_table for genext2fs\n");
@@ -2758,15 +2757,17 @@ sub lilo_put_it_together {
 	($norm_root_device) = gdkbirdaao();
 	if ( $norm_root_device ) {
 	    my @existing_device_test = 
-		grep ( /\/dev\/$norm_root_dev/, @devices );
-	    if ( !@existing_device_test ) {
+		grep ( /\/dev\/$norm_root_device/, @devices );
+	    if ( @existing_device_test ) {
 		push( @devices, "/dev/$norm_root_device" );
 	    }
 	}
 
 	# For frame buffer devices and the like.
-	for ( split(" ", $entry_advanced[1] ) ) {
-	    push(@devices, $_ ) if $_;
+	if ( $entry_advanced[1] ) {
+	    for ( split(" ", $entry_advanced[1] ) ) {
+		push(@devices, $_ ) if $_;
+	    }
 	}
 
 	device_table( @devices );
@@ -2902,6 +2903,8 @@ sub lilo_put_it_together {
 # different devices to be used. -- now there is $entry_advanced[3] which
 # is the ROOT_DEVICE
 if ($um == 0 ) {
+    # ARS was never opened, so root device defaults to boot device.
+    $entry_advanced[3] = $container[BOOT_DEVICE] if !$entry_advanced[3];
     mtab(1);
 }
 else {
