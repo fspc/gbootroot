@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.90 2002/02/14 18:40:49 freesource Exp $</center>
+<center>$Id: index.html,v 1.91 2002/03/04 02:07:24 freesource Exp $</center>
 
 <p>
 
@@ -350,11 +350,6 @@ box to allow control of a different Linux virtual machine.
 
 "Root_Fs"&nbsp;&nbsp;Choose an uncompressed root 
 filesystem.&nbsp;&nbsp;Append with ubd?=.</p>
-
-<p>
-
-"cad"&nbsp;&nbsp;Passes [Ctr]-[Alt]-[Del] to the mconsole to reboot the
-Linux virutal machine.
 
 <p>
 
@@ -728,7 +723,8 @@ stage.&nbsp;&nbsp;Adjust the Filesystem Size in the ARS to a size larger than
 the Total space shown in the verbosity box.&nbsp;&nbsp;Create your 
 root_fs, 
 and make sure there was enough room left.&nbsp;&nbsp;You may have to adjust the
-size and run Copy and Create again.</p>
+size and run Create again if you are normal user, or run Copy and Create
+if a loopback device is being used as root.</p>
 
 <p>
 
@@ -750,7 +746,7 @@ filesystem type.</u></center>
 
 17.&nbsp;&nbsp;Now that you have successfully created a working mini
 distribution from Example.yard, re-create it with a different 
-filesystem type:  ext2, minix, reiserfs, romfs or cramfs.
+filesystem type:  ext2, ext3, minix, reiserfs, romfs, cramfs, jffs, or jffs2.
 
 <p>
 
