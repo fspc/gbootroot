@@ -1098,7 +1098,7 @@ sub uml_box {
 				      \$uml_window);
 	#$uml_window->set_usize( 450, 175 );  # 500 600
 	$uml_window->set_policy( $true, $true, $false );
-	$uml_window->set_title( "Uml Box" );
+	$uml_window->set_title( "UML Box" );
 	$uml_window->border_width(1);    
 
 	my $main_vbox = Gtk::VBox->new( $false, 0 );
@@ -1237,13 +1237,15 @@ sub uml_box {
 	my $abort_b = button_advanced(1,2,3,4,"Abort",$table_uml);
 	$tooltips->set_tip( $abort_b, 
                            "Abort uml kernel processes." .
-                           "This serves two purposes:\n" .
+                           "This serves three purposes:\n" .
                            "1.  Your creation doesn't boot.\n" .
                            "2.  Your creation does work and" . 
 			   " you use something like" . 
                            " `shutdown -h now`.  When you are all done use" .
                            " Abort because it provides an excellent" .
-                           " way to kill any ghost processes.",
+                           " way to kill any ghost processes.\n" .
+                           "3.  Your creation gets weird, and you need to " .
+                           "Abort its processes to shutdown it. ",
                            "" );
 	$abort_b->signal_connect("clicked",
 				 sub {
@@ -1328,7 +1330,12 @@ sub accept_button {
 		}
 		close(F);
 		if ($ear2_save->active) {
-		    return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
+		    if (-f "$home_rootfs/$entry_advanced[4]") {
+			save_as($entry_advanced[4]);
+		    }
+		    else {
+			return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
+		    }
 		}
 	    }
 	    elsif ($bz2_toggle_root->active) {
@@ -1349,14 +1356,24 @@ sub accept_button {
 		}
 		close(F);
 		if ($ear2_save->active) {
-		    return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
+		    if (-f "$home_rootfs/$entry_advanced[4]") {
+			save_as($entry_advanced[4]);
+		    }
+		    else {
+			return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
+		    }
 		}
 	    }
 	}
 	else {  # off
 	    $entry3->set_text("$tmp/$entry_advanced[4]");
 	    if ($ear2_save->active) {
-		return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
+		if (-f "$home_rootfs/$entry_advanced[4]") {
+		    save_as($entry_advanced[4]);
+		}
+		else {
+		    return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
+		}
 	    }
 	}
     }
@@ -1365,6 +1382,111 @@ sub accept_button {
     }
 
 } # end accept_button
+
+my ($save_as);
+sub save_as {
+
+# Will just use a dialog box.
+
+    my ($template) = @_;
+    #my ($button);
+
+    if (not defined $save_as) {
+    $save_as = Gtk::Dialog->new();
+    $save_as->signal_connect("destroy", \&destroy_window, \$save_as);
+    $save_as->signal_connect("delete_event", \&destroy_window, \$save_as);
+    $save_as->set_title("Save As");
+    $save_as->border_width(12);
+    $save_as->set_position('center');
+
+    my $new_template = $template;
+    my $entry = Gtk::Entry->new();
+    $entry->set_editable( $true );
+    $entry->set_text($template) if $template;
+    $entry->signal_connect( "changed", sub {
+	$new_template = $entry->get_text();
+    }); 
+    $save_as->vbox->pack_start( $entry, $false, $false, 0);
+    $entry->show();
+
+    my $label = Gtk::Label->new();
+    $label->set_justify( 'left' );
+    $label->set_text("$template already exists, " . 
+	    	      "do\nyou want to write over it, " .
+		      "or\nsave it with a different name?");
+    $save_as->vbox->pack_start( $label, $false, $false, 2 );
+    $label->show();
+ 
+    my $button = Gtk::Button->new("OK");
+    my $event_count = 0;
+    $button->signal_connect("clicked", sub {
+	$entry_advanced[4] = $new_template;
+
+	# This is a renaming deal and this time doesn't exist in the archive
+	if (!-f "$home_rootfs/$new_template") {
+	    if ($template ne $new_template) {
+		return if err_custom("cp $tmp/$template $tmp/$new_template",
+		"gBootRoot: ERROR: Could not rename $template to " .
+				     "$new_template") == 2;
+	    }
+
+	    return if errcp(sys("cp -a $tmp/$new_template $home_rootfs")) == 2;
+	    $ear2->set_text($new_template);
+	    $save_as->destroy;
+	}
+
+	# This is an write-over situation .. exists in $tmp and archive
+	elsif (-e "$tmp/$new_template" && -f "$tmp/$new_template" 
+	       && -f "$home_rootfs/$new_template" )  {
+	    return if errcp(sys("cp -a $tmp/$new_template $home_rootfs")) == 2;
+	    $ear2->set_text($new_template);
+	    $save_as->destroy;
+	}
+
+	# Here the file trying to be renamed already exist in the archive
+	# but doesn't exist in $tmp
+	else {
+	    $label->set_text("$new_template already exists, " . 
+			     "do\nyou want to write over it, " .
+			     "or\nsave it with a different name?");
+
+	    $event_count++;
+	    my $event = pop(@_);
+	    
+	    if ($event_count >= 2 && $event && $event eq "clicked") {
+		if ("$tmp/$template" ne "$tmp/$new_template") {
+		return if err_custom("cp $tmp/$template $tmp/$new_template",
+		    "gBootRoot: ERROR: Could not rename $template to " .
+				     "$new_template") == 2;
+	        }
+
+		return if errcp(sys("cp -a $tmp/$new_template $home_rootfs"))
+		    == 2;
+		$event_count = 0;
+		$ear2->set_text($new_template);
+		$save_as->destroy;
+	    }	    
+	}
+    },"clicked");
+    $button->can_default(1);
+    $save_as->action_area->pack_start($button, $false, $false,0);
+    $button->grab_default;
+    $button->show;
+
+    $button = Gtk::Button->new("Cancel");
+    $button->signal_connect("clicked", sub { destroy $save_as} );
+    $save_as->action_area->pack_start($button, $false, $false,0);
+    $button->show;
+
+    }
+     if (!visible $save_as) {
+        show $save_as;
+     }
+     else {
+        destroy $save_as;
+     }
+
+} # end sub save_as
 
 # Coming - .config storage, auto-matic kernel locus, all stages 
 # /usr/src/linux*  Possible integration with other Projects .. modules
