@@ -1,4 +1,4 @@
-1.5.0 - 02/11/2003
+1.5.0 - 02/24/2003
 ------------------
 
 Updated to 2.4.19-50um and the latest uml tools 20030202.
@@ -41,7 +41,7 @@ this be nice in a perfect world for all Free Software projects?
 Tested on Debian stable/unstable and rpm based distros RedHat 7.3/8.0,
 Mandrake 9.0, and Suse 7.3 thanks to umlbuilder.  Overall, this is by
 far the most heavily tested release to date.  Observed that stack
-overflows are occuring from time to time in the nested testing
+overflows are occxurring from time to time in the nested testing
 environment.
 
 Added /usr/info/dir and info to make_debian which makes things much
@@ -60,7 +60,7 @@ packages.  Many things have changed especially with IO-tty and
 perl-Expect.
 
 Had to build slram into the kernel because RedHat 7.3's depmod causes
-the build to fail.
+the build to fail. 
 
 
 1.4.0 - 01/06/2003
