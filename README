@@ -1,4 +1,4 @@
-$Id: README,v 1.17 2003/01/11 03:56:08 freesource Exp $
+$Id: README,v 1.18 2003/01/14 03:45:01 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -32,7 +32,7 @@ These are the build-depends from the Debian source package which can
 be used as a guide for other distributions: binutils ((>=
 2.13.90.0.16), fileutils (>= 4.0), gcc (>= 2:2.95.4), make, libc6-dev
 (>= 2.3.1), bin86, wget, mkcramfs, e2fsprogs, reiserfsprog, genromfs,
-xutil-linux, mtd-tools, m4, libreadline4-dev
+util-linux, mtd-tools, m4, libreadline4-dev
 
 
 UML KERNEL CUSTOMIZATION
