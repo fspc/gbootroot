@@ -4,17 +4,18 @@ use BootRoot::UML;
 
 if ( !$ARGV[0] ) {
     
-    die "expect_uml ubd0 ubd1 other-options mount-point filesystem_command\n";
+    die "expect_uml ubd0 ubd1 other-options mount-point preserve_permissions filesystem_command\n";
 
 }
 
 
 my $arguments = "$ARGV[0] $ARGV[1] $ARGV[2]"; 
 my $mount_point = "$ARGV[3]";
+my $preserve_permissions = "$ARGV[4]";
 
-my $end = 5;
+my $end = 6;
 my $filesystem;
-for ( 4 .. $end ) {
+for ( 5 .. $end ) {
     if ( $_ == 4 ) {
 	$filesystem = "$ARGV[4]";
 	# What to do with the rieserfs command
@@ -49,7 +50,9 @@ $uml->command("$filesystem /dev/ubd/1");
 $uml->command("mount /dev/ubd/1 /mnt1");
 $uml->command("mount -t hostfs none -o $mount_point /mnt2");
 $uml->command("cp -a /mnt2/* /mnt1");
-$uml->command("chown -R 0:0 /mnt1");
+if ( $preserve_permissions == 0 ) {
+    $uml->command("chown -R 0:0 /mnt1");
+}
 $uml->command("umount /mnt1; umount /mnt2");   
 $uml->halt();
 

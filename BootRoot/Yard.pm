@@ -1397,10 +1397,13 @@ sub create_filesystem {
 
 	    my $x_count = 1;
 
-	    info(1,"\n$expect_program $ubd0 $ubd1 $options $mount_point\n\n");
+	    my $command_line = "$expect_program $ubd0 $ubd1 $options " .
+		"$mount_point $uml_expect->{preserve_permissions} $filesystem";
+
+	    info(1,"\n$command_line\n\n");
 
 	    # add error correction
-	    open(EXPECT,"$expect_program $ubd0 $ubd1 $options $mount_point $filesystem|");
+	    open(EXPECT,"$command_line|");
 	    while (<EXPECT>) {
 		info(0,"$x_count  $_");
 		$x_count++;
