@@ -20,6 +20,6 @@ swim --initdb
 
 # Generally a good idea since user-mode-linux doesn't run within itself.
 #rm /usr/bin/uml_*
-#rm /usr/biin/linux
+#rm /usr/bin/linux
 
 /etc/cron.daily/find
