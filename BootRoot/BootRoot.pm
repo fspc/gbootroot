@@ -1349,10 +1349,10 @@ sub uml_box {
 	$eab4 = entry_advanced(3,5,0,1,14,$table_uml);
 	$tooltips->set_tip( $eab4, 
                            "Pass commands to the mconsole.\n" .
-			    "sysrq [0-9|b|e|i|l|m|p|r|s|t|u]  " . 
-			    " reboot   halt   " .
-			    "  config <dev>=<config>    remove <dev>    " .
-			    "  switch <umid>   version   help",
+			    "1.  sysrq [0-9|b|e|i|l|m|p|r|s|t|u]  \n" . 
+			    "2.  reboot   halt   \n" .
+			    "3.  config <dev>=<config>\n4.  remove <dev>\n" .
+			    "5.  switch <umid>\n6.  version   help",
                            "" );
 	$eab4->signal_connect("activate",
 	      sub {
