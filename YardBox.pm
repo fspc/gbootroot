@@ -293,24 +293,22 @@ my $continue;
 # Makes main checkbuttons act like radiobuttons
 # Applies to both one_by_one & continuous
 
-my %which_stage = qw(check 1 dep 0 space 0 create 0 test 0);
-
 sub which_stage {
 
     my($widget,$name) = @_;
     my @check_boxes = ($check, $dep, $space, $create, $test);
     my ($thing);
-
     if ($stages_bool eq "one-by-one" or $stages_bool eq "continuous") {
-=pod
 	foreach $thing (@check_boxes) {
 	    if ($thing ne $widget) {
+		$thing->hide();
+		$thing->active($false);
+		$thing->show();
 		print "$thing $widget\n";
-		$thing->set_active($false);
 	    }
 	}   
-=cut
     }
+
 }
 
 sub continue {
