@@ -1,3 +1,5 @@
+Added sticky bit for /tmp in setup-debian-X11.
+
 1.2 - 12/07/2001
 ----------------
 
