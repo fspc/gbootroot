@@ -4367,6 +4367,10 @@ gbootroot-{devel,user} mailing lists -> http://sourceforge.net/mail/?group_id=95
 Help forum -> http://sourceforge.net/forum/forum.php?forum_id=29639
 Open forum -> http://sourceforge.net/forum/forum.php?forum_id=29638
 
+gbootroot documentation and FAQ:
+
+/usr/share/doc/gbootroot/html/index.html
+
 How to Use gBootRoot:
 
 The most important button to familiarize yourself with is the Submit button 
