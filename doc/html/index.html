@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.119 2003/02/18 18:20:42 freesource Exp $</center>
+<center>$Id: index.html,v 1.120 2003/02/18 18:48:17 freesource Exp $</center>
 
 <p>
 
@@ -81,7 +81,6 @@ hometown!
 <em>Instructions:</em><br>
 README
 
-
 <p>
 
 <b>Debian based distributions</b><br>
@@ -156,6 +155,13 @@ bzip2<br>
 <p>
 
 <b>Debian based distributions</b><br>
+
+<em>Takes a snapshot of a Debian Distribution and makes a template for
+the Yard Method using an optimized packaging algorithm.  Some root_fs
+created using this approach may be found <a
+href="http://sourceforge.net/project/showfiles.php?group_id=9513">here</a>
+under Root filesystems.</em> <br>
+
 <a href="http://freshmeat.net/redir/make-debian-x11/18842/url_tgz/make-debian-x11.orig.tar.gz">
 make-debian-x11 source (type make to install)</a><br>
 <a href="http://freshmeat.net/redir/make-debian-x11/18842/url_deb/make-debian-x11_all.deb">
@@ -754,37 +760,20 @@ Method:
 
 <p>
 
-<u>Test a macro distribution created by make_debian-X11.</u>
-
-<p>
-
- 
-Download <a
-href="http://sourceforge.net/project/showfiles.php?group_id=9513">
-root_fs_debian_x11-(latest revision).bz2</a>.&nbsp;&nbsp; Run
-gbootroot.&nbsp;&nbsp;Click on the Advanced Root Section (ARS), click
-on the UML button. &nbsp;&nbsp;Select the filesystem, and click on the
-Submit button. This root filesystem was created with the
-make_debian-X11 script from the make-debian-x11 add-on found at <a
-href="http://sourceforge.net/project/showfiles.php?group_id=9513">
-gbootroot's</a> Sourceforge home.</p>
-
-
-<p>
-
 
 <u>Make your own micro distribution from an existing template.</u>
 
 <p>
 
-Click on the ARS if its not already opened.&nbsp;&nbsp; Choose Yard
-from the Method pull-down menu.&nbsp;&nbsp;Choose
-<b>Example-Mini.yard</b>
-from the pull-down Template menu.&nbsp;&nbsp;Click on the Generate button.
-&nbsp;&nbsp;The Yard Box will pop up.&nbsp;&nbsp;Click on the Continue button
-until the Create check box turns off.&nbsp;&nbsp;You could continue to the
-tests, but they really wouldn't apply to this minimalistic example because
-there are no links or login type files in the template.</p>
+Click on the Advanced Root Section (ARS) if its not already
+opened.&nbsp;&nbsp; Choose Yard from the Method pull-down
+menu.&nbsp;&nbsp;Choose
+<b>Example-Mini.yard</b> from the pull-down Template
+menu.&nbsp;&nbsp;Click on the Generate button.  &nbsp;&nbsp;The Yard
+Box will pop up.&nbsp;&nbsp;Click on the Continue button until the
+Create check box turns off.&nbsp;&nbsp;You could continue to the
+tests, but they really wouldn't apply to this minimalistic example
+because there are no links or login type files in the template.  
 
 <p>
 
@@ -793,16 +782,18 @@ different types of staging behavior, and notice the differences.</p>
 
 <p>
 
-Test your creation with the UML box.  &nbsp;&nbsp;You will want to add
+Open up the UML box by pressing on the UML button, the test your
+creation with the UML box.  &nbsp;&nbsp;You will want to add
 init=/bin/bash to the Options entry.</p>
 
 <p>
 
 At this point you will probably want to play around a little
 bit.&nbsp;&nbsp;Familiarize yourself with the Format Rules found near
-the top of the template.&nbsp;&nbsp;You may want to save the template
-with a different name and experiment with changes, or create a new
-template using File->New (Shortcut: Alt-N).</p>
+the top of the template or <a
+href="#template-help">here</a>.&nbsp;&nbsp;You may want to save the
+template with a different name and experiment with changes, or create
+a new template using File->New (Shortcut: Alt-N).</p>
 
 
 <u>Make your own mini distribution from an existing template.</u>
@@ -950,8 +941,13 @@ emergency disk customized for your own system, or create your own
 customized macro distribution and run it from the UML box to try
 things you never would have dreamed of doing on your host
 system.&nbsp;&nbsp;And that is just the beginning of the things you
-can do.
+can do. Some root_fs created by gbootroot can be found <a
+href="http://sourceforge.net/project/showfiles.php?group_id=9513">here</a>
+under Root filesystems.
 
+
+
+<p>
 
 <P><a name="3"><b>Oops, I can't get something to work, what should I do?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
