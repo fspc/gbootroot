@@ -1807,7 +1807,7 @@ sub uml_box {
 						  }
 
 						  # Find which runlevel or whether mtd_init is being used
-						  if ( m,(mtd_init=[/\d\w\'\"-]+\s?\d?)"?, ) {
+						  if ( m,(mtd_init=[/\d\w\'\"-]+\s?\d?)[\"\']?, ) {
 						      $init  = (split(/=/,$1))[1];
 						      chomp $init;
 						      $init =~ s/\"//g;
