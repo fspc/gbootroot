@@ -873,7 +873,9 @@ sub create_filesystem {
 		info(1, "\tCreate\t$newdir\n");
 	    }
 	    delete $Included{$file}; # Get rid of it so next pass doesn't copy it
+	    
 	}
+
     }
 
 
