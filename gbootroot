@@ -1413,7 +1413,7 @@ sub save_as {
     $label->set_justify( 'left' );
     $label->set_text("$template already exists, " . 
 	    	      "do\nyou want to write over it, " .
-		      "or\nsave it with a different name?");
+		      "or\nsave $new_template with a different name?");
     $save_as->vbox->pack_start( $label, $false, $false, 2 );
     $label->show();
  
@@ -1454,7 +1454,7 @@ sub save_as {
 
 	    $label->set_text("$new_template already exists, " . 
 			     "do\nyou want to write over it, " .
-			     "or\nsave it with a different name?");
+			     "or\nsave $template with a different name?");
 
 	    $event_count++;
 	    my $event = pop(@_);

@@ -1231,7 +1231,7 @@ sub save_as {
 
 	    $label->set_text("$new_template already exists, " . 
 			     "do\nyou want to write over it, " .
-			     "or\nsave it with a different name?");
+			     "or\nsave $template with a different name?");
 
 	    $event_count++;
 	    my $event = pop(@_);
