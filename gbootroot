@@ -337,6 +337,7 @@ sub home_builder {
 my ($sec,$min,$hour,$day,$month,$year) = (localtime)[0,1,2,3,4,5];
 my $time = sprintf("%02d:%02d:%02d-%02d-%02d-%04d", 
 		   $hour, $min, $sec, $month+1, $day, $year+1900);
+#print "$time\n";
 if (!-d "$tmp1/gbootroot_tmp$time") {   
   $tmp = "$tmp1/gbootroot_tmp$time" if err_custom_perl(
          "mkdir $tmp1/gbootroot_tmp$time",
@@ -348,6 +349,8 @@ if (!-d "$tmp1/gbootroot_mnt$time") {
         "gBootRoot: ERROR: Could not make mount directory") != 2;
 }
 
+# Why?
+$tmp = "$tmp1/gbootroot_tmp$time";
 
 # Verbosity is universal for all methods, and controlled by a scale slider. 
 # Yard 
@@ -1390,7 +1393,8 @@ sub Generate {
     $ars->{mnt}            = $mnt;
     $ars->{template_dir}   = $template_dir; # static right now.
     ars($ars);
-    
+
+
     my $template = $ars->{template};
     $root_device = $ars->{device};
     $root_filename = $ars->{filename};
