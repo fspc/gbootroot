@@ -1,4 +1,4 @@
-#!/usr/bin/perl;
+#!/usr/bin/perl -w
 
 #    gBootRoot Copyright (C) 2000, 2001
 #
@@ -193,6 +193,9 @@ use BootRoot::BootRoot;
 init Gtk;
 set_locale Gtk; 
 
+$main::editor = "emacs --font 6x13";
+$main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
+$main::sudo = "sudo";
 
 start();
 
