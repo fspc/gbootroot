@@ -20,6 +20,8 @@ install:
 	cp -fa user-mode-linux/usr/lib/uml/modules* /usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/config /usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/CVS /usr/lib/bootroot/yard/Replacements/lib/modules/CVS
+	install -d /usr/lib/uml
+	cp -fa user-mode-linux/usr/lib/uml/port-helper /usr/lib/uml/port-helper
 	install -d /usr/share/gbootroot/yard/templates
 	chmod 0444 yard/templates/*.yard
 	cp -fa yard/templates/Example* /usr/share/gbootroot/yard/templates
@@ -43,6 +45,7 @@ install:
 remove:
 	rm /usr/bin/gbootroot
 	rm -rf /usr/lib/bootroot
+	rm -rf /usr/lib/uml
 	rm /usr/bin/make_debian
 	rm /usr/share/perl5/BootRoot/*
 	rmdir /usr/share/perl5/BootRoot
@@ -53,4 +56,5 @@ remove:
 	rmdir /etc/gbootroot
 	rm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm
 	rm -rf /usr/share/doc/gbootroot
+
 
