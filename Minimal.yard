@@ -1,0 +1,137 @@
+#  -*- Mode: Fundamental -*-
+#
+#  This is a pared-down Bootdisk_Contents file for use with Yard.
+#  You can certainly boot with fewer files than this, but you
+#  probably wouldn't want to.  With these you can at least
+#  do some basic disk maintenance.
+#
+#  Format rules:
+#  - Lines beginning with # or % are comments.
+#
+#  - Blank lines and whitespace may be used freely.
+#
+#  - Filenames may be either relative or absolute.
+#
+#  - Lines of the form "filename1 -> filename2" will create
+#    links on the boot disk.  Eg, if you want sh linked to bash
+#    on the bootdisk, you can specify: "/bin/sh -> /bin/bash"
+#
+#  - Lines of the form "filename1 <= filename2"
+#    will cause filename2 (relative to the current working directory)
+#    to be copied to filename1 on the boot disk.  This is useful for
+#    specifying trimmed-down replacements for /etc/passwd, /etc/inittab, etc.
+#
+#  - Wildcards (? and *) are generally allowed, eg /dev/*
+#    Wildcards are not allowed in link specs or replacement specs.
+#
+#  You don't need to specify shared libraries or ld.so*.  The
+#  script will detect dependencies (via ldd) and include them
+#  automatically.
+#
+#  You don't need to explicitly specify intermediate directories
+#  unless you just want them to exist.
+#
+
+#  Specify these absolutely because boot scripts need them to be here.
+/bin/cat
+/bin/hostname		   	
+/bin/ln			   	
+/bin/login		   	
+/bin/ls			   	
+/bin/more
+/bin/mv			   	
+#  Use ash or some suitably minimal shell
+/bin/sh -> ash
+
+/sbin/agetty
+/sbin/halt          
+/sbin/init		   	
+/sbin/ldconfig
+/sbin/mount         
+/sbin/reboot
+/sbin/shutdown      
+/sbin/swapoff       
+/sbin/swapon        
+
+#  Devices
+/dev/ftape	/dev/nftape
+/dev/mem	/dev/kmem
+/dev/null
+/dev/zero
+/dev/ram
+/dev/console
+/dev/tty[0-9]
+/dev/hd[ab]*
+/dev/fd0*
+/dev/cu*
+/dev/*rft0
+
+#  Files in etc:
+/etc/group		   	
+/etc/issue		   	
+/etc/profile		    
+/etc/termcap		   	
+
+#  These get replaced with their pared-down versions 
+#  in the Replacements subdirectory.
+/etc/fstab	<= Replacements/etc/fstab
+/etc/inittab	<= Replacements/etc/inittab
+/etc/motd	<= Replacements/etc/bootdisk_motd
+/etc/passwd	<= Replacements/etc/passwd
+/etc/rc		<= Replacements/etc/rc
+/etc/ttytype    <= Replacements/etc/ttytype
+/etc/gettydefs  <= Replacements/etc/gettydefs
+
+#  Initialize utmp and wtmp.  Set up links for any old-style programs
+#  that expect them in /etc.  
+/etc/utmp     -> /var/run/utmp
+/var/run/utmp <= /dev/null        # This clears utmp
+
+/etc/wtmp     -> /var/log/wtmp
+/var/log/wtmp <= /dev/null
+
+#  Directories with nothing otherwise in them:
+/mnt                
+/proc               
+/tmp                
+
+#  Utilities.  The script will figure out their locations.
+chmod		   	
+chown		   	
+chroot
+cp			   	
+date		   	
+dd			   	
+df			   	
+du			   	
+e2fsck        
+fastboot		   	
+fasthalt      
+fdisk         
+find       
+fsck          
+fsck.ext2     
+grep       
+gunzip		   	
+gzip		   	
+mkdir		   	
+mke2fs        
+mkfs          
+mkfs.ext2     
+mknod		   	
+mkswap        
+passwd		   	
+pwd
+reboot		   	
+rm			   	
+stty		   	
+sync          
+tail		   	
+touch		   	
+tr
+umount        
+uname
+whoami
+wc
+
+#####  End of Bootdisk_Contents
