@@ -272,7 +272,7 @@ my $home_rootfs = "$home/root_filesystem/";
 my $home_uml_kernel = "$home/uml_kernel/";
 my $modules_directory = "/lib/modules";
 if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
-    $main::makefs = "genext2fs -z -r0 -i8192";
+    $main::makefs = "genext2fs -z -r0"; # -i8192 not a good idea
 }
 # This is for experimental stuff .. basically so I can test
 # the boot fs as a normal user, since it's hard to create a boot disk
@@ -566,6 +566,9 @@ start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name"
 # 
 # warning("text") produces 0=blue output with "Warning: " appended and keeps
 # count of warning via the $Warnings variable.
+#
+# warning_test("text") is like warning except that it doesnt append any
+# text, and doesn't keep count of anything.
 #
 # error("text") returns ERROR, writes to verbosity box (Error: "text"), and 
 # produces "gBootRoot: ERROR: "text" in error_window(), and writes to the
@@ -2881,7 +2884,7 @@ sub lilo_put_it_together {
       # When creating a fs on floppy, specifying -i causes genext2fs to fail, 
       # its better to just let the program figure out the inode size for now.
       if (
-	  sys("/usr/lib/bootroot/genext2fs -z -r0 -b $device_size -d  $mnt -D $device_table $entry_advanced[0]") !~ 
+	  sys("/usr/lib/bootroot/$main::makefs -b $device_size -d  $mnt -D $device_table $entry_advanced[0]") !~ 
 	  /^0$/ ) {
 	  $error = error("Cannot $fs_type filesystem.\n");
 	  return "ERROR" if $error && $error eq "ERROR";
@@ -3070,7 +3073,7 @@ sub device2 {
 	
 
 	if (
-	  sys("/usr/lib/bootroot/genext2fs -z -r0 -b $device_size -d $mnt $entry_advanced[3]") !~ 
+	  sys("/usr/lib/bootroot/$main::makefs -b $device_size -d $mnt $entry_advanced[3]") !~ 
 	    /^0$/ ) {
 	    info( 0, "/usr/lib/bootroot/$main::makefs -b $device_size -d $tmp/rootdisk $entry_advanced[3]\n");
 	    $error = error("Cannot $fs_type filesystem.\n");
