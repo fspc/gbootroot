@@ -37,7 +37,14 @@ my $tmp1 = "/tmp";              # tmp should be default - Cristian
 my $lilo_conf = "/etc/lilo.conf";
 
 # CHANGES
-#       1.0.3a - 08.23.2000
+#
+#       1.0.3b - 08.24.2000 cretzu
+#               * replaced 35 occurences of "$tmp/verbose" with the new
+#                 variable $verbosefn
+#               * some lines contained > 1 rmdir statement separated by ','
+#                 and not ';'; splitted those
+#
+#       1.0.3a - 08.23.2000 cretzu
 #               * corrected bugs in norm_root_device (returned always 'hda1')
 #                 a) now closes LIL
 #                 b) chomps all lines in one go
@@ -46,6 +53,7 @@ my $lilo_conf = "/etc/lilo.conf";
 #                 e) "there's one more bug(tm)": does not cope with multiple
 #                    root device occurences (which might be present in each
 #                    'image=' block
+#
 #       1.0.3 - 08.09.2000
 #               * Tmp and mnt are now created on the fly,
 #                 along with a new error function for mkdir(),
@@ -185,14 +193,19 @@ if (!-d "$tmp1/gbootroot_mnt$$") {
         "mkdir $tmp1/gbootroot_mnt$$",
         "gBootRoot: ERROR: Could not make mount directory") != 2;
 }
+my $verbosefn = "$tmp/verbose";
 
 my $window = new Gtk::Window("toplevel");
 $window->set_title("gBootRoot");
 $window->set_position('center');
-$window->signal_connect( "destroy", sub {
-                 unlink "$tmp/verbose", "$tmp/initrd_image.gz";
-                 rmdir "$tmp/initrd_mnt"; rmdir "$tmp", rmdir "$mnt";
-                 Gtk->exit(0); } );
+$window->signal_connect("destroy",
+                        sub {
+                          unlink "$verbosefn", "$tmp/initrd_image.gz";
+                          rmdir "$tmp/initrd_mnt";
+                          rmdir "$tmp";
+                          rmdir "$mnt";
+                          Gtk->exit(0);
+                        });
 $window->border_width(1);
 $window->realize;
 
@@ -316,10 +329,14 @@ $box2->show();
 
 # Close button
 my $cbutton = new Gtk::Button("Close");
-$cbutton->signal_connect( "clicked", sub {
-                 unlink "$tmp/verbose", "$tmp/initrd_image.gz";
-                 rmdir "$tmp/initrd_mnt"; rmdir "$tmp", rmdir "$mnt";
-                 Gtk->exit(0); });
+$cbutton->signal_connect("clicked",
+                         sub {
+                           unlink "$verbosefn", "$tmp/initrd_image.gz";
+                           rmdir "$tmp/initrd_mnt";
+                           rmdir "$tmp";
+                           rmdir "$mnt";
+                           Gtk->exit(0);
+                         });
 
 $tooltips->set_tip( $cbutton, "Exit gBootRoot.", "" );
 $cbutton->show();
@@ -347,8 +364,10 @@ sub signal {
    $SIG{TERM} = \&signal;
    $SIG{QUIT} = \&signal;
    $SIG{KILL} = \&signal;
-   unlink "$tmp/verbose", "$tmp/initrd_image.gz";
-   rmdir "$tmp/initrd_mnt"; rmdir "$tmp", rmdir "$mnt";
+   unlink "$verbosefn", "$tmp/initrd_image.gz";
+   rmdir "$tmp/initrd_mnt";
+   rmdir "$tmp";
+   rmdir "$mnt";
    Gtk->exit(0);
 }
 
@@ -612,11 +631,11 @@ sub submit {
 
       my($kernel,$root_image);
       # comment this out for testing
-      unlink("$tmp/verbose");
+      unlink("$verbosefn");
       open (MTAB, "/etc/mtab") or die "no mtab!\n";
       while (<MTAB>) {
          if (m,$mnt,) {
-           system "umount $mnt >> $tmp/verbose 2>&1";
+           system "umount $mnt >> $verbosefn 2>&1";
          }
       }
       close(MTAB);
@@ -803,7 +822,7 @@ sub err_custom {
          system("$_[0] > /dev/null 2>&1");
     }
     else {
-     system("$_[0] >> $tmp/verbose 2>&1");
+     system("$_[0] >> $verbosefn 2>&1");
     }
     error_window($_[1]) if ($? != 0);
     if (defined $error_window) {
@@ -878,19 +897,19 @@ sub lilo_put_it_together {
   pb($B,3);
 
   #V#print "Making stuff for lilo\n";
-  return if err(system "mkdir $mnt/{boot,dev} >> $tmp/verbose 2>&1; cp -a /dev/{null,fd?,hda1} $mnt/dev >> $tmp/verbose 2>&1") == 2;
+  return if err(system "mkdir $mnt/{boot,dev} >> $verbosefn 2>&1; cp -a /dev/{null,fd?,hda1} $mnt/dev >> $verbosefn 2>&1") == 2;
 
   # Hopefully, this works, but have never tested it
   if ($device !~ m,/dev/fd\d{1}$,) {
      return if err(
-     system "cp -a $device $mnt/dev >> $tmp/verbose 2>&1") == 2;
+     system "cp -a $device $mnt/dev >> $verbosefn 2>&1") == 2;
   }
 
   # This adds that next device
   $norm_root_device = norm_root_device();
   if (!-e "$mnt/dev/$norm_root_device") {
     return if err(
-    system "cp -a /dev/$norm_root_device $mnt/dev >> $tmp/verbose 2>&1") == 2;
+    system "cp -a /dev/$norm_root_device $mnt/dev >> $verbosefn 2>&1") == 2;
   }
 
   #pb($B,3);
@@ -915,11 +934,11 @@ sub lilo_put_it_together {
 
   # Got to umount,mount, and umount again to make sure everything is
   # copied over before doing lilo
-  return if errum(system "umount $mnt >> $tmp/verbose 2>&1") == 2;
+  return if errum(system "umount $mnt >> $verbosefn 2>&1") == 2;
   #V#print "Umount device\n";
   #V#print "Remount device\n";
   pb($B,6);
-  return if errm(system "mount -t ext2 $device $mnt >> $tmp/verbose 2>&1") == 2;
+  return if errm(system "mount -t ext2 $device $mnt >> $verbosefn 2>&1") == 2;
   #V#print "Configuring lilo\n";
   pb($B,7);
   chdir("$mnt"); #"boot_root: ERROR: Could not change directories\n";
@@ -934,12 +953,12 @@ sub lilo_put_it_together {
   chdir($pwd); # or die "boot_root: ERROR: Could not change directories\n";
 
   #V#print "Umounting $mnt\n";
-  my $um = errum(system "umount $mnt >> $tmp/verbose 2>&1");
+  my $um = errum(system "umount $mnt >> $verbosefn 2>&1");
   pb($B,10);
 
   if ($ok == 1 || $ok == 2) {
    return if
-   errrm(system "rmdir $tmp/initrd_mnt >> $tmp/verbose 2>&1") == 2;
+   errrm(system "rmdir $tmp/initrd_mnt >> $verbosefn 2>&1") == 2;
   }
 
 # Here's where we copy over that compressed filesystem
@@ -969,7 +988,7 @@ sub device2 {
 
 
      #V#print "Copy over the compressed filesystem\n";
-     return if errrm(system "rmdir $mnt/lost+found >> $tmp/verbose 2>&1") == 2;
+     return if errrm(system "rmdir $mnt/lost+found >> $verbosefn 2>&1") == 2;
      my $broot_image = basename($root_image);
 
      my $FS = "filesystem";
@@ -1090,37 +1109,37 @@ sub initrd {
 
   #print V "Using loop device to make initrd\n";
   #V#print V "Make sure you have loop device capability in your running kernel\n";
-  system "dd if=/dev/zero of=$tmp/$initrd bs=1024 count=$size_needed >> $tmp/verbose 2>&1";
+  system "dd if=/dev/zero of=$tmp/$initrd bs=1024 count=$size_needed >> $verbosefn 2>&1";
   pb($I,2);
   # no need to enter y every time
-  open(T,"|mke2fs -m0 -i8192 $tmp/$initrd >> $tmp/verbose 2>&1") or die "Problem here: $!\n";  print T "y\n"; close(T);
+  open(T,"|mke2fs -m0 -i8192 $tmp/$initrd >> $verbosefn 2>&1") or die "Problem here: $!\n";  print T "y\n"; close(T);
   pb($I,3);
   #V#print V "Mounting initrd in tmp\n";
 
-return if errmk(system "mkdir $tmp/initrd_mnt >> $tmp/verbose 2>&1; mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt >> $tmp/verbose 2>&1") == 2;
+return if errmk(system "mkdir $tmp/initrd_mnt >> $verbosefn 2>&1; mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt >> $verbosefn 2>&1") == 2;
   pb($I,4);
 
   #V#print "Putting everything together\n";
   open(LC, ">$tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to loop device\n";
   print LC initrd_heredoc($broot_image); close(LC);
   # I could test this but somebody's system may do permissions differently
-  system "chmod 755 $tmp/initrd_mnt/linuxrc >> $tmp/verbose 2>&1";
-  system "rmdir $tmp/initrd_mnt/lost+found >> $tmp/verbose 2>&1";
+  system "chmod 755 $tmp/initrd_mnt/linuxrc >> $verbosefn 2>&1";
+  system "rmdir $tmp/initrd_mnt/lost+found >> $verbosefn 2>&1";
   pb($I,5);
 
   #V#print "... the dirs\n";
-  return if errmk(system "mkdir $tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr} >> $tmp/verbose 2>&1; mkdir $tmp/initrd_mnt/usr/lib >> $tmp/verbose 2>&1") == 2;
+  return if errmk(system "mkdir $tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr} >> $verbosefn 2>&1; mkdir $tmp/initrd_mnt/usr/lib >> $verbosefn 2>&1") == 2;
   pb($I,6);
 
-  return if errcp(system "cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev >> $tmp/verbose 2>&1") == 2;
+  return if errcp(system "cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev >> $verbosefn 2>&1") == 2;
   return if errcp(system "cp -a $device $tmp/initrd_mnt/dev") == 2;
   pb($I,7);
 
   #V#print ".. the bins\n";
-  return if errcp(system "cp -a /bin/{ash,gzip,mount,umount} $tmp/initrd_mnt/bin >> $tmp/verbose 2>&1") == 2;
+  return if errcp(system "cp -a /bin/{ash,gzip,mount,umount} $tmp/initrd_mnt/bin >> $verbosefn 2>&1") == 2;
   if ($compress eq "bzip2") {
       if (-e "/usr/bin/$compress") {
-    return if errcp(system "cp -a /usr/bin/$compress $tmp/initrd_mnt/bin >> $tmp/verbose 2>&1") == 2;
+    return if errcp(system "cp -a /usr/bin/$compress $tmp/initrd_mnt/bin >> $verbosefn 2>&1") == 2;
       }
   }
 
@@ -1139,12 +1158,12 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $tmp/verbose 2>&1; mount -o loo
           # symbolic link
           if (-l "/lib/$lib") {
             $what = (split(/\s+/,$_))[10];
-            return if errcp(system "cp -a /lib/$lib $tmp/initrd_mnt/lib >> $tmp/verbose 2>&1") == 2;
-            return if errcp(system "cp -a /lib/$what $tmp/initrd_mnt/lib >> $tmp/verbose 2>&1") == 2;
+            return if errcp(system "cp -a /lib/$lib $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
+            return if errcp(system "cp -a /lib/$what $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
           }
           # no symbolic link
           else {
-            return if errcp(system "cp -a /lib/$lib $tmp/initrd_mnt/lib >> $tmp/verbose 2>&1") == 2;
+            return if errcp(system "cp -a /lib/$lib $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
           }
         }
    }
@@ -1153,8 +1172,8 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $tmp/verbose 2>&1; mount -o loo
   # Has a return code of 0 regardless
   system "ldconfig -r $tmp/initrd_mnt";
   #V#print "Umounting loop device, and compressing initrd";
-  return if errum(system "umount $tmp/initrd_mnt >> $tmp/verbose 2>&1") == 2;
-  system "gzip -f9 $tmp/$initrd >> $tmp/verbose 2>&1";
+  return if errum(system "umount $tmp/initrd_mnt >> $verbosefn 2>&1") == 2;
+  system "gzip -f9 $tmp/$initrd >> $verbosefn 2>&1";
   pb($I,10); # This takes the longest.
 
   $initrd = $initrd . ".gz";
@@ -1248,13 +1267,13 @@ mtab_window($dialog,$error,$count) if $error == 0;
   # Keep asking until they are.
   if ($error == 1) {
    destroy $mtab;
-   system "mke2fs -m0 -i8192 $device $size >> $tmp/verbose 2>&1";
+   system "mke2fs -m0 -i8192 $device $size >> $verbosefn 2>&1";
    if ($? != 0) {
     $dialog = "gBootRoot: ERROR: You need to insert a disk\n";
      mtab_window($dialog,$error,$count);
      return;
    }
-   return if errm(system "mount -t ext2  $device $mnt >> $tmp/verbose 2>&1") == 2;
+   return if errm(system "mount -t ext2  $device $mnt >> $verbosefn 2>&1") == 2;
    lilo_put_it_together() if $count == 0;
    device2() if $count == 1;
   }
