@@ -374,7 +374,6 @@ home_builder($tmp1);
 # directories
 if ( !%option ) {
 
-
 # $HOME/.gbootroot/root_filesystem
     home_builder($home_rootfs);
 
@@ -826,7 +825,7 @@ else {
 	print "  --filesystem-command=c    \"$::makefs\"\n";
 	print "  --uml-exclusively=on|off  off\n";
 	print "  --uml-kernel=path         $ENV{HOME}/.gbootroot/" . 
-					   "uml_kernel/linuxbr\n";
+					   "uml_kernel/linux\n";
 	print "  --preserve-ownership=y|n  n\n\n";
 	print "                           (system kernel options)\n";
         print "  --kernel=path             specify different system kernel\n"; 

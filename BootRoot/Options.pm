@@ -50,10 +50,26 @@ sub option {
 
 		# hidden options for package making or for people who
 		# read the source Luke.  Path's relative to `pwd`.
-		"home=s",                 # path relative to `pwd` usually "."
+
+		# home by itself allows the GUI to be tested in it's 
+		# immediate directory, this overcomes the need to always
+		# install stuff locally to test it.
+		# It translates to gui_mode and lets the program know that
+		# Initrd.gz, genext2fs, linuxbr, and  root_fs_helper
+		# be used in the directory specified.  
+		# So "perl -I . ./gbootroot --home ."  will test in the
+		# immediate directory.  Good for CVS development, and
+		# testing for those who don't want to install.
+		# Also output will go to stdout which is cool.
+		# "home" with "template" needs the additional options to
+		# choose immediate dir., for instance, genext2fs.
+
+		"home=s",                  # path relative to `pwd` usually "."
 		"root-fs-helper-location=s", # full path or rel path 
 		                             # in Yard $ubd0
-		"expect-program=s"           # i.e. ./expect_uml
+		"expect-program=s",          # i.e. ./expect_uml
+		"genext2fs=s"                # for immediate dir creation
+		                             # commandline .. ussually "."
 
 		);
 
