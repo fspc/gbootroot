@@ -4604,7 +4604,7 @@ filesystem.
 "Accept"  This accepts the created root filesystem if it is found in the 
 temporary creation directory.  The UML box and the main section will now 
 reflect the path to this root filesystem.  You can now test with the UML 
-button or a put together a complete Boot/Root set with the Submit button.
+button or put together a complete Boot/Root set with the Submit button.
 
 Advanced Kernel Section:
 
