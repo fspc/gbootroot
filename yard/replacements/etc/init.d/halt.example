@@ -1,0 +1,8 @@
+#! /bin/sh
+#
+# $Id$
+#
+# Used by Example.yard
+
+
+halt -d -f -i -p

@@ -1,0 +1,8 @@
+#! /bin/sh
+#
+# $Id$
+#
+# Used by Example.yard
+
+echo -n "Rebooting... "
+reboot -d -f -i
