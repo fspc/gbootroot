@@ -1064,7 +1064,7 @@ sub uml_box {
 
 	#_______________________________________
 	# Submit Button
-	my $submit_b = button_advanced(0,2,3,4,"Submit",$table_uml);
+	my $submit_b = button_advanced(0,1,3,4,"Submit",$table_uml);
 	$submit_b->signal_connect("clicked",
 				  sub {
 				      # UML kernel = $entry_advanced[5]
@@ -1082,14 +1082,26 @@ sub uml_box {
 #				      sys ("perl -e 'system \"$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]\";'");
 				  } );
 
+
+	#_______________________________________
+	# Cancel button also kills UML kernel if still open
+	my $abort_b = button_advanced(1,2,3,4,"Abort",$table_uml);
+	$abort_b->signal_connect("clicked",
+				 sub {
+				     if ($entry_advanced[10]) {
+				     # Most stuff
+				     remove_matching_process($entry_advanced[10]);
+				     # Debian
+				     remove_matching_process("Virtual Console");
+				     remove_matching_process($entry_advanced[10]);
+				     }
+				 } );
+
 	#_______________________________________
 	# Cancel button also kills UML kernel if still open
 	my $cancel_b = button_advanced(2,3,3,4,"Cancel",$table_uml);
 	$cancel_b->signal_connect("clicked",
 				 sub {
-				     # This has to be improved .. don't
-				     # want other processes killed
-				     # remove_matching_process("linux");
 				     $uml_window->destroy() if $uml_window;
 				 } );
 
@@ -1100,10 +1112,20 @@ sub uml_box {
 sub remove_matching_process {
 
     my ($match_word) = @_;
+    if ($match_word =~ m,/,) {
+	$match_word =~ s,/,\\/,g;
+    }
+
     my $ps = "ps auxw|";
     open(P,"$ps");
     while(<P>) {
-	if (/$match_word/) {
+	# friendly approach
+	if (m,$match_word,) {
+	    my $process = (split(/\s+/,$_,))[1];
+	    system "kill $process";
+	}
+	# no so friendly approach
+	if (m,$match_word,) {
 	    my $process = (split(/\s+/,$_,))[1];
 	    system "kill -9 $process";
 	}
