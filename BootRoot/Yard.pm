@@ -34,7 +34,7 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys 
-              text_insert error logadj *LOGFILE which_tests); 
+              text_insert error logadj *LOGFILE which_tests create_fstab); 
 
 use strict;
 use File::Basename;
@@ -774,7 +774,7 @@ sub create_filesystem {
 	    if (sys("$main::makefs $device $fs_size") !~ 
 		/^0$/ ) {
 		my $fs_type = (split(/\s/,$main::makefs))[0];
-		$error = error("Can not $fs_type filesystem");
+		$error = error("Can not $fs_type filesystem.");
 		return "ERROR" if $error && $error eq "ERROR";
 
 	    }
@@ -782,7 +782,7 @@ sub create_filesystem {
 	    if (sys("$main::makefs $device $fs_size") !~ 
 		/^0$/ ) {
 		my $fs_type = (split(/\s/,$main::makefs))[0];
-		$error = error("Can not $fs_type filesystem");
+		$error = error("Can not $fs_type filesystem.");
 		return "ERROR" if $error && $error eq "ERROR";
 	    }
     }
@@ -2123,7 +2123,65 @@ sub check_termcap {
 
 #####  END OF CHECK_ROOT_FS
 
+##### REPLACEMENTS
+
+sub create_fstab {
+
+   my($NEWFSTAB) = @_;
+   open(NEWFSTAB, ">$NEWFSTAB") or die "$NEWFSTAB: $!";
+    
+    print NEWFSTAB <<BLARD;
+# DEVICE	MOUNTPOINT	TYPE	OPTIONS	DUMP	FSCKORDER
+#----------------------------------------------------------------
+# /dev/ram0       /               ext2    defaults
+/proc           /proc           proc    defaults
+# Entries adapted from existing fstab:
+BLARD
+	
+    my($line);
+    open(FSTAB, "/etc/fstab") or die "/etc/fstab: $!\n";
+
+    while ($line = <FSTAB>) {
+	chomp $line;
+	next if $line =~ /^\#/ or $line =~ /^\s*$/;
+	
+	my($device, $mpt, $type, $options, @rest) = split(' ', $line);
+	
+	if ($device =~ m!^/(proc|dev/ram)! or $type eq "proc") {
+	    ## Don't allow /proc or /dev/ram? definitions
+	    next;
+
+	} elsif ($type eq 'swap') {
+	    ##  Pass swap through unchanged
+
+	} else {
+	    ##  By default:
+	    ##  - Add a 'noauto' option if it doesn't already have one
+	    ##  - Put mountpoint under oldroot
+	    $options .= ',noauto' unless $options =~ /\bnoauto\b/;
+	    print "$device $mpt\n";
+	    if ($mpt eq '/') {
+		$mpt = "/"; # limitation of mount cmd
+	    } else {
+		$mpt =  $mpt;
+	    }
+	}
+	
+	print NEWFSTAB join("\t", ($device, $mpt, $type, $options,
+				   @rest)), "\n";
+    }
+
+    close(FSTAB);
+    close(NEWFSTAB);
+
+    info(0,"Created $NEWFSTAB\n");
+} # end create_fstab
+
+
+##### END REPLACEMENTS
+
 1;
+
 
 
 
