@@ -45,7 +45,7 @@ skas-or-tt:
 		$(MAKE) -C $(SKAS_OR_TT_DIR); \
 		strip -s $(SKAS_OR_TT_DIR)/skas-or-tt; \
 	fi;
-	perl -e 'open(IT,"skas-or-tt/skas-or-tt|") or die "Trouble opening skas-or-tt/skas-or-tt\n"; while (<IT>) { if (!m,not found$$,) { $$it = "skas"; } else { $$it = "tt"; } } system "perl -pi.bak -e \"s/MODE\\n/skas\\n/g\" Makefile" if $$it eq "skas"; system "perl -pi.bak -e \"s/MODE\\n/tt\\n/g\" Makefile" if $$it eq "tt"; ' 
+	perl -e 'open(IT,"skas-or-tt/skas-or-tt|") or die "Trouble opening skas-or-tt/skas-or-tt\n"; while (<IT>) { if (!m,not found$$,) { $$it = "skas"; } else { $$it = "tt"; } } system "perl -pi.bak -e \"s/=MODE/=skas/g\" Makefile" if $$it eq "skas"; system "perl -pi.bak -e \"s/=MODE/=tt/g\" Makefile" if $$it eq "tt"; ' 
 
 
 sources:
