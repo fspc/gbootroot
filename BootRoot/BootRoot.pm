@@ -231,29 +231,6 @@ my $ars = {}; # anonymous hash
 "          X          X          "
                         );
 
-
-# For distributions that don't adhere to the most recent FHS.
-BEGIN {
-
-    my $fhs = grep(/\/usr\/share\/perl5/,@INC);
-
-    if ($fhs == 0) {
-	unshift(@INC,"/usr/share/perl5");
-    }
-
-
-    my $sbin = grep(/\/sbin/,$ENV{'PATH'});
-    if ($sbin == 0) {
-	$ENV{'PATH'} = "/sbin:" . $ENV{'PATH'};
-    }
-
-    $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
-    if ($sbin == 0) {
-	$ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
-    }
-
-}
-
 sub start {
 
 
