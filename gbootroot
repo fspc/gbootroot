@@ -2772,7 +2772,10 @@ sub lilo_put_it_together {
 	# Keep a record of the devices required
 	@devices = qw(/dev/null /dev/fd0 /dev/fd1 /dev/hda1);
 	for ( split(" ", $container[BOOT_DEVICE] ) ) {
-	    push(@devices, $_ ) if $_;
+	    my @existing_device_test = grep ( /$_/, @devices );
+	    if ( !@existing_device_test ) {
+		push(@devices, $_ ) if $_;
+	    }
 	}
 
 	# This adds that next device if found in lilo.conf
@@ -2780,7 +2783,7 @@ sub lilo_put_it_together {
 	if ( $norm_root_device ) {
 	    my @existing_device_test = 
 		grep ( /\/dev\/$norm_root_device/, @devices );
-	    if ( @existing_device_test ) {
+	    if ( !@existing_device_test ) {
 		push( @devices, "/dev/$norm_root_device" );
 	    }
 	}
@@ -2788,9 +2791,14 @@ sub lilo_put_it_together {
 	# For frame buffer devices and the like.
 	if ( $entry_advanced[1] ) {
 	    for ( split(" ", $entry_advanced[1] ) ) {
-		push(@devices, $_ ) if $_;
+		my @existing_device_test = grep ( /$_/, @devices );
+		if ( !@existing_device_test ) {
+		    push(@devices, $_ ) if $_;
+		}
 	    }
 	}
+
+	info(0,"DEVICES @devices\n");
 
 	device_table( @devices );
 	close(BootRoot::Yard::DEVICE_TABLE);
@@ -2817,6 +2825,7 @@ sub lilo_put_it_together {
       if ($entry_advanced[1]) {
 	  return if errcp(sys("cp -a $entry_advanced[1] $mnt/dev")) == 2;
       }
+
 
   } # end DEVICES SECTION
 
