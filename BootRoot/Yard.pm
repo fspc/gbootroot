@@ -91,7 +91,7 @@ sub logadj { $logadj = $_[0]; }
 sub kernel_version_check {
 
     my($kernel,$kernel_version) = @_;
-    
+
     if (defined($kernel_version)) {
 	#  Check to see if it agrees
 	my($version_guess) = kernel_version($kernel);
@@ -103,6 +103,7 @@ sub kernel_version_check {
 	    "even though a probe says $version_guess.",
 	    "  I'll assume you're right.\n")
 	}
+
 	$ENV{'RELEASE'} = $kernel_version;
 
     } elsif (defined($ENV{'RELEASE'} = kernel_version($kernel))) {
@@ -121,6 +122,8 @@ sub kernel_version_check {
 	     return "ERROR" if $error && $error eq "ERROR";
 	}
     }
+
+    return $ENV{'RELEASE'} if $ENV{'RELEASE'};
 
 } # end sub kernel_version_check 
 
@@ -1501,7 +1504,7 @@ sub kernel_version {
     $str = unpack("S",$str);
     #info (0, "Kernel setup header version is 0x");
 
-	# 2.4.0 kernels now use Start Text 0x202 
+	# 2.4.0 kernels now use Start Text 0x202 - freesource 
 	    unless ($str == 0x201
 		    || $str == 0x0202) {
 		print sprintf("%04x",$str);
