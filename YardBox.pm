@@ -39,6 +39,7 @@ my ($continue_button,$close_button,$save_button);
 my($check,$dep,$space,$create,$test);
 my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text);
+my $save_as;
 
 my $filesystem_type = "ext2";
 my $inode_size = 8192;
@@ -999,7 +1000,7 @@ sub saved {
 	}
     }
     elsif ($whoami == 101) {
-	print "Getting there\n";
+	save_as();
     }
 
 }
@@ -1029,4 +1030,79 @@ sub yard_menu {
 
 } 
 
+# This will just be a simple dialog
+sub save_as {
+
+# Will just use a dialog box.
+    my ($dialog,$error,$count,$pattern) = @_;
+
+    if (not defined $save_as) {
+    $save_as = Gtk::Dialog->new();
+    $save_as->signal_connect("destroy", \&destroy_window, \$save_as);
+    $save_as->signal_connect("delete_event", \&destroy_window, \$save_as);
+    $save_as->set_title("Save As");
+    $save_as->border_width(12);
+    $save_as->set_position('center');
+
+    my $new_template;
+    my $entry = Gtk::Entry->new();
+    $entry->set_editable( $true );
+    $entry->set_text($template) if $template;
+    $entry->signal_connect( "changed", sub {
+	$new_template = $entry->get_text();
+    }); 
+    $save_as->vbox->pack_start( $entry, $false, $false, 0);
+    $entry->show();
+
+    my $label = Gtk::Label->new($dialog);
+    $label->set_justify( 'left' );
+    $label->set_pattern("_________") if defined $pattern;
+    $save_as->vbox->pack_start( $label, $false, $false, 2 );
+    $label->show();
+    my $button = Gtk::Button->new("OK");
+    $button->signal_connect("clicked", sub {
+	    # Here's where we get to undef Yard variable and start over at 
+	    # check
+	    my $new = "$template_dir$new_template";
+	    open(NEW,">$new") or 
+		($error = error("gBootRoot: ERROR: Can't create $new"));
+	    return if $error && $error eq "ERROR";    
+	    print NEW $changed_text;
+	    close(NEW);
+	    $template = $new_template;
+	    $save_as->destroy
+    });
+    $button->can_default(1);
+    $save_as->action_area->pack_start($button, $false, $false,0);
+    $button->grab_default;
+    $button->show;
+
+    $button = Gtk::Button->new("Cancel");
+    $button->signal_connect("clicked", sub { destroy $save_as} );
+    $save_as->action_area->pack_start($button, $false, $false,0);
+    $button->show;
+    }
+     if (!visible $save_as) {
+         show $save_as;
+     }
+     else {
+        destroy $save_as;
+        save_as($dialog,$error,$count) if $error == 0;
+     }
+
+
+}
+
 1;
+
+
+
+
+
+
+
+
+
+
+
+
