@@ -1,0 +1,287 @@
+#  $Id$
+#  Example.yard
+#
+#  Creates a minimalistic runlevel 2 root filesystem with getty.  
+#  Tested on Debian unstable/testing,  but should work on other distributions 
+#  (Mandrake,  RedHat, etc.) by using the proper inittab (edit) and getty.
+# 
+#  Create either as a normal user or root.  When using genext2fs it's necessary to specify a
+#  root filesystem size larger than the actual size because genext2fs uses different accounting
+#  information than mke2fs.
+#
+#  Works both with and without devfs, i.e devfs=nomount.
+
+#############################################################################
+#
+# Format rules:
+#  - Lines beginning with # or % are comments.
+#
+#  - Blank lines and whitespace are ignored.
+#
+#  - Lines of the form "filename1 ->  filename2" will create symbolic (soft)
+#    links on the root fs.  For example, if you want sh linked to ash
+#    in the root fs you could specify: "/bin/sh -> /bin/ash".
+#    The literal output from the last column found when using `ls -s`
+#     may be used, or fictional links may be created, for instance,  ashsa -> bash
+#    (In this case if /bin/bash exists on the system the link would be
+#    /bin/ashsa -> /bin/bash, otherwise /asha -> /bash)
+#    (There is no way to specify hardlinks, though hard linked files
+#    that exist on the hard disk will be hard linked.)
+#
+#  - Lines of the form "filename1 <= Replacements/pathto_filename2"
+#    will cause filename2 to be copied to filename1 on the root fs.
+#    This is useful for specifying trimmed-down replacements for
+#    /etc/passwd, /etc/inittab, etc.  For the above example, filename2 
+#    is found in its real path below the Replacements directory which is 
+#    found in the default Replacements path of $HOME/yard/Replacements.
+#    Replacements may be specified in their absolute or relative paths 
+#    (found using $PATH). 
+#
+#  - User defined paths may be specified in the Path Box (Edit->Settings->Path).  These paths
+#    may be used to search for the relative paths for Replacements, links and files.
+#     
+#  - Glob designations (?, * and []) are generally allowed, eg /dev/hd[ab]*
+#    Wildcards are not allowed in link specs or replacement specs.
+#
+#   - The $RELEASE variable which may be used to locate the modules directory can come from 
+#    one of three sources,  the kernel version returned from a selected kernel in the main section, 
+#    a user defined kernel version in the ABS, or the value of `uname -r` returned automatically
+#    when the other two sources aren't specified.
+#
+#    You don't need to specify shared libraries or loaders because
+#    necessary libraries are detected automatically.  
+
+#    You may choose between two behaviors for the treatment of NSS and PAM 
+#     libraries.  The old Yard behavior assumes that only the user knows which
+#     service modules they want to include in the file set, and tests (see Tests menu)  
+#     may be run on the configuration files to show what isn't provided, 
+#     so that the user can include the missing modules manually by editing the template,
+#     but the user still needs to figure out any dependencies since the modules are dynamically
+#     loaded.
+#
+#     The new Yard behavior (default) assumes that the user does know what they want 
+#     based on what the user puts in the NSS (nsswitch.conf) and PAM (pam.conf or pam.d/*)
+#     configuration files.  The configuration files are then parsed and the corresponding 
+#     service modules are included in the file set if they exist on the host system, tests 
+#     (see Tests menu) can be run to find out which ones don't exist.   The service modules are
+#     checked for library dependencies.  What this means is that the user only needs
+#     to specify the configuration files in the template, and doesn't need to concern themselves
+#     with the service modules or libraries involved.  The new behavior is recommended, 
+#     but if the old behavior is desired switch off Edit->Settings->"NSS Conf" and 
+#     Edit->Settings->"PAM Conf".
+#
+#    You don't need to explicitly specify intermediate directories unless you
+#    just want to make sure they exist.
+#
+##############################################################################
+
+# init - parent of all processes
+## Consider being creative with init, for instance use ash, sash, or busybox as an init replacement.
+# Choose an inittab to compliment the traditional init in the page below.
+/sbin/init 		   	
+/sbin/telinit
+/sbin/shutdown
+/sbin/halt
+/etc/init.d/halt    # make this into a replacement
+/sbin/swapon               
+/sbin/reboot
+/etc/init.d/reboot  # make this into a replacement
+/etc/rc   <=    Replacements/etc/rc.debian-min # need two of these and put them in init.d
+
+# Login stuff .. password not used. 
+/bin/login 
+/sbin/sulogin # used by inittab.debian-min
+/etc/securetty <= Replacements/etc/securetty.debian-min
+/root/.bashrc <= Replacements/root/.bashrc.debian
+/root/.profile <= Replacements/root/.profile.debian
+/home/user/.bashrc <= Replacements/home/user/.bashrc.debian
+/home/user/.bash_profile <= Replacements/home/user/.bash_profile.debian
+/etc/hostname <= Replacements/etc/hostname
+/etc/motd <= Replacements/etc/motd
+
+# Important stuff
+#
+# Create->Replacements-> fstab.  Edit file to use /dev/ubd/0 or /dev/ram
+/etc/fstab	<= ./Replacements/etc/fstab.new 
+#
+/etc/issue # nice to have
+#
+# No password for anyone.
+#/etc/group <= Replacements/etc/group.debian-min	
+#/etc/passwd <= Replacements/etc/passwd.debian-min
+#
+# Shadow password  root=root user=user
+/etc/group <= Replacements/etc/group.debian	
+/etc/passwd <= Replacements/etc/passwd.debian
+/etc/shadow <= Replacements/etc/shadow.debian
+/etc/login.defs
+
+#  Specify these binaries absolutely because boot scripts need them to be here.
+/bin/echo # for inittab.debian.sample
+/bin/mount 
+/bin/umount
+/bin/cat
+/bin/hostname		   	
+/bin/ln			   	
+/bin/ls			   	
+/bin/more
+/bin/mv			   	
+
+#####  SHELLS
+#    Bash is huge and requires libncurses.so.
+#    Most people use a smaller lightweight shell, like ash or kiss,
+#    and use that instead.
+/bin/sh -> bash 
+#  This could be made the init=sash
+/bin/sash 
+#
+/etc/profile		    
+/etc/shells # Make sure ash is listed if it is used.
+
+#   PROVISIONS FOR PAM: 
+/etc/pam.d/login
+
+#   PROVISIONS FOR NSS
+#   If you use the old libc5, or uClibc you don't need this.  Comment out this line.
+#
+/etc/nsswitch.conf <= ./Replacements/etc/nsswitch.conf.sample
+
+##### INITTAB and GETTY
+# Use one of these pairs, based on your distribution:
+#  Remember these aren't absolutely necessary.
+#
+#===== DEBIAN (1.1) uses a program called "getty" which is actually 
+#                  agetty in disguise:
+/etc/inittab	<= Replacements/etc/inittab.debian-min
+/sbin/getty
+#
+#
+#===== REDHAT (5.x, 6.0) uses getty
+#/etc/inittab	<= Replacements/etc/inittab
+#/sbin/getty
+#
+#
+#===== MANDRAKE (7.0, 8.0) uses mingetty
+#/etc/inittab	<= Replacements/etc/inittab.mingetty
+#/sbin/mingetty
+#
+#
+#===== SLACKWARE uses agetty:
+#/etc/inittab	<= Replacements/etc/inittab.agetty
+#/sbin/agetty
+#
+#
+#===== SUSE	uses mingetty:
+#/etc/inittab    <= Replacements/etc/inittab.mingetty     
+#/sbin/mingetty
+#
+#
+# If in doubt, check your /etc/inittab.
+#
+# In any case, check to make sure the *getty* calls in the inittab match
+# the executable you're using.  Yard can't check this and *getty* will
+# hang if the arguments are wrong.
+
+# Devices - for devfs=nomount the bare minimum required is an inital console, otherwise
+# nothing is required.
+/dev/console
+/dev/ram*
+/dev/mem
+/dev/kmem
+/dev/null
+/dev/zero
+/dev/tty[0-9] # nice for getty
+## /dev/ubd0 <= Replacements/dev/ubd0
+
+##/dev/mem	/dev/kmem
+##/dev/null       /dev/zero
+##/dev/ram*
+##/dev/hd[abcd]*              # Hard disks
+##/dev/ttyS[0-9]		    # Serial ports (new style)
+#  Optional devices.  Uncomment the ones you want, but
+#  keep in mind that each device file consumes an inode.
+##/dev/fd0*                   # Floppy disk drives
+#/dev/*tape*                 #  Tape device links
+#/dev/*rft0                  #  Floppy tape devices
+#/dev/st?                    #  SCSI tape drives
+#/dev/sd*                    # SCSI disks
+##/dev/cdrom /dev/modem       # Links to real devices, which will be copied
+#/dev/mouse
+
+#####  utmp and wtmp.  
+# No need for this.
+
+#####  terminfo entries for programs which need terminal capabilities like vi and nano.
+/usr/share/terminfo/v/vt100    # make these replacements
+/usr/share/terminfo/l/linux        # this too
+
+# If you want to load a special keytable, add the filename here:
+#/usr/lib/kbd/keytables/defkeymap.map
+
+#####  Empty directories
+/proc               
+/tmp                
+/var/tmp
+/var/log
+/var/run
+
+##### Special links
+/etc/mtab -> /proc/mounts
+
+#####  MODULES and support programs for them.
+insmod
+rmmod
+lsmod
+depmod
+modprobe
+/etc/modules.conf
+#
+#       The actual modules.  You probably want to be more selective than this.
+#       Do an "lsmod" and include the modules you use.
+#/lib/modules/$RELEASE/*/*.o
+
+#####  ESSENTIAL SYSTEM UTILITIES
+# (your rescue disk may not boot if these are not present.)
+chmod		   	
+chown
+chroot
+cp			   	
+df			   	
+id
+mkdir		   	
+pwd
+rm
+stty		   	
+sync          
+uname
+
+#####  NON-ESSENTIAL BUT USEFUL UTILITIES
+which
+ldd
+du			   	
+rmdir
+less
+dircolors
+grep         
+tail       
+mknod		   	
+ps			   	
+touch		   	
+whoami
+diff
+wc
+	   	
+# Editors
+vi
+# Small, free, pico replacement.
+nano
+
+#####  DISK AND FILE SYSTEM UTILITIES
+fdisk
+e2fsck
+mke2fs
+tune2fs
+dumpe2fs
+debugfs
+e2image
+badblocks
