@@ -628,7 +628,7 @@ $cbutton->signal_connect("clicked",
                          sub {
                            unlink "$verbosefn", "$tmp/initrd_image", 
 			   "$tmp/initrd_image.gz";
-			   system "umount $tmp/initrd_mnt";
+			   system "umount $tmp/initrd_mnt > /dev/null 2>&1";
                            rmdir "$tmp/initrd_mnt";
                            rmdir "$tmp";
                            rmdir "$mnt";
@@ -658,7 +658,7 @@ exit( 0 );
 sub signal {
 
    unlink "$verbosefn", "$tmp/initrd_image.gz";
-   system "umount $tmp/initrd_mnt";
+   system "umount $tmp/initrd_mnt > /dev/null 2>&1";
    rmdir "$tmp/initrd_mnt";
    rmdir "$tmp";
    rmdir "$mnt";
@@ -1237,7 +1237,7 @@ sub uml_box {
 				     # Debian
 				     remove_matching_process("Virtual Console");
 				     # Good to remove uml_\w*
-				     remove_matching_process("uml_\w*");
+				     remove_matching_process('uml_\w*');
 				     # Again for good measure :)
 				     remove_matching_process($entry_advanced[10]);
 				     }
