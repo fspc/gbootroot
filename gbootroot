@@ -80,7 +80,7 @@
 #    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 
-# For distributions that don't adhere to the FHS.
+# For distributions that don't adhere to the most recent FHS.
 BEGIN {
 
     my $fhs = grep(/\/usr\/share\/perl5/,@INC);
@@ -2777,6 +2777,14 @@ sub initrd_size {
     # the size of the loop device should be at least 1.63% larger than what
     # it will contain (i.e. 8192 inode), but to keep on the safe size it will
     #  be 2.00% larger.
+
+    # Unforturnately, stat is being done on
+    # the actual live fs, whereas the loop filesystem may be different.  In
+    # general the check is quite conservative and will always leave room.
+    # Stat seems to view things differently based on the situation, and
+    # -s file has another opinion, for now stat will be used and perhaps
+    # the actual filesystem in the future.  Better extra room than too little.
+
     # 9 dirs  = 1024 each (increase if modified)
     # {ash,gzip,mount,umount} (required executables)
     # bzip2 if $compress eq bzip2 (optional)
@@ -2786,18 +2794,57 @@ sub initrd_size {
     my $dir_size = 9 + 1;
     my $initrd_size = $dir_size + $linuxrc_size;
 
-    # modules
+    info(1,"SIZE $dir_size + $linuxrc_size = $initrd_size\n");
+
+    # modules - see CVS:1.65 for previous non-size check.
     my @modules = kernel_modules();
     if (@modules) {
-	
-	my $ds = mkpath("$tmp/initrd_mnt/lib/modules/$kernel_version");
-	$initrd_size = $initrd_size + $ds;
 
-	foreach (@modules) {
-	    ($path,$value) = stripper($_,"mod");
-	    $initrd_size =  $initrd_size + ((stat($path))[12]/2);
+	my $tool;
+
+	# dirs sizes, just assuming 1024
+	my $ds = mkpath("$tmp/initrd_mnt/lib/modules/$kernel_version");
+	$initrd_size = $initrd_size + ($ds - 1);
+
+	# copy over the modules
+	foreach my $stuff (@modules) {
+	    ($path,$value) = stripper($stuff,"mod");
+
+	    $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+	    if (!$path) {
+		info(1,"gBootRoot Error: Couldn't find $stuff\n");
+	    }	    
+
+	    # copy stuff to proper directory and unlink size tester
+	    return if 
+		errcp(sys("$tool $path $tmp/initrd_mnt/lib/modules/$kernel_version")) == 2;
 	    unlink($path) if $value == 1;
+	}    
+
+	# Do the depmod operation
+	if ($entry_advanced[13] && $entry_advanced[13] ne "") {
+	    return if err_custom("depmod -ae -F $entry_advanced[13] -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+
 	}
+	else {
+
+	    return if err_custom("depmod -ae -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+	}
+
+	# Check all the files in the dirctory for their size, and unlink them.
+	opendir(DIR,"$tmp/initrd_mnt/lib/modules/$kernel_version") 
+	    or info(1,"Failed to open $tmp/initrd_mnt/$kernel_version");
+	my @module_stuff = grep { /\w+/ } readdir(DIR);
+	close(DIR);
+
+	# Figure out the size for all the stuff created by depmod and the
+	# modules included.
+	foreach my $stuff (@module_stuff) {
+	    $initrd_size =  $initrd_size + 
+		((stat("$tmp/initrd_mnt/lib/modules/$kernel_version/$stuff"))[12]/2);
+	    unlink("$tmp/initrd_mnt/lib/modules/$kernel_version/$stuff");
+	}
+
 
 	# The modules directory has to be removed here.
 	return if 
@@ -2807,7 +2854,9 @@ sub initrd_size {
 	return if 
         errrm(sys("rmdir $tmp/initrd_mnt/lib/")) == 2;
 
-    }
+
+    } # end if (@modules)
+
 
     # This and libs should be user accessible
     # add other executables here
@@ -2882,6 +2931,7 @@ sub initrd_size {
     }
     
     $initrd_size = $initrd_size + ($initrd_size * 0.02);
+
     # For perfection 1 (rounded up) is o.k., but for safety 10 would be
     # better
     $initrd_size = sprintf("%.f",$initrd_size) + 10;
