@@ -1772,7 +1772,7 @@ sub uml_box {
 					      # Everything becomes an option for Initrd to parse
 					      # and is put on the options[9] line
 
-					      my ($initrd, $ram, $mem, $root, $ramdisk_size, $ubd0);
+					      my ($initrd, $ram, $mem, $root, $ramdisk_size, $ubd0, $init);
 
 					      for ( $entry_advanced[10],$entry_advanced[9] ) {
 
@@ -1796,6 +1796,20 @@ sub uml_box {
 						  if ( m,initrd=, ) {
 						      m,(initrd=[/\d\w-]+),;
 						      $initrd = $1;
+						  }
+
+						  # Find which runlevel or whether mtd_init is being used
+						  if ( m,(mtd_init=[/\d\w\'\"-]+), ) {
+						      $init  = (split(/=/,$1))[1];
+						      chomp $init;
+						      $init =~ s/\"//g;
+						      $init =~ s/\'//g;
+						      $init =~ s/\///;     
+						  }
+						  elsif ( m,\s+([0-9A-CS]{1}), )  {
+						      $init  = $1;
+						      chomp $init;                               
+						      $init = "sbin/init " . $init;
 						  }
 
 						  # Grab the file being used
@@ -1912,7 +1926,7 @@ sub uml_box {
 
 						  # Order does matter because it's used by linuxrc
 						  $entry_advanced[9] = 
-						      "mtd=mtdram,$fs_type,$total_size,$erasure_size,, " .
+						      "mtd=mtdram,$fs_type,$total_size,$erasure_size,$init, " .
 							  "$mem $ramdisk_size $initrd " .
 							      $entry_advanced[9]; 
 
@@ -1927,7 +1941,7 @@ sub uml_box {
 
 						  # Order does matter because it's used by linuxrc
 						  $entry_advanced[9] = 
-						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size,, " .
+						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size,$init, " .
 							  "$mem $initrd " .
 							  $entry_advanced[9]; 
 
