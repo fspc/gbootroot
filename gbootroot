@@ -273,6 +273,10 @@ my $modules_directory = "/lib/modules";
 if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
     $main::makefs = "genext2fs -z -r0 -i8192";
 }
+# This is for experimental stuff .. basically so I can test
+# the boot fs as a normal user, since it's hard to create a boot disk
+# with enough room using genext2fs, otherwise.
+my $busybox = 1;
 
 
 # Yard Stuff
@@ -331,7 +335,9 @@ my @original_container;
 my $file_dialog;
 
 my $mtab;
-my ($tmp,$mnt);
+# $old_mount is used for a little swapping magic when a normal user
+# is using genext2fs and lilo.
+my ($tmp, $mnt, $old_mount);  
 my $norm_root_device;
 my ($hbox_advanced); 
 my $separator_advanced;
@@ -2707,7 +2713,7 @@ sub lilo_put_it_together {
 
   # If genext2fs is being used clean $tmp/bootdisk if any garbage is found,
   # and temporarily rename $mnt to that directory.
-  my $old_mount;
+  #my $old_mount;
   if ( $fs_type eq "genext2fs" ) {
       if (-d "$tmp/bootdisk") {
 	  sys("rm -rf $tmp/bootdisk");
@@ -2824,7 +2830,13 @@ sub lilo_put_it_together {
 
   # Write out the HEREDOCS
   open(LC, ">$mnt/brlilo.conf") or die "Couldn't write $mnt/brlilo.conf\n";
-  print LC brlilo($container[BOOT_DEVICE]); close(LC);
+  if ( $> == 0 ) {
+      print LC brlilo($container[BOOT_DEVICE]); close(LC);
+  }
+  else {
+      print LC brlilo_non_root($container[BOOT_DEVICE]); close(LC);      
+  }
+
   open(M, ">$mnt/message") or die "Couldn't write $mnt/message\n";
   print M message(); close(M);
   pb($B,5);
@@ -2844,10 +2856,15 @@ sub lilo_put_it_together {
 
   if ( $fs_type eq "genext2fs" ) {
 
+#      info(0,"HERE /usr/lib/bootroot/$main::makefs -b $device_size -d  $mnt -D $device_table $entry_advanced[0]");
+
       my $error;
 #
+
+      # When creating a fs on floppy, specifying -i causes genext2fs to fail, 
+      # its better to just let the program figure out the inode size for now.
       if (
-	  sys("/usr/lib/bootroot/$main::makefs -b $device_size -d  $mnt -D $device_table $entry_advanced[0]") !~ 
+	  sys("/usr/lib/bootroot/genext2fs -z -b $device_size -d  $mnt -D $device_table $entry_advanced[0]") !~ 
 	  /^0$/ ) {
 	  $error = error("Cannot $fs_type filesystem.\n");
 	  return "ERROR" if $error && $error eq "ERROR";
@@ -2877,6 +2894,7 @@ sub lilo_put_it_together {
       }
   }
 
+
   info(0, "Configuring lilo\n");
   pb($B,7);
   chdir("$mnt"); #"boot_root: ERROR: Could not change directories\n";
@@ -2885,10 +2903,26 @@ sub lilo_put_it_together {
   # otherwise the user has to do it manually.
   if ($container[BOOT_DEVICE] eq $entry_advanced[0]) {
 #
-      if ( err_custom("lilo -v -C brlilo.conf -r $mnt",
-		    "gBootRoot: ERROR: lilo failed") == 2 ) {
-	  chdir($pwd); 
-	  return;
+      # root can happily chroot
+      if ( $> == 0 ) {
+
+	  if ( err_custom("lilo -v -C brlilo.conf -r $mnt",
+			  "gBootRoot: ERROR: lilo failed") == 2 ) {
+	      chdir($pwd); 
+	      return;          
+	  }
+
+      }
+
+      # At this point the normal user needs to be asked first if they have
+      # root lilo power, before going on.
+      else {
+
+	  if ( err_custom("$main::sudo lilo -v -C $mnt/brlilo.conf -b $entry_advanced[0]", "gBootRoot: ERROR: lilo failed") == 2 ) {
+	      chdir($pwd); 
+	      return;
+	  }
+
       }
 #
   }
@@ -3421,14 +3455,21 @@ sub initrd {
 	$device = $entry_advanced[3];
     }
 
+
+    my $fs_type = (split(/\s/,$main::makefs))[0];
+
+    if ( $fs_type eq "genext2fs" ) {
+	if ( $compress eq "bzip2" ) {
+	    $compress  = "bunzip2";
+	}
+    }
+
     my $broot_image = basename($root_image);
     open(LC, ">$tmp/linuxrc") or die "Couldn't write linuxrc to loop device\n";
     print LC initrd_heredoc($broot_image,$device); close(LC);
     pb($I,1);
     my $size_needed = initrd_size((stat("$tmp/linuxrc"))[12]/2);
     unlink("$tmp/linuxrc");
-
-    my $fs_type = (split(/\s/,$main::makefs))[0];
 
 
     if ( $fs_type ne "genext2fs" ) {
@@ -3495,8 +3536,10 @@ sub initrd {
     pb($I,6);
 
     # Hopefully, this works, but have never tested it - o.k I did
-    if ($container[BOOT_DEVICE] !~ m,/dev/fd\d{1}$,) {
-	return if err(sys("cp -a $container[BOOT_DEVICE] $mnt/dev")) == 2;
+    if ( $fs_type ne "genext2fs" ) {
+	if ($container[BOOT_DEVICE] !~ m,/dev/fd\d{1}$,) {
+	    return if err(sys("cp -a $container[BOOT_DEVICE] $mnt/dev")) == 2;
+	}
     }
 
     # DEVICES SECTION
@@ -3619,14 +3662,16 @@ sub initrd {
 
     # Will put the stuff in sbin because the is where the kernel looks for
     # modprobe.
-    foreach (@initrd_stuff) {
-	($path,$value) = stripper(find_file_in_path($_),"bin");
-	$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-	if (!$path) {
-	    info(1,"gBootRoot Error: Couldn't find $_\n");
+    if ( ! $busybox ) {
+
+	foreach (@initrd_stuff) {
+	    ($path,$value) = stripper(find_file_in_path($_),"bin");
+	    $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+	    if (!$path) {
+		info(1,"gBootRoot Error: Couldn't find $_\n");
+	    }
+	    return if errcp(sys("$tool $path $tmp/initrd_mnt/sbin")) == 2;
 	}
-	return if errcp(sys("$tool $path $tmp/initrd_mnt/sbin")) == 2;
-    }
 
     if ($compress eq "bzip2" && -e find_file_in_path($compress)) {
 	($path,$value) = stripper(find_file_in_path($compress),"bin");
@@ -3634,56 +3679,98 @@ sub initrd {
 	return if errcp(sys("$tool $path $tmp/initrd_mnt/sbin")) == 2;
     }
 
-    # Testing if init is sufficient for grabbing the correct libraries for the
-    # executables immediately above.  This could be modified to test a
-    # list of executables.  Now bzip2 uses libbz2.so.1.0, so if bzip2 is
-    # present on the system this will be the tester instead, and size
-    # has to be figured out differently.
-    info(0, ".. the libs\n");
+	# Testing if init is sufficient for grabbing the correct libraries for the
+	# executables immediately above.  This could be modified to test a
+	# list of executables.  Now bzip2 uses libbz2.so.1.0, so if bzip2 is
+	# present on the system this will be the tester instead, and size
+	# has to be figured out differently.
+	info(0, ".. the libs\n");
 
-    my $lib_tester;
-    if ($bz2_toggle->active && -x find_file_in_path("bzip2") ) {
+	my $lib_tester;
+	if ($bz2_toggle->active && -x find_file_in_path("bzip2") ) {
+	    
+	    $lib_tester = find_file_in_path("bzip2");
 	
-	$lib_tester = find_file_in_path("bzip2");
+	}
+	else {
+	
+	    $lib_tester = find_file_in_path("init");
 
-    }
+	}
+
+	my $dir;
+
+	open(L,"ldd $lib_tester|") or die "Oops, no $lib_tester could be found :)\n"; # safe to use ldd, this is going to be fixed later with library_dependencies
+	while (<L>) {
+	    my $place;
+	    ($lib,$place) = (split(/=>/,$_))[0,1];
+	    $place = (split(" ",$place))[0];
+	    $lib =~ s/\s+//;
+	    $lib = basename($lib); 
+	    $lib =~ s/\s+$//;
+	    $dir = dirname($place);	
+	    info(0,"$dir/$lib\n");
+	    open (SL,"ls -l $dir/$lib|") or die "humm: $!\n";
+	    while (<SL>) {
+		# symbolic link
+		if (-l "$dir/$lib") {
+		    $what = (split(/\s+/,$_))[10];
+		    ($path,$value) = stripper("$dir/$lib","lib");
+		    $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+		    return if errcp(sys("$tool $path $tmp/initrd_mnt$dir")) == 2;
+		    ($path,$value) = stripper("$dir/$what","lib");
+		    $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+		    return if errcp(sys("$tool $path $tmp/initrd_mnt$dir")) == 2;
+		}
+		# no symbolic link
+		else {
+		    ($path,$value) = stripper("$dir/$lib","lib");
+		    return if errcp(sys("cp -a $path $tmp/initrd_mnt$dir")) == 2;
+		}
+	    }
+	}
+	
+    } # not busybox
+    
     else {
 
-	$lib_tester = find_file_in_path("init");
+	my $error;
+
+	# busybox binary
+	$tool = "cp -a";
+	$path = "/home/mttrader/busybox/busybox/busybox";
+	return if errcp(sys("$tool $path $tmp/initrd_mnt/sbin")) == 2;	
+
+        #Currently defined functions:
+        #        [, ash, bunzip2, busybox, echo, false, gzip, insmod, modprobe,
+        #        mount, sh, test, true, umount
+	
+	my $target = "$tmp/initrd_mnt/sbin/busybox";
+	my @busystuff = qw(ash sh bunzip2 echo gzip insmod modprobe mount 
+			   umount);
+	chdir("$tmp/initrd_mnt/sbin/");
+	foreach ( @busystuff ) {
+
+	    symlink("busybox", "$tmp/initrd_mnt/sbin/$_" );
+
+	}
+
+	# uClibc
+	mkpath("$tmp/initrd_mnt/usr/i386-linux-uclibc/lib");
+	$path = "/usr/i386-linux-uclibc/lib/libuClibc-0.9.5.so";
+	return if errcp(sys("$tool $path $tmp/initrd_mnt/usr/i386-linux-uclibc/lib")) == 2;
+	sys("chmod 755  $tmp/initrd_mnt/usr/i386-linux-uclibc/lib/libuClibc-0.9.5.so");
+	chdir("$tmp/initrd_mnt/lib");
+	symlink("../usr/i386-linux-uclibc/lib/libuClibc-0.9.5.so", "$tmp/initrd_mnt/lib/libc.so.0" );
+
+	$path = "/usr/i386-linux-uclibc/lib/ld-uClibc-0.9.5.so";
+	return if errcp(sys("$tool $path $tmp/initrd_mnt/usr/i386-linux-uclibc/lib")) == 2;
+	sys("chmod 755  $tmp/initrd_mnt/usr/i386-linux-uclibc/lib/ld-uClibc-0.9.5.so");
+	chdir("$tmp/initrd_mnt/usr/i386-linux-uclibc/lib");
+	symlink("ld-uClibc-0.9.5.so", "$tmp/initrd_mnt/usr/i386-linux-uclibc/lib/ld-uClibc.so.0" ); 
 
     }
 
-    my $dir;
-
-    open(L,"ldd $lib_tester|") or die "Oops, no $lib_tester could be found :)\n"; # safe to use ldd, this is going to be fixed later with library_dependencies
-    while (<L>) {
-	my $place;
-	($lib,$place) = (split(/=>/,$_))[0,1];
-	$place = (split(" ",$place))[0];
-	$lib =~ s/\s+//;
-	$lib = basename($lib); 
-	$lib =~ s/\s+$//;
-        $dir = dirname($place);	
-	info(0,"$dir/$lib\n");
-	open (SL,"ls -l $dir/$lib|") or die "humm: $!\n";
-        while (<SL>) {
-	    # symbolic link
-	    if (-l "$dir/$lib") {
-		$what = (split(/\s+/,$_))[10];
-		($path,$value) = stripper("$dir/$lib","lib");
-		$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-		return if errcp(sys("$tool $path $tmp/initrd_mnt$dir")) == 2;
-		($path,$value) = stripper("$dir/$what","lib");
-		$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-		return if errcp(sys("$tool $path $tmp/initrd_mnt$dir")) == 2;
-	    }
-	    # no symbolic link
-	    else {
-		($path,$value) = stripper("$dir/$lib","lib");
-		return if errcp(sys("cp -a $path $tmp/initrd_mnt$dir")) == 2;
-	    }
-        }
-    }
 
     info(0, "Determine run-time link bindings\n");
     # Has a return code of 0 regardless
@@ -4078,7 +4165,6 @@ INITRD
 
 } # end sub initrd_heredoc
 
-
 sub brlilo {
 
     my ($device) = @_;
@@ -4115,6 +4201,44 @@ LILOCONF
     return $brlilo;
 
 } # end sub brlilo
+
+
+sub brlilo_non_root {
+
+    my ($device) = @_;
+    $entry_advanced[2] ? $entry_advanced[2] = $entry_advanced[2] 
+                       : $entry_advanced[2] = $container[ABS_APPEND];
+
+# HEREDOC
+my $brlilo = << "LILOCONF";
+boot = $device
+message = $old_mount/message
+delay = 50
+vga = normal
+install = $old_mount/boot/boot.b
+map = $old_mount/boot/map
+backup = /dev/null
+compact
+
+# bootdisk
+image = $old_mount/kernel
+append = "load_ramdisk=1 debug $entry_advanced[2]"
+initrd = $old_mount/$initrd
+root = $device
+label = bootdisk
+read-write
+
+# normalboot
+#image = kernel
+#append = "$entry_advanced[2]"
+#root = /dev/$norm_root_device
+#label = normalboot
+#read-only
+LILOCONF
+
+    return $brlilo;
+
+} # end sub brlilo_non_root
 
 
 sub message {
