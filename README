@@ -1,15 +1,16 @@
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
-The Makefile included with this source package doesn't attempt
-to figure out whether your system has the proper requirements.
-It may seem like a great idea to have a configure script, but
-these things can fail, besides gbootroot is a program designed for users
-who intend to build distributions and boot disks, so understanding what
-things are required to get gbootroot to work completely can be quite 
-beneficial.  At the very least, do a "make", and try gbootroot because the 
-program will tell you what things are missing - hopefully nothing - and then 
-you can refer to this README for help.
+The Makefile included with this source package doesn't figure out whether 
+your system has the proper requirements.  However, it isn't difficult to 
+understand what is necessary to get gbootroot to work.  First type "make" and 
+then run gbootroot.  The program will indicate to you whether anything is 
+missing.  If it doesn't work at all, it's generally due to not having gtk-perl
+installed.  If the user-mode-linux kernel doesn't work, it may be an 
+architecture issue.  If you need to customize the kernel, there are general 
+directions in this README.  If a boot or root method are missing required 
+programs, pop-up dialog boxes and information from the verbosity box will 
+give a good indication of what is causing the problem.
 
 Out of the box this program works with the i386 architecture, for other 
 architectures genext2fs and user-mode-linux will need to be compiled if
