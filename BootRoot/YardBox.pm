@@ -1845,8 +1845,8 @@ sub Replacements {
 	#_______________________________________
 	# Submit button
 	my $submit_b = button(0,1,2,3,"Submit",$table_replacements);
-	#$submit_b->can_default($true);
-	#$submit_b->grab_default();
+	$submit_b->can_default($true);
+	$submit_b->grab_default();
 	$submit_b->signal_connect( "clicked", sub {
 	    if ($entry[0] && $entry[1]) {
 
