@@ -1,10 +1,5 @@
 #!/bin/sh
 
-
-if [ ! -e /usr/share/gbootroot/yard/Replacements/dev/ubd0 ]; then 
-    mknod /usr/share/gbootroot/yard/Replacements/dev/ubd0 b 98 0
-fi
-
 #DEBHELPER#
 
 # Make uml_net setuid, but respects Sysadm's choices.
