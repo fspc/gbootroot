@@ -2449,7 +2449,7 @@ sub lilo_put_it_together {
   return if err(sys("mkdir $mnt/{boot,dev}")) == 2; 
   return if err(sys("cp -a /dev/{null,fd?,hda1} $mnt/dev")) == 2;
 
-  # Hopefully, this works, but have never tested it
+  # Hopefully, this works, but have never tested it -- o.k I did
   if ($device !~ m,/dev/fd\d{1}$,) {
      return if err(sys("cp -a $device $mnt/dev")) == 2;
   }
@@ -2876,6 +2876,11 @@ sub initrd {
     sys("mkdir $tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr}")) == 2; 
     return if errmk(sys("mkdir $tmp/initrd_mnt/usr/lib")) == 2;
     pb($I,6);
+
+    # Hopefully, this works, but have never tested it - o.k I did
+    if ($device !~ m,/dev/fd\d{1}$,) {
+	return if err(sys("cp -a $device $mnt/dev")) == 2;
+    }
 
     return if errcp(
     sys("cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev")) == 2;
