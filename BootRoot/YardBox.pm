@@ -333,7 +333,7 @@ sub strip_all {
 
     $lib_strip_debug->active(0);
     $strip_bool = 1;
-#    print "$strip_bool\n";
+#    print"$strip_bool\n";
 
 }
 
@@ -1288,7 +1288,6 @@ sub search {
 					"continue from end?", 
 					$search_window, $submit_b,
 					-1);
-			print "$offset && $tmp_offset TOO\n";
 		    }
 		}
 
