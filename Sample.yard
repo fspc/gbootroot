@@ -1,6 +1,6 @@
 #  -*- Mode: Fundamental -*-
 #
-#  $Id: Bootdisk_Contents.in,v 1.3 1998/11/16 03:32:28 fawcett Exp $
+#  $Id: Sample.yard,v 1.1 2000/11/30 04:46:41 freesource Exp $
 #  This is Bootdisk_Contents, for use with Yard.
 #  This script created automatically from Bootdisk_Contents.in
 #
@@ -8,7 +8,7 @@
 #  May 1996
 #############################################################################
 #
-# Format rules:x
+# Format rules:
 #  - Lines beginning with # or % are comments.
 #
 #  - Blank lines and whitespace may be used freely.
