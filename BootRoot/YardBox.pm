@@ -2271,6 +2271,7 @@ sub Replacements {
 	$replacements_window->signal_connect("delete_event", \&destroy_window,
 					     \$replacements_window);
 	$replacements_window->set_policy( $true, $true, $false );
+	$replacements_window->set_default_size( 525, 90 );
 	$replacements_window->set_title( "Replacements Box" );
 	$replacements_window->border_width(1);    
 
@@ -2278,14 +2279,16 @@ sub Replacements {
 	$replacements_window->add( $main_vbox );
 	$main_vbox->show();
 
-	my $table_replacements = Gtk::Table->new( 3, 3, $true );
-	$main_vbox->pack_start( $table_replacements, $true, $true, 0 );
+	#my $table_replacements = Gtk::Table->new( 3, 3, $true );
+	my $table_replacements = Gtk::Table->new( 5, 3, $false );
+	#$main_vbox->pack_start( $table_replacements, $true, $true, 0 );
+	$main_vbox->pack_start( $table_replacements, $true, $false, 0 );
 	$table_replacements->show();
 
 	#_______________________________________
 	# Editor and execute options
 	label("Editor:",0,1,0,1,$table_replacements);
-	my $repl1 = entry(1,3,0,1,0,$table_replacements);
+	my $repl1 = entry(1,5,0,1,0,$table_replacements);
 	$repl1->set_text($main::editor);
 
 #my $tooltips = Gtk::Tooltips->new();
@@ -2297,8 +2300,8 @@ sub Replacements {
 	#_______________________________________
 	# Replacement file
 	label("Replacement:",0,1,1,2,$table_replacements);
-	my $repl2 = entry(1,2,1,2,1,$table_replacements);
-	button_fileselect(2,3,1,2,"Selection",$repl2,"Selection",0,
+	my $repl2 = entry(1,4,1,2,1,$table_replacements);
+	button_fileselect(4,5,1,2,"Selection",$repl2,"Selection",0,
 			  $table_replacements,
 			  "$main::global_yard/Replacements/");
 	$repl2->set_text("$main::global_yard/Replacements/") 
@@ -2309,7 +2312,7 @@ sub Replacements {
 
 	#_______________________________________
 	# Submit button
-	my $submit_b = button(0,1,2,3,"Submit",$table_replacements);
+	my $submit_b = button(0,2,2,3,"Submit",$table_replacements);
 	$submit_b->can_default($true);
 	$submit_b->grab_default();
 	$submit_b->signal_connect( "clicked", sub {
@@ -2345,7 +2348,7 @@ sub Replacements {
 
 	#_______________________________________
 	# Close button
-	my $close_b = button(2,3,2,3,"Close",$table_replacements);
+	my $close_b = button(3,5,2,3,"Close",$table_replacements);
 	$close_b->signal_connect("clicked",
 				 sub {
 				     $replacements_window->destroy() 
