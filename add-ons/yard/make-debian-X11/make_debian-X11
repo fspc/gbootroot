@@ -364,7 +364,7 @@ push(@required_packages,@extra_packages);
 
 # Ask some questions first.
 my $doc_reply = "nothing";
-print  "The default is to remove /usr/share/{doc,man,info}? [yes or no]: ";
+print STDERR "The default is to remove /usr/share/{doc,man,info}? [yes or no]: ";
 while (<STDIN>) {
     $doc_reply = $_;
     print $doc_reply;
@@ -376,7 +376,7 @@ while (<STDIN>) {
     }
 }
 
-print  "\nThe default is to remove everything in /usr/share/zoneinfo\n" .
+print STDERR "\nThe default is to remove everything in /usr/share/zoneinfo\n" .
     "except for your local settings found in /etc/localtime? [yes or no]: ";
 my $localtime_reply = "nothing";
 while (<STDIN>) {
@@ -735,7 +735,7 @@ sub start_up {
 	while (<SWIM>) {
 	    if ($_ eq "file init is not owned by any package\n") {
 		my $db_reply = "nothing";
-		print "It appears that swim has never had its database " .
+		print STDERR "It appears that swim has never had its database " .
 		    "generated.  Would you like me to do this for you? " .
 			"[yes or no]: ";
 		while (<STDIN>) {
