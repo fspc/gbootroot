@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.111 2003/01/14 03:45:00 freesource Exp $</center>
+<center>$Id: index.html,v 1.112 2003/02/07 19:57:21 freesource Exp $</center>
 
 <p>
 
@@ -104,7 +104,7 @@ Red Hat and related distributions</a><br>
 <em>Instructions:</em><br>
 Mandrake-type distribution require <code>perl-GTK >= 0.7002</code><br>
 Red Hat type distributions require <code>Gtk-Perl >= 0.7002</code><br>
-All RPM based distributions require perl-Expect and friends available from the main repostiory:<br>
+All RPM based distributions require perl-Expect and friends available from the main repository:<br>
 <a href="http://prdownloads.sourceforge.net/gbootroot/perl-Expect-1.12-1.i386.rpm">perl-Expect</a><br>
 <a href="http://prdownloads.sourceforge.net/gbootroot/perl-IO-Tty-0.04-1.i386.rpm">perl-IO-Tty</a><br>
 <a href="http://prdownloads.sourceforge.net/gbootroot/perl-IO-Stty-.02-1.i386.rpm">perl-IO-Stty</a><br>
@@ -435,7 +435,7 @@ Notes:&nbsp;&nbsp;
 <li>
 
 The initrd uses pivot_root which means that the root filesystem must have
-chroot in order for the filsystem to properly boot.
+chroot in order for the filesystem to properly boot.
 
 <li>
 
@@ -467,7 +467,7 @@ example:&nbsp;&nbsp;mtd_init=/bin/bash
 <p>
 
 "Reboot"&nbsp;&nbsp;Passes the reboot command to the mconsole to reboot the
-Linux virutal machine.
+Linux virtual machine.
 
 <p>
 
@@ -619,8 +619,8 @@ Notes:
 directory, device, or source options.
 
 <li>Mkcramfs, genromfs, mkfs.jffs2, and mkfs.jffs take the Root Filename in the
-ARS to produce an ext2 filsystem which is then used to store the sources used
-to produce the actual filsystem.&nbsp;&nbsp;The new filesystem produced
+ARS to produce an ext2 filesystem which is then used to store the sources used
+to produce the actual filesystem.&nbsp;&nbsp;The new filesystem produced
 is named respectively with _cramfs, _romfs, _jffs2, or _jffs appended to the 
 original Root Filename.&nbsp;&nbsp;
 If in doubt
@@ -682,7 +682,7 @@ Now the creation works, but actually the whole image is less than 1440k... Still
 22.&nbsp;&nbsp;<a href="#22">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
 </a>
 <br>
-23.&nbsp;&nbsp;<a href="#23">Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</a>
+23.&nbsp;&nbsp;<a href="#23">Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still executed.</a>
 <br>
 
 <P><a name="1"><b>What's the advantage of using this program?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
@@ -705,7 +705,7 @@ which have focused on providing a particular type of root
 filesystem and boot method.&nbsp;&nbsp;Observation reveals that all these
 approaches share many commonalities.&nbsp;&nbsp;gBootRoot has been 
 designed to embrace
-these similiarities, and to allow developers to create drop-in methods 
+these similarities, and to allow developers to create drop-in methods 
 via modules or easy to understand templates.&nbsp;&nbsp;
 gBootroot is the GIMP of distribution creation!</P>
 
@@ -980,9 +980,9 @@ This allows developers who create add-ons (ex: make-debian-x11) to remain
 confident that any changes made to
 add-on replacements will remain available to all users.&nbsp;&nbsp;
 Replacements
-from add-ons are placed in the archictecture-independent 
+from add-ons are placed in the architecture-independent 
 /usr/share/gbootroot/yard/Replacements directory, and the
-archictecture-dependent /usr/lib/bootroot/yard/Replacements 
+architecture-dependent /usr/lib/bootroot/yard/Replacements 
 directory.&nbsp;&nbsp;
 When a user opens up gBootRoot, the program checks to see if there are any
 new replacements and then creates symlinks from the 
@@ -1005,7 +1005,7 @@ directly by any user
 
 <p>
 
-<em>Note for users of version 1.2.14 or earlier</em>:  Verions of gbootroot
+<em>Note for users of version 1.2.14 or earlier</em>:  Versions of gbootroot
 before 1.3.0 didn't have this set-up, instead there were just copies of add-on
 replacements in the $HOME replacement directory to allow the user
 to directly modify add-on replacements.&nbsp;&nbsp;
@@ -1282,7 +1282,7 @@ While on the subject, it should be pointed at the setting up init and its
 runlevels is one of the
 most challenging areas of creating a bootable root_fs.&nbsp;&nbsp;Often 
 your creation will only work with "single" until all the conflicts
-are resolved.&nbsp;&nbsp;Things are complicated even futher by the fact that
+are resolved.&nbsp;&nbsp;Things are complicated even further by the fact that
 devices can now be set up in two majors ways: tty? or ttys/? (devfs).
 &nbsp;&nbsp;Fortunately, user-mode-linux comes in very handy for hunting
 down all the bugs.
@@ -1375,7 +1375,7 @@ An interesting question.&nbsp;&nbsp;Let's consider the two disk compression
 method,
 first the initrd is decompressed into /dev/ram0 or /dev/rd/0, then the
 root filesystem is decompressed into /dev/ram1 or /dev/rd/1, even though
-one would think since everything is being done in memory, the prescence of
+one would think since everything is being done in memory, the presence of
 the libraries would remain in memory.&nbsp;&nbsp;But, in this case memory is
 partitioned and the new root device doesn't share information with
 the previous root device.&nbsp;&nbsp;An easier way to look at this is simply 
@@ -1505,7 +1505,7 @@ originated from a genext2fs filessytem made as a normal user.&nbsp;&nbsp;
 It includes
 utilities like filesystem creators.&nbsp;&nbsp;It is part of the automated
 filesystem creation system, and after it is booted by uml, it is
-intereacted with via expect based on user choices placed in the filesystem
+interacted with via expect based on user choices placed in the filesystem
 box.&nbsp;&nbsp;Considering that mkreiserfs doesn't allow loop devices to 
 be used,
 this is an easy way to get around this limitation, and most importantly it
@@ -1596,7 +1596,7 @@ page up with the second button to 1440 and step with the first button to
       <LI> Ctrl-V   Paste from clipboard </LI>
     </UL>
 
-<p><a name="23"><b>Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+<p><a name="23"><b>Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still executed.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 
