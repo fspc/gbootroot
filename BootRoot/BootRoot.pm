@@ -798,6 +798,37 @@ else {
 #
 #  create_uml()  create_expect_uml($filesystem_size, $tmp, $filename);
 ########################################################
+# What to do if somebody specifies help
+
+    if ( $option{help} || $option{h} ) {
+
+	print "Usage: gbootroot [OPTION]...\n";
+	print "  --help -h                 help\n";
+	print "  --template=name           required option - template " .
+                                           "in default template dir\n";
+	print "                            $template_dir" . "[name]\n\n";
+	print "                           (defaults)\n";
+	print "  --method=name             yard\n";
+	print "  --root-filename=name      root_fs\n";
+	print "  --filesystem-size=size    8192\n";
+	print "  --filesystem-command=c    \"$::makefs\"\n";
+	print "  --uml-exclusively=on|off  off\n";
+	print "  --uml-kernel=path         $ENV{HOME}/.gbootroot/" . 
+					   "uml_kernel/linuxbr\n";
+	print "  --preserve-ownership=y|n  n\n\n";
+	print "                           (system kernel options)\n";
+        print "  --kernel=path             specify different system kernel\n"; 
+	print "  --kernel-version=version  specify alternative version\n\n";
+	print "                           (print options)\n";
+	print "  --no-stdout               don't print to console\n\n";
+	print "filesytem-commands supported by root_fs_helper:\n";
+	print "mke2fs mkcramfs genromfs mkfs.minix mkminix mkreiserfs " . 
+              "mkfs.jffs mkfs.jffs2\n"; 
+	print "\nReport bugs to <freesource\@users.sourceforge.net>\n";
+	exit;
+
+    }
+
 # Let's read in the ARGV
 
     die "specify a template found in $template_dir\nuse --template\n" 

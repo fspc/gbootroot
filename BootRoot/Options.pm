@@ -34,6 +34,7 @@ sub option {
     GetOptions (
 		
 		\%option,
+		"help",
 		"root-filename=s",
 		"uml-kernel=s", 
 		"method=s",
