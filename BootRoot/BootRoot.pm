@@ -840,16 +840,16 @@ else {
 	print "  --uml-exclusively=on|off  off\n";
 	print "  --uml-kernel=path         $ENV{HOME}/.gbootroot/" . 
 					   "uml_kernel/linux\n";
-	print "  --preserve-ownership=y|n  n\n\n";
-	print "                           (system kernel options)\n";
-        print "  --kernel=path             specify different system kernel\n"; 
-	print "  --kernel-version=version  specify alternative version\n";
+	print "  --preserve-ownership=y|n  n\n";
 	print "  --genext2fs-dir=dir       /usr/lib/bootroot/\n";
 	print "  --expect-program=path     /usr/lib/bootroot/expect_uml\n";
 	print "  --root-fs-helper=path     /usr/lib/bootroot/root_filesystem/root_fs_helper\n";
 	print "  --home=dir                gui mode = without other options\n";
         print "                            cl mode  = with other options\n";
 	print "                                       min: --template\n\n";
+	print "                           (system kernel options)\n";
+        print "  --kernel=path             specify different system kernel\n"; 
+	print "  --kernel-version=version  specify alternative version\n\n";
 	print "                           (print options)\n";
 	print "  --no-stdout               don't print to console\n\n";
 	print "filesytem-commands supported by root_fs_helper:\n";
