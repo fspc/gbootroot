@@ -32,22 +32,49 @@ Binaries:
 
 Genext2fs
 ---------
-genext2fs/genext2fs (included and already compiled for i386)
-cd genext2fs; make  (other architectures)
+genext2fs/genext2fs ( included and already compiled for i386 )
+cd genext2fs; make  ( other architectures )
 
 User-Mode-Linux
 ---------------
-user-mode-linux/usr/bin/linux         (included and already compiled for i386)
-user-mode-linux/usr/lib/{modules*tar} (included and already compiled for i386)
+user-mode-linux/usr/bin/{linux,uml_*}     ( included and already compiled 
+	                                                         for i386 )
+user-mode-linux/usr/lib/uml/{modules*tar} ( included and already compiled 
+                                                                 for i386 )
+user-mode-linux/usr/lib/uml/config        ( kernel .config defaults )
 
-If you use a different architecture you will need to get kernel sources
-from www.kernel.org which preferably match the kernel version used by 
-gbootroot - this can be found in the Changes file - and then a matching 
-uml-patch from http://sourceforge.net/project/showfiles.php?group_id=429.  
-There's good instructions on how to do this at 
-http://user-mode-linux.sourceforge.net/UserModeLinux-HOWTO-2.html.
-Then put the uml kernel in the directory cited up and call it linux; you can
-put the modules in a Replacements directory later on (see FAQ).
+If you use a different architecture you will need to read 
+http://user-mode-linux.sourceforge.net/arch-port.html.  
+
+Here the basic instructions to compile uml stuff:
+
+Get kernel sources from www.kernel.org which preferably 
+match the kernel version used by gbootroot - this can be found in the Changes 
+file - and then a matching uml-patch from 
+http://sourceforge.net/project/showfiles.php?group_id=429.  Use config as 
+your .config at the base of the sources.  There's good instructions on how to 
+do compile a uml kernel at 
+http://user-mode-linux.sourceforge.net/UserModeLinux-HOWTO-2.html.  
+Then put the uml kernel in the directory cited above and call it linux; you can
+put the modules in a Replacements directory later on (see FAQ).  
+
+The helper uml_* tools need to be checked out from cvs and compiled with make:
+
+(Instructions for cvs at http://sourceforge.net/cvs/?group_id=429.)
+cvs -d:pserver:anonymous@cvs.user-mode-linux.sourceforge.net:/cvsroot/user-mode-linux login
+cvs -z3 -d:pserver:anonymous@cvs.user-mode-linux.sourceforge.net:/cvsroot/user-mode-linux co tools
+
+cd tools/mconsole; make;
+cd ../uml_net; make; chown 0:0 uml_net; chmod 4755 uml_net;
+cd ../uml_router; make;
+cd ../uml_moo; make;
+
+Put the uml kernel in the directory cited above with the same names.  When
+you run gbootroot's Makefile everything will be put in the proper places.
+
+Note:  Please send the user-mode-linux-devel list and me your experiences if 
+you successfully get another architecture working so they can be shared with 
+the community.
 
 
 Boot Methods:
