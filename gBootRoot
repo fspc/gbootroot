@@ -2,7 +2,7 @@
 
 #    gBootRoot Copyright (C) 2000
 #    Project Developer and Coordinator
-#    Jonathan Rosenbaum  <mttrader@access.mountain.net>
+#    Jonathan Rosenbaum <mttrader@access.mountain.net>
 #
 #    Lead Programmer and Developer
 #    Cristian Ionescu-Idbohrn <cii@axis.com>
@@ -241,7 +241,7 @@ $box1->show();
 
 # First row
 hbox();
-my $entry = entry($false);
+my $entry = entry($false,0);
 
 # Menu - later this may be improved if new methods are added.
 my $opt = new Gtk::OptionMenu();
@@ -450,12 +450,14 @@ sub advanced_section {
     if ($button_count == 0) {  
        #$vbox_advanced->set_usize(321,300);
 	my $boolean;
+
        # Will use a table once things start to take shape. 
 
        # The strip section
        hbox_advanced(); $ha1 = $hbox_advanced;
        label_advanced("Stripping:");
-       !defined $lib_strip_check  ? ($boolean = 1) 
+
+       !defined $lib_strip_check ? ($boolean = 1) 
          : ($boolean = $lib_strip_check->get_active());
        $lib_strip_check = new Gtk::CheckButton("Libraries");
        $lib_strip_check->set_active($boolean);
@@ -484,6 +486,7 @@ sub advanced_section {
        #hbox_advanced(); $ha2 = $hbox_advanced;
        #label_advanced("Verbosity Level: \"Coming Soon!\"");
 
+
        $button_count++;
     }
     else {
@@ -499,9 +502,9 @@ sub advanced_section {
 
 sub separator_advanced {
 
-$separator_advanced = new Gtk::HSeparator();
-$vbox_advanced->pack_start( $separator_advanced, $false, $true, 0 );
-$separator_advanced->show();
+    $separator_advanced = new Gtk::HSeparator();
+    $vbox_advanced->pack_start( $separator_advanced, $false, $true, 0 );
+    $separator_advanced->show();
 
 }
 
@@ -725,10 +728,16 @@ sub entry {
     my($edit,$num) = @_;
 
     my $entry = new Gtk::Entry();
-    $entry->set_editable( $edit );
-    # enter will have to be pressed, tried other solutions with a mess
-    $entry->signal_connect( "activate", sub {
-            $container[$num] = $entry->get_text();});
+    $entry->set_editable( $true );
+
+    if ($num == 0) {
+        $entry->signal_connect( "activate", sub {
+                $container[$num] = $entry->get_text(); });            
+    }
+    else {
+         $entry->signal_connect( "changed", sub {
+                 $container[$num] = $entry->get_text(); });
+     }
     if (defined $num) {
      my $todo;
      if ($num == 1) {
@@ -741,7 +750,7 @@ sub entry {
          $todo = "the Device to use";
      }
      $tooltips->set_tip( $entry,
-       "Type in the location of $todo and press [Enter].", "" );
+       "Type in the location of $todo.", "" );
     }
     $box2->pack_start( $entry, $true, $true, 0 );
     $entry->show();
@@ -842,6 +851,7 @@ elsif (defined $container[0] && defined $container[1] &&
     error_window("gBootRoot: ERROR: No size specified");
     return;
 }
+
 
  # kernel value can change without effecting initrd
  # no sense doing this until important stuff is filled in
