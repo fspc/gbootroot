@@ -1,5 +1,5 @@
 
-all:
+all: install
 
 install:
 	install -d /usr/bin
@@ -18,6 +18,14 @@ install:
 	cp -fa gbootrootrc /etc/gbootroot/gbootrootrc
 
 remove:
-
+	rm /usr/bin/gbootroot
+	rm /usr/bin/yard_chrooted_tests
+	rm /usr/share/perl5/BootRoot/*
+	rmdir /usr/share/perl5/BootRoot
+	rm -rf /usr/share/gbootroot
+	rm /usr/bin/uml_*
+	rm /usr/bin/linux
+	rm /etc/gbootroot/gbootrootrc
+	rmdir /etc/gbootroot
 
 
