@@ -41,6 +41,9 @@ make
 
 %install
 make install
+install -d /usr/share/doc/perl-IO-Stty/examples
+cp -fa README /usr/share/doc/perl-IO-Stty/README
+cp stty.pl /usr/share/doc/perl-IO-Stty/examples/stty.pl
 
 
 # nothing to clean
@@ -49,8 +52,14 @@ make install
 
 # will read this all from a files list %files -f filelist
 %files  
+%docdir /usr/share/doc/perl-IO-Stty
 /usr/lib/perl5/site_perl/IO/Stty.pm
 /usr/lib/perl5/site_perl/IO/stty.pl
+/usr/share/doc/perl-IO-Stty/examples/stty.pl
+/usr/share/doc/perl-IO-Stty/README
 
 
 %changelog
+
+
+

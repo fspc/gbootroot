@@ -49,7 +49,10 @@ cp -fa Tty.pm /usr/lib/perl5/site_perl/IO/Tty.pm
 cp -fa Pty.pm /usr/lib/perl5/site_perl/IO/Pty.pm
 install -d /usr/share/man/man3
 cp -fa blib/man3/IO::Pty.3pm /usr/share/man/man3/IO::Pty.3pm
-
+install -d /usr/share/doc/perl-IO-Tty/examples
+cp -fa try /usr/share/doc/perl-IO-Tty/examples
+cp -fa COPYING /usr/share/doc/perl-IO-Tty
+gzip -9c ChangeLog > /usr/share/doc/perl-IO-Tty/changelog.gz
 
 # nothing to clean
 %clean
@@ -61,6 +64,10 @@ cp -fa blib/man3/IO::Pty.3pm /usr/share/man/man3/IO::Pty.3pm
 %attr(0644, root,  root) /usr/lib/perl5/site_perl/auto/IO/Tty/Tty.bs
 %attr(0755, root, root) /usr/lib/perl5/site_perl/auto/IO/Tty/Tty.so
 /usr/share/man/man3/IO::Pty.3pm
+%docdir /usr/share/doc/perl-IO-Tty/examples
+/usr/share/doc/perl-IO-Tty/examples/try
+/usr/share/doc/perl-IO-Tty/COPYING
+/usr/share/doc/perl-IO-Tty/changelog.gz
 
 
 %changelog
