@@ -1837,8 +1837,18 @@ sub path {
 
 		my @pathlist = split(':', $ENV{'PATH'});
 		@main::additional_dirs = split(/:|\s+|,/,$entry[3]);
+		my @additional_dirs;
+
+		# Check to see if this path doesn't already exist.
+		foreach my $alt_path ( @main::additional_dirs ) {
+		    my $add_path = grep(/$alt_path/,$ENV{'PATH'});
+		    if ($add_path == 0) {
+			push(@additional_dirs, $alt_path);
+		    }
+		}
+
 		info(1, "Search path is now:\n", 
-		     join(" ", @main::additional_dirs), " ",
+		     join(" ", @additional_dirs), " ",
 		     join(" ", @pathlist), "\n");
 	    }
 	} );
