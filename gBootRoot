@@ -109,7 +109,7 @@ my $norm_root_device;
 
 
 # temporarily for a test
-my $strip = $true;
+my $strip = $false;
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -1108,7 +1108,7 @@ sub initrd_size {
 
   # lib sizes
   # for testing purposes change $lib_place value
-  my $lib_place = "/home/mttrader/test";
+  my $lib_place = "/lib";
   open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd
    while (<L>) {
       $lib = (split(/=>/,$_))[0];
