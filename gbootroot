@@ -234,7 +234,7 @@ my $order;
 my $text_window;
 my $verbosity_window;
 
-# Make @container verbose
+# Make @container verbose, also look in generate()
 my @container;
 use constant  METHOD               => 0  ;
 use constant  KERNEL               => 1  ;
@@ -263,7 +263,7 @@ my @original_container;
 my $file_dialog;
 
 # These are used in submit
-my ($kernel, $root_image, $size);
+my ($root_image, $size);
 
 my $mtab;
 my ($tmp,$mnt);
@@ -2437,7 +2437,7 @@ sub lilo {
   sys("rm $tmp/initrd_image.gz") if $ok == 1;
   sys("umount $tmp/initrd_mnt");
 
-  $kernel = $container[KERNEL];
+  my $kernel = $container[KERNEL];
   $root_image = $container[ROOT_FS];
   my $device = $container[BOOT_DEVICE];
   $size = $container[SIZE];
@@ -2457,7 +2457,7 @@ sub lilo_put_it_together {
   my $B = "boot";
   # Time to do a little calculations
   my $device_size = (split(/\s+/,`df $mnt`))[8];
-  my $boot_size = (stat($kernel))[12]/2 + (stat("$tmp/$initrd"))[12]/2;
+  my $boot_size = (stat($container[KERNEL]))[12]/2 + (stat("$tmp/$initrd"))[12]/2;
   my $remain_boot = $device_size - $boot_size;
   pb($B,1);
 
@@ -2478,7 +2478,7 @@ sub lilo_put_it_together {
 
   info(0, "Copying over kernel\n");
   return if
-  err_custom("rm -rf $mnt/lost+found; cp $kernel $mnt/kernel",
+  err_custom("rm -rf $mnt/lost+found; cp $container[KERNEL]} $mnt/kernel",
                "gBootRoot: ERROR: Could not copy over the kernel") == 2;
   pb($B,3);
 
@@ -2512,15 +2512,15 @@ sub lilo_put_it_together {
   $remain_boot = $remain_boot - (stat("/boot/boot.b"))[12]/2  - 3;
   $entry5->set_text("$remain_boot k");
 
-    # Write out the HEREDOCS
-    open(LC, ">$mnt/brlilo.conf") or die "Couldn't write $mnt/brlilo.conf\n";
-    print LC brlilo($container[BOOT_DEVICE]); close(LC);
-    open(M, ">$mnt/message") or die "Couldn't write $mnt/message\n";
-    print M message(); close(M);
-    pb($B,5);
-    $remain_boot = $remain_boot - ( (stat("$mnt/brlilo.conf"))[12]/2 +
-                (stat("$mnt/message"))[12]/2 );
-    $entry5->set_text("$remain_boot k");
+  # Write out the HEREDOCS
+  open(LC, ">$mnt/brlilo.conf") or die "Couldn't write $mnt/brlilo.conf\n";
+  print LC brlilo($container[BOOT_DEVICE]); close(LC);
+  open(M, ">$mnt/message") or die "Couldn't write $mnt/message\n";
+  print M message(); close(M);
+  pb($B,5);
+  $remain_boot = $remain_boot - ( (stat("$mnt/brlilo.conf"))[12]/2 +
+				  (stat("$mnt/message"))[12]/2 );
+  $entry5->set_text("$remain_boot k");
 
   # Got to umount,mount, and umount again to make sure everything is
   # copied over before doing lilo
