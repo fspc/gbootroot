@@ -266,6 +266,10 @@ my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
 my $home_uml_kernel = "$home/uml_kernel/";
 my $modules_directory = "/lib/modules";
+if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
+    $main::makefs = "genext2fs -i8192";
+}
+
 
 # Yard Stuff
 my $home_yard = "$home/yard";
