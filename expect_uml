@@ -15,7 +15,7 @@ my $preserve_permissions = "$ARGV[4]";
 
 my $end = 6;
 my $filesystem;
-for ( 5 .. $end ) {
+for ( 5 .. $#ARGV ) {
     if ( $_ == 5 ) {
 	$filesystem = "$ARGV[5]";
 	# What to do with the rieserfs command
