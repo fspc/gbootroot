@@ -1,6 +1,11 @@
 1.3.0 - 12/07/2001
 ------------------
 
+Fixed the freezing behavior for particularly large templates, like the ones
+produced by make_debian, and make_debian-X11.  However, overly large buffers
+in the verbosity box, still hogs cpu in a big way.  The best procedure for
+now is to open and close the box between stages.
+
 Made the termcap check just a warning if terminfo or termcap don't exist,
 If a terminfo directory is found, linux will need to exist or the test will 
 return error.  This is better because the root filesystem can still work 
@@ -143,6 +148,10 @@ Non-root users may now create boot disks.  Boot Loaders may required root
 permissions for some methods, and the fstab may need to be edited, see FAQ.  
 And some /lib/modules/`uname -r`/modules  may need to be given world read 
 permissions.
+
+A dialog box has been added which will pop up when the lilo stage has been 
+reached for a normal user, explaining the requirements, and what the user 
+can do next which is explained in detail in the FAQ.
 
 Non-root users may now create root filesystems up to 8192k in size using
 genext2fs.  FAQ explains how to exceed this limit as a normal user.
