@@ -2,16 +2,15 @@ Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
 The Makefile included with this source package doesn't figure out whether 
-your installation has the proper requirements.  However, it isn't difficult to 
-understand what is necessary to get gbootroot to work.  First type "make",
-follow the instructions in the "Important Configurations" section near the
+your installation has the proper requirements.  Type "make", follow the 
+instructions in the "Important Configurations" section near the
 bottom of this page, and then run gbootroot.  The program will indicate to you
 whether anything is missing.  If it doesn't work at all, it's generally due to
 not having gtk-perl installed.  If the user-mode-linux kernel doesn't work, it
-may be an architecture issue.  If you need to customize the kernel, there are 
-general directions in the README.  If a boot or root method are missing 
-required programs, pop-up dialog boxes and information from the verbosity box 
-will give a good indication of what is causing the problem.  
+may be an architecture issue.  If you need to customize the 
+kernel, there are general directions in the README.  If a boot or root method
+are missing required programs, pop-up dialog boxes and information from the 
+verbosity box will give a good indication of what is causing the problem.  
 
 Out of the box this program works with the i386 architecture, for other 
 architectures genext2fs and user-mode-linux will need to be compiled if
@@ -32,7 +31,7 @@ http://freshmeat.net/projects/gtk-perl
   functionality . ]
 
 Expect (tested with 1.11)
-------
+------------------------
 http://www.perl.com/CPAN/modules/by-module/Expect/
 http://sourceforge.net/projects/expectperl
 
@@ -44,6 +43,7 @@ IO::Tty
 -------
 http://www.perl.com/CPAN/modules/by-module/IO/IO-Tty-0.04.tar.gz
 http://sourceforge.net/projects/expectperl
+
 
 Binaries:
 #########  
@@ -64,17 +64,17 @@ user-mode-linux/usr/lib/uml/config        ( kernel .config defaults )
 If you use a different architecture you will need to read 
 http://user-mode-linux.sourceforge.net/arch-port.html.  
 
-Here the basic instructions to compile uml stuff:
+Here are general guidelines for compiling uml:
 
-Get kernel sources from www.kernel.org, and then a matching uml-patch from 
+Get kernel sources from www.kernel.org, and then get a matching uml-patch from
 http://sourceforge.net/project/showfiles.php?group_id=429.  If you want to 
-match the kernel version used by gbootroot check Changes to find out which 
-version of uml if being used.  You may want to use config as your .config at 
-the base of the sources as a starting point, and then modify the kernel 
-configuration in whatever way required.  There are good instructions on how to
-compile a uml kernel at http://user-mode-linux.sourceforge.net/UserModeLinux-HOWTO-2.html.  
-Then put the uml kernel in the directory cited above and call it linux; you can
-put the modules in a Replacements directory later on (see FAQ).  
+match the kernel version used by gbootroot check gbootroot/Changes to find 
+out which version of uml if being used.  You may want to load config when 
+configuring the kernel and use it as a starting point.  There are good 
+instructions on how to compile a uml kernel at 
+http://user-mode-linux.sourceforge.net/UserModeLinux-HOWTO-2.html.  
+When finished, put the uml kernel in the directory cited above and call it 
+linux; you can put the modules in a Replacements directory (see FAQ).  
 
 The helper uml_* tools need to be checked out from cvs and compiled with make:
 
@@ -87,12 +87,9 @@ cd ../uml_net; make; chown 0:0 uml_net; chmod 4755 uml_net;
 cd ../uml_router; make;
 cd ../uml_moo; make;
 
-Put the uml kernel in the directory cited above with the same names.  When
-you run gbootroot's Makefile everything will be put in the proper places.
-
 Note:  Please send the user-mode-linux-devel and gbootroot-devel lists your 
-experiences if you successfully get another architecture working so they can 
-be shared with the community.
+experiences if you successfully get another architecture working.  ppc has 
+been ported.
 
 
 Boot Methods:
@@ -112,8 +109,8 @@ Root Methods:
 Yard
 ----
 
-Watch the verbosity box, it will be obvious when a required command is missing.
-Make sure you have this file installed on your system:
+Watch the verbosity box, it will be obvious when a required command is 
+missing.  Make sure you have this file installed on your system:
 
 file
 
