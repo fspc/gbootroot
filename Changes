@@ -1,6 +1,17 @@
 1.3.0 - 12/07/2001
 ------------------
 
+Removed an unecessary check from the fstab test, and improved a regexp which
+was failing if tabs were used in the fstab.  Also, added a close for the
+background termcap test.
+
+State is saved for all check buttons when the yard box is opened and
+closed.  Deciding whether to save state between invocations of gbootroot
+via a file.
+
+Moved the Changelog from within gbootroot to a Changes file in 
+/usr/share/doc/gbootroot, because it is getting quite large.
+
 Improved the sizing of the UML box.
 
 Added New Template (Alt-N) capability to the Yard Box.
@@ -103,7 +114,7 @@ device hadn't been umounted yet, this was observed with genext2fs but was
 certainly a global bug.  This has been fixed.
 
 The majority of add-on replacements except for passwd*, shadow, and 
-ld.so.conf have $Id$ and "make_debian replacement".  
+ld.so.conf have $Id: Changes,v 1.1 2001/12/07 07:02:04 freesource Exp $ and "make_debian replacement".  
 
 Original CVS information is now preserved so
 that non-root users and root can't edit global replacements, the basic idea 
