@@ -11,24 +11,29 @@ use File::Find;
 
 # This program uses dh-make, and copies your own defaults to 
 # $packaging_place/debian from your $packaging_defaults, and updates
-# to the proper date/times.
+# to the proper date/times.  After this you will want to run
+# debuild as a non-root user.  And finish stuff off with dpkg-scanpackages.
 
 # User defined variables for directories
 
 my $user_home = "/home/mttrader";
+my $prog = "gbootroot";
+my $revision = 1;
+my $dist = "unstable";
+my $urgency = "low";
 my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
 my $packaging_place = "$user_home/gbootroot";
-my $packaging_defaults;
+my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg";
 my $email = "freesource\@users.sourceforge.net";
-
+my $name = "Jonathan Rosenbaum";
 
 # Other vars
 my $version;
 
 # Find the version
 
-open(CVS, "$gbootroot_cvs/gbootroot") or 
-	die "Couldn't find gbootroot in $gbootroot_cvs: $!\n";
+open(CVS, "$gbootroot_cvs/$prog") or 
+	die "Couldn't find $prog in $gbootroot_cvs: $!\n";
 	while (<CVS>) {
 		if (/\my \$version/) {
 			$version = (split(/=/,$_))[1];
@@ -42,7 +47,7 @@ open(CVS, "$gbootroot_cvs/gbootroot") or
 close(CVS);
 
 
-$packaging_place = "$packaging_place/gbootroot-$version";
+$packaging_place = "$packaging_place/$prog-$version";
 
 # Make sure the directory exists.
 
@@ -110,8 +115,66 @@ if (-d $packaging_place) {
          } , $packaging_place ;
 }
 
+
+# Now we to the dh_make thing, and setup the time, version, and defaults. 
+
 chdir($packaging_place) or die "Can't change to $packaging_place: $?\n";
 system "dh_make -e $email";
+
+# Here we ask the user what changes to add to the changelog and set the proper
+# time using 822-date.  If it is the initial release we don't do anything.
+
+open(CHANGELOG,"$packaging_defaults/changelog") 
+    or die "Couldn't open $packagaging_place/changelog: $?\n";
+my @changelog = <CHANGELOG>;
+close (CHANGELOG);
+
+my $stop;
+foreach (@changelog) {
+    if (/$version/) {
+	print "\nThe changelog for $version already exists, this may mean\n" .
+        "that this is the first invocation or that you haven't changed the\n" .
+	"version in the $prog program.\n";	
+	$stop = 1;
+    }
+}
+
+# Ask some questions first.
+if (!$stop) {
+    print "\nWrite what you want to be put in the changelog, and I'll\n" .
+	"prettify everything.  End with a newline and .\n";
+    print "  * ";
+    my $save_doc;
+    $save_doc = "  * ";
+    $count = 0;
+    while (<STDIN>) {
+	my $doc_reply = $_;
+	if ($doc_reply) {
+	    print "    ";
+	    $doc_reply = "    $doc_reply" if $count != 0;
+	}
+	last if $doc_reply =~ /^\s*\.\s*$/;
+	if ($doc_reply) {
+	    $save_doc = $save_doc . $doc_reply;
+	}
+	$count++;
+    }
+
+    open(CHANGELOG,">$packaging_defaults/changelog") 
+	or die "Couldn't open check: $?\n";
+    for my $ct (0 .. ($#changelog - 3)) {
+	print CHANGELOG $changelog[$ct];
+    }			
+    print CHANGELOG "$prog ($version-$revision) $dist; urgency=$urgency\n\n";
+    print CHANGELOG "$save_doc\n";
+    print CHANGELOG " -- $name <$email>  " . `822-date`;
+    for my $ct (($#changelog - 3) .. $#changelog) {
+	print CHANGELOG $changelog[$ct];
+    }			
+    close(CHANGELOG);
+    print "\n";
+
+} # end if !$stop
 
 sub home_builder {
 
@@ -120,7 +183,7 @@ sub home_builder {
     if (!-d $home_builder) {
 	if (-e $home_builder) {
 	    print "ERROR: A file exists where $home_builder should be.\n";
-	}	
+	}	 
 	else {
 	    my @directory_parts = split(m,/,,$home_builder);
 	    my $placement = "/";
