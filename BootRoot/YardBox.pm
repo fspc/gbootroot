@@ -78,6 +78,12 @@ my @menu_items = ( { path        => '/File',
 		     type        => '<Branch>' },
 		   { path        => '/File/file_tearoff',
 		     type        => '<Tearoff>' },
+                   { path        => '/File/_New Template',
+                     accelerator => '<alt>N',
+                     callback    => \&saved,
+		     action      =>  100 },
+                   { path        => '/File/file_separator',
+                     type        => '<Separator>' },
                    { path        => '/File/_Save',
                      accelerator => '<control>S',
                      callback    => \&saved,
@@ -133,6 +139,16 @@ my @menu_items = ( { path        => '/File',
                    { path        => '/Edit/Settings/Stripping/Modules',
 		     action      => '3',
                      type        => '<CheckItem>' },
+
+                   { path        => '/Edit/Settings/settings_separator',
+                     type        => '<Separator>' },
+		   { path        => '/Edit/Settings/NSS Config',
+		     action      => "1111",
+		     type        => '<CheckItem>' },
+                   { path        => '/Edit/Settings/PAM Config',
+		     action      => '1112',
+                     type        => '<CheckItem>' },
+
 		   { path        => '/Edit/Stages/' },
 		   { path        => '/Edit/Stages/one-by-one',
 		     action      => 13,
@@ -1763,31 +1779,31 @@ sub shortcut {
 $Shortcuts = << "SHORTCUTS";
 Motion Shortcuts 
 
- Ctrl-A Beginning of line 
- Ctrl-E End of line 
- Ctrl-N Next Line 
- Ctrl-P Previous Line 
- Ctrl-B Backward one character 
- Ctrl-F Forward one character 
- Alt-B Backward one word 
- Alt-F Forward one word 
+ Ctrl-A    Beginning of line 
+ Ctrl-E    End of line 
+ Ctrl-N    Next Line 
+ Ctrl-P    Previous Line 
+ Ctrl-B    Backward one character 
+ Ctrl-F    Forward one character 
+ Alt-B     Backward one word 
+ Alt-F     Forward one word 
  Ctrl-Home Beginning of buffer
- Ctrl-End End of buffer
+ Ctrl-End  End of buffer
 
  Editing Shortcuts 
 
- Ctrl-H Delete Backward Character (Backspace) 
- Ctrl-D Delete Forward Character (Delete) 
- Ctrl-W Delete Backward Word 
- Alt-D Delete Forward Word 
- Ctrl-K Delete to end of line 
- Ctrl-U Delete line 
+ Ctrl-H  Delete Backward Character (Backspace) 
+ Ctrl-D  Delete Forward Character (Delete) 
+ Ctrl-W  Delete Backward Word 
+ Alt-D   Delete Forward Word 
+ Ctrl-K  Delete to end of line 
+ Ctrl-U  Delete line 
 
 Selection Shortcuts 
 
- Ctrl-X Cut to clipboard 
- Ctrl-C Copy to clipboard 
- Ctrl-V Paste from clipboard
+ Ctrl-X  Cut to clipboard 
+ Ctrl-C  Copy to clipboard 
+ Ctrl-V  Paste from clipboard
 
 Searching Shortcuts
 
@@ -1795,8 +1811,9 @@ Searching Shortcuts
 
 File Shortcuts
 
+ Alt-N  New Template  
  Ctrl-S Save File
- Alt-A Save As File
+ Alt-A  Save As File
 SHORTCUTS
 
 sub path {
