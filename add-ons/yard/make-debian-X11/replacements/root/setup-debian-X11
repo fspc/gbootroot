@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: setup-debian-X11,v 1.6 2001/11/08 06:16:29 freesource Exp $
+# $Id: setup-debian-X11,v 1.7 2001/12/06 18:36:05 freesource Exp $
 # make_debian-X11 replacement
 
 # This is usually enough for a minimalistic system
@@ -14,7 +14,7 @@ dpkg-reconfigure make-debian-x11
 #dpkg-reconfigure --all
 
 chown -v -R user:user /home/user
-chmod 777 /tmp
+chmod 1777 /tmp
 
 # swim --initdb
 
