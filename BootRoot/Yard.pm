@@ -2246,12 +2246,19 @@ sub which_tests {
     ## from distribution to distribution, and more than likely this is the
     ## "login" used in the mounted version, too.
     ## Once PATH is complete, there will be a separate check just to look at
-    ## the non-local $mount_point PATH.
+    ## the non-local $mount_point PATH. --freesource
 
     $login_binary = "$mount_point" . find_file_in_path("login");
 
     #  This goes first so we define %Termcap for use in children
-    ## This now checks for ncurse setups, too.
+    ## This now checks for ncurse setups, too. 
+    ## This is a nice auto test to have, but issuing warning
+    ## is more appropriate, and this function isn't used by 
+    ## the chrooted tests anymore, before it was used by
+    ## check_getty_type_call from withing test_inittab, but this
+    ## is mostly an agetty issue .. ususually a root_fs can
+    ## run quite nicely with a getty without a termcap or 
+    ## terminfo. --freesource
     if ( $fs_type ne "genext2fs" ) {
 	return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
 	check_termcap();
@@ -2630,33 +2637,6 @@ sub check_scripts {
   find(\&check_interpreter, "/");
 }
 
-sub check_getty_type_call {
-  my($prog, @args) = @_;
-
-  if ($prog eq 'getty') {
-    my($tty, $speed, $type) = @args;
-
-    if (!-e "$mount_point/dev/$tty") {
-      warning_test "\tLine $.: $prog for $tty, but /dev/$tty doesn't exist.\n";
-    }
-    if (!defined($Termcap{$type})) {
-      warning_test "\tLine $.: Type $type not defined in termcap\n";
-    }
-  }
-  ##  If getty or getty_ps, look for /etc/gettydefs, /etc/issue
-  ##  Check that term type matches one in termcap db.
-
-  if ($prog =~ /^getty/) {
-    if (!$checked_for_getty_files) {
-      warning_test "\tLine $.: $prog expects /etc/gettydefs, which is missing.\n"
-	unless -e "$mount_point/etc/gettydefs";
-      warning_test "\tLine $.: $prog expects /etc/issue, which is missing.\n"
-	unless -e "$mount_point/etc/issue";
-      $checked_for_getty_files = 1;
-    }
-  }
-}
-
 ###
 ###  NB. This is *not* run under chroot
 ###
@@ -2760,7 +2740,7 @@ sub check_termcap {
       # There should at least be a linux entry, and infocmp needs to exist.
       my $infocmp = "infocmp -A $mount_point/etc/terminfo -C linux|";
      
-      open(TERMCAP, "$infocmp") or
+      open(TERMCAP, "$infocmp") or 
 	  ( $error = error("No file $mount_point/etc/terminfo/l/linux"));
       return if $error && $error eq "ERROR";
 
@@ -2784,12 +2764,13 @@ sub check_termcap {
 	  @Termcap{@terms} = (1) x ($#terms + 1);
       }
 
+      close(TERMCAP);
   }
 
   # termcap next
   elsif (-e "$mount_point/etc/termcap") {
 
-      open(TERMCAP, "<$mount_point/etc/termcap") or
+      open(TERMCAP, "<$mount_point/etc/termcap") or 
 	  ( $error = error("No file $mount_point/etc/termcap"));
       return if $error && $error eq "ERROR";
 
@@ -2815,8 +2796,9 @@ sub check_termcap {
       close(TERMCAP);
   }
   else {
-      $error = error("No termcap file or terminfo directory.");
-      return if $error && $error eq "ERROR";
+
+      return warning_test("Warning: No file $mount_point/etc/terminfo/l/linux"
+                          . " or $mount_point/etc/termcap");
   }
 
 } # end sub check_termcap
