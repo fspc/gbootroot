@@ -1,9 +1,9 @@
-#  $Id$
+#  $Id: Example.yard,v 1.9 2001/12/04 05:29:47 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with getty.  
 #  Tested on Debian unstable/testing,  but should work on other distributions 
-#  (Mandrake,  RedHat, etc.) by using the proper inittab and getty.
+#  (Mandrake,  RedHat, Slackware, etc.) by using the proper inittab and getty.
 # 
 #  Create either as a normal user or root.
 #
