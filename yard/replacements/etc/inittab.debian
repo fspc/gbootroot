@@ -1,5 +1,5 @@
 # /etc/inittab: init(8) configuration.
-# $Id: inittab,v 1.8 1998/05/10 10:37:50 miquels Exp $
+# $Id: inittab.debian,v 1.2 2001/08/11 05:40:14 freesource Exp $
 
 # The default runlevel.
 id:2:initdefault:
@@ -47,12 +47,10 @@ po::powerokwait:/etc/init.d/powerfail stop
 #
 # Format:
 #  <id>:<runlevels>:<action>:<process>
-1:2345:respawn:/sbin/getty 38400 tty1
-2:23:respawn:/sbin/getty 38400 tty2
-#3:23:respawn:/sbin/getty 38400 tty3
-#4:23:respawn:/sbin/getty 38400 tty4
-#5:23:respawn:/sbin/getty 38400 tty5
-#6:23:respawn:/sbin/getty 38400 tty6
+0:2345:respawn:/sbin/getty 38400 ttys/0
+1:2345:respawn:/sbin/getty 38400 ttys/1   
+2:2345:respawn:/sbin/getty 38400 ttys/2
+c:2345:respawn:/sbin/getty 38400 serial/0
 
 # Example how to put a getty on a serial line (for a terminal)
 #
