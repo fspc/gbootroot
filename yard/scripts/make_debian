@@ -52,10 +52,8 @@ my @extra_packages = qw(file-rc swim apt apt-utils debconf nvi sysklogd
 klogd netbase tcpd net-tools portmap netkit-ping netkit-inetd ifupdown less 
 perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils);
 
-# And tests will be ran here for file-rc and swim
-#  swim has to have its databases made.
-# Options: to include or remove docs /usr/share/{doc,man,info}
-# and other stuff which creates fluff.
+# Before starting make sure swim and file-rc are present.
+start_up();
 
 system "swim --search \"Priority: required\" --no";
 my $swim_packages = "swim -qS|";
@@ -65,18 +63,18 @@ my $extra_files = "swim -ql @extra_packages|"; # Not using --df.
 $, = "";
 
 # All the packages
-open(SWIM,$swim_packages) or die "Couldn't open $!\n";
+open(SWIM,$swim_packages) or die "Couldn't open swim_packages: $?\n";
 my @required_packages = <SWIM>; chomp @required_packages;
 close(SWIM);
 
 push(@required_packages,@extra_packages);
 
 # All the files
-open(SWIM,$swim_list) or die "Couldn't open $!\n";
+open(SWIM,$swim_list) or die "Couldn't open swim_list: $!\n";
 my @required_files = <SWIM>; chomp @required_files;
 close(SWIM);
 
-open(SWIM,$extra_files) or die "Couldn't open $!\n";
+open(SWIM,$extra_files) or die "Couldn't open extra_files: $!\n";
 my @extra_files = <SWIM>; chomp @extra_files;
 close(SWIM);
 
@@ -113,7 +111,7 @@ my $stuff = << "STUFF";
 #
 # The windows will appear to freeze up while using this template, this is 
 # natural, be patient, because it will complete.  If you want to create 
-# another filesystem concurrently open up another invocation of gBootRoot.
+# another filesystem concurrently, open up another invocation of gBootRoot.
 
 # Todays Quote: Creating a root filesystem is all about stuff.
 
@@ -236,6 +234,8 @@ my $stuff = << "STUFF";
 /var/run
 /var/lock
 /var/log/news
+/var/lib/locate
+/var/backups
 
 # Stuff so ldconfig doesn't complain.
 /etc/ld.so.conf <= Replacements/etc/ld.so.conf
@@ -282,7 +282,7 @@ while (<STDIN>) {
 }
 
 open(DEBIAN,">$template_dir/$debian_yard") 
-	or die "Couldn't open $!\n";
+	or die "Couldn't open $template_dir$debian_yard: $!\n";
 open(FILERC,"/etc/runlevel.conf") or die "No runlevel.conf: $!\n";
 my @filerc = <FILERC>;
 close(FILERC);
@@ -572,7 +572,78 @@ sub home_builder {
 
 } # end home_builder
 
+sub start_up {
 
+    # existence of dpkg
+    if (!-f "/usr/bin/dpkg") {
+	die "You are not using a Debian system, in the future this " .
+	   "may be supported, but for now you need living Debian\n";
+    }
+
+    # Swim has never been installed before?
+    my $dpkg_result = system "dpkg -l swim >/dev/null 2>&1";
+    if ($dpkg_result !=0) {
+	die "Swim is required, and may be found at " .
+	    "http://www.sourceforge.net/projects/avd\n";
+    }
+
+    # Swim has been installed but is removed or purged
+    my $dpkg_s = "dpkg -s swim|";
+    open(DPKG,"$dpkg_s") or die "Couldn't find dpkg: $!\n";
+    while (<DPKG>) {
+	if (/Status:/) {
+	    if (!/\s+installed/) {
+		if (/purge|deinstall/) {
+		    die "Please retrieve swim from " .
+			"http://www.sourceforge.net/projects/avd and reinstall.\n";
+		}
+	    }
+	}
+    }
+    close(DPKG);
+
+    # Swim is installed but the databases need to be initialized.
+    my $swim = "swim -qf /sbin/init|";
+    open(SWIM,$swim) or die "Had trouble using swim: $!\n";
+	while (<SWIM>) {
+	    if ($_ eq "file init is not owned by any package\n") {
+		my $db_reply = "nothing";
+		print "It appears that swim has never had its database " .
+		    "generated.  Would you like me to do this for you? " .
+			"[yes or no]: ";
+		while (<STDIN>) {
+		    $db_reply = $_;
+		    last if $db_reply eq "yes\n";
+		    last if $db_reply eq "no\n";
+		    if ($db_reply ne "yes\n" || $db_reply  ne "no\n") { 
+		print "It appears that swim has never had its database " .
+		    "generated.  Would you like me to do this for you? " .
+			"[yes or no]: ";
+		    }
+		}
+		system "swim --initdb" if $db_reply eq "yes\n";
+	    }
+	}
+    close(SWIM);
+
+    # Does file-rc exit?
+    $dpkg_s = "dpkg -s file-rc|";
+    open(DPKG,"$dpkg_s") or die "Couldn't find dpkg: $!\n";
+    while (<DPKG>) {
+	if (/Status:/) {
+	    if (!/\s+installed/) {
+	    die "The script requires that file-rc be installed. " .
+		"Please install it first.\n";
+	    }
+	}
+    }
+    close(DPKG);
+
+    print "Everything is in order, but it never hurts to rebuild swim " .
+	"with --rebuilddb\n";
+
+
+} # end start_up
 
 
 
