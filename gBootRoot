@@ -35,7 +35,7 @@ use strict;
 use Yard;
 use File::Basename;
 init Gtk;
-
+set_locale Gtk; 
 
 # Perhaps you are wondering where to learn how to program with Gtk-Perl?
 # There is an excellent tutorial by Stephen Wilhelm at
@@ -1027,7 +1027,6 @@ sub Generate {
     }
 
     if ($method eq "yard") {
-	#create_text("yard");
 	yard();
     }
 
@@ -1043,6 +1042,7 @@ sub yard {
 
     # Error handling in Yard will take some strategy
     if (!-d $container[1] && -f $container[1]) {
+	create_text("yard");
         kernel_version_check($container[1]);  # Yard: kernel,kernel version
                                               # Becomes $ENV{'RELEASE'}
     }
@@ -1051,18 +1051,19 @@ sub yard {
         return;
     }
 
+
     read_contents_file("$template_dir$template");
 
-    extra_links("$template_dir$template");
+    ##extra_links("$template_dir$template");
 
-    library_dependencies("$template_dir$template");
+    ##library_dependencies("$template_dir$template");
 
-    hard_links();
+    ##hard_links();
 
-    space_check($filesystem_size, $lib_strip_check_root->get_active(),
-		$bin_strip_check_root->get_active(), 
-		$module_strip_check_root->get_active(), 
-		$obj_count_root, $tmp);
+    ##space_check($filesystem_size, $lib_strip_check_root->get_active(),
+##		$bin_strip_check_root->get_active(), 
+##		$module_strip_check_root->get_active(), 
+##		$obj_count_root, $tmp);
 
 } # end sub yard
 
@@ -1180,20 +1181,23 @@ sub create_text {
                        [ 'expand', 'shrink', 'fill' ],
                        0, 0 );
        $text->show();
+       text_insert($text); # yard thing
 
        # Add a vertical scrollbar to the GtkText widget
        my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
        $table->attach( $vscrollbar, 1, 2, 0, 1, 'fill',
                        [ 'expand', 'shrink', 'fill' ], 0, 0 );
+       my $logadj = $vscrollbar->get_adjustment();
+       logadj($logadj);
        $vscrollbar->show();
 
        $text->freeze();
        if ($text_type eq "help") {
 	   $text->insert( undef, undef, undef, help() );
        }
-       elsif ($text_type eq "yard") {
-	   $text->insert( undef, undef, undef, "Stuff coming soon" );
-       }
+       #elsif ($text_type eq "yard") {
+       #   $text->insert( undef, undef, undef, "Stuff coming soon" );
+       #}
        $text->thaw();
 
        my $separator = new Gtk::HSeparator();
