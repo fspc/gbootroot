@@ -179,6 +179,7 @@ sub read_contents_file {
 	undef %strippable;
 	undef %lib_needed_by;
 	undef @Libs;
+	undef %pam_repeats;
     }
     $contents_file_tmp = $contents_file;
 
@@ -2891,7 +2892,7 @@ sub find_nss {
     my($nss_conf) = @_;
     my @nss_libs;
 
-    my($libc) = yard_glob("$mount_point/lib/libc-*");  ## removed 2
+    my($libc) = yard_glob("/lib/libc-*");  ## removed 2
     my($libc_version) = $libc =~ m|/lib/libc-\d+\.(\d)|; ## changed 2 & . 
     if (!defined($libc_version)) {
 	info(0,"\nParsing $nss_conf:\n");
