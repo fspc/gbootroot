@@ -1,4 +1,4 @@
-$Id: README,v 1.25 2003/02/13 19:35:34 freesource Exp $
+$Id: README,v 1.26 2003/02/15 08:25:39 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -140,7 +140,9 @@ Should the host kernel have the skas patch applied?
 "Yes, I highly recommended it.  It's a great performance improvement,
 and gbootroot will run a lot better.  Modes are figured out
 automatically by skas-or-tt so don't add mode={tt,skas} in the UML
-box"
+box.  The host-skas3.patch is available from
+http://user-mode-linux.sf.net/dl-sf.html .  Alternatively, there is a
+skas module available from http://www.rogerbinns.com/modskas3/ ."
 
 
 DOCUMENTATION
