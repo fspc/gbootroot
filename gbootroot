@@ -488,7 +488,11 @@ if (-d $global_yard_replacements) {
 	find sub {  ( my $replacement = 
 		       $File::Find::name ) =~ s/$global_yard_replacements\///;
 		   if (!-e "$home_yard_replacements/$replacement") {
-		       system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
+
+		       #system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
+		       system "mkdir $home_yard_replacements/$replacement > /dev/null 2>&1" if -d $File::Find::name;
+		       symlink_builder( $File::Find::name,"$home_yard_replacements/$replacement") if !-d $File::Find::name;
+
 		   }
 
 	       }, $global_yard_replacements;
@@ -503,6 +507,7 @@ if (-d $global_yard_replacements) {
 sub symlink_builder {
 
     my ($oldfile,$newfile) = @_;
+
 
     if (!-e $newfile && !-l $newfile) {
 	my $error;
