@@ -589,16 +589,16 @@ else {
 
     my $user = $>;
 
-    if (!-d "$tmp1/gboot_non_root_" . $user) {   
-	$tmp = "$tmp1/gboot_non_root" . $user if err_custom_perl(
-		"mkdir $tmp1/gboot_non_root_" . $user,
+    if (!-d "$tmp1/gboot_non_root_$user") {   
+	$tmp = "$tmp1/gboot_non_root_$user" if err_custom_perl(
+		"mkdir $tmp1/gboot_non_root_$user",
 		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
     }
     $tmp = "$tmp1/gboot_non_root_" . $user;
 
-    if (!-d "$tmp1/gboot_non_root_mnt_" . $user) {
-	$mnt = "$tmp1/gboot_non_root_mnt_" . $user if err_custom_perl(
-	       "mkdir $tmp1/gboot_non_root_mnt_" . $user,
+    if (!-d "$tmp1/gboot_non_root_mnt_$user") {
+	$mnt = "$tmp1/gboot_non_root_mnt_$user" if err_custom_perl(
+	       "mkdir $tmp1/gboot_non_root_mnt_$user",
                "gBootRoot: ERROR: Could not make mount directory") != 2;
     }
     $mnt = "$tmp1/gboot_non_root_mnt" . $user;

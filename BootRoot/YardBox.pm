@@ -579,7 +579,7 @@ sub continue {
 
 sub check {
 
-    $error = read_contents_file("$template_dir$template");
+    $error = read_contents_file("$template_dir$template", $tmp);
     return if $error && $error eq "ERROR";
 
 }
