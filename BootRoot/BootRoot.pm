@@ -1364,7 +1364,8 @@ sub uml_box {
 						$entry_advanced
 						[14]);
 		      
-		      # help
+
+ 		      # help
 		      if ( $entry_advanced[14] && 
 			   $entry_advanced[14] =~ m,help, ) {
 			  for my $co (0 ..  $#command_parts ) {
@@ -4504,8 +4505,8 @@ The most important button to familiarize yourself with is the Submit button
 which starts the whole process; dialogs are presented as the process 
 continues asking you if you want to continue "OK" or stop "Cancel".
 
-The first row presently has only one Boot Method choice: "2 disk compression."
-Clicking on the menu on the right selects the Boot Method.
+The first row allows you to choose a Boot Method.  Clicking on the menu on 
+the right selects the Boot Method.
 
 The second row allows you to select the kernel for the Boot/Root set.  You
 may either use the file selector button on the right hand side, or you may
