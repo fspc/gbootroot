@@ -57,6 +57,8 @@
 #    GNU/Linux
 #    Linus Torvalds <torvalds@transmeta.com>
 #
+#    lsMode
+#    M-J. Dominus <mjd-perl-lsmode-id-i0k+gzzokd+@plover.com>
 #
 #    http://gbootroot.sourceforge.net
 
@@ -2567,26 +2569,44 @@ sub initrd_size {
      unlink($path) if $value == 1;
   }
 
+    my $lib_tester;
+    if ($bz2_toggle->active && -x find_file_in_path("bzip2") ) {
+	
+	$lib_tester = find_file_in_path("bzip2");
+
+    }
+    else {
+
+	$lib_tester = find_file_in_path("init");
+
+    }
+
+    my $dir;
+
   # lib sizes  This is going to be improved later with library_dependencies
-  open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd
+  open(L,"ldd $lib_tester|") or die "Oops, no init could be found :)\n"; # safe to use ldd
    while (<L>) {
-      $lib = (split(/=>/,$_))[0];
+       my $place;
+	($lib,$place) = (split(/=>/,$_))[0,1];
+	$place = (split(" ",$place))[0];
       $lib =~ s/\s+//;
       $lib = basename($lib);
       $lib =~ s/\s+$//;
-      open (SL,"ls -l /lib/$lib|") or die "humm: $!\n";
+        $dir = dirname($place);	
+
+      open (SL,"ls -l $dir/$lib|") or die "humm: $!\n";
         while (<SL>) {
           # symbolic link
-          if (-l "/lib/$lib") {
+          if (-l "$dir/$lib") {
             $what = (split(/\s+/,$_))[10];
             $initrd_size = $initrd_size + 1;
-	    ($path,$value) = stripper("/lib/$lib","lib");
+	    ($path,$value) = stripper("$dir/$lib","lib");
             $initrd_size = $initrd_size + ((stat($path))[12]/2);
 	    unlink($path) if $value == 1;
           }
           # no symbolic link
           else {
-	    ($path,$value) = stripper("/lib/$lib","lib");
+	    ($path,$value) = stripper("$dir/$lib","lib");
             $initrd_size = $initrd_size + ((stat($path))[12]/2);
 	    unlink($path) if $value == 1;
           }
@@ -2678,6 +2698,7 @@ sub initrd {
     # This and libs should be user accessible
     info(0, ".. the bins\n");
     my @initrd_stuff = qw(ash gzip mount umount);
+
     foreach (@initrd_stuff) {
 	($path,$value) = stripper(find_file_in_path($_),"bin");
 	$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
@@ -2695,30 +2716,51 @@ sub initrd {
 
     # Testing if init is sufficient for grabbing the correct libraries for the
     # executables immediately above.  This could be modified to test a
-    # list of executables.
+    # list of executables.  Now bzip2 uses libbz2.so.1.0, so if bzip2 is
+    # present on the system this will be the tester instead, and size
+    # has to be figured out differently.
     info(0, ".. the libs\n");
-    open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd, this is going to be fixed later with library_dependencies
+
+    my $lib_tester;
+    if ($bz2_toggle->active && -x find_file_in_path("bzip2") ) {
+	
+	$lib_tester = find_file_in_path("bzip2");
+
+    }
+    else {
+
+	$lib_tester = find_file_in_path("init");
+
+    }
+
+    my $dir;
+
+    open(L,"ldd $lib_tester|") or die "Oops, no $lib_tester could be found :)\n"; # safe to use ldd, this is going to be fixed later with library_dependencies
     while (<L>) {
-	$lib = (split(/=>/,$_))[0];
+	my $place;
+	($lib,$place) = (split(/=>/,$_))[0,1];
+	$place = (split(" ",$place))[0];
 	$lib =~ s/\s+//;
 	$lib = basename($lib); 
 	$lib =~ s/\s+$//;
-	open (SL,"ls -l /lib/$lib|") or die "humm: $!\n";
+        $dir = dirname($place);	
+	info(0,"$dir/$lib\n");
+	open (SL,"ls -l $dir/$lib|") or die "humm: $!\n";
         while (<SL>) {
 	    # symbolic link
-	    if (-l "/lib/$lib") {
+	    if (-l "$dir/$lib") {
 		$what = (split(/\s+/,$_))[10];
-		($path,$value) = stripper("/lib/$lib","lib");
+		($path,$value) = stripper("$dir/$lib","lib");
 		$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-		return if errcp(sys("$tool $path $tmp/initrd_mnt/lib")) == 2;
-		($path,$value) = stripper("/lib/$what","lib");
+		return if errcp(sys("$tool $path $tmp/initrd_mnt$dir")) == 2;
+		($path,$value) = stripper("$dir/$what","lib");
 		$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-		return if errcp(sys("$tool $path $tmp/initrd_mnt/lib")) == 2;
+		return if errcp(sys("$tool $path $tmp/initrd_mnt$dir")) == 2;
 	    }
 	    # no symbolic link
 	    else {
-		($path,$value) = stripper("/lib/$lib","lib");
-		return if errcp(sys("cp -a $path $tmp/initrd_mnt/lib")) == 2;
+		($path,$value) = stripper("$dir/$lib","lib");
+		return if errcp(sys("cp -a $path $tmp/initrd_mnt$dir")) == 2;
 	    }
         }
     }
@@ -3007,6 +3049,9 @@ echo -n Unmounting $device ...
 umount /mnt
 echo done.
 
+# Using change_root, eventually may change to pivot_root or
+# give the user to choice.
+
 echo Changing to the new root.
 echo 257 >/proc/sys/kernel/real-root-dev
 
@@ -3041,7 +3086,7 @@ compact
 
 # bootdisk
 image = kernel
-append = "load_ramdisk = 1 debug $entry_advanced[2]"
+append = "load_ramdisk=1 debug"
 initrd = $initrd
 root = $device
 label = bootdisk
