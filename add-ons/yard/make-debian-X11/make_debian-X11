@@ -34,6 +34,7 @@ my $status = "/var/lib/dpkg/status";
 my $info = "/var/lib/dpkg/info";
 my (%alternatives, @alternatives); # for checking for alternatives
 my %inetd; # checks for inetd binaries.
+my $version  = "1.0";
 
 # You need file-rc, and you may add other extra stuff.  These packages were
 # chosen for woody, so you may need something different.  If you add stuff, 
