@@ -7,3 +7,10 @@ fi
 
 #DEBHELPER#
 
+# Make uml_net setuid, but respects Sysadm's choices.
+
+if [ -z "$(dpkg-statoverride --list /usr/bin/uml_net)" ]; then
+        chown root.root /usr/bin/uml_net
+        chmod 4755 /usr/bin/uml_net
+fi
+
