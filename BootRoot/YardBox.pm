@@ -25,7 +25,7 @@ package BootRoot::YardBox;
 use vars qw(@ISA @EXPORT %EXPORT_TAGS);
 use Exporter;
 @ISA = qw(Exporter);
-@EXPORT =  qw(yard ars filesystem_size);
+@EXPORT =  qw(yard ars filesystem_size file_system);
 
 use strict;
 use BootRoot::BootRoot;
@@ -68,12 +68,13 @@ $template         = $ars->{template};
 $tmp              = $ars->{tmp};
 $mnt              = $ars->{mnt};
 
-# Freshmeat comes here so the rest of the program needs
-# to be warned when the template is coming from here.
+
 $changed_text = "$template_dir$template" if defined $template;
 
 }
 
+# Freshmeat comes here so the rest of the program needs
+# to be warned when the template is coming from here.
 
 my @menu_items = ( { path        => '/File',
 		     type        => '<Branch>' },

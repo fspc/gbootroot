@@ -1085,6 +1085,11 @@ sub advanced_root_section {
 	   });
        $spinner_size->set_value($filesystem_size) if $filesystem_size;
 
+       my $filesystem_box_b = button_advanced(2,3,3,4,"Filesystem Box",$table_advanced_root);
+       $filesystem_box_b->signal_connect("clicked",\&file_system);
+       $tooltips->set_tip( $filesystem_box_b, "Open Filesystem Box.", "" );
+
+
        #_______________________________________ 
        # Compression
        # gBootRoot methods
