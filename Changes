@@ -1,6 +1,7 @@
-Updated to 2.4.17-10um and added Jeff's initrd fix.  note: initrd option works,
-but a test initrd.gz from Mathew Franz's trinux doesn't work properly as it 
-did in the earlier version of uml he provided.  I am looking into this.
+1.3.4 - 02/08/2002
+------------------
+
+Updated to 2.4.17-10um and added Jeff's initrd fix.
 
 Updated to 20020125 uml tools.
 
