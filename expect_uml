@@ -91,7 +91,7 @@ my $uml  =
 		      login           =>  "root",
 		      password_prompt =>  "Password: ",
 		      password        =>  "",
-		      prompt          =>  ".*# ",
+		      prompt          =>  "init-.*# ",
 		      halt            =>  "exit"
 		      );
 
@@ -100,7 +100,12 @@ $uml->boot();
 # Establish PATH, some compilations of bash ignore some important paths
 $uml->command("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:.");
 
-$uml->command("mount -t proc proc /proc");
+# Sometimes this is required
+
+$uml->command("mount -n /proc");
+$uml->command("mount -o remount /");
+$uml->command("mount -a");
+$uml->command("/bin/hostname bootroot");
 
 # Make the GID/UID 0 FS
 if ( $filesystem =~ /^mkcramfs/ || $filesystem =~ /^genromfs/ || 

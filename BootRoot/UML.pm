@@ -183,7 +183,7 @@ sub halt {
 sub close_no_init {
     my $me = shift;
 
-    $me->{expect_handle}->print("Shutting down\s\s\n");
+    $me->{expect_handle}->print("Shutting down  \n");
     $me->{expect_handle}->expect(undef, "-re", "Shutting down");
 
 }

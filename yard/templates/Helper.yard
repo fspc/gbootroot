@@ -1,4 +1,4 @@
-# $Id: Helper.yard,v 1.10 2003/02/20 03:51:59 freesource Exp $
+# $Id: Helper.yard,v 1.11 2003/02/20 04:24:06 freesource Exp $
 #  Helper.yard
 #
 #############################################################################
@@ -16,15 +16,15 @@ dd
 
 # init - parent of all processes
 # Choose an inittab to compliment the traditional init in the page below.
-/sbin/init 		   	
-telinit
-/sbin/shutdown
-/sbin/halt
-/etc/init.d/halt   <=   Replacements/etc/init.d/halt.example
-/sbin/reboot   
-/etc/init.d/reboot   <=   Replacements/etc/init.d/reboot.example
-/etc/init.d/rc   <=   Replacements/etc/init.d/rc.example
-/etc/init.d/rcS   <=  Replacements/etc/init.d/rcS.helper
+##/sbin/init 		   	
+##telinit
+##/sbin/shutdown
+##/sbin/halt
+##/etc/init.d/halt   <=   Replacements/etc/init.d/halt.example
+##/sbin/reboot   
+##/etc/init.d/reboot   <=   Replacements/etc/init.d/reboot.example
+##/etc/init.d/rc   <=   Replacements/etc/init.d/rc.example
+##/etc/init.d/rcS   <=  Replacements/etc/init.d/rcS.helper
 ##/sbin/swapon 
 
 # Login stuff
