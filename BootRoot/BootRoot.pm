@@ -52,7 +52,7 @@ my $uml_xterm = "xterm -e";
 # and to update scripts/Debian.yard if
 # make_debian has been changed.
 my $version = "1.3.1";
-my $date = "12.23.2001";
+my $date = "12.25.2001";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";

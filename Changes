@@ -1,13 +1,17 @@
-1.3.1 - 12/23/2001
+1.3.1 - 12/25/2001
 ------------------
+
+Added a complete interface to the mconsole in the UML Box.  Multiple options 
+can be entered at one time.  Options include: switch so that the umid can be 
+changed to control a different Linux virtual machine, sysrq as in 
+Documentation/sysrq.txt, config and remove for devices (ubd?,eth?), reboot 
+and halt, version to find the version of the running uml kernel, and help.
 
 Added both a Reboot and Halt button to the UML Box.  Both of these buttons 
 have an interface to mconsole, and provide clean control of rebooting or 
 halting a Linux virtual machine.  When they fail, Abort does all the clean-up,
-but this should be used as a last resort.  Sysrq interface will be added next.
-Both of these buttons parse the Options entry for the first instance of umid,
-and use this to identify the Linux virtual machine, so this value can be 
-changed to control a different running machine with these buttons.
+but this should be used as a last resort.  Both of these buttons initially 
+parse the Options entry for the first instance of umid
 
 Added a new stage button in the Yard Box called Copy.  Create is now Copy, and
 the uml_exclusively and genext2fs behavior are handled by Create, this is
