@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# $Id$
+# Used by the Example.yard template.
+# /etc/rc:  System initialization script.
+#
+
+#  Compute module dependencies
+/sbin/depmod -a
+
+#  Start up kerneld if desired
+#/sbin/kerneld
+
+#  Mount everything mentioned in fstab
+#  .. but proc needs to be mounted first, anyways.
+/bin/mount -anv
+mount -v -o remount,rw -n /dev/ram0 /
+
+#  Set host name
+/bin/hostname bootroot
+
+#  If you need to load a keyboard map, uncomment this line and
+#  fix the pathnames:
+#/usr/sbin/loadkeys /usr/lib/kbd/keytables/defkeymap.map
+
+# create utmp if it doesn't already exist
+( cd /var/run && \
+        find . ! -type d ! -name utmp ! -name innd.pid ! -name random-seed \
+        ! -newer /etc/mtab -exec rm -f -- {} \; )
+: > /var/run/utmp
+if grep -q ^utmp: /etc/group
+then
+        chmod 664 /var/run/utmp
+        chown root:utmp /var/run/utmp
+fi
+
+# create wtmp if it doesn't already exist
+( cd /var/run && \
+        find . ! -type d ! -name utmp ! -name innd.pid ! -name random-seed \
+        ! -newer /etc/mtab -exec rm -f -- {} \; )
+: > /var/log/wtmp
+if grep -q ^utmp: /etc/group
+then
+        chmod 664 /var/log/wtmp
+        chown root:utmp /var/log/wtmp
+fi

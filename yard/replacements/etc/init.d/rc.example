@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# $Id$
+# Used by the Example.yard template.
+# /etc/rc:  System initialization script.
+#
+
+#  Compute module dependencies
+/sbin/depmod -a
+
+#  Start up kerneld if desired
+#/sbin/kerneld
+
+#  Mount everything mentioned in fstab
+#  .. but proc needs to be mounted first, anyways.
+/bin/mount -anv
+mount -v -o remount,rw -n /dev/ram0 /
+
+#  Set host name
+/bin/hostname bootroot
+
+#  If you need to load a keyboard map, uncomment this line and
+#  fix the pathnames:
+#/usr/sbin/loadkeys /usr/lib/kbd/keytables/defkeymap.map
+
