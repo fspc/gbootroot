@@ -23,10 +23,15 @@ $, = " ";
 my $extra_files = "swim -ql @extra_packages|";
 $, = "";
 
+
+# All the packages
 open(SWIM,$swim_packages) or die "Couldn't open $?\n";
 my @required_packages = <SWIM>; chomp @required_packages;
 close(SWIM);
 
+push(@required_packages,@extra_packages);
+
+# All the files
 open(SWIM,$swim_list) or die "Couldn't open $?\n";
 my @required_files = <SWIM>; chomp @required_files;
 close(SWIM);
@@ -35,7 +40,6 @@ open(SWIM,$extra_files) or die "Couldn't open $?\n";
 my @extra_files = <SWIM>; chomp @extra_files;
 close(SWIM);
 
-push(@required_packages,@extra_packages);
 push(@required_files,@extra_files);
 
 open(DEBIAN,">$template_dir/$debian_yard") 
@@ -89,10 +93,12 @@ $stuff = << "STUFF";
 # file-rc installed, and you will have to be running a Debian system to make 
 # this template.  Make-debian ditches info, man, and doc files by default,
 # use the "doc" option to make documentation.  
-#
+
 # Characteristics:  Uses devfs. user: root passwd: root 
                                 user: user passwd: user
-#
+# Alternatives aren't working so you will have to use the real name like
+# nvi for vi and w.procps for w.
+
 # Note:  Things slow down noticeably when the buffer gets too big in the
 # verbosity box so consider closing it with the slider for faster generation.
 
