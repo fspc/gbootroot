@@ -1,4 +1,4 @@
-$Id: README,v 1.24 2003/02/12 17:18:36 freesource Exp $
+$Id: README,v 1.25 2003/02/13 19:35:34 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -65,9 +65,7 @@ If you build the package as a non-root user, and you don't have
 permissions to write to system directories you can always run
 gbootroot from the immediate source directory "./gbootroot --home ."
 or "perl -I . ./gbootroot --home ." if there is already another
-installed version on the system.  You will want to put the
-uml-utilities found under user-mode-linux/usr/bin and
-user-mode-linux/usr/lib/uml in your $PATH.
+installed version on the system.  
 
 To install on the system type "make install" and follow the
 instructions in the "Important Configurations" section near the bottom

@@ -240,12 +240,12 @@ BEGIN {
     my $pwd = `pwd`; chomp $pwd;
 
     my $tools = grep(/$pwd\/user-mode-linux\/usr\/bin/,$ENV{'PATH'});
-    if ($sbin == 0) {
+    if ($tools == 0) {
 	$ENV{'PATH'} = "$pwd/user-mode-linux/usr/bin:" . $ENV{'PATH'};
     }
 
     $tools = grep(/$pwd\/user-mode-linux\/usr\/lib\/uml/,$ENV{'PATH'});
-    if ($sbin == 0) {
+    if ($tools == 0) {
 	$ENV{'PATH'} = "$pwd/user-mode-linux/usr/lib\/uml:" . $ENV{'PATH'};
     }
 
