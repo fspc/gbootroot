@@ -139,7 +139,7 @@ sub err_custom {
     else {
 	# Yard::sys .. this seems to be necessary for my flakey floppy drive
 	# which doesn't even support 1722.
-      Yard::sys("$_[0]");
+      BootRoot::Yard::sys("$_[0]");
     }
     error_window($_[1]) if ($? != 0);
     if (defined $error_window) {
