@@ -79,7 +79,7 @@ my @menu_items = ( { path        => '/File',
                      callback    => \&saved,
 		     action      =>  100 },
                    { path        => '/File/Save _As ...',
-		     accelerator => '<alt>S',
+		     accelerator => '<alt>A',
 		     callback    => \&saved,
 		     action      => 101 },
                    { path        => '/File/file_separator',
@@ -961,11 +961,13 @@ sub yard_box {
        #_______________________________________ 
        # Create the GtkText widget
        $text = new Gtk::Text( undef, undef );
+##Gtk::Text->signal_connect_after("key-press-event" => \&Gtk::false);
        $text->set_editable($true);
        $text->signal_connect("activate", sub { 
 	   my $new_length =  $text->get_length();
 	   $changed_text_from_template = $text->get_chars(0,$new_length);
        } );
+
        $table->attach( $text, 0, 1, 0, 1,
                        [ 'expand', 'shrink', 'fill' ],
                        [ 'expand', 'shrink', 'fill' ],
@@ -1170,6 +1172,7 @@ sub search {
 
 	#_______________________________________
 	# Search button
+
 	my ($keywords, $old_keywords, $offset);
 	my $submit_b = button(0,1,3,4,"Search",$table_search);
 	$search1->signal_connect("key_press_event", sub {
@@ -1474,7 +1477,7 @@ Selection Shortcuts
 
 Searching Shortcuts
 
- Alt-S
+ Alt-X
 SHORTCUTS
 
 sub path {
