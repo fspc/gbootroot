@@ -112,8 +112,11 @@ my ($kernel,$root_image,$device,$size);
 my $mtab;
 my ($tmp,$mnt);
 my $norm_root_device;
-my ($hbox_advanced,$ha1,$ha2); 
+my ($hbox_advanced); 
 my $separator_advanced;
+my @entry_advanced;
+my $entry_advanced;
+my $ea1;
 my $table_advanced;
 my $button_count = 0;
 my $obj_count = 0;
@@ -452,12 +455,13 @@ sub advanced_section {
        #$vbox_advanced->set_usize(321,300);
 	my $boolean;
 
-       # Will use a table once things start to take shape. 
-
        # The strip section
-       hbox_advanced(); $ha1 = $hbox_advanced;
-       label_advanced("Stripping:");
-
+       $table_advanced = new Gtk::Table( 4, 3, $true );
+       $vbox_advanced->pack_start( $table_advanced, $true, $true, 0 );
+       $table_advanced->show();
+       
+       # lib_strip_check
+       label_advanced("Stripping:",0,1,0,1);
        !defined $lib_strip_check ? ($boolean = 1) 
          : ($boolean = $lib_strip_check->get_active());
        $lib_strip_check = new Gtk::CheckButton("Libraries");
@@ -469,9 +473,12 @@ sub advanced_section {
                            " mouse button to change from" .
                            " [objcopy --strip-debug] to" . 
                            " [objcopy --strip-all].", "" );
-       $hbox_advanced->pack_start( $lib_strip_check, $false, $false, 0);
+       #$hbox_advanced->pack_start( $lib_strip_check, $false, $false, 0);
+       $table_advanced->attach($lib_strip_check,1,2,0,1, 
+                               ['expand'],['fill','shrink'],0,0);
        show $lib_strip_check;
 
+       # bin_strip_check
        !defined $bin_strip_check  ? ($boolean = 1) 
          : ($boolean = $bin_strip_check->get_active());
        $bin_strip_check = new Gtk::CheckButton("Binaries");
@@ -479,27 +486,61 @@ sub advanced_section {
        $tooltips->set_tip( $bin_strip_check, 
                            "This is generally a good idea." .
                            " [objcopy --strip-all]", "" );
-       $hbox_advanced->pack_start( $bin_strip_check, $true, $true, 0);
+       #$hbox_advanced->pack_start( $bin_strip_check, $true, $true, 0);
+       $table_advanced->attach($bin_strip_check,2,3,0,1, 
+                               ['expand'],['fill','shrink'],0,0);
        show $bin_strip_check;
 
-       # Verbosity section
-       #separator_advanced();
-       #hbox_advanced(); $ha2 = $hbox_advanced;
-       #label_advanced("Verbosity Level: \"Coming Soon!\"");
+       # Development Drive
+       label_advanced("Devel Device:",0,1,1,2);
+       $ea1 = entry_advanced(1,2,1,2,0);
+       $tooltips->set_tip( $ea1, "If the device used for development" .
+                                 " is different than the actual boot" . 
+                                 " device, use this field" .
+                                 " to indicate that device." .
+                                 "  You will have to run" .
+                                 " \"lilo -v -C brlilo.conf -r" .
+                                 " device-mount\" manually at a" . 
+                                 " later time on the actual" . 
+                                 " boot device.",
+                                 "" ); 
+       $ea1->set_text($container[3]) if defined $container[3];
 
+       # Optional Device(s)
+       label_advanced("Opt. Device(s)",0,1,2,3);
+       entry_advanced(1,2,2,3,1);
+
+       # Append Options
+       label_advanced("append =",0,1,3,4);
+       entry_advanced(1,2,3,4,2);
+
+       # Verbosity section
 
        $button_count++;
     }
     else {
-       #$vbox_advanced->set_usize(321,0);
-       destroy $ha1;
-       #destroy $separator_advanced;
-       #destroy $ha2;
+       destroy $table_advanced;
        $button_count--;
     }
 
 } # end sub advanced_section
 
+print @entry_advanced;
+
+sub entry_advanced {
+
+    my $numa = $_[4];
+    my $entry_advanced = new Gtk::Entry();
+    $entry_advanced->set_editable( $true );
+    $entry_advanced->signal_connect( "changed", sub {
+    $entry_advanced[$numa] = $entry_advanced->get_text();} );
+    $entry_advanced->set_usize(100,20);
+    $table_advanced->attach($entry_advanced,$_[0],$_[1],$_[2],$_[3], 
+                            ['expand'],['fill','shrink'],0,0);
+    show $entry_advanced;
+    return $entry_advanced;
+
+}
 
 sub separator_advanced {
 
@@ -515,7 +556,9 @@ sub label_advanced {
 
     $label_advanced = new Gtk::Label( $text );
     $label_advanced->set_justify( "fill" );
-    $hbox_advanced->pack_start( $label_advanced, $true, $true, 0 );
+    $table_advanced->attach($label_advanced,$_[1],$_[2],$_[3],$_[4], ['expand'],['fill','shrink'],0,0);
+    #$table_advanced->attach_defaults( $label_advanced, 0, 1, 0, 1 );
+    #$hbox_advanced->pack_start( $label_advanced, $true, $true, 0 );
     $label_advanced->show();
 
 }
@@ -577,7 +620,7 @@ sub create_text {
        $table->set_row_spacing( 0, 2 );
        $table->set_col_spacing( 0, 2 );
        $vbox->pack_start( $table, $true, $true, 0 );
-       $table->show();
+       $table->show( );
 
        # Create the GtkText widget
        my $text = new Gtk::Text( undef, undef );
@@ -733,11 +776,15 @@ sub entry {
 
     if ($num == 0) {
         $entry->signal_connect( "activate", sub {
-                $container[$num] = $entry->get_text(); });            
+                $container[$num] = $entry->get_text();});            
     }
     else {
          $entry->signal_connect( "changed", sub {
-                 $container[$num] = $entry->get_text(); });
+                 $container[$num] = $entry->get_text();
+                 if (defined $ea1 and $num == 3) { 
+                     $ea1->set_text($container[$num]); 
+                 } 
+                                                 });
      }
     if (defined $num) {
      my $todo;
@@ -872,6 +919,8 @@ elsif (defined $container[0] && defined $container[1] &&
         $obj_count == 0 ? ($container[8] = 5) : ($container[8] = 6);
      }
 
+     $container[9] = $entry_advanced[0] . "extra";
+
      if (@original_container) { # defined array deprecate Perl 5.6 -  zas@metaconcept.com
          # a hash check isn't perfect for two values which are the same
          # no need to check all the values
@@ -896,7 +945,7 @@ elsif (defined $container[0] && defined $container[1] &&
      # reset
      @original_container = ($container[0],$root_image,$device,$size,
                             $compress,$container[6],$container[7],
-                            $container[8]);
+                            $container[8],$container[9]);
 
      lilo();
  }
@@ -1108,14 +1157,17 @@ sub lilo_put_it_together {
   #V#print "Umount device\n";
   #V#print "Remount device\n";
   pb($B,6);
-  return if errm(system "mount -t ext2 $device $mnt >> $verbosefn 2>&1") == 2;
+  return if errm(system "mount -t ext2 $entry_advanced[0] $mnt >> $verbosefn 2>&1") == 2;
   #V#print "Configuring lilo\n";
   pb($B,7);
   chdir("$mnt"); #"boot_root: ERROR: Could not change directories\n";
-  if (err_custom("lilo -v -C brlilo.conf -r $mnt",
-                 "gBootRoot: ERROR: lilo failed") == 2) {
-      chdir($pwd); return;
+  if ($device eq $entry_advanced[0]) {
+    if (err_custom("lilo -v -C brlilo.conf -r $mnt",
+                   "gBootRoot: ERROR: lilo failed") == 2) {
+        chdir($pwd); return;
+    }
   }
+
   $remain_boot = $remain_boot - (stat("$mnt/boot/map"))[12]/2;
   $entry5->set_text("$remain_boot k");
   pb($B,8);
@@ -1484,7 +1536,7 @@ sub mtab_check {
 # Check to see if $device is mounted
 open (MTAB, "/etc/mtab") or die "no mtab!\n";
 while (<MTAB>) {
-    if (m,$device,) {
+    if (m,$entry_advanced[0],) {
         # Safety Check:
        $dialog = "Please umount the device first.\nPress OK when you are ready.";
        $error = 0;
@@ -1498,13 +1550,13 @@ mtab_window($dialog,$error,$count) if $error == 0;
   # Keep asking until they are.
   if ($error == 1) {
    destroy $mtab;
-   system "mke2fs -m0 -i8192 $device $size >> $verbosefn 2>&1";
+   system "mke2fs -m0 -i8192 $entry_advanced[0] $size >> $verbosefn 2>&1";
    if ($? != 0) {
     $dialog = "gBootRoot: ERROR: You need to insert a disk\n";
      mtab_window($dialog,$error,$count);
      return;
    }
-   return if errm(system "mount -t ext2  $device $mnt >> $verbosefn 2>&1") == 2;
+   return if errm(system "mount -t ext2  $entry_advanced[0] $mnt >> $verbosefn 2>&1") == 2;
    lilo_put_it_together() if $count == 0;
    device2() if $count == 1;
   }
