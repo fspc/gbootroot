@@ -1702,6 +1702,7 @@ sub uml_box {
         # erasure size $entry_advanced[15]
 	label_advanced("erasure size:",3,4,5,6,$table_uml);
 	my $mtd_erasure = entry_advanced(4,5,5,6,15,$table_uml);
+        $mtd_erasure->set_text( $entry_advanced[15] ) if $entry_advanced[15];
         $tooltips->set_tip( $mtd_erasure, 
                            "Choose the erasure size for the mtd device.",
                             "" );
@@ -1728,12 +1729,12 @@ sub uml_box {
 
 	#_______________________________________
 	# Submit Button
-	my $submit_b = button_advanced(0,1,7,8,"Submit",$table_uml);
+        my $submit_b = button_advanced(0,1,7,8,"Submit",$table_uml);
 	$tooltips->set_tip( $submit_b, 
                            "Start uml kernel processes.",
                            "" );
-	$submit_b->signal_connect("clicked",
-                                   sub {  
+        $submit_b->signal_connect("clicked",
+                                  sub {  
 				      # UML kernel = $entry_advanced[5]
 				      # xterm -e linux ubd#=root_fs 
                                       # root=/dev/ubd# 
@@ -1745,8 +1746,10 @@ sub uml_box {
 				      my $pid; 
 				      if ($entry_advanced[8] && 
 					  $entry_advanced[10]) {
+
 					  # Check to see if it actually exists
-					  my $executable = (split(/\s+/,$entry_advanced[8]))[0];
+					  my $executable = 
+					      (split(/\s+/,$entry_advanced[8]))[0];
 					  if (!find_file_in_path(basename($executable))) {
 					      error_window("gBootRoot Error: " .
 					      "Enter a valid xterm, and " .
@@ -1760,45 +1763,158 @@ sub uml_box {
 						  return;
 					      }
 				          }
+					  
+					  # MTD?
+					  if ( $mtd_check->get_active() ) {
 
-				      unless ($pid = fork) {
-					  unless (fork) {
-					      if ($pid == 0) {
-					      sys("$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]");
-				      Gtk->_exit($pid);
-					       }
+					      # Check for the existence of root=/dev/ram0
+					      for ( $entry_advanced[9],$entry_advanced[10] ) {
+						  info(0,"$_");
+
+					      }
 
 					  }
 
-				      }
-				      waitpid($pid,0);
-
+					  unless ($pid = fork) {
+					      unless (fork) {
+						  if ($pid == 0) {
+						      sys("$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]");
+						      Gtk->_exit($pid);
+						  }
+						  
+					      }
+					  
+					  }
+					  waitpid($pid,0);
+					  
 				      }
 				      else {
+
+
+					  # MTD? .. testing location
+					  if ( $mtd_check->get_active() ) {
+
+					      # Everything becomes an option for Initrd to parse
+					      # and is put on the options[9] line
+
+					      my ($initrd, $ram, $mem);
+
+					      for ( $entry_advanced[10],$entry_advanced[9] ) {
+
+
+						  # Check for the existence of root=/dev/ram0
+						  if ( m,root=/dev/ram, ) {
+						      $ram = 1;
+						  }
+						  
+
+						  # Check for the existence of initrd=
+						  if ( m,initrd=, ) {
+						      m,(initrd=[/\d\w-]+),;
+						      $initrd = $1;
+						  }
+
+						  if ( $mtd_radio_mtdram->get_active() ) {
+
+						      # Check for the existence mem=
+						      if ( m,mem=, ) {
+							  $mem = 1;
+						      }
+
+						  }
+
+					      }
+
+					      my ($total_size, $fs_type, $erasure_size);
+						  
+					      # total size
+					      $total_size = $mtd_size->get_value_as_int();
+
+					      # what type of fs.
+					      $fs_type = $mtd_fs_type_combo->entry->get_text();
+
+					      # Pass on erasure size if it exists
+					      if ( $entry_advanced[15] ) {
+						  $erasure_size = $entry_advanced[15]
+					      }
+
+					      # Set a ram block if necessary
+	      
+					      if ( !$ram ) {
+						  for ( $entry_advanced[10],$entry_advanced[9] ) {
+						      if ( m,root=, ) {
+							  s,(root=[/\d\w-]+),root=/dev/ram0,;
+						      }
+						  }
+					      }
+					      
+
+					      # Will use this format 
+					      # initrd=Initrd mem=? mtd=type,fs_type,size,erasure
+
+					     # Tell initrd whether it is mtdram or blkmtd, and 
+					     if ( $mtd_radio_mtdram->get_active() ) {
+
+						  # default mem required by mtdram equaling total size
+						  if ( !$mem ) {
+						      
+						      $mem = "mem=$total_size" . "K";
+						  }
+						  else {
+						      undef $mem;
+						  }
+
+						  if ( !$initrd ) {
+						      
+						      $initrd = "initrd=Initrd";
+						  }
+
+						  $entry_advanced[9] = "$initrd $mem " .
+						      "mtd=mtdram,$fs_type,$total_size,$erasure_size " .
+							  $entry_advanced[9]; 
+
+					      }
+					      else {
+
+						  if ( !$initrd ) {
+						      
+						      $initrd = "initrd=Initrd";
+						  }
+
+						  $entry_advanced[9] = "$initrd " .
+						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size " .
+							  $entry_advanced[9]; 
+
+					      }
+
+					      info(0,"$entry_advanced[9]\n$entry_advanced[10]\n");
+
+					  } # mtd preparations
+
 					  if (!$entry_advanced[8]) {
 					      error_window("gBootRoot Error: " .
-					      "Enter an xterm, and executable " .
+							   "Enter an xterm, and executable " .
 							   "option.");
 					      return;
 					  }
 					  if (!$entry_advanced[10]) {
 					      error_window("gBootRoot Error: " .
-					      "Enter the ubd?=Root_Filesystem " .
-					      "and its location.");
+							   "Enter the ubd?=Root_Filesystem " .
+							   "and its location.");
 					      return;
 					  }
 
 				      }
-
+				      
 				  } );
 
 
-	#_______________________________________
-	# Abort Button
+        #_______________________________________
+        # Abort Button
         # This is the hard kill when all else fails, it also cleans up
         # lingering processess, but is considered a last resort, and
         # can be dangerous, it has even taken down a WM.
-	my $abort_b = button_advanced(3,4,7,8,"Abort",$table_uml);
+        my $abort_b = button_advanced(3,4,7,8,"Abort",$table_uml);
 	$tooltips->set_tip( $abort_b, 
                            "Abort uml kernel processes." .
                            "This serves three purposes:\n" .
