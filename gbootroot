@@ -174,7 +174,9 @@ my $template_dir = "$home_yard/templates/";
 my $home_yard_replacements = "$home_yard/Replacements";
 $main::global_yard =  $home_yard;
 $main::oldroot = "/OLDROOT";
-my $global_yard_replacements = "/usr/share/gbootroot/yard/Replacements";
+my $global_yard_replacements_arch_indep  = 
+    "/usr/share/gbootroot/yard/Replacements";
+my $global_yard_replacements_arch_dep = "/usr/lib/bootroot/yard/Replacements";
 my $global_yard_templates = "/usr/share/gbootroot/yard/templates";
 $ENV{'PATH'} = "$home_yard:" . $ENV{'PATH'};
 
@@ -532,12 +534,13 @@ if ( -d $global_yard_templates ) {
     }
 }
 
+# Arch indep replacements repository
 # $HOME/.gbootroot/yard/Replacements 
 home_builder($home_yard_replacements);
-if (-d $global_yard_replacements) {
+if ( -d $global_yard_replacements_arch_indep ) {
     if (-d $home_yard_replacements) {
 	find sub {  ( my $replacement = 
-		       $File::Find::name ) =~ s/$global_yard_replacements\///;
+		       $File::Find::name ) =~ s/$global_yard_replacements_arch_indep\///;
 		   if (!-e "$home_yard_replacements/$replacement") {
 
 		       #system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
@@ -545,7 +548,25 @@ if (-d $global_yard_replacements) {
 		       symlink_builder( $File::Find::name,"$home_yard_replacements/$replacement") if !-d $File::Find::name;
 		   }
 
-	       }, $global_yard_replacements;
+	       }, $global_yard_replacements_arch_indep;
+		      
+
+    }
+}
+
+# Arch dep replacements repository
+if ( -d $global_yard_replacements_arch_dep ) {
+    if (-d $home_yard_replacements) {
+	find sub {  ( my $replacement = 
+		       $File::Find::name ) =~ s/$global_yard_replacements_arch_dep\///;
+		   if (!-e "$home_yard_replacements/$replacement") {
+
+		       #system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
+		       system "mkdir $home_yard_replacements/$replacement > /dev/null 2>&1" if -d $File::Find::name;
+		       symlink_builder( $File::Find::name,"$home_yard_replacements/$replacement") if !-d $File::Find::name;
+		   }
+
+	       }, $global_yard_replacements_arch_dep;
 		      
 
     }
