@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.95 2002/03/11 05:05:28 freesource Exp $</center>
+<center>$Id: index.html,v 1.96 2002/03/11 20:43:44 freesource Exp $</center>
 
 <p>
 
@@ -558,20 +558,27 @@ user would create a fs with their own UID/GID if they turned this on.
 <p>
 
 The root_fs helper provides support for these commands:<br>
-<code>mke2fs  mkreiserfs  mkcramfs  genromfs   mkminix</code>
+<code>mke2fs  mkreiserfs  mkcramfs  genromfs   mkminix  mkfs.jffs2  mkfs.jffs</code>
 
 <p>
 
-<u>Notes</u>:
-1). All these commands may have options added, but it is unnecessary to add
-directory, device, or source options&nbsp;&nbsp;2). 
-Mkcramfs and genromfs use the filesystem given a 
-filename in the ARS as the source to produce another filesystem which is 
-named respectively with _cramfs or _romfs appended to the original name of 
-this filesystem.&nbsp;&nbsp;
+Notes:
+
+<ul>
+
+<li>All these commands may have options added, but it is unnecessary to add
+directory, device, or source options.
+
+<li>Mkcramfs, genromfs, mkfs.jffs2, and mkfs.jffs take the Root Filename in the
+ARS to produce an ext2 filsystem which is then used to store the sources used
+to produce the actual filsystem.&nbsp;&nbsp;The new filesystem produced
+is named respectively with _cramfs, _romfs, _jffs2, or _jffs appended to the 
+original Root Filename.&nbsp;&nbsp;
 If in doubt
 what this all means, watch the verbosity box when the filesystem is created,
 and things should become more clear.  
+
+</ul>
 
 <br>
 
