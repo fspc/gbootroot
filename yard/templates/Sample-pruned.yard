@@ -1,0 +1,291 @@
+#  -*- Mode: Fundamental -*-
+#
+#  This is a basic Bootdisk_Contents, for use with Yard.
+#  YOU MUST CUSTOMIZE THIS FILE BY HAND.
+#
+#  $Id: Bootdisk_Contents.in,v 1.3 1998/11/16 03:32:28 fawcett Exp $
+#  @configure_input@
+#
+#  Tom Fawcett
+#  May 1996
+#
+#
+#############################################################################
+#
+# Format rules:
+#  - Lines beginning with # or % are comments.
+#
+#  - Blank lines and whitespace are ignored.
+#
+#  - Filenames may be either relative or absolute.  Any filename not
+#    beginning with a slash is relative and will be resolved relative to the
+#    configuration directory (@config_dest@).
+#
+#  - Lines of the form "filename1 -> filename2" will create symbolic (soft)
+#    links on the root fs.  For example, if you want sh linked to bash
+#    in the root fs you specify: "/bin/sh -> /bin/bash"
+#    (There is no way to specify hardlinks, though hard linked files
+#    that exist on the hard disk will be hard linked on the bootdisk.)
+#
+#  - Lines of the form "filename1 <= filename2"
+#    will cause filename2 to be copied to filename1 on the boot disk.
+#    This is useful for specifying trimmed-down replacements for
+#    /etc/passwd, /etc/inittab, etc.  filename2 will be found first by
+#    searching PATH, then by searching relative to the configuration directory.
+#
+#  - Glob designations (?, * and []) are generally allowed, eg /dev/hd[ab]*
+#    Wildcards are not allowed in link specs or replacement specs.
+#
+#  - You may refer to environment variables in these specs by using
+#    a dollar sign.  $RELEASE will be set to the release string of $kernel, 
+#    eg 2.2.13 or 2.2.15-6mdk.  
+#
+#  You don't need to specify shared libraries or loaders.  make_root_fs
+#  will detect necessary libraries and include them automatically.  The
+#  exceptions are NSS and PAM libraries, which are dynamically loaded and
+#  can't really be predicted.  Yard doesn't automatically include these
+#  libraries (it doesn't know what you want to do), but it will check your
+#  choices and warn you if something isn't provided for.
+#
+#  You don't need to explicitly specify intermediate directories unless you
+#  just want to make sure they exist.
+#
+##############################################################################
+
+#  Specify these binaries absolutely because boot scripts need them to be here.
+/bin/cat
+#/bin/false		   	
+/bin/hostname		   	
+/bin/ln			   	
+/bin/login		   	
+/bin/ls			   	
+/bin/more
+/bin/mount         
+/bin/mv			   	
+/bin/su			   	
+#/bin/true		   	
+/bin/umount
+#/bin/loadkeys
+
+#####  THE DEFAULT SHELL
+#    Bash is huge and requires libncurses.so.
+#    Most people use a smaller lightweight shell, like ash or kiss,
+#    and use that instead.
+#/bin/sh  -> bash
+#/bin/csh -> tcsh
+/bin/sh -> ash
+
+/sbin/init		   	
+#/sbin/ldconfig		#  no longer necessary
+#/sbin/reboot
+/sbin/shutdown      
+#/sbin/swapoff       
+/sbin/swapon        
+#/sbin/telinit       
+#/sbin/update        
+
+#####  FILES IN /etc, TAKEN FROM YOUR SETUP
+#
+#  The advantage of using your existing /etc/passwd file is that is has
+#  all the correct UIDs and GIDs, which may be useful when restoring
+#  files from tape.  On the other hand, using a trimmed-down passwd
+#  allows you to use a trimmed-down shell, and avoids errors
+#  from check_root_fs about home directories and shells not existing.
+#
+/etc/group		   	
+/etc/issue		   	
+/etc/profile		    
+/etc/shells
+
+#  These get replaced with their pared-down versions 
+#  in the Replacements subdirectory.
+/etc/passwd     <= ./Replacements/etc/passwd
+/etc/fstab	<= ./Replacements/etc/fstab
+/etc/motd	<= ./Replacements/etc/bootdisk_motd
+/etc/rc		<= ./Replacements/etc/rc
+/etc/ttytype    <= ./Replacements/etc/ttytype
+/etc/gettydefs  <= ./Replacements/etc/gettydefs
+/etc/termcap	<= ./Replacements/etc/termcap
+
+#   PROVISIONS FOR PAM:
+/etc/pam.conf	<= ./Replacements/etc/pam.conf
+/lib/security/pam_permit.so	
+
+#   PROVISIONS FOR NSS
+#   If you use old libc5, you don't need this.  Comment out these lines.
+#
+/etc/nsswitch.conf <= ./Replacements/etc/nsswitch.conf
+#   Check your version of libc and comment out the one you don't need:
+#/lib/libnss_files.so.1   # If you use use libc-2.0.X
+/lib/libnss_files.so.2    # If you use use libc-2.1.X or libc-2.2.X
+
+
+##### INITTAB and GETTY
+# Use one of these pairs, based on your distribution:
+#
+#===== REDHAT (5.x, 6.0) uses getty
+#/etc/inittab	<= Replacements/etc/inittab
+#/sbin/getty
+#
+#
+#===== MANDRAKE (7.0, 8.0) uses mingetty
+#/etc/inittab	<= Replacements/etc/inittab.mingetty
+#/sbin/mingetty
+#
+#
+#===== SLACKWARE uses agetty:
+#/etc/inittab	<= Replacements/etc/inittab.agetty
+#/sbin/agetty
+#
+#
+#===== DEBIAN (1.1) uses a program called "getty" which is actually 
+#                  agetty in disguise:
+#/etc/inittab	<= Replacements/etc/inittab.debian
+#/sbin/getty
+#
+#
+#===== SUSE	uses mingetty:
+#/etc/inittab    <= Replacements/etc/inittab.mingetty     
+#/sbin/mingetty
+#
+#
+# If in doubt, check your /etc/inittab.
+#
+# In any case, check to make sure the *getty* calls in the inittab match
+# the executable you're using.  Yard can't check this and *getty* will
+# hang if the arguments are wrong.
+
+
+#####  DEVICES
+/dev/mem	/dev/kmem
+/dev/null       /dev/zero
+/dev/ram*
+/dev/console
+/dev/tty[0-9]
+/dev/hd[abcd]*              # Hard disks
+/dev/ttyS[0-9]		    # Serial ports (new style)
+#  Optional devices.  Uncomment the ones you want, but
+#  keep in mind that each device file consumes an inode.
+/dev/fd0*                   # Floppy disk drives
+#/dev/*tape*                 #  Tape device links
+#/dev/*rft0                  #  Floppy tape devices
+#/dev/st?                    #  SCSI tape drives
+#/dev/sd*                    # SCSI disks
+/dev/cdrom /dev/modem       # Links to real devices, which will be copied
+#/dev/mouse
+
+#####  utmp and wtmp.  
+#  Set up links for any old-style programs that expect them in /etc.  
+/etc/utmp     -> /var/run/utmp
+/var/run/utmp <= /dev/null        # This clears utmp on the floppy
+/etc/wtmp     -> /var/log/wtmp
+/var/log/wtmp <= /dev/null
+
+#####  terminfo entries.
+/usr/share/terminfo/v/vt100   
+/usr/share/terminfo/v/vt100-am
+/usr/share/terminfo/l/linux
+/usr/share/terminfo/l/linux-m
+/usr/share/terminfo/l/linux-nic
+
+# If you want to load a special keytable, add the filename here:
+#/usr/lib/kbd/keytables/defkeymap.map
+
+#####  Empty directories
+/mnt/*           # all mount points
+/proc               
+/tmp                
+/var/tmp
+
+#####  MODULES and support programs for them.
+insmod
+rmmod
+lsmod
+depmod
+modprobe
+#/sbin/kerneld
+/etc/modules.conf	/etc/conf.modules   #  Whichever you use
+#
+#       The actual modules.  You probably want to be more selective than this.
+#       Do an "lsmod" and include the modules you use.
+#/lib/modules/$RELEASE/*/*.o
+
+
+#####  ESSENTIAL SYSTEM UTILITIES
+# (your rescue disk may not boot if these are not present.)
+chmod		   	
+chown		   	
+chroot
+cp			   	
+df			   	
+id
+mkdir		   	
+pwd
+rm
+shutdown
+stty		   	
+sync          
+uname
+
+#####  NON-ESSENTIAL BUT USEFUL UTILITIES
+cut
+#date		   	
+diff       
+dd			   	
+du			   	
+egrep	fgrep	grep
+find       
+fuser         
+gunzip	gzip
+head	tail
+mkswap        
+mknod		   	
+#mt   # tape utility.  For floppy tapes, use ftmt instead.
+#ps			   	
+#passwd		   	
+#reboot		   	
+tar
+touch		   	
+#tr
+whoami
+wc
+zcat		   	
+
+#### Networking
+#ifconfig
+#ping
+#route
+#rsh
+
+#####  DISK AND FILE SYSTEM UTILITIES
+fdisk         
+#e2fsck	fsck	fsck.ext2     
+#mke2fs	mkfs	mkfs.ext2     
+#tune2fs       
+#mklost+found  
+
+
+#####  FILES FOR RESTORING BACKUPS
+#  I use the tob package for backups, so I include everything to do
+#  restorations.  You might want to include man pages or help files.
+#tob
+#afio	#  Needed by tob
+#/usr/etc/tob.rc
+#/usr/etc/tob/*
+#/usr/etc/tob/lists/
+#/usr/etc/tob/volumes/*
+
+
+#####  A basic text editor.  I use jove, a light-weight emacs clone
+#####  which is small and requires only libc and libtermcap.
+#jove
+#/usr/lib/jove/jove.rc
+
+#####  For user "root".
+#/root/.profile
+#  A generic .profile:
+/root/.profile <= ./Replacements/root/.profile
+/root/.*shrc
+
+
+#####  End of Bootdisk_Contents
