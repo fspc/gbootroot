@@ -266,6 +266,10 @@ $stuff = << "STUFF";
 # Ipchains stuff
 /etc/default/ipchains
 
+# Network stuff
+/etc/resolv.conf 
+/root/umlnet <= Replacements/root/umlnet # Example network setup script
+
 # Devices - optional stuff which can be picked up by devfsd.
 /dev/MAKEDEV # a link
 /dev/mem	
