@@ -750,8 +750,11 @@ sub yard_box {
        $lib_strip->signal_connect( "activate", 
 				   sub {  
 				       # off   
-				       if ($lib_bool == 1) {
-					     $lib_bool--;
+				        if ($lib_bool eq "") {
+					    $lib_bool = 0;
+				        }
+				        if ($lib_bool == 1) {
+					      $lib_bool--;
 				         }
 					 # on
 					 else {
@@ -774,6 +777,9 @@ sub yard_box {
        $bin_strip->active($true);
        $bin_strip->signal_connect( "activate", 
 				   sub { 
+				         if ($bin_bool eq "") {
+					    $bin_bool = 0;
+				         }
 					 # off
 					 if ($bin_bool == 1) {
 					     $bin_bool--;
@@ -794,6 +800,9 @@ sub yard_box {
        $mod_strip->signal_connect( "activate", 
 				   sub { 
 					 # off
+				         if ($mod_bool eq "") {
+					     $mod_bool = 0;
+				         }
 					 if ($mod_bool == 1) {
 					     $mod_bool--;
 				         }
