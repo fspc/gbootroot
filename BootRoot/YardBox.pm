@@ -281,6 +281,7 @@ sub file_system {
 	$filesystem_window->signal_connect("delete_event", \&destroy_window,
 					     \$filesystem_window);
 	$filesystem_window->set_policy( $true, $true, $false );
+	$filesystem_window->set_default_size( 300, 90 ); 
 	$filesystem_window->set_title( "Filesystem Box" );
 	$filesystem_window->border_width(1);    
 
@@ -288,24 +289,53 @@ sub file_system {
 	$filesystem_window->add( $main_vbox );
 	$main_vbox->show();
 
-	my $table_filesystem = Gtk::Table->new( 2, 3, $true );
-	$main_vbox->pack_start( $table_filesystem, $true, $true, 0 );
+	#my $table_filesystem = Gtk::Table->new( 3, 3, $true );
+	my $table_filesystem = Gtk::Table->new( 3, 2, $false );
+	##$main_vbox->pack_start( $table_filesystem, $true, $true, 0 );
+	$main_vbox->pack_start( $table_filesystem, $true, $false, 0 );
 	$table_filesystem->show();
 
 	#_______________________________________
 	# Editor and execute options
-	label("Filesystem Command:",0,1,0,1,$table_filesystem);
+	label("Filesystem Command: ",0,1,0,1,$table_filesystem);
 	my $fs1 = entry(1,3,0,1,2,$table_filesystem);
 	$fs1->set_text($main::makefs);
 
 	$table_filesystem->set_row_spacing( 0, 2);       
 
+
+	#_______________________________________
+	# UML Exclusively
+	my $uml_exclusively = new Gtk::CheckButton("UML Exclusively");
+	#$uml_exclusively->signal_connect("clicked", \&which_stage, "check"); 
+	$table_filesystem->attach($uml_exclusively,0,1,1,2,['expand'],
+				  ['fill','shrink'],0,0);
+	$uml_exclusively->show;       
+
+
+	#_______________________________________
+	# Preserve Permissions
+	my $preserve_permissions = new 
+	  Gtk::CheckButton("Preserve Permissions");
+	#$uml_exclusively->signal_connect("clicked", \&which_stage, "check"); 
+	$table_filesystem->attach($preserve_permissions,2,3,1,2,['expand'],
+				  ['fill','shrink'],0,0);
+	$preserve_permissions->show;       
+
+
 	#_______________________________________
 	# Submit button
-	my $submit_b = button(0,1,1,2,"Submit",$table_filesystem);
+	my $submit_b = button(0,1,2,3,"Submit",$table_filesystem);
+	$submit_b->can_default(1);
+	$submit_b->grab_default;
+	$fs1->signal_connect("key_press_event", sub {
+	    my $event = pop @_;
+	    if ($event->{'keyval'} == 65293) {
+		$submit_b->clicked();
+	    }
+	});
 	$submit_b->signal_connect( "clicked", sub {
 	    if ($entry[2]) {
-
 		# Check to see if it actually exists
 		my $executable = (split(/\s+/,$entry[2]))[0];
 		if (!find_file_in_path(basename($executable))) {
@@ -327,9 +357,10 @@ sub file_system {
 	    }
 	} );
 
+
 	#_______________________________________
 	# Close button
-	my $close_b = button(2,3,1,2,"Close",$table_filesystem);
+	my $close_b = button(2,3,2,3,"Close",$table_filesystem);
 	$close_b->signal_connect("clicked",
 				 sub {
 				     $filesystem_window->destroy() 
