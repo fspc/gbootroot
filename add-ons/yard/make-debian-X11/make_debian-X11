@@ -69,21 +69,25 @@ flwm libfltk1 xnest make-debian-x11 ash);
 #/root/umlnet <= Replacements/root/umlnet .. won't use.
 #/etc/apt/sources.list  <= Replacements/etc/sources.list .. for adm.
 
-# 0. run dpkg-reconfigure for xfree86-common and xserver-common
-#    This catches mistakes
-# 0.1 dpkg-reconfigure for xfonts-base
-# 1. make permissions correct for directory /home/user and all files * & .*
-#    and remove README.
+# setup script does this
+# 0. run dpkg-reconfigure for xfree86-common and xserver-common.
+#    This catches mistakes.
+# 1. dpkg-reconfigure for xfonts-base
+# 2. make permissions correct for directory /home/user and all files * & .*.
+# 3. run swim --initdb .. this is done by make-debian-x11.
+# 4. run /etc/cron.daily/find
 # ...................................................................
-# 2. xnest & flwm are installed with apt-update
-# 3. Clean out sources.list, /var/cache/archives /var/lib/apt/lists,
-#    /etc/network/interface should be commented in again.
-# 4. run swim --initdb
-# 4.5.  remove linux uml_*
-# 5. run /etc/cron.daily/find
-# 6. run /etc/cron.daily/sysklogd & /etc/cron.daily.weekly/sysklogd
+# debian_x11 sourceforge release preparation
+# 5.  Other packages may be installed with apt-get.
+# 6.  If any of these things were used: Clean out sources.list, 
+#     /var/cache/archives /var/lib/apt/lists, /etc/network/interface 
+#     should be commented in again. 
+# 7.  remove linux uml_* or just leave them. 
+# 8.  run /etc/cron.daily/sysklogd & /etc/cron.daily.weekly/sysklogd
 #     and clean out *.0
-# 7. halt and mount filesystem on loop and remove all .bash_history.
+# 9.  halt and mount filesystem on loop and remove .bash_history if you 
+#     want to.
+# 10. test again.
 # --------------------------------------------------------------------
 
 # Before starting make sure swim and file-rc are present.
@@ -461,7 +465,7 @@ foreach (@alternatives) {
 }
 
 close(DEBIAN);
-print STDERR "All done making your $debian_yard template.\n";
+print STDERR "\nAll finished making your $debian_yard template.\n";
 
 #########################
 # END TEMPLATE CREATION #
