@@ -1,7 +1,12 @@
 #!/usr/bin/perl -w
 
 #    gBootRoot Copyright (C) 2000
-#    Jonathan Rosenbaum - mttrader@access.mountain.net
+#    Project Developer and Coordinator
+#    Jonathan Rosenbaum  <mttrader@access.mountain.net>
+#
+#    Lead Programmer and Developer
+#    Cristian Ionescu-Idbohrn <cii@axis.com>
+#
 #    http://the.netpedia.net/gBootRoot.html
 
 #    This program is free software; you can redistribute it and/or modify
@@ -24,7 +29,7 @@ use strict;
 
 init Gtk;
 
-# Perhaps you are wondering where I learned how to program with Gtk-Perl?
+# Perhaps you are wondering where to learn  how to program with Gtk-Perl?
 # There is an excellent tutorial by Stephen Wilhelm at
 # http://personal.riverusers.com/~swilhelm/perlgtk/.  Please
 # help support his development of this tutorial.  Another good place
@@ -95,6 +100,7 @@ my $true = 1;
 my $ok;
 my $box2;
 my $label;
+my $label_advanced;
 my $separator;
 my $order;
 my $text_window;
@@ -106,10 +112,10 @@ my ($kernel,$root_image,$device,$size);
 my $mtab;
 my ($tmp,$mnt);
 my $norm_root_device;
-
-
-# temporarily for a test
-my $strip = $false;
+my ($hbox_advanced,$ha1,$ha2); 
+my $separator_advanced;
+my $button_count = 0;
+my ($lib_strip_check,$bin_strip_check);
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -271,14 +277,14 @@ button("Device Selection",$entry4,"Device Selection",3,$true);
 
 # Fifth row
 hbox("what");
-my $adj = new Gtk::Adjustment( 1440.0, 0.0, 360000000.0, 282.0, 360.0, 0.0 );
+my $adj = new Gtk::Adjustment( 1722.0, 0.0, 360000000.0, 282.0, 360.0, 0.0 );
 my $spinner = new Gtk::SpinButton( $adj, 0, 0 );
 $tooltips->set_tip( $spinner, "Choose the Device Size.", "" );
 $spinner->set_wrap( $true );
 $spinner->set_numeric( $true );
 $spinner->set_shadow_type( 'in' );
 $spinner->show();
-$container[4] = 1440;
+$container[4] = 1722; # A better value - a rtbt trick.
 $adj->signal_connect( "value_changed", sub {
     $container[4] = $spinner->get_value_as_int();});
 $box2->pack_start( $spinner, $true, $true, 0 );
@@ -306,61 +312,27 @@ $entry5->set_usize(15,20);
 $box2->pack_start( $entry5, $true, $true, 0 );
 $entry5->show();
 
-# The FUTURE ADVANCED SECTION 
-##################################
+# The ADVANCED SECTION 
+######################
 # Separator
 $separator = new Gtk::HSeparator();
 $box1->pack_start( $separator, $false, $true, 0 );
 $separator->show();
 
 # This is cool how this works.
-my $box10 = new Gtk::VBox($false,0);
-$box1->add($box10);
-$box10->show();
-
-my $box_special; my $box_special2;
-my $button_count = 0;
-
-hbox_special();
-
-# The button
-my $button_special = new Gtk::Button("Advanced Section");
-$tooltips->set_tip( $button_special, "This is where all the advanced stuff is found.", "" );
-$button_special->signal_connect("clicked", sub { 
-                    if ($button_count == 0) {  
-                       $box10->set_usize(321,300);
-                       hbox_special();
-    # test stuff
-    my $label2 = new Gtk::Label( "Nothing here yet." );
-    $label2->set_justify( "fill" );
-    $box_special->pack_start( $label2, $false, $false, 5 );
-    $label2->show();
-    $label2 = new Gtk::Label( "Nothing here yet." );
-    $label2->set_justify( "fill" );
-    $box_special->pack_start( $label2, $false, $false, 5 );
-    $label2->show();
-
-                       $button_count++;
-                    }
-                    else {
-                        $box10->set_usize(321,0);
-                        destroy $box_special;
-                        $button_count--;
-                    }
-                                             } );
-$box_special->pack_start( $button_special, $true, $true, 0 );
-$button_special->show();
+my $vbox_advanced = new Gtk::VBox($false,0);
+$box1->add($vbox_advanced);
+$vbox_advanced->show();
 
 
-sub hbox_special {
-    $box_special = new Gtk::HBox(1,1 );
-    $box_special->border_width( 2 ); # was 10
-    $box_special->set_usize(321, 20);
-    $box10->pack_start( $box_special, 0, 0, 0 );
-    show $box_special;
-}
-
-#######################################
+# The Advanced Section button
+hbox_advanced();
+my $button_advanced = new Gtk::Button("Advanced Section");
+$tooltips->set_tip( $button_advanced, "This is where all the advanced stuff is found.", "" );
+$button_advanced->signal_connect("clicked",\&advanced_section );
+$hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
+$button_advanced->show();
+######################
 
 # Separator
 $separator = new Gtk::HSeparator();
@@ -435,6 +407,73 @@ sub signal {
    Gtk->exit(0);
 }
 
+sub hbox_advanced {
+    $hbox_advanced = new Gtk::HBox(1,1 );
+    $hbox_advanced->border_width( 2 ); # was 10
+    $hbox_advanced->set_usize(321, 20);
+    $vbox_advanced->pack_start( $hbox_advanced, $false, $false, 0 );
+    show $hbox_advanced;
+}
+
+sub advanced_section {
+
+    if ($button_count == 0) {  
+       #$vbox_advanced->set_usize(321,300);
+       
+       # Will use a table once things start to take shape. 
+
+       # The strip section
+       hbox_advanced(); $ha1 = $hbox_advanced;
+       label_advanced("Stripping:");
+       $lib_strip_check = new Gtk::CheckButton("Libraries");
+       $lib_strip_check->set_active($true);
+       $tooltips->set_tip( $lib_strip_check, 
+                           "This is generally a good idea. [--strip-debug]", "" );
+       $hbox_advanced->pack_start( $lib_strip_check, $false, $false, 0);
+       show $lib_strip_check;
+       $bin_strip_check = new Gtk::CheckButton("Binaries");
+       $bin_strip_check->set_active($true);
+       $tooltips->set_tip( $bin_strip_check, 
+                           "This is generally a good idea. [--strip-all]", "" );
+       $hbox_advanced->pack_start( $bin_strip_check, $true, $true, 0);
+       show $bin_strip_check;
+
+       # Verbosity section
+       separator_advanced();
+       hbox_advanced(); $ha2 = $hbox_advanced;
+       label_advanced("Verbosity Level: \"Coming Soon!\"");
+
+       $button_count++;
+    }
+    else {
+       #$vbox_advanced->set_usize(321,0);
+       destroy $ha1;
+       destroy $separator_advanced;
+       destroy $ha2;
+       $button_count--;
+    }
+
+} # end sub advanced_section
+
+
+sub separator_advanced {
+
+$separator_advanced = new Gtk::HSeparator();
+$vbox_advanced->pack_start( $separator_advanced, $false, $true, 0 );
+$separator_advanced->show();
+
+}
+
+sub label_advanced {
+
+    my($text) = @_;
+
+    $label_advanced = new Gtk::Label( $text );
+    $label_advanced->set_justify( "fill" );
+    $hbox_advanced->pack_start( $label_advanced, $true, $true, 0 );
+    $label_advanced->show();
+
+}
 
 # Cristian's idea - bug 111579 enh for brlilo
 sub norm_root_device {
@@ -1108,31 +1147,30 @@ sub initrd_size {
 
   # lib sizes
   # for testing purposes change $lib_place value
-  my $lib_place = "/lib";
   open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd
    while (<L>) {
       $lib = (split(/=>/,$_))[0];
       $lib =~ s/\s+//;
       $lib = basename($lib);
       $lib =~ s/\s+$//;
-      open (SL,"ls -l $lib_place/$lib|") or die "humm: $!\n";
+      open (SL,"ls -l /lib/$lib|") or die "humm: $!\n";
         while (<SL>) {
           # symbolic link
-          if (-l "$lib_place/$lib") {
+          if (-l "/lib/$lib") {
             $what = (split(/\s+/,$_))[10];
             $initrd_size = $initrd_size + 1;
-            $initrd_size = $initrd_size + ((stat("$lib_place/$what"))[12]/2);
+            $initrd_size = $initrd_size + ((stat("/lib/$what"))[12]/2);
           }
           # no symbolic link
           else {
               # This is a test right now
-	      if ($strip == 1) {
-		  system "objcopy $lib_place/$lib /tmp/$lib";
-                  $initrd_size = $initrd_size + ((stat("/tmp/$lib"))[12]/2);
-              }
-              else {
-                   $initrd_size = $initrd_size + ((stat("$lib_place/$lib"))[12]/2);
-	      }
+	      #if ($strip == 1) {
+	      #	  system "objcopy /lib/$lib /tmp/$lib";
+              #    $initrd_size = $initrd_size + ((stat("/tmp/$lib"))[12]/2);
+              #}
+              #else {
+                   $initrd_size = $initrd_size + ((stat("/lib/$lib"))[12]/2);
+	      #}
           }
         }
    }
