@@ -128,7 +128,9 @@ my @entry_advanced;
 my $entry_advanced;
 my ($ea1,$ea2,$ea3);
 my $table_advanced;
+my $table_advanced_root;
 my $button_count = 0;
+my $button_count_root = 0;
 my $obj_count = 0;
 my ($lib_strip_check,$bin_strip_check);
 
@@ -357,13 +359,34 @@ my $vbox_advanced = new Gtk::VBox($false,0);
 $box1->add($vbox_advanced);
 $vbox_advanced->show();
 
-# The Advanced Section button
-hbox_advanced();
+# The Advanced Boot Section button
+hbox_advanced($vbox_advanced);
 my $button_advanced = new Gtk::Button("Advanced Boot Section");
 $tooltips->set_tip( $button_advanced, "Change settings for the bootdisk.", "" );
-$button_advanced->signal_connect("clicked",\&advanced_section );
+$button_advanced->signal_connect("clicked",\&advanced_boot_section );
 $hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
 $button_advanced->show();
+###########################
+
+# The ADVANCED ROOT SECTION 
+###########################
+# Separator
+$separator = new Gtk::HSeparator();
+$vbox_advanced->pack_start( $separator, $false, $true, 0 );
+$separator->show();
+
+my $vbox_advanced_root = new Gtk::VBox($false,0);
+$box1->add($vbox_advanced_root);
+$vbox_advanced_root->show();
+
+hbox_advanced($vbox_advanced_root);
+$button_advanced = new Gtk::Button("Advanced Root Section");
+$tooltips->set_tip( $button_advanced, "Change settings for the bootdisk.", "" );
+$button_advanced->signal_connect("clicked",\&advanced_root_section );
+$hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
+$button_advanced->show();
+
+
 ###########################
 
 # Separator
@@ -442,7 +465,7 @@ sub hbox_advanced {
     $hbox_advanced = new Gtk::HBox(1,1 );
     $hbox_advanced->border_width( 2 ); # was 10
     $hbox_advanced->set_usize(321, 20);
-    $vbox_advanced->pack_start( $hbox_advanced, $false, $false, 0 );
+    $_[0]->pack_start( $hbox_advanced, $false, $false, 0 );
     show $hbox_advanced;
 }
 
@@ -476,7 +499,7 @@ sub objcopy_right_click_advanced {
 }
 
 
-sub advanced_section {
+sub advanced_boot_section {
 
     if ($button_count == 0) {  
        #$vbox_advanced->set_usize(321,300);
@@ -488,7 +511,7 @@ sub advanced_section {
        $table_advanced->show();
        
        # lib_strip_check
-       label_advanced("Stripping:",0,1,0,1);
+       label_advanced("Stripping:",0,1,0,1,$table_advanced);
        !defined $lib_strip_check ? ($boolean = 1) 
          : ($boolean = $lib_strip_check->get_active());
        $lib_strip_check = new Gtk::CheckButton("Libraries");
@@ -519,8 +542,8 @@ sub advanced_section {
        show $bin_strip_check;
 
        # Development Drive
-       label_advanced("Devel Device:",0,1,1,2);
-       $ea1 = entry_advanced(1,2,1,2,0);
+       label_advanced("Devel Device:",0,1,1,2,$table_advanced);
+       $ea1 = entry_advanced(1,2,1,2,0,$table_advanced);
        $tooltips->set_tip( $ea1, "If the device used for development" .
                                  " is different than the actual boot" . 
                                  " device, use this field" .
@@ -534,8 +557,8 @@ sub advanced_section {
        $ea1->set_text($container[3]) if defined $container[3];
 
        # Optional Device(s)
-       label_advanced("Opt. Device(s)",0,1,2,3);
-       $ea2 = entry_advanced(1,2,2,3,1);
+       label_advanced("Opt. Device(s)",0,1,2,3,$table_advanced);
+       $ea2 = entry_advanced(1,2,2,3,1,$table_advanced);
        $tooltips->set_tip( $ea2, "Add devices to the boot disk which are" .
                                  " necessary for the kernel to function" .
                                  " properly.  Put a space between each" .
@@ -545,8 +568,8 @@ sub advanced_section {
        $ea2->set_text($entry_advanced[1]) if defined $entry_advanced[1];
 
        # Append Options
-       label_advanced("append =",0,1,3,4);
-       $ea3 = entry_advanced(1,3,3,4,2);
+       label_advanced("append =",0,1,3,4,$table_advanced);
+       $ea3 = entry_advanced(1,3,3,4,2,$table_advanced);
        my $append; (undef,undef,$append) = gdkbirdaao();
        $tooltips->set_tip( $ea3, "Add append options to brlilo.conf.", "");
        $ea3->set_text($append) if defined $append;
@@ -560,9 +583,30 @@ sub advanced_section {
        $button_count--;
     }
 
-} # end sub advanced_section
+} # end sub advanced_boot_section
 
-print @entry_advanced;
+
+sub advanced_root_section {
+
+    if ($button_count_root == 0) {  
+	my $boolean;
+
+       # The strip section
+       $table_advanced_root = new Gtk::Table( 4, 3, $true );
+       $vbox_advanced_root->pack_start( $table_advanced_root, $true, $true, 0 );
+       $table_advanced_root->show();
+       label_advanced("Hi there!",0,1,1,2,$table_advanced_root);
+       $button_count_root++;
+
+    }
+    else {
+       destroy $table_advanced_root;
+       $button_count_root--;
+    }
+
+
+} # end sub advanced_root_section
+
 
 sub entry_advanced {
 
@@ -572,7 +616,7 @@ sub entry_advanced {
     $entry_advanced->signal_connect( "changed", sub {
     $entry_advanced[$numa] = $entry_advanced->get_text();} );
     $entry_advanced->set_usize(100,20);
-    $table_advanced->attach($entry_advanced,$_[0],$_[1],$_[2],$_[3], 
+    $_[5]->attach($entry_advanced,$_[0],$_[1],$_[2],$_[3], 
                             ['shrink','fill','expand'],['fill','shrink'],0,0);
     show $entry_advanced;
     return $entry_advanced;
@@ -582,7 +626,7 @@ sub entry_advanced {
 sub separator_advanced {
 
     $separator_advanced = new Gtk::HSeparator();
-    $vbox_advanced->pack_start( $separator_advanced, $false, $true, 0 );
+    $_[0]->pack_start( $separator_advanced, $false, $true, 0 );
     $separator_advanced->show();
 
 }
@@ -593,7 +637,7 @@ sub label_advanced {
 
     $label_advanced = new Gtk::Label( $text );
     $label_advanced->set_justify( "fill" );
-    $table_advanced->attach($label_advanced,$_[1],$_[2],$_[3],$_[4], ['expand'],['fill','shrink'],0,0);
+    $_[5]->attach($label_advanced,$_[1],$_[2],$_[3],$_[4], ['expand'],['fill','shrink'],0,0);
     $label_advanced->show();
 
 }
