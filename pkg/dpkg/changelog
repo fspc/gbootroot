@@ -1,3 +1,55 @@
+gbootroot (1.3.1-1) unstable; urgency=low
+
+  * Added a complete interface to the mconsole in the UML Box.  Multiple
+    options  can be entered at one time.  Options include: switch so
+    that the umid can be  changed to control a different Linux virtual
+    machine, sysrq as in  Documentation/sysrq.txt, config and remove for
+    devices (ubd?,eth?), reboot  and halt, version to find the version
+    of the running uml kernel, and help.
+  * Added both a Reboot and Halt button to the UML Box.  Both of these
+    buttons  have an interface to mconsole, and provide clean control of
+    rebooting or  halting a Linux virtual machine.  When they fail,
+    Abort does all the clean-up, but this should be used as a last
+    resort.  Both of these buttons initially  parse the Options entry
+    for the first instance of umid
+  * Added a new stage button in the Yard Box called Copy.  Create is now
+    Copy, and the uml_exclusively and genext2fs behavior are handled by
+    Create, this is much nicer because a new filsystem type can be
+    created without having to wait for everything to be copied again to
+    the sources directory.
+  * Updated the documentation and graphics to reflect the new changes,
+    and provide a new exercise.
+  * If the sources created from the template had a symlink in them from
+    a previous creation, you couldn't just press create again without
+    symlink() complaining  (for instance, for genext2f and the new
+    uml_exclusively).  This has been fixed.
+  * Compiled 2.4.16-2um linux and modules to specification for
+    root_fs_helper. Makefile properly edited to copy over the config
+    used.  Ext2, cramfs, minix, reiserfs, and romfs are built-in to the
+    kernel.
+  * Got rid of the complete lock-up when large files are compressed,
+    ofcourse, users won't want to try to compress more than one format
+    at the same time,  because the logic will get skewed.  In the future
+    may make this OO.  Added  some verbosity to tell when the process
+    has begun and finished.
+  * Established logic for Filesystem Box based on ownership.  Defaults
+    need to be different dependending on the user.  Normal users
+    probably never will want to preserve permissions, but they may want
+    to toggle off UML Exclusively to create different filesystem types
+    when <= 8192 fs_size. Root users may want to turn off Preserve
+    Permissions to create a root only filesystem, and the may want to
+    toggle between creating root filesytems via loop devices or UML to
+    allow different filesystem types.
+  * Added UML Exclusively and Preserve Permissions check boxes to the
+    Filesystem Box.  Esc closes, changed table size, and layout,
+    responds to return, and submit button defaults.
+  * Put Jeff Dikes UML.pm in BootRoot, and changed it to BootRoot::UML,
+    added one change to allow no password.
+  * The auto-magic test for uClibc was only testing for busybox, this
+    has been fixed.
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Mon, 24 Dec 2001 14:21:49 -0500
+
 gbootroot (1.3.0-1) unstable; urgency=low
 
   * Added a README for users installing from the source package.
