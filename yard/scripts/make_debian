@@ -272,11 +272,11 @@ while (<CHECK>) {
 close (CHECK);
 
 if (@rpc) {
-    print "There are the required packages which were specified:\n\n";
+    print STDERR "These are the required packages which were specified:\n\n";
     $, = " ";
-    print @required_packages, "\n\n";
-    print "This is what wasn't installed on your system:\n\n";
-    print @rpc , "\n\n";
+    print STDERR @required_packages, "\n\n";
+    print STDERR "This is what wasn't installed on your system:\n\n";
+    print STDERR @rpc , "\n\n";
     $, = "";
 }
 
@@ -293,11 +293,11 @@ while (<CHECK>) {
 close (CHECK);
 
 if (@epc) {
-    print "There are the extra packages which were specified:\n\n";
+    print STDERR "These are the extra packages which were specified:\n\n";
     $, = " ";
-    print @extra_packages, "\n\n";
-    print "This is what wasn't installed on your system:\n\n";
-    print @epc , "\n\n";
+    print STDERR @extra_packages, "\n\n";
+    print STDERR "This is what wasn't installed on your system:\n\n";
+    print STDERR @epc , "\n\n";
     $, = "";
 }
 
@@ -322,7 +322,7 @@ while (<STDIN>) {
 }
 
 print "\nThe default is to remove everything in /usr/share/zoneinfo\n" .
-    "except for your local settings found in /etc/locatime? [yes or no]: ";
+    "except for your local settings found in /etc/localtime? [yes or no]: ";
 my $localtime_reply = "nothing";
 while (<STDIN>) {
     $localtime_reply = $_;
@@ -406,7 +406,7 @@ foreach (@alternatives) {
 }
 
 close(DEBIAN);
-print "All done making your $debian_yard template.\n";
+print  STDERR "All done making your $debian_yard template.\n";
 
 #########################
 # END TEMPLATE CREATION #
