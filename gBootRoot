@@ -142,9 +142,9 @@ my $button_count = 0;
 my $button_count_root = 0;
 my $obj_count = 0;
 my ($lib_strip_check,$bin_strip_check);
-my ($lib_strip_check_root,$bin_strip_check_root);
+my ($lib_strip_check_root,$bin_strip_check_root,$module_strip_check_root);
 my ($bz2_toggle,$gz_toggle);
-my ($bz2_toggle_root,$gz_toggle_root);
+my ($bz2_toggle_root,$gz_toggle_root,$compression_off);
 my ($combo);
 my ($adj2,$adj3);
 my @strings;
@@ -689,6 +689,7 @@ sub advanced_root_section {
                                ['expand'],['fill','shrink'],0,0);
        show $ear2_save;
 
+
        #_______________________________________ 
        # Filesystem Size
        # $::fs_device
@@ -714,29 +715,63 @@ sub advanced_root_section {
        #_______________________________________ 
        # Compression
        # gBootRoot methods
-       label_advanced("Compression:",0,1,4,5,$table_advanced_root);
+
+
+       my $hbox_between = new Gtk::HBox(1,1);
+       $table_advanced_root->attach($hbox_between,0,3,4,5,
+                              ['fill'],
+			      ['fill','shrink'],15,0 );
+       $hbox_between->show;
+
+       # label
+       my $label_compression = new Gtk::Label( "Compression:" );
+       $label_compression->set_justify( "right" );
+       $hbox_between->pack_start( $label_compression, $false, $false, 0 );
+       $label_compression->show();
+
+       # gz
        $rbutton = new Gtk::RadioButton( "gz" );
        $tooltips->set_tip( $rbutton, 
                            "Choose Compression used on the Filesystem.", "" );
        $gz_toggle_root = $rbutton;
        $rbutton->set_active( $true );
-       $table_advanced_root->attach($rbutton,1,2,4,5, 
-                              ['expand'],['fill','shrink'],0,0);
+       $hbox_between->pack_start( $rbutton, $false, $false, 0 );
        $rbutton->show();
+
+       # bz2
        $rbutton = new Gtk::RadioButton( "bz2", $rbutton );
        $tooltips->set_tip( $rbutton, 
                            "Choose Compression used on the Filesystem.", "" );
        $bz2_toggle_root = $rbutton;
-       $table_advanced_root->attach($rbutton,2,3,4,5, 
-                              ['expand'],['fill','shrink'],0,0);
+       $hbox_between->pack_start( $rbutton, $false, $false, 0 );
        $rbutton->show();
+
+       # compression off
+       $compression_off = new Gtk::CheckButton( "off");
+       $tooltips->set_tip( $compression_off, 
+                           "Turn Compression off.", "" );
+       $hbox_between->pack_start( $compression_off, $false, $false, 0 );
+       $compression_off->show();
 
 
        #_______________________________________ 
        # lib_strip_check
        # $::strip_objfiles 1 - yes 0 - no  altered Yard.pm to take
        # into account adjustable library stripping
-       label_advanced("Stripping:",0,1,5,6,$table_advanced_root);
+
+       my $hbox_between2 = new Gtk::HBox(1,1);
+       $table_advanced_root->attach($hbox_between2,0,3,5,6,
+                              ['fill'],
+			      ['fill','shrink'],15,0 );
+       $hbox_between2->show;
+
+       # label
+       my $label_strip = new Gtk::Label( "Stripping:" );
+       $label_strip->set_justify( "right" );
+       $hbox_between2->pack_start( $label_strip, $false, $false, 0 );
+       $label_strip->show();
+
+       #label_advanced("Stripping:",0,1,5,6,$table_advanced_root);
        !defined $lib_strip_check_root ? ($boolean = 1) 
          : ($boolean = $lib_strip_check_root->get_active());
        $lib_strip_check_root = new Gtk::CheckButton("Libraries");
@@ -748,8 +783,7 @@ sub advanced_root_section {
                            " right mouse button to change from" .
                            " [objcopy --strip-debug] to" . 
                            " [objcopy --strip-all].", "" );
-       $table_advanced_root->attach($lib_strip_check_root,1,2,5,6, 
-                               ['expand'],['fill','shrink'],0,0);
+       $hbox_between2->pack_start( $lib_strip_check_root, $false, $false, 0 );
        show $lib_strip_check_root;
 
        # bin_strip_check
@@ -760,9 +794,20 @@ sub advanced_root_section {
        $tooltips->set_tip( $bin_strip_check_root, 
                            "This is generally a good idea." .
                            " [objcopy --strip-all]", "" );
-       $table_advanced_root->attach($bin_strip_check_root,2,3,5,6, 
-                               ['expand'],['fill','shrink'],0,0);
+       $hbox_between2->pack_start( $bin_strip_check_root, $false, $false, 0 );
        show $bin_strip_check_root;
+
+       # module_strip_check
+       !defined $module_strip_check_root  ? ($boolean = 1) 
+         : ($boolean = $module_strip_check_root->get_active());
+       $module_strip_check_root = new Gtk::CheckButton("Modules");
+       $module_strip_check_root->set_active($boolean);
+       $tooltips->set_tip( $module_strip_check_root, 
+                           "This is generally a good idea." .
+                           " [objcopy --strip-debug]", "" );
+	$hbox_between2->pack_start( $module_strip_check_root, 
+				    $false, $false, 0 );
+       show $module_strip_check_root;
 
        #_______________________________________ 
        # UML Kernel 
@@ -921,7 +966,7 @@ sub Generate {
     }
 
     if ($method eq "yard") {
-	create_text("yard");
+	#create_text("yard");
 	yard();
     }
 
@@ -947,6 +992,10 @@ sub yard {
         return;
     }
     read_contents_file("$template_dir$template");
+    extra_links("$template_dir$template");
+    library_dependencies("$template_dir$template");
+    hard_links();
+    space_check();
 
 } # end sub yard
 
@@ -1933,7 +1982,7 @@ sub initrd {
   #V#print V "Make sure you have loop device capability in your running kernel\n";
   system "dd if=/dev/zero of=$tmp/$initrd bs=1024 count=$size_needed >> $verbosefn 2>&1";
   pb($I,2);
-  # no need to enter y every time
+  # no need to enter y every time .. could use -F
   open(T,"|mke2fs -m0 -i8192 $tmp/$initrd >> $verbosefn 2>&1") or die "Problem here: $!\n";  print T "y\n"; close(T);
   pb($I,3);
   #V#print V "Mounting initrd in tmp\n";
@@ -1972,7 +2021,7 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $verbosefn 2>&1; mount -o loop 
      return if errcp(system "$tool $path $tmp/initrd_mnt/bin >> $verbosefn 2>&1") == 2;
   }
 
-  # Testing init is sufficient for grabbing the correct libraries for the
+  # Testing if init is sufficient for grabbing the correct libraries for the
   # executables immediately above.  This could be modified to test a
   # list of executables.
   #V#print ".. the libs\n";
