@@ -398,6 +398,20 @@ sub file_system {
 			       $uml_expect{uml_exclusively};
 			   ars2($ars);			   
 		       });
+	$uml_exclusively->signal_connect("key_press_event", 
+		       sub {  
+			   if ( $uml_exclusively->get_active() == 1 ) {
+			       $uml_expect{uml_exclusively} = 1;
+			   }
+			   else {
+			       $uml_expect{uml_exclusively} = 0;
+
+			   }
+			   # for Yard.pm
+			   $ars->{uml_exclusively} = 
+			       $uml_expect{uml_exclusively};
+			   ars2($ars);			   
+		       });
 	$table_filesystem->attach($uml_exclusively,0,1,1,2,['expand'],
 				  ['fill','shrink'],0,0);
 	$uml_exclusively->show;       
