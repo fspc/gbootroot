@@ -29,7 +29,7 @@ my $home_yard = "$home/yard";
 my $template_dir = "$home_yard/templates/";
 my $home_yard_replacements = "$home_yard/Replacements";
 my $nodename = `uname -n`; chomp $nodename;
-my $debian_yard = "Debian-X112.yard";
+my $debian_yard = "Debian-X11.yard";
 my $status = "/var/lib/dpkg/status";
 my $info = "/var/lib/dpkg/info";
 my (%alternatives, @alternatives); # for checking for alternatives
@@ -62,10 +62,10 @@ xserver-common xterm xutils zlib1g libgdbmg1 libxaw7 gbootroot);
 # These replacements are unique and not found in CVS:
 # add sources.list to this, too.
 
-#/usr/X11R6/bin/startx <= Replacements/usr/X11R6/bin/startx 
-#/root/README <= Replacements/root/README
+#/usr/X11R6/bin/startx <= Replacements/usr/X11R6/bin/startx-debian-X11 
+#/root/README <= Replacements/root/README-debian-X11
 #/root/make_swapfile <= Replacements/root/make_swapfile
-#/root/umlnet <= Replacements/root/umlnet
+#/root/umlnet <= Replacements/root/umlnet .. won't use.
 #/etc/apt/sources.list  <= Replacements/etc/sources.list .. for adm.
 
 # 0. run dpkg-reconfigure for xfree86-common and xserver-common
@@ -227,7 +227,7 @@ my $stuff = << "STUFF";
 # eth0=ethertap,tap0,HWaddr,192.168.1.5
 /etc/resolv.conf 
 /etc/hosts <= Replacements/etc/hosts
-/root/umlnet <= Replacements/root/umlnet # Example network setup script
+#/root/umlnet <= Replacements/root/umlnet # Example network setup script
 /etc/networks <= Replacements/etc/networks
 /etc/network/if-down.d      # empty
 /etc/network/if-post-down.d # ""
@@ -241,7 +241,6 @@ my $stuff = << "STUFF";
 /usr/X11R6/bin/xsetroot
 /usr/X11R6/bin/startx <= Replacements/usr/X11R6/bin/startx-debian-X11 
 /root/README <= Replacements/root/README-debian-X11
-/root/make_swapfile <= Replacements/root/make_swapfile
 /usr/bin/X11 -> ../X11R6/bin
 /usr/include/X11 -> ../X11R6/include/X11 
 /usr/lib/X11 -> ../X11R6/lib/X11
@@ -251,6 +250,11 @@ my $stuff = << "STUFF";
 /etc/X11/Xwrapper.config
 /etc/X11/xkb/xkbcomp -> /usr/X11R6/bin/xkbcomp
 /usr/X11R6/bin/xkbcomp
+
+# administrative stuff
+/root/make_swapfile <= Replacements/root/make_swapfile
+/root/setup <= Replacements/root/setup-debian-X11
+/root/README <= Replacements/root/README-debian-X11
 
 # Devices - optional stuff which can be picked up by devfsd.
 /dev/MAKEDEV # a link
@@ -583,6 +587,10 @@ foreach my $rp (@required_packages) {
     if (-f "$info/$rp.config") {
 	push(@info,"$info/$rp.config\n");        
     }
+    if (-f "$info/$rp.templates") {
+	push(@info,"$info/$rp.templates\n");        
+    }
+
 }
 close(DIVERT);
 
