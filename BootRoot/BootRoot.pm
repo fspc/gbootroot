@@ -723,10 +723,44 @@ $window->show();
 }
 
 # Here we put the logic if the program is going to be run from the commandline.
-# The logic is linear.
+# The logic is linear and the only feature planned to be included from the
+# commandline is root_fs prototyping via the yard method.
+#
+#  here we avoid Generate() -> yard() -> yard_box()  to avoid the GUI 
 else {
 
+#     # @entry_advanced
+#  UD or Default   4 = Root Filename  
+#  UD or Default   5 = UML Kernel
+#  UD or Default   6 = Method   -> my $method = $entry_advanced[6];         
+#  UD              7 = Template
+#  UD or Default   $filesystem_size;
+#  UD or Default   fs_type & uml_exclusively & preserve_ownership
 
+#    ?# 11 = Kernel Modules  .. from the Boot Method
+#  UD or Default  12 = Kernel Version  .. from the Boot Method ($RELASE)
+ 	
+#  Default           $ars->{tmp}            = $tmp;
+#  Default           $ars->{mnt}            = $mnt;
+#  Default           $ars->{template_dir}   = $template_dir; #static right now.
+#                    ars($ars);
+#  UD or Default    my $template = $ars->{template};
+#    my $root_filename = $ars->{filename};
+
+#   DON'T forget variables for Filesystem Box.  fs_type & uml_exclusively &
+#   preserve_ownership
+
+#   Commands will either be genext2fs -z -r0 or helper_fs .. root is allowable
+#   like normal
+
+#   For package making:	
+#   Will always be genxt2fs (made first)  for making the first helper fs .. 
+#   then this helper fs will be used to make the one with cramfs .. although 
+#   this could have been done with cramfs itself .. this avoids root automation
+#   and is a cool demonstration and testing mechanism.
+
+
+}  # end if $::commandline
 
 } # end start
 
