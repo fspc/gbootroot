@@ -525,7 +525,10 @@ if (!-e "$home_uml_kernel/.options") {
 home_builder($template_dir);
 if ( -d $global_yard_templates ) {
     opendir(DIR,$global_yard_templates) if -d $template_dir;
-    my @templates = grep { m,\.yard$, } readdir(DIR); 
+    # I decided this may be too restrictive, besides, everything
+    # is kept in its own directory.
+    #my @templates = grep { m,\.yard$, } readdir(DIR); 
+    my @templates = grep { m,^\w+, } readdir(DIR); 
     closedir(DIR);
     foreach ( @templates ) {
 	if (!-e "$template_dir/$_" && !-l "$template_dir/$_") {
@@ -1310,7 +1313,8 @@ sub advanced_root_section {
 			       $ear4->set_text("yard"); 
 			       $entry_advanced[6] = $ear4->get_text();
 			       opendir(DIR,$template_dir) if -d $template_dir;
-			       @strings = grep { m,\.yard$, } readdir(DIR); 
+			       #@strings = grep { m,\.yard$, } readdir(DIR); 
+			       @strings = grep { m,^\w+, } readdir(DIR); 
 			       closedir(DIR);
 	                 $main::combo->set_popdown_strings( @strings ) if @strings; 
 			        } );
@@ -1318,7 +1322,8 @@ sub advanced_root_section {
        $ear4->set_text($entry_advanced[6]) if $entry_advanced[6];
        if ($yard) {
 	   opendir(DIR,$template_dir) if -d $template_dir; 
-	   @strings = grep { m,\.yard$, } readdir(DIR) if $yard;
+	   #@strings = grep { m,\.yard$, } readdir(DIR) if $yard;
+	   @strings = grep { m,^\w+, } readdir(DIR) if $yard;
 	   closedir(DIR)
        }
 
