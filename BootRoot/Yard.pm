@@ -1526,10 +1526,21 @@ sub find_file_in_path {
     ## if (!@pathlist) {
       @pathlist = split(':', $ENV{'PATH'});
       if (defined(@::additional_dirs)) {
-	unshift(@pathlist, @::additional_dirs);
+	  
+	  foreach my $alt_path ( @main::additional_dirs ) {
+
+	      my $add_path = grep(/$alt_path/,$ENV{'PATH'});
+	      if ($add_path == 0) {
+		  unshift(@pathlist, $alt_path );
+		  $ENV{'PATH'} = "$alt_path:" . $ENV{'PATH'};
+	      }
+	      
+	  }
+
+	## unshift(@pathlist, @::additional_dirs);
 	###  Changed this to work as documented
-	$ENV{"PATH"} = join(":", @::additional_dirs) .
-	    ":$ENV{'PATH'}";
+	## $ENV{"PATH"} = join(":", @::additional_dirs) . ":$ENV{'PATH'}";
+
       }
       ##info(1, "Using search path:\n", join(" ", @pathlist), "\n");
     ## }
@@ -1592,11 +1603,11 @@ sub make_link_relative {
     #  The abs_file guaranteed not to have any funny
     #  stuff like "/./" or "/foo/../../bar" already in it.
 
-      ## This is an experimental solution to an annoying tendency
+      ## This is a solution to an annoying tendency
       ## for this to happen ../../../../ for files/dirs .. basically
       ## this occurs when called from include_file() called from
       ## extra_links() .. the reason for relativing links like this
-      ## doesn't make sense.
+      ## doesn't make sense. --freesource
       if (!-f $link && !-d $link) {
 	  $newlink = ("../" x path_length($abs_file)) . $1;
       }
