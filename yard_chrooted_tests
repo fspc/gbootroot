@@ -102,7 +102,7 @@ sub check_fstab {
       chomp;
       next if /^\#/ or /^\s*$/;
 
-      my($dev, $mp, $type, $opts) = split;
+      my($dev, $mp, $type, $opts) = split m,[\s\t]+,;
       next if $mp eq 'none' or $type eq 'swap';
       next if $dev eq 'none';
 
@@ -123,22 +123,29 @@ sub check_fstab {
 	  warning("\t($.):  You probably should include \"noauto\" option\n",
 	  "\tin the fstab entry of a hard disk.  When the rescue floppy\n",
 	  "\tboots, the \"mount -a\" will try to mount $dev\n");
-
-      } elsif ($dev eq $::floppy and $type ne 'ext2' and $type ne 'auto') {
-	  warning("\t($.): You've declared your floppy drive $::floppy",
-	       " to hold\n",
-	       "\ta $type filesystem, which is not ext2.  The rescue floppy\n",
-	       "\tis ext2, which may confuse 'mount -a' during boot.\n");
-
-      } elsif ($type eq 'proc') {
+      } 
+      elsif ($type eq 'proc') {
 	  $proc_seen = 1;
 
       }
+
   }
+      
   close(FSTAB);
   warning("\tNo /proc filesystem defined.\n") unless $proc_seen;
   print "Done with $FSTAB\n";
 }
+
+
+      # This is unecessary, besides lot of different types of filesystem
+      # types may be used.
+##      elsif ($dev eq $::floppy and $type ne 'ext2' and $type ne 'auto') {
+##	  warning("\t($.): You've declared your floppy drive $::floppy",
+##	       " to hold\n",
+##	       "\ta $type filesystem, which is not ext2.  The rescue floppy\n",
+##	       "\tis ext2, which may confuse 'mount -a' during boot.\n");
+##      } 
+
 
 
 sub check_inittab {
