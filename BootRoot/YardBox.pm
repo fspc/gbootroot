@@ -45,7 +45,6 @@ my $search_window;
 my $Shortcuts;
 my @entry;
 my $file_dialog;
-my $blue; # for search
 
 #my $filesystem_type = "ext2";
 #my $inode_size = 8192;
@@ -962,8 +961,6 @@ sub yard_box {
        #_______________________________________ 
        # Create the GtkText widget
        $text = new Gtk::Text( undef, undef );
-       ##Gtk::Text->signal_connect_after("key-press-event" => \&Gtk::false);
-       $blue  = Gtk::Gdk::Color->parse_color("blue");
        $text->set_editable($true);
        $text->signal_connect("activate", sub { 
 	   my $new_length =  $text->get_length();
@@ -1189,13 +1186,40 @@ sub search {
 	$submit_b->signal_connect( "clicked", sub {
 	    my $keywords = $search1->get_text();
 
-	    # There may be numbers, ofcourse.
-	    if ($keywords && $keywords ne $old_keywords) {
-		undef $offset;
-	    }
-
 	    # rindex
 	    if ($search_backwards->active) {
+
+		if (!$offset) {
+		    $offset = rindex($changed_text_from_template, $keywords);
+		    if ($offset != -1) {
+			my $length = length($keywords);
+			$text->set_position($offset);
+			$text->get_chars($offset, $length);
+			$length = $length + $offset;
+			$text->select_region($offset, $length);
+		#print "$offset && $length\n";
+		    }
+		    else {
+
+		    }
+		}
+		else {
+		    $offset = $offset - 1;
+		    $offset = rindex($changed_text_from_template, $keywords, 
+				    $offset);
+		    if ($offset != -1) {
+			my $length = length($keywords);
+			$text->set_position($offset);
+                        $text->get_chars($offset, $length);
+			$length = $length + $offset;
+			$text->select_region($offset,$length);
+		#print "$offset && $length\n";
+		    }
+		    else {
+
+
+		    }
+		}
 
 	    }
 
@@ -1204,15 +1228,13 @@ sub search {
 		if (!$offset) {
 		    $offset = index($changed_text_from_template, $keywords);
 		    if ($offset != -1) {
-			$text->set_point($offset);
 			my $length = length($keywords);
-			$text->forward_delete( $length ); 
-			$text->insert( undef, $blue, undef, $keywords );
-
-			$length = $length + ($offset - 1);
-			my $stuff = $text->get_chars($offset, $length);
-			print "$offset && $length\n";
- #Gtk::Widget::drag_begin(widget, targets, actions, button, event)
+			$text->set_position($offset);
+			$text->get_chars($offset, $length);
+			$length = $length + $offset;
+			$text->select_region($offset, $length);
+		    }
+		    else {
 
 		    }
 		}
@@ -1221,19 +1243,17 @@ sub search {
 		    $offset = index($changed_text_from_template, $keywords, 
 				    $offset);
 		    if ($offset != -1) {
-			$text->set_point($offset);
 			my $length = length($keywords);
-			$text->forward_delete( $length ); 
-			$text->insert( undef, $blue, undef, $keywords );
+			$text->set_position($offset);
+                        $text->get_chars($offset, $length);
+			$length = $length + $offset;
+			$text->select_region($offset,$length);
+		    }
+		    else {
 
-			$length = $length + ($offset - 1);
-			$text->get_chars($offset, $length);
-			print "$offset && $length\n";
 
 		    }
 		}
-
-		print "$offset\n" if $offset;
 
 	    }
 	    $old_keywords = $keywords;	    
