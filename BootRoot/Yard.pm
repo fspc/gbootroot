@@ -58,7 +58,7 @@ my $verbosity;
 my ($text_insert,$red,$blue); 
 my $logadj;
 my ($device, $mount_point);
-
+my $contents_file_tmp; # Checks for template name change
 
 # This solves an annoying problem with the new Perl-5.6 built in glob,
 # allowing earlier versions of Perl to run.
@@ -139,6 +139,18 @@ sub read_contents_file {
     # It's a good idea to clear the text buffer in the verbosity box
     $text_insert->backward_delete($text_insert->get_length());
 
+    # If the template changes it is time to clear all the values.
+    if ($contents_file_tmp ne $contents_file) {
+	undef %Included; 
+	undef %replaced_by;
+	undef %links_to;
+	undef %is_module;
+	undef %hardlinked;
+	undef %strippable;
+	undef %lib_needed_by;
+	undef @Libs;
+    }
+    $contents_file_tmp = $contents_file;
 
     info(0, "\n\nPASS 1:  Reading $contents_file");
     info(0, "\n");
@@ -240,6 +252,7 @@ sub read_contents_file {
     }
 
       my($file);
+
     FILE: foreach $file (@files) {
 
 	if ($file =~ m|^/|) {	#####  Absolute filename
@@ -873,6 +886,8 @@ sub create_filesystem {
 
 	} elsif (-f $file) {
 	    #####  A normal file.
+	    ## File::Path likes to die when the device runs out of space,
+	    ## something which will have to be worked on.
 	    mkpath(dirname($floppy_file));
 
 	    #####  Maybe a hard link.
