@@ -1079,13 +1079,13 @@ sub saved {
 	    error_window("gBootRoot: ERROR: " . 
 			 "$template_dir$template is not " .
 			 "writable.\nUse [ File->Save As ] or " .
-			 "[Alt-S] with the yard suffix.");		     
+			 "[Alt-A] with the yard suffix.");		     
 	}
 	elsif ( file_mode("$template_dir$template") !~ /w/ ) {
 	    error_window("gBootRoot: ERROR: " . 
 			 "$template_dir$template is not " .
 			 "writable.\nUse [ File->Save As ] or " .
-			 "[Alt-S] with the yard suffix.");		     
+			 "[Alt-A] with the yard suffix.");		     
 	}
 	else { 
 	    # Here's where we get to undef Yard variable and start over at 
