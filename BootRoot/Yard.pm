@@ -52,6 +52,7 @@ use BootRoot::Error;
 
 my (%Included, %replaced_by, %links_to, %is_module, %hardlinked, 
     %strippable, %lib_needed_by, @Libs, %user_defined_link);
+my %pam_repeats;
 my $cf_line = 0;
 my $BLKGETSIZE_ioctl = 4704; 
 my $BLKFLSBUF_ioctl  = 4705; 
@@ -499,7 +500,10 @@ sub extra_links {
 
 	## Here's where some cool stuff happens
 	## This can be turned on/off from the YardBox
-	## NSS
+	## pam service modules are check for dependencies,
+	## mostly this translates into libnsl.
+
+	## NSS  --freesource
 	if ( $file =~ m,/nsswitch.conf, ) {
 
 	    my @nss_libs = find_nss($file);
@@ -511,12 +515,17 @@ sub extra_links {
 
 	## PAM
 	if ( $file =~ m,/pam\.conf|/pam\.d/, ) {
-	    info(0,"PAM $file\n");
+
+	    my @pam_libs = find_pam($file);
+	    foreach ( @pam_libs ) {
+		$Included{$_} = 1;  # adding on the run
+	    }
 
 	}
 
     }
 
+    info(0,"\n");
 
     for my $file (keys %Included) {
 
@@ -625,7 +634,7 @@ sub library_dependencies {
 		    }
 		}
 		if (!defined($lib_needed_by{$abs_lib})) {
-		    info(0, "\t$abs_lib\n");
+		    info(0, "\t$abs_lib\n\n");
 		}
 		push(@{$lib_needed_by{$abs_lib}}, $file);
 	    }
@@ -1270,12 +1279,13 @@ sub include_file {
 	}
 
 	if (!$Included{$abs_target}) {
-	    info(1, "File $file is a symbolic link to $link\n");
+##
+	    info(1, "\nFile $file is a symbolic link to $link\n");
 	    #info(1, "\t(which resolves to $abs_target),\n"
 	    #	if $link ne $abs_target);
 	    info(1, "\twhich was not included in $contents_file.\n");
 	    if (-e $abs_target) {
-		info(1, "\t ==> Adding it to file set.\n\n");
+		info(1, "\t ==> Adding it to file set.\n");
 		$Included{$abs_target} = $file;
 	    } else {
 		info(0, "\t ==> $abs_target does not exist.  Fix this!\n");
@@ -2766,126 +2776,108 @@ BLARD
 #### verbosity.
 
 sub find_pam {
-  my($pam_configured) = 0;	# Have we seen some pam config file yet?
-  info(0, "Checking for PAM\n");
 
-  my($pamd_dir) = "$mount_point/etc/pam.d";
-  my($pam_conf) = "$mount_point/etc/pam.conf";
+    my($pam) = @_;
 
-  if (-e $pam_conf) {
-    info(0, "Checking $pam_conf\n");
-    $pam_configured = 1;
-    open(PAM, $pam_conf)		or error("Can't open pam.conf: $!\n");
-    while (<PAM>) {
-      chomp;
-      next if /^\#/ or /^\s*$/;          # Skip comments and empty lines
-      my($file) = (split)[3];	# Get fourth field
+    my @pam_libs;
+    
 
-      # This adds a more extensive path search --freesource
-      my @file;
-      if ( $file !~ m,^/, ) {
-	  my $base = basename($file);
-	  @file = ("/usr/lib/security/$base", "/lib/security/$base");
-      }
-      else {
-	  @file = ($file);
-      }
-
-      my (%file_check, $ok);
-      foreach my $files ( @file ) {
-	  if (!-e "$mount_point/$files") {
-	      $file_check{$files} = 0;
-	  }
-	  else {
-	      $file_check{$files} = 1;
-	  }
-      }
-
-      for ( values %file_check ) {
-	  $ok = 1 if $_ == 1;
-      }
-      
-      if ( !$ok ) {
-
-	  foreach $file ( @file ) {
-	      warning_test "$pam_conf($.): $_\n",
-	      "\tLibrary $file does not exist on root fs\n";
-	  }
-
-      }
-
-      #  That's all we check for now
+    my ($pam_conf, $pamd_dir);
+    if ( $pam =~ m,/pam\.d/, ) {
+	$pamd_dir = $pam;
     }
-    close(PAM)				or error("Closing PAM: $!");
-    info(0, "Done with $pam_conf\n");
-  }
+    if ( $pam =~ m,/pam\.conf, ) {
+	$pam_conf = $pam;
+    }
 
+    if ( $pam_conf and -e $pam_conf ) {
+	info(0, "\nParsing $pam_conf:\n");
 
-  if (-e $pamd_dir) {
-     info(0, "Checking files in $pamd_dir\n");
-     opendir(PAMD, $pamd_dir) or error("Can't open $pamd_dir: $!");
-     my($file);
-     while (defined($file = readdir(PAMD))) {
-	my($file2) = "$pamd_dir/$file";
-	next unless -f $file2;	# Skip directories, etc.
-	open(PF, $file2) or error("$file2: $!");
-	while (<PF>) {
-	   chomp;
-	   next if /^\#/ or /^\s*$/;           # Skip comments and empty lines
-	   my($file) = (split)[2]; ## Get third field --freesource
-	   $pam_configured = 1;
+	open(PAM, $pam_conf)		or error("Can't open pam.conf: $!\n");
+	while (<PAM>) {
+	    chomp;
+	    next if /^\#/ or /^\s*$/;          # Skip comments and empty lines
+	    my($file) = (split)[3];	# Get fourth field
+	    
+	    # This adds a more extensive path search --freesource
+	    my @file;
+	    if ( $file !~ m,^/, ) {
+		my $base = basename($file);
+		@file = ("/usr/lib/security/$base", "/lib/security/$base");
+	    }
+	    else {
+		@file = ($file);
+	    }
 
-	   # This adds a more extensive path search --freesource
-	   my @file;
-	   if ( $file !~ m,^/, ) {
-	       my $base = basename($file);
-	       @file = ("/usr/lib/security/$base", "/lib/security/$base");
-	   }
-	   else {
-	       @file = ($file);
-	   }
-
-	   my (%file_check, $ok);
-	   foreach my $files ( @file ) {
-	       if (!-e "$mount_point/$files") {
-		   $file_check{$files} = 0;
-	       }
-	       else {
-		   $file_check{$files} = 1;
-	       }
-	   }
-
-	   for ( values %file_check ) {
-	       $ok = 1 if $_ == 1;
-	   }
-      
-	   if ( !$ok ) {
-
-	       foreach $file ( @file ) {
-		   warning_test "$pam_conf($.): $_\n",
-		   "\tLibrary $file does not exist on root fs\n";
-	       }
-
-	   }
-
+	    foreach my $files ( @file ) {
+		if (-e "$files") {
+		    info(1, "[$_]  ='s $files\n");
+		    push(@pam_libs,$files) if !$pam_repeats{$files};
+		    $pam_repeats{$files} = 1;
+		}
+	    }
+	    
 	}
-	close(PF);
-     }
-     closedir(PAMD);
-     info(0, "Done with $pamd_dir\n");
-  }
+	    
+	    #  That's all we check for now
+   
+    close(PAM)				or error("Closing PAM: $!");
+    }
 
-  #  Finally, see whether PAM configuration is needed
-  if (!$pam_configured and -e $login_binary) {
-     my($dependencies) = scalar(`ldd $login_binary`);
-     if (defined($dependencies) and $dependencies =~ /libpam/) {
-	warning_test "Warning: login ($login_binary) needs PAM, but you haven't\n",
-	    "\tconfigured it (in /etc/pam.conf or /etc/pam.d/)\n",
-		"\tYou probably won't be able to login.\n";
-     }
-  }
-  info(0, "Done with PAM\n");
 
+# This will go through all of pam.d files or just particular ones. 
+if ( $pamd_dir && -e $pamd_dir ) {
+	info(0, "\nParsing $pamd_dir:\n");
+	
+	my $dir;
+	if ( !-d $pamd_dir ) {
+	    $dir = dirname($pamd_dir);
+	}
+	else {
+	    $dir = $pamd_dir;
+	}
+
+	opendir(PAMD, $dir) or error("Can't open $dir: $!");
+	my($file);
+	while (defined($file = readdir(PAMD))) {
+	    my($file2) = "$dir/$file";
+	    if ( !-d $pamd_dir ) {
+		next unless $file2 eq $pamd_dir;
+	    }
+	    next unless -f $file2;	# Skip directories, etc.
+	    open(PF, $file2) or error("$file2: $!");
+	    while (<PF>) {
+		chomp;
+		next if /^\#/ or /^\s*$/;   # Skip comments and empty lines
+		my($file) = (split)[2]; ## Get third field --freesource
+		
+		# This adds a more extensive path search --freesource
+		my @file;
+		if ( $file !~ m,^/, ) {
+		    my $base = basename($file);
+		    @file = ("/usr/lib/security/$base", "/lib/security/$base");
+		}
+		else {
+		    @file = ($file);
+		}
+
+		foreach my $files ( @file ) {
+		    if (-e "$files") {
+			info(1, "[$_]  ='s $files\n");
+			push(@pam_libs,$files) if !$pam_repeats{$files};
+			$pam_repeats{$files} = 1;
+		    }
+		}
+		
+	    }
+	    close(PF);
+	}
+	closedir(PAMD);
+
+    }
+
+    return @pam_libs;
+    
 } # end sub find_pam
 
 
@@ -2897,10 +2889,10 @@ sub find_nss {
     my($libc) = yard_glob("$mount_point/lib/libc-*");  ## removed 2
     my($libc_version) = $libc =~ m|/lib/libc-\d+\.(\d)|; ## changed 2 & . 
     if (!defined($libc_version)) {
-	info(0,"Parsing $nss_conf:\n");
+	info(0,"\nParsing $nss_conf:\n");
 	warning_test "Can't determine your libc version\n";
     } else {
-	info(0,"Parsing $nss_conf:\n");
+	info(0,"\nParsing $nss_conf:\n");
 	info(0, "Using NSS libraries from $libc\n");
     }
    
