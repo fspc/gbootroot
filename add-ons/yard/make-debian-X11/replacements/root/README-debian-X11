@@ -1,8 +1,7 @@
 Setting up the root filesystem
 -----------------------------
 
-1. If you desire, edit this file to your preferences.
-2. Run setup in this directory: 
+1. Run setup in this directory: 
 
 . setup
 
