@@ -282,6 +282,13 @@ sub filesystem_size {
 		!$uml_expect{uml_exclusively};
 	    $uml_expect{preserve_permissions} = 1 if 
 		!$uml_expect{preserve_permissions};
+
+	    $ars->{uml_exclusively} =  $uml_expect{uml_exclusively};
+	    ars2($ars);			   
+	    $ars->{preserve_permissions} = $uml_expect{preserve_permissions};
+	    ars2($ars);			   
+
+
 	}
 	else {
 
@@ -309,8 +316,15 @@ sub filesystem_size {
 		}
 	    }
 
+	    $ars->{uml_exclusively} =  $uml_expect{uml_exclusively};
+	    ars2($ars);			   
+
 	    $uml_expect{preserve_permissions} = 0 if
 		!$uml_expect{preserve_permissions};
+
+	    $ars->{preserve_permissions} = $uml_expect{preserve_permissions};
+	    ars2($ars);			   
+
 	}
 
 } # end sub fileystem_size
@@ -379,7 +393,10 @@ sub file_system {
 			       $uml_expect{uml_exclusively} = 1;
 
 			   }
-
+			   # for Yard.pm
+			   $ars->{uml_exclusively} = 
+			       $uml_expect{uml_exclusively};
+			   ars2($ars);			   
 		       });
 	$table_filesystem->attach($uml_exclusively,0,1,1,2,['expand'],
 				  ['fill','shrink'],0,0);
@@ -407,7 +424,9 @@ sub file_system {
 				  $uml_expect{preserve_permissions} = 1;
 	    
 			      }
-	
+			      $ars->{preserve_permissions} = 
+				  $uml_expect{preserve_permissions};
+			      ars2($ars);			   
 			  });
 	$preserve_permissions->show;       
 

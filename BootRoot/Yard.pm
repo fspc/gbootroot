@@ -91,11 +91,13 @@ sub warning {
 sub verbosity { $verbosity = $_[0]; }
 sub text_insert { $text_insert = $_[0]; $red = $_[1]; $blue = $_[2]; }
 sub logadj { $logadj = $_[0]; }
-my ($ars, $kernel, $kernel_version_choice);
+my ($ars, $kernel, $kernel_version_choice, $uml_exclusively, $preserve_permissions);
 sub ars2 { $ars = $_[0]; 
 
 	   $kernel                    = $ars->{kernel};
 	   $kernel_version_choice     = $ars->{kernel_version_choice};
+	   $uml_exclusively           = $ars->{uml_exclusively};
+	   $preserve_permissions      = $ars->{preserve_permissions};
 }
 
 
@@ -159,8 +161,9 @@ sub kernel_version_check {
 sub read_contents_file {
 
 
-    my ( $contents_file, $mnt, $fs_size, $uml_expect ) = @_;
+    my ( $contents_file, $mnt, $fs_size) = @_;
     my $error;
+
 
     # It's a good idea to clear the text buffer in the verbosity box
     $text_insert->backward_delete($text_insert->get_length());
@@ -208,7 +211,7 @@ sub read_contents_file {
 	print DEVICE_TABLE "/dev\t\td\t0755\t-\t-\t-\t-\t-\t-\t-\n";
     }
 
-    if ( $uml_expect->{uml_exclusively} == 1 ) {
+    if ( $uml_exclusively == 1 ) {
 
 	unlink("$mnt/device_table.txt") if -e "$mnt/device_table.txt";   
 	system "rm -rf $mnt/loopback";
@@ -240,7 +243,7 @@ sub read_contents_file {
       # and appending the changes to the device table. --freesource
 
       if ( $fs_type eq "genext2fs" && $fs_size <= 8192 && 
-	   $uml_expect->{uml_exclusively} == 0 ) {
+	   $uml_exclusively == 0 ) {
 
 	  # If a device is found on the same line with a non-device(s)
 	  # the non-device(s) is sent on its merry way.
@@ -1117,7 +1120,7 @@ sub space_check {
 sub create_filesystem {
 
     my ($filename, $fs_size, $mnt, $strip_lib, 
-	$strip_bin, $strip_module, $obj_count, $uml_expect) = @_;
+	$strip_bin, $strip_module, $obj_count) = @_;
 
     $device = "$mnt/$filename";
     $mount_point = "$mnt/loopback";
@@ -1143,7 +1146,7 @@ sub create_filesystem {
     # is doing.  This gives him the opportunity to use the loop device,
     # but his fs will almost definitely not work, because of permissions.
 
-    if ( $> != 0 && $uml_expect->{uml_exclusively} == 0 &&
+    if ( $> != 0 && $uml_exclusively == 0 &&
 	 $fs_type ne "genext2fs" ) {
 
 
@@ -1151,7 +1154,7 @@ sub create_filesystem {
 
 
     # Allow smaller than 8192 if exclusive.
-    if ( $uml_expect->{uml_exclusively} == 1 ) {
+    if ( $uml_exclusively == 1 ) {
 	sync();
 	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
 	sync();
@@ -1171,7 +1174,7 @@ sub create_filesystem {
     # that exists now for non-root users, but if uml_exclusively
     # then the filsystem will be used from the helper machine. --freesource
     if ( $fs_type ne "genext2fs" && 
-	 $uml_expect->{uml_exclusively} == 0 ) {
+	 $uml_exclusively == 0 ) {
 
 	if (-f $device) {
 	    #####  If device is a plain file, it means we're using some 
@@ -1201,7 +1204,7 @@ sub create_filesystem {
 
 
     if ( $fs_type ne "genext2fs" && 
-	 $uml_expect->{uml_exclusively} == 0 ) {
+	 $uml_exclusively == 0 ) {
 
 	return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
 	##### lost+found on a ramdisk is pointless
@@ -1361,7 +1364,7 @@ sub create_filesystem {
     }
 
 
-    if ( $fs_type ne "genext2fs" && $uml_expect->{uml_exclusively} == 0 ) {
+    if ( $fs_type ne "genext2fs" && $uml_exclusively == 0 ) {
 	## Probably will want to umount here
 	return "ERROR" if errum(sys("umount $mount_point")) == 2;
     }
@@ -1378,7 +1381,7 @@ sub create_filesystem {
 
 
 	# Just for testing purposes .. working out the logic in a little bit.
-	if ( $uml_expect->{uml_exclusively} ) {
+	if ( $uml_exclusively ) {
 
 
 	    my $expect_program = "/usr/lib/bootroot/expect_uml";
@@ -1386,7 +1389,7 @@ sub create_filesystem {
 	    my $ubd0 =
 		"ubd0=/usr/lib/bootroot/root_filesystem/root_fs_helper";
 	    my $ubd1 = "ubd1=$device";
-	    my $options = "root=/dev/ubd0";
+	    my $options = "root=/dev/ubd0"; # need to keep this 1
 	    my $filesystem;
 	    if ( $fs_type eq "genext2fs" ) {
 		$filesystem = "mke2fs -m0";
@@ -1398,7 +1401,7 @@ sub create_filesystem {
 	    my $x_count = 1;
 
 	    my $command_line = "$expect_program $ubd0 $ubd1 $options " .
-		"$mount_point $uml_expect->{preserve_permissions} $filesystem";
+		"$mount_point $preserve_permissions $filesystem";
 
 	    info(1,"\n$command_line\n\n");
 
