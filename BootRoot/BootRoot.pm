@@ -1662,8 +1662,8 @@ sub uml_box {
 
         # total size
         label_advanced("total size:",1,2,5,6,$table_uml);
-        my $mtd_adj = Gtk::Adjustment->new( 8192.0, 0.0, 1000000000.0, 128.0, 
-                                    1024.0, 0.0 );
+        my $mtd_adj = Gtk::Adjustment->new( 8192.0, 0.0, 1000000000.0, 1024.0, 
+                                    8192.0, 0.0 );
         $mtd_size = Gtk::SpinButton->new( $mtd_adj, 0, 0 );
         $table_uml->attach($mtd_size,2,3,5,6,
                             ['shrink','fill','expand'],['fill','shrink'],
@@ -1897,6 +1897,9 @@ sub uml_box {
 						  }
 						  else {
 						      $mem_size = 16384 * ceil($mtd_total_size / 16384);
+						      if ( $total_size == $mem_size ) {
+							  $mem_size = $mem_size + 16384;
+						      }
 						  }
 						  
 						  if ( !$mem ) {
@@ -1906,7 +1909,7 @@ sub uml_box {
 						      undef $mem;
 						  }
 
-						  # Order does matter because used by linuxrc
+						  # Order does matter because it's used by linuxrc
 						  $entry_advanced[9] = 
 						      "mtd=mtdram,$fs_type,$total_size,$erasure_size,, " .
 							  "$mem $ramdisk_size $initrd " .
@@ -1921,9 +1924,9 @@ sub uml_box {
 						  info(0,"Making $ubd0 backing file\n");
 						  sys("dd if=/dev/zero of=$ubd0 bs=1k count=1 seek=$total_size");
 
-						  # Order does matter because used by linuxrc
+						  # Order does matter because it's used by linuxrc
 						  $entry_advanced[9] = 
-						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size, " .
+						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size,, " .
 							  "$initrd " .
 							  $entry_advanced[9]; 
 
