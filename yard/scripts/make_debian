@@ -22,8 +22,12 @@
 
 use strict;
 use File::Basename;
+my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
+if ($sbin == 0) {
+    $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
+}
 
-# You will need to get swim at http://www.sourceforge.net/projects/avd
+# You will need to get dswim at http://www.sourceforge.net/projects/avd
 my $home = "$ENV{HOME}/.gbootroot";
 my $home_yard = "$home/yard";
 my $template_dir = "$home_yard/templates/";
@@ -49,12 +53,12 @@ my %inetd; # checks for inetd binaries.
 # swim -q --preinst --postinst packagenames(s).
 
 # EDIT HERE
-my @extra_packages = qw(file-rc swim apt apt-utils debconf nvi sysklogd
+my @extra_packages = qw(file-rc dswim apt apt-utils debconf nvi sysklogd
 klogd netbase tcpd net-tools portmap netkit-ping netkit-inetd ifupdown less 
 perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils);
 # NEXT EDIT TEMPLATE 
 
-# Before starting make sure swim and file-rc are present.
+# Before starting make sure dswim and file-rc are present.
 start_up();
 
 system "swim --search \"Priority: required\" --no";
@@ -95,7 +99,7 @@ my $stuff = << "STUFF";
 # This template creates a complete Debian system which is more streamlined 
 # than the base.tgz used for normal installations.  Once everything is made, 
 # you can use user-mode-linux and apt to tweak the system. 
-# Make-debian generates all the information you need.  You will need swim and 
+# Make-debian generates all the information you need.  You will need dswim and 
 # file-rc installed, and you will have to be running a Debian system to make 
 # this template.  Make_debian ditches info, man, and doc files by default
 # and timezone info not found on the host system, but gives you the choice
@@ -649,11 +653,11 @@ sub start_up {
     # Swim has never been installed before?
     my $dpkg_result = system "dpkg -l swim >/dev/null 2>&1";
     if ($dpkg_result != 0) {
-	die "Swim is required:\n\n" .
+	die "Dswim is required:\n\n" .
             "Add one of these lines to your /etc/apt/sources.list:\n" .
 	    "deb http://prdownloads.sourceforge.net/avd ./  or\n" .
 	    "deb http://download.sourceforge.net/avd ./\n\n" .
-            "Then do `apt-get update` and `apt-get install swim`\n" .
+            "Then do `apt-get update` and `apt-get install dswim`\n" .
             "";
     }
 
@@ -664,11 +668,11 @@ sub start_up {
 	if (/Status:/) {
 	    if (!/\s+installed/) {
 		if (/purge|deinstall/) {
-		    die "Swim needs to be reinstalled:\n\n" .
+		    die "Dswim needs to be reinstalled:\n\n" .
 	       "Add one of these lines to your /etc/apt/sources.list:\n" .
 	       "deb http://prdownloads.sourceforge.net/avd ./  or\n" .
 	       "deb http://download.sourceforge.net/avd ./\n\n" .
-	       "Then do `apt-get update` and `apt-get install swim`\n" .
+	       "Then do `apt-get update` and `apt-get install dswim`\n" .
             "";
 		}
 	    }
@@ -678,11 +682,11 @@ sub start_up {
 
     # Swim is installed but the databases need to be initialized.
     my $swim = "swim -qf /sbin/init|";
-    open(SWIM,$swim) or die "Had trouble using swim: $!\n";
+    open(SWIM,$swim) or die "Had trouble using dswim: $!\n";
 	while (<SWIM>) {
 	    if ($_ eq "file init is not owned by any package\n") {
 		my $db_reply = "nothing";
-		print "It appears that swim has never had its database " .
+		print "It appears that dswim has never had its database " .
 		    "generated.  Would you like me to do this for you? " .
 			"[yes or no]: ";
 		while (<STDIN>) {
@@ -690,7 +694,7 @@ sub start_up {
 		    last if $db_reply eq "yes\n";
 		    last if $db_reply eq "no\n";
 		    if ($db_reply ne "yes\n" || $db_reply  ne "no\n") { 
-		print "It appears that swim has never had its database " .
+		print "It appears that dswim has never had its database " .
 		    "generated.  Would you like me to do this for you? " .
 			"[yes or no]: ";
 		    }
@@ -720,7 +724,7 @@ sub start_up {
 	home_builder("$home_yard_replacements/etc");
     }
 
-    # print "Everything is in order, but it never hurts to rebuild swim " .
+    # print "Everything is in order, but it never hurts to rebuild dxswim " .
     # "with --rebuilddb\n";
 
 

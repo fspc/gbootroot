@@ -54,7 +54,7 @@ my $version  = "1.0";
 # swim -q --preinst --postinst packagenames(s).
 
 # EDIT HERE
-my @extra_packages = qw(file-rc swim apt apt-utils debconf nvi sysklogd
+my @extra_packages = qw(file-rc dswim apt apt-utils debconf nvi sysklogd
 klogd netbase tcpd net-tools portmap netkit-ping netkit-inetd ifupdown less 
 perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils
 binutils bzip2 file libbz2-1.0 libfreetype6 libglib1.2 libgtk-perl 
