@@ -1141,6 +1141,7 @@ sub sync {
 }
 
 ## Need to put error() checking here
+## This is used for ./Replacements  config_dest == /etc/yard
 #  find_file_in_path(file, path)
 #  Finds filename in path.  Path defaults to @pathlist if not provided.
 #  If file is relative, file is resolved relative to config_dest and lib_dest.
@@ -1149,6 +1150,8 @@ sub find_file_in_path {
 
   my($file, @path) = @_;
 
+
+  
   if (!@path) {
     #####  Initialize @pathlist if necessary
     if (!@pathlist) {
@@ -1165,11 +1168,11 @@ sub find_file_in_path {
   }
 
 
-
   if ($file) {
 
     #####  Relative filename, search for it
     my($dir);
+    ## foreach $dir (@path, $config_dest, $lib_dest
     foreach $dir (@path) {
       my($abs_file) = "$dir/$file";
       return $abs_file if -e $abs_file;
