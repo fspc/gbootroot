@@ -40,7 +40,7 @@ my($check,$dep,$space,$create,$test);
 my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
-my ($replacements_window, $filesystem_window);
+my ($replacements_window, $filesystem_window, $path_window);
 my @entry;
 my $file_dialog;
 
@@ -93,7 +93,8 @@ my @menu_items = ( { path        => '/File',
 		   { path        => '/Edit/Settings/' },
 		   { path        => '/Edit/Settings/edit_tearoff',
 		     type        => '<Tearoff>' },
-		   { path        => '/Edit/Settings/Path' },
+		   { path        => '/Edit/Settings/Path', 
+		     callback    => \&path },
 		   { path        => '/Edit/Settings/Stripping/' },
 
 ##		   { path        => '/Edit/Settings/edit_separator',
@@ -292,6 +293,7 @@ sub file_system {
 		    }
 		}
 		$main::makefs = $entry[2];
+		info(1,"Filesystem Command is $entry[2]\n");
 	    }
 	} );
 
@@ -1211,6 +1213,68 @@ sub save_as {
 
 }
 
+sub path {
+
+    if (not defined $path_window) {
+
+	$path_window = Gtk::Window->new("toplevel");
+	$path_window->signal_connect("destroy", \&destroy_window,
+					     \$path_window);
+	$path_window->signal_connect("delete_event", \&destroy_window,
+					     \$path_window);
+	$path_window->set_policy( $true, $true, $false );
+	$path_window->set_title( "Path Box" );
+	$path_window->set_usize( 450, "" );
+	$path_window->border_width(1);    
+
+	my $main_vbox = Gtk::VBox->new( $false, 0 );
+	$path_window->add( $main_vbox );
+	$main_vbox->show();
+
+	my $table_path = Gtk::Table->new( 2, 3, $true );
+	$main_vbox->pack_start( $table_path, $true, $true, 0 );
+	$table_path->show();
+
+	#_______________________________________
+	# Editor and execute options
+	label("Extra Path(s):",0,1,0,1,$table_path);
+	my $path11 = entry(1,3,0,1,3,$table_path);
+	#$fs1->set_text(":");
+
+	$table_path->set_row_spacing( 0, 2);       
+
+	#_______________________________________
+	# Submit button
+	my $submit_b = button(0,1,1,2,"Submit",$table_path);
+	$submit_b->signal_connect( "clicked", sub {
+	    if ($entry[3]) {
+
+		my @pathlist = split(':', $ENV{'PATH'});
+		@main::additional_dirs = split(/:|\s+|,/,$entry[3]);
+		info(1, "Search path is now:\n", 
+		     join(" ", @main::additional_dirs), " ",
+		     join(" ", @pathlist), "\n");
+	    }
+	} );
+
+	#_______________________________________
+	# Close button
+	my $close_b = button(2,3,1,2,"Close",$table_path);
+	$close_b->signal_connect("clicked",
+				 sub {
+				     $path_window->destroy() 
+					 if $path_window;
+				 } );
+
+
+    }
+    if (!visible $path_window) {
+	$path_window->show();
+    } else {
+       $path_window->destroy;
+    }
+
+}
 
 sub Replacements {
     
