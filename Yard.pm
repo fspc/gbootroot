@@ -34,7 +34,8 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys 
-              text_insert logadj error *LOGFILE which_tests);
+              text_insert logadj error *LOGFILE which_tests check_termcap
+	      warning scan_command_file check_getty_type_call);
 
 use strict;
 use File::Basename;
@@ -58,6 +59,7 @@ my $verbosity;
 my ($text_insert,$red,$blue); 
 my $logadj;
 my ($device, $mount_point);
+
 
 # This solves an annoying problem with the new Perl-5.6 built in glob,
 # allowing earlier versions of Perl to run.
@@ -1640,9 +1642,16 @@ sub which_tests {
     check_termcap();
 
     #####  Here are the tests.
-    fork_chroot_and(\&check_fstab)  if $chosen_tests->{30}{test_fstab}   == 1;
-    fork_chroot_and(\&check_inittab)if $chosen_tests->{31}{test_inittab} == 1;
-    fork_chroot_and(\&check_scripts)if $chosen_tests->{32}{test_scripts} == 1;
+#    fork_chroot_and(\&check_fstab)  if $chosen_tests->{30}{test_fstab}   == 1;
+#    fork_chroot_and(\&check_inittab)if $chosen_tests->{31}{test_inittab} == 1;
+#    fork_chroot_and(\&check_scripts)if $chosen_tests->{32}{test_scripts} == 1;
+
+    my $t_fstab    = $chosen_tests->{30}{test_fstab};
+    my $t_inittab  = $chosen_tests->{31}{test_inittab};
+    my $t_scripts  = $chosen_tests->{32}{test_scripts};
+
+
+    sys("yard_chrooted_tests $mount_point $t_fstab $t_inittab $t_scripts"); 
     check_links()                   if $chosen_tests->{33}{test_links}   == 1;
     check_passwd()                  if $chosen_tests->{34}{test_passwd}  == 1;
     check_pam()                     if $chosen_tests->{35}{test_pam}     == 1;
@@ -1658,142 +1667,6 @@ sub which_tests {
     
 } # end sub which_tests
 
-
-#  This takes a procedure call, forks off a subprocess, chroots to
-#  $mount_point and runs the procedure.
-sub fork_chroot_and {
-   my($call) = @_;
-
-   #my($Godot) = fork;
-
-   #unless (defined $Godot) {
- 
-   #   my $error = error("Can't fork: $!"); 
-   #   return "ERROR" if $error && $error eq "ERROR";
-   #}
-
-   #if (!$Godot) {
-      # Child process
-      chdir($mount_point);
-      chroot($mount_point); #####  chroot to the root filesystem
-      &$call;
-      # We don't want the child hanging around on the root filesystem.
-      chdir("/");
-      chroot("/");
-   #} else {
-      # Parent here
-   #   waitpid($Godot, 0);
-   #   chdir("/");
-   #   chroot("/");
-   #}
-}
-
-
-sub check_fstab {
-  my($FSTAB) = "/etc/fstab";
-  my($proc_seen);
-
-  open(FSTAB, "<$FSTAB") or error("$FSTAB: $!");
-  info(0, "\nChecking $FSTAB\n");
-
-  while (<FSTAB>) {
-      chomp;
-      next if /^\#/ or /^\s*$/;
-
-      my($dev, $mp, $type, $opts) = split;
-      next if $mp eq 'none' or $type eq 'swap';
-      next if $dev eq 'none';
-
-      if (!-e $mp) {
-	  info(0, "$FSTAB($.): $_\n\tCreating $mp on root filesystem\n");
-	  mkpath($mp);
-      }
-
-      if ($dev !~ /:/ and !-e $dev) {
-	  warning "$FSTAB($.): $_\n\tDevice $dev does not exist "
-	      . "on root filesystem\n";
-      }
-
-      #####  If you use the file created by create_fstab, these tests
-      #####  are superfluous.
-
-      if ($dev =~ m|^/dev/hd| and $opts !~ /noauto/) {
-	  warning "\t($.):  You probably should include \"noauto\" option\n",
-	  "\tin the fstab entry of a hard disk.  When the rescue floppy\n",
-	  "\tboots, the \"mount -a\" will try to mount $dev\n";
-
-      } elsif ($dev eq $::floppy and $type ne 'ext2' and $type ne 'auto') {
-	  warning "\t($.): You've declared your floppy drive $::floppy",
-	       " to hold\n",
-	       "\ta $type filesystem, which is not ext2.  The rescue floppy\n",
-	       "\tis ext2, which may confuse 'mount -a' during boot.\n";
-
-      } elsif ($type eq 'proc') {
-	  $proc_seen = 1;
-
-      }
-  }
-  close(FSTAB);
-  warning "\tNo /proc filesystem defined.\n" unless $proc_seen;
-  info(0, "Done with $FSTAB\n");
-}
-
-
-sub check_inittab {
-  my($INITTAB) =  "/etc/inittab";
-  info(0, "\nChecking $INITTAB\n");
-
-  if (!open(INITTAB, "<$INITTAB")) {
-     warning "$INITTAB: $!\n";
-     return
-  }
-
-  my($default_rl, $saw_line_for_default_rl);
-
-  while (<INITTAB>) {
-    chomp;
-    my($line) = $_;		# Copy for errors
-    s/\#.*$//;			# Delete comments
-    next if /^\s*$/;		# Skip empty lines
-
-    my($code, $runlevels, $action, $command) = split(':');
-
-    if ($action eq 'initdefault') { #####   The initdefault runlevel
-      $default_rl = $runlevels;
-      next;
-    }
-    if ($runlevels =~ /$default_rl/) {
-      $saw_line_for_default_rl = 1;
-    }
-    if ($command) {
-      my($exec, @args) = split(' ', $command);
-
-      if (!-f $exec) {
-	warning "$INITTAB($.): $line\n",
-		"\t$exec: non-existent or non-executable\n";
-
-      } elsif (!-x $exec) {
-	  info(0, "$INITTAB($.): $line\n");
-	info(0, "\tMaking $exec executable\n");
-	chmod(0777, $exec) or error("chmod failed: $!");
-
-      } else {
-	#####  executable but not binary ==> script
-	scan_command_file($exec, @args) if !-B $exec;
-      }
-
-      if ($exec =~ m|getty|) {	# matches *getty* call
-	check_getty_type_call($exec, @args);
-      }
-    }
-  }
-  close(INITTAB) or error("close(INITTAB): $!");
-
-  if (!$saw_line_for_default_rl) {
-    warning("\tDefault runlevel is $default_rl, but no entry for it.\n");
-  }
-  info(0, "Done with $INITTAB\n");
-}
 
 
 #####  This could be made much more complete, but for typical rc type
