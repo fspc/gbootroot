@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.43 2001/12/08 23:05:20 freesource Exp $</center>
+<center>$Id: index.html,v 1.44 2001/12/11 05:39:57 freesource Exp $</center>
 
 <p>
 
@@ -333,8 +333,8 @@ be changed to --strip-debug in the settings.</p>
 
 <p>
 
-Edit->Setting->Paths allows you to prepend a new search path to your 
-environments $PATH variable.
+Edit->Setting->Paths allows you to prepend a new search path to gbootroot's 
+environment $PATH variable.
 </p>
 
 <p><IMG ALT="" SRC="images/filesystem.jpg" align="center"></p>
@@ -344,7 +344,10 @@ environments $PATH variable.
 Edit->'File System" may alter the type of filesystem used to make the root
 filesystem.&nbsp;&nbsp;Because the filesystem is 
 created on a loop device, some 
-filesystem types may complain or not be created at all.</p>
+filesystem types may complain or not be created at all.&nbsp;&nbsp;If there 
+isn't any loop device support for the host system's kernel use 
+genext2fs.&nbsp;&nbsp;The filesystem type defaults to genext2fs for normal 
+users.</p>
 
 <p><IMG ALT="" SRC="images/replacements.jpg" align="center"></p>
 
@@ -360,7 +363,7 @@ an editor of your choice.
 
 Create->Replacements creates special replacement 
 files.&nbsp;&nbsp; Presently it creates 
-an fstab configuration file as Replacements/etc/fstab.new in 
+a fstab configuration file as Replacements/etc/fstab.new in 
 $HOME/.gbootroot/yard/.</p>
 
 <br>
@@ -417,7 +420,7 @@ Boot Methods are provided to allow root filesystems to run from different types
 of media.&nbsp;&nbsp;
 Historically, developers have written scripts
 which have focused on providing a particular type of root 
-filesystem and boot method.&nbsp;&nbsp;Observation, reveals that all these
+filesystem and boot method.&nbsp;&nbsp;Observation reveals that all these
 approaches share many commonalities.&nbsp;&nbsp;gBootRoot has been 
 designed to embrace
 these similiarities, and to allow developers to create drop-in methods 
