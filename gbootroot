@@ -228,8 +228,8 @@ $main::sudo = "sudo";
 # right libraries are copied over to initrd and the size is checked).
 
 # I need to remember to edit this
-my $version = "1.2.13";
-my $date = "10.08.2001";
+my $version = "1.2.14";
+my $date = "10.24.2001";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
