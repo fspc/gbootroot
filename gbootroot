@@ -57,6 +57,9 @@
 #    GNU/Linux
 #    Linus Torvalds <torvalds@transmeta.com>
 #
+#    E2fsprogs
+#    Theodore Ts'o <tytso@mit.edu>
+#
 #    lsMode
 #    M-J. Dominus <mjd-perl-lsmode-id-i0k+gzzokd+@plover.com>
 #
@@ -109,8 +112,9 @@ $main::makefs = "mke2fs -F -m0 -i8192";
 #
 #       1.2.13 - 09/28/2001
 #                * Renamed "lilo" Boot method to "2 disk compression." 
-#                * Add three new entry fields to manage kernel modules, and
-#                  made important changes to the 2 disk compression code.
+#                * Added three new entry fields and one radio button to manage
+#                  kernel modules, and made important changes to the 2 disk 
+#                  compression code.
 #                * Advanced Section is now Advanced Boot Section (ABS).
 #                * Advanced Root Section (ARS) added. Includes root device and
 #                  size, root filesystem name with Save or Save As, filesystem
@@ -231,7 +235,7 @@ my $text_window;
 my $verbosity_window;
 my @container;
 
-# Make container verbose
+# Make @container verbose
 use constant  METHOD               => 0  ;
 use constant  KERNEL               => 1  ;
 use constant  ROOT_DEVICE          => 2  ;
@@ -244,7 +248,17 @@ use constant  OBJCOPY_BOOL         => 8  ;
 use constant  ABS_DEVICE           => 9  ;
 use constant  ABS_OPT_DEVICE       => 10 ;
 use constant  ABS_APPEND           => 11 ;
-use constant  MOD_STRIP            => 12 ;
+#
+# The Selection values are used for button_fileselect_advanced
+# since it shares fileselect and file_ok_sel with button.
+#
+# ABS: 12=Root_Device_Selection 13=UML_Kernel_Selection 
+# UML BOX: 14=Root_Fs_Selection
+#
+use constant  MOD_STRIP            => 15 ;
+#
+# ABS: 16=System.map_Selection
+ 
 my @original_container;
 my $file_dialog;
 my ($kernel,$root_image,$device,$size,$kernel_version);
@@ -941,6 +955,8 @@ sub advanced_boot_section {
                                  " kernel's source code after compilation.",
                                     "");
        $ea6->set_text($entry_advanced[13]) if defined $entry_advanced[13];
+       button_fileselect_advanced(2,3,6,7,"Selection",$ea6,"Selection",16,
+                                  $table_advanced,"/lib/modules/");
 
        $button_count++;
     }
@@ -1686,9 +1702,13 @@ sub Generate {
 
     # 11 = Kernel Modules  .. from the Boot Method
     # 12 = Kernel Version  .. from the Boot Method
+    # 13 = System.map      .. from the Boot Method
 
     # $root_device_size;
     # $filesystem_size;
+
+    # File select: function order: non-table = button->fileselect->file_ok_sel
+    #              table = button_fileselect_advanced->fileselect->file_ok_sel
 
     $ars->{device}         = $entry_advanced[3];
     $ars->{device_size}    = $root_device_size;
@@ -1772,6 +1792,9 @@ sub button_fileselect_advanced {
     }
     elsif ($order == 14) {
       $tooltips->set_tip( $button, "Select the Root Filesystem.", "" );
+    }
+    elsif ($order == 16) {
+      $tooltips->set_tip( $button, "Select the System.map.", "" );	
     }
 
 
@@ -3372,9 +3395,12 @@ email contact -> Jonathan Rosenbaum <freesource\@users.sourceforge.net>
 Homepage -> http://gbootroot.sourceforge.net
 Submit a Bug -> http://sourceforge.net/bugs/?group_id=9513
 Development site -> http://sourceforge.net/projects/gbootroot
+
+           Places to talk - email lists are more popular.
+
+gbootroot--{devel,user} mailing lists -> http://sourceforge.net/mail/?group_id=9513
 Help forum -> http://sourceforge.net/forum/forum.php?forum_id=29639
 Open forum -> http://sourceforge.net/forum/forum.php?forum_id=29638
-gbootroot-devel mailing list -> http://sourceforge.net/mail/?group_id=9513
 
 How to Use gBootRoot:
 
