@@ -30,7 +30,7 @@
 ##############################################################################
 
 use strict;
-use Yard;
+use BootRoot::Yard;
 use File::Path;
 use File::Find;
 
