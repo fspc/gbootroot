@@ -59,7 +59,7 @@ $mnt              = $ars->{mnt};
 
 # Freshmeat comes here so the rest of the program needs
 # to be warned when the template is coming from here.
-$changed_text = "$template_dir$template" if $template;
+$changed_text = "$template_dir$template" if defined $template;
 
 }
 

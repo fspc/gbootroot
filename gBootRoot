@@ -291,7 +291,7 @@ sub et {
     print "Using a version of gtk-perl < 0.7002\n";
 }
 
-my $window = new Gtk::Window("toplevel");
+my $window = Gtk::Window->new("toplevel");
 # special policy
 $window->set_policy( $false, $true, $true );
 $window->set_title("gBootRoot");
@@ -317,9 +317,9 @@ $window->window->set_icon_name("gBootRoot");
 ## $window->window->set_decorations(['all', 'menu']); # Zas
 ## $window->window->set_functions(['all', 'resize']); # Zas
 
-my $tooltips = new Gtk::Tooltips();
+my $tooltips = Gtk::Tooltips->new();
 
-my $box1 = new Gtk::VBox($false,0);
+my $box1 = Gtk::VBox->new($false,0);
 $window->add($box1);
 $box1->show();
 
@@ -328,10 +328,10 @@ hbox();
 my $entry = entry($false,0);
 
 # Menu - later this may be improved if new methods are added.
-my $opt = new Gtk::OptionMenu();
+my $opt = Gtk::OptionMenu->new();
 $tooltips->set_tip( $opt, "Choose the Boot method.", "" );
-my $menu = new Gtk::Menu();
-my $item = new Gtk::MenuItem("Method -> lilo" );
+my $menu = Gtk::Menu->new();
+my $item = Gtk::MenuItem->new("Method -> lilo" );
 $item->show();
 # Eventually get_menu, or something totally different will be used.
 $item->signal_connect( 'activate',sub { $entry->set_text("lilo");
@@ -370,8 +370,8 @@ button("Device Selection",$entry4,"Device Selection",3,$true);
 
 # Fifth row
 hbox("what");
-my $adj = new Gtk::Adjustment( 1722.0, 0.0, 360000000.0, 282.0, 360.0, 0.0 );
-my $spinner = new Gtk::SpinButton( $adj, 0, 0 );
+my $adj = Gtk::Adjustment->new( 1722.0, 0.0, 360000000.0, 282.0, 360.0, 0.0 );
+my $spinner = Gtk::SpinButton->new( $adj, 0, 0 );
 $tooltips->set_tip( $spinner, "Choose the Device Size.", "" );
 $spinner->set_wrap( $true );
 $spinner->set_numeric( $true );
@@ -385,13 +385,13 @@ $box2->pack_start( $spinner, $true, $true, 0 );
 #label("Device Size");
 
 # gz and bz2 radio buttons
-my $rbutton = new Gtk::RadioButton( "gz" );
+my $rbutton = Gtk::RadioButton->new( "gz" );
 $tooltips->set_tip( $rbutton, "Choose Compression used on the Filesystem.", "" );
 $gz_toggle = $rbutton;
 $rbutton->set_active( $true );
 $box2->pack_start( $rbutton, $false, $false, 0 );
 $rbutton->show();
-$rbutton = new Gtk::RadioButton( "bz2", $rbutton );
+$rbutton =  Gtk::RadioButton->new( "bz2", $rbutton );
 $rbutton->set_usize(1,1);
 $tooltips->set_tip( $rbutton, "Choose Compression used on the Filesystem.", "" );
 $bz2_toggle = $rbutton;
@@ -399,8 +399,8 @@ $box2->pack_start( $rbutton, $true, $true, 0);
 $rbutton->show();
 
 # Verbosity adjustment
-my $adj1 = new Gtk::Adjustment( 2.0, 0.0, 2.0, 0.0, 1.0, 0.0 );
-my $verbosity_scale = new Gtk::HScale($adj1);
+my $adj1 =  Gtk::Adjustment->new( 2.0, 0.0, 2.0, 0.0, 1.0, 0.0 );
+my $verbosity_scale =  Gtk::HScale->new($adj1);
 $verbosity_scale->set_value_pos("right");
 $verbosity_scale->set_digits(0);
 $tooltips->set_tip( $verbosity_scale, "Adjust the Verbosity Level.", "" );
@@ -427,7 +427,7 @@ $box2->pack_start( $verbosity_scale, $false, $false, 0);
 #start_logging_output($yard_temp,$verbosity); 
 
 # Size status entry
-my $entry5 = new Gtk::Entry();
+my $entry5 =  Gtk::Entry->new();
 $entry5->set_editable( $false );
 $tooltips->set_tip( $entry5, "This shows room remaining on the Device.", "" );
 $entry5->set_usize(20,20);
@@ -440,18 +440,18 @@ my $button_advanced;
 # The ADVANCED BOOT SECTION 
 ###########################
 # Separator
-$separator = new Gtk::HSeparator();
+$separator =  Gtk::HSeparator->new();
 $box1->pack_start( $separator, $false, $true, 0 );
 $separator->show();
 
 # This is cool how this works.
-my $vbox_advanced = new Gtk::VBox($false,0);
+my $vbox_advanced =  Gtk::VBox->new($false,0);
 $box1->add($vbox_advanced);
 $vbox_advanced->show();
 
 # The Advanced Boot Section button
 hbox_advanced($vbox_advanced);
-$button_advanced = new Gtk::Button("Advanced Boot Section");
+$button_advanced = Gtk::Button->new("Advanced Boot Section");
 $tooltips->set_tip( $button_advanced, 
                     "Change settings for the Boot Disk Image.", "" );
 $button_advanced->signal_connect("clicked",\&advanced_boot_section );
@@ -461,12 +461,12 @@ $button_advanced->show();
 ###########################
 # The ADVANCED ROOT SECTION 
 ###########################
-my $vbox_advanced_root = new Gtk::VBox($false,0);
+my $vbox_advanced_root = Gtk::VBox->new($false,0);
 $box1->add($vbox_advanced_root);
 $vbox_advanced_root->show();
 
 hbox_advanced($vbox_advanced_root);
-$button_advanced = new Gtk::Button("Advanced Root Section");
+$button_advanced = Gtk::Button->new("Advanced Root Section");
 $tooltips->set_tip( $button_advanced, 
           "Generate a Root Filesystem and/or use a different Root Device.", "" );
 $button_advanced->signal_connect("clicked",\&advanced_root_section );
@@ -477,12 +477,12 @@ $button_advanced->show();
 #############################
 # The ADVANCED KERNEL SECTION 
 #############################
-my $vbox_advanced_kernel = new Gtk::VBox($false,0);
+my $vbox_advanced_kernel = Gtk::VBox->new($false,0);
 $box1->add($vbox_advanced_kernel);
 $vbox_advanced_kernel->show();
 
 hbox_advanced($vbox_advanced_kernel);
-$button_advanced = new Gtk::Button("Advanced Kernel Section");
+$button_advanced = Gtk::Button->new("Advanced Kernel Section");
 $tooltips->set_tip( $button_advanced, 
           "Retrieve/Make Kernel Sources.", "" );
 #$button_advanced->signal_connect("clicked",\&advanced_root_section );
@@ -493,27 +493,27 @@ $button_advanced->show();
 
 
 # Separator
-$separator = new Gtk::HSeparator();
+$separator = Gtk::HSeparator->new();
 $box1->pack_start( $separator, $false, $true, 0 );
 $separator->show();
 
 # Status bar
-my $align = new Gtk::Alignment( 0.5, 0.5, 0, 0 );
+my $align = Gtk::Alignment->new( 0.5, 0.5, 0, 0 );
 $box1->pack_start( $align, $false, $false, 5);
 $align->show();
-my $pbar = new Gtk::ProgressBar();
+my $pbar = Gtk::ProgressBar->new();
 $pbar->set_usize(321,10); # 321 10
 $align->add($pbar);
 $pbar->show();
 
 # Separator
-$separator = new Gtk::HSeparator();
+$separator = Gtk::HSeparator->new();
 $box1->pack_start( $separator, $false, $true, 0 );
 $separator->show();
 
 # Submit button
 hbox();
-my $sbutton = new Gtk::Button("Submit");
+my $sbutton = Gtk::Button->new("Submit");
 $sbutton->signal_connect( "clicked", \&submit);
 $tooltips->set_tip( $sbutton, "Generate the Boot/Root set.", "" );
 $sbutton->show();
@@ -521,7 +521,7 @@ $box2->pack_start( $sbutton, $true, $true, 0 );
 $box2->show();
 
 # Close button
-my $cbutton = new Gtk::Button("Close");
+my $cbutton = Gtk::Button->new("Close");
 $cbutton->signal_connect("clicked",
                          sub {
                            unlink "$verbosefn", "$tmp/initrd_image.gz";
@@ -537,7 +537,7 @@ $box2->pack_start( $cbutton, $true, $true, 0 );
 $box2->show();
 
 # Help button
-my $hbutton = new Gtk::Button("Help");
+my $hbutton = Gtk::Button->new("Help");
 $hbutton->signal_connect( "clicked", sub { create_text("help") });
 $tooltips->set_tip( $hbutton, "Help about gBootRoot.", "" );
 $hbutton->show();
@@ -565,7 +565,7 @@ sub signal {
 }
 
 sub hbox_advanced {
-    $hbox_advanced = new Gtk::HBox(1,1 );
+    $hbox_advanced = Gtk::HBox->new(1,1 );
     $hbox_advanced->border_width( 2 ); # was 10
     $hbox_advanced->set_usize(321, 20);
     $_[0]->pack_start( $hbox_advanced, $false, $false, 0 );
@@ -610,7 +610,7 @@ sub advanced_boot_section {
 	my $boolean;
 
        # The table section
-       $table_advanced = new Gtk::Table( 4, 3, $true );
+       $table_advanced = Gtk::Table->new( 4, 3, $true );
        $vbox_advanced->pack_start( $table_advanced, $true, $true, 0 );
        $table_advanced->show();
 
@@ -619,7 +619,7 @@ sub advanced_boot_section {
        label_advanced("Stripping:",0,1,0,1,$table_advanced);
        !defined $lib_strip_check ? ($boolean = 1) 
          : ($boolean = $lib_strip_check->get_active());
-       $lib_strip_check = new Gtk::CheckButton("Libraries");
+       $lib_strip_check = Gtk::CheckButton->new("Libraries");
        $lib_strip_check->set_active($boolean);
        $lib_strip_check->signal_connect( "button_press_event", 
                                           \&objcopy_right_click_advanced); 
@@ -635,7 +635,7 @@ sub advanced_boot_section {
        # bin_strip_check
        !defined $bin_strip_check  ? ($boolean = 1) 
          : ($boolean = $bin_strip_check->get_active());
-       $bin_strip_check = new Gtk::CheckButton("Binaries");
+       $bin_strip_check = Gtk::CheckButton->new("Binaries");
        $bin_strip_check->set_active($boolean);
        $tooltips->set_tip( $bin_strip_check, 
                            "This is generally a good idea." .
@@ -697,14 +697,14 @@ sub advanced_root_section {
 	my $boolean; 
 
 
-       $table_advanced_root = new Gtk::Table( 9, 3, $true );
+       $table_advanced_root = Gtk::Table->new( 9, 3, $true );
        # temp solution?
        #$table_advanced_root->set_row_spacings( 3 );
        $vbox_advanced_root->pack_start( $table_advanced_root, $true, 
                                         $true, 0 );
        #_______________________________________ 
        # Root Device selection
-       # $::device  $device already exists 
+       # $::device  $device already exist
        label_advanced("Root Device:",0,1,0,1,$table_advanced_root);
        # $_[4] shares with advanced_boot_sections @entry_advanced
        $ear1 = entry_advanced(1,2,0,1,3,$table_advanced_root);
@@ -725,9 +725,9 @@ sub advanced_root_section {
        # Root Device Size
        # gBootRoot methods
        label_advanced("Root Device Size:",0,1,1,2,$table_advanced_root);
-       $adj2 = new Gtk::Adjustment( 1722.0, 0.0, 360000000.0, 282.0, 
+       $adj2 = Gtk::Adjustment->new( 1722.0, 0.0, 360000000.0, 282.0, 
                                     360.0, 0.0 );
-       $spinner_advanced = new Gtk::SpinButton( $adj2, 0, 0 );
+       $spinner_advanced = Gtk::SpinButton->new( $adj2, 0, 0 );
        $table_advanced_root->attach($spinner_advanced,1,2,1,2,
                             ['shrink','fill','expand'],['fill','shrink'],
                             0,0);
@@ -762,7 +762,7 @@ sub advanced_root_section {
        ars($ars);       
        $tooltips->set_tip( $ear2, "Give the Root Filesystem file a name.", 
                            "" );
-       my $ear2_save = new Gtk::CheckButton("save");
+       my $ear2_save = Gtk::CheckButton->new("save");
        $ear2_save->set_active($true);
        $tooltips->set_tip( $ear2_save, 
                            "Save Root File.  Press right button to change" .
@@ -777,9 +777,9 @@ sub advanced_root_section {
        # Filesystem Size
        # $::fs_device
        label_advanced("Filesystem Size:",0,1,3,4,$table_advanced_root);
-       $adj3 = new Gtk::Adjustment( 4096.0, 0.0, 1000000000.0, 128.0, 
+       $adj3 = Gtk::Adjustment->new( 4096.0, 0.0, 1000000000.0, 128.0, 
                                     1024.0, 0.0 );
-       $spinner_size = new Gtk::SpinButton( $adj3, 0, 0 );
+       $spinner_size = Gtk::SpinButton->new( $adj3, 0, 0 );
        $table_advanced_root->attach($spinner_size,1,2,3,4,
                             ['shrink','fill','expand'],['fill','shrink'],
                             0,0);
@@ -805,20 +805,20 @@ sub advanced_root_section {
        # gBootRoot methods
 
 
-       my $hbox_between = new Gtk::HBox(0,1);
+       my $hbox_between = Gtk::HBox->new(0,1);
        $table_advanced_root->attach($hbox_between,0,3,4,5,
                               ['fill'],
 			      ['fill','shrink'],15,0 );
        $hbox_between->show;
 
        # label
-       my $label_compression = new Gtk::Label( "Compression:" );
+       my $label_compression = Gtk::Label->new( "Compression:" );
        $label_compression->set_justify( "right" );
        $hbox_between->pack_start( $label_compression, $false, $false, 0 );
        $label_compression->show();
 
        # gz
-       $rbutton = new Gtk::RadioButton( "gz" );
+       $rbutton = Gtk::RadioButton->new( "gz" );
        $tooltips->set_tip( $rbutton, 
                            "Choose Compression used on the Filesystem.", "" );
        $gz_toggle_root = $rbutton;
@@ -827,7 +827,7 @@ sub advanced_root_section {
        $rbutton->show();
 
        # bz2
-       $rbutton = new Gtk::RadioButton( "bz2", $rbutton );
+       $rbutton = Gtk::RadioButton->new( "bz2", $rbutton );
        $tooltips->set_tip( $rbutton, 
                            "Choose Compression used on the Filesystem.", "" );
        $bz2_toggle_root = $rbutton;
@@ -835,7 +835,7 @@ sub advanced_root_section {
        $rbutton->show();
 
        # compression off
-       $compression_off = new Gtk::CheckButton( "off");
+       $compression_off = Gtk::CheckButton->new( "off");
        $tooltips->set_tip( $compression_off, 
                            "Turn Compression off.", "" );
        $hbox_between->pack_start( $compression_off, $true, $false, 0 );
@@ -862,13 +862,13 @@ sub advanced_root_section {
                            "Choose the Root Filesystem Generation Method.", 
                            "" );
 
-       my $opt_root = new Gtk::OptionMenu();
+       my $opt_root = Gtk::OptionMenu->new();
        $tooltips->set_tip( $opt_root, 
                            "Choose the Root Filesystem Generation Method.", 
                            "" );
-       my $menu_root = new Gtk::Menu();
+       my $menu_root = Gtk::Menu->new();
 
-       my $yard = new Gtk::MenuItem("Yard" );
+       my $yard = Gtk::MenuItem->new("Yard" );
 
        $menu_root->append( $yard );
 
@@ -899,7 +899,7 @@ sub advanced_root_section {
        # Template
        # $::contents_file
        label_advanced("Template:",0,1,7,8,$table_advanced_root);
-       $combo = new Gtk::Combo(); 
+       $combo = Gtk::Combo->new(); 
        $combo->entry->set_text($entry_advanced[7]) if $entry_advanced[7];
         #$button_count_root_open = 1 + $button_count_root_open;
         #print $button_count_root_open;
@@ -988,27 +988,6 @@ sub Generate {
     $ars->{template_dir}   = $template_dir; # static right now.
     ars($ars);
 
-    print %$ars;
-
-=pod
-
-    foreach (%$ars) {
-	    print $_, "=>", $ars->{$_}, "\n";
-    } return; 
-
-
-    my $ars = {     "device"             => $entry_advanced[3],
-		    "device_size"        => $root_device_size,		    
-		    "filename"           => $entry_advanced[4],
-		    "filesystem_size"    => $filesystem_size,
-		    "kernel"             => $container[1],
-		    "template_directory" => $template_dir,
-		    "template"           => $entry_advanced[7],
-		    "tmp"                => $tmp,
-		    "mnt"                => $mnt    
-	       };
-=cut
-
     my $template = $ars->{template};
     $root_device = $ars->{device};
     $root_filename = $ars->{filename};
@@ -1049,7 +1028,7 @@ sub button_advanced {
     # cretzu should like this
     my ($left_attach,$right_attach,$top_attach,
                      $bottom_attach,$text,$widget) = @_;
-    my $button = new Gtk::Button($text);
+    my $button = Gtk::Button->new($text);
     $table_advanced_root->attach($button,$left_attach,$right_attach,
                                  $top_attach,$bottom_attach, 
                             ['shrink','fill','expand'],['fill','shrink'],2,2);
@@ -1065,7 +1044,7 @@ sub button_fileselect_advanced {
     my ($left_attach,$right_attach,$top_attach,$bottom_attach,$text,$ent,
         $name,$order,$device) = @_;
 
-    my $button = new Gtk::Button($text);
+    my $button = Gtk::Button->new($text);
     $table_advanced_root->attach($button,$left_attach,$right_attach,
                                  $top_attach,$bottom_attach, 
                             ['shrink','fill','expand'],['fill','shrink'],2,2);
@@ -1088,7 +1067,7 @@ sub button_fileselect_advanced {
 sub entry_advanced {
 
     my $numa = $_[4];
-    my $entry_advanced = new Gtk::Entry();
+    my $entry_advanced = Gtk::Entry->new();
     $entry_advanced->set_editable( $true );
     $entry_advanced->signal_connect( "changed", sub {
     $entry_advanced[$numa] = $entry_advanced->get_text();
@@ -1107,7 +1086,7 @@ sub entry_advanced {
 
 sub separator_advanced {
 
-    $separator_advanced = new Gtk::HSeparator();
+    $separator_advanced = Gtk::HSeparator->new();
     $_[0]->pack_start( $separator_advanced, $false, $true, 0 );
     $separator_advanced->show();
 
@@ -1117,7 +1096,7 @@ sub label_advanced {
 
     my($text) = @_;
 
-    $label_advanced = new Gtk::Label( $text );
+    $label_advanced = Gtk::Label->new( $text );
     $label_advanced->set_justify( "fill" );
     $_[5]->attach($label_advanced,$_[1],$_[2],$_[3],$_[4], ['expand'],['fill','shrink'],0,0);
     $label_advanced->show();
@@ -1130,7 +1109,7 @@ sub label_advanced {
 sub create_text {
 
       if (not defined $text_window) {
-       $text_window = new Gtk::Window "toplevel";
+       $text_window = Gtk::Window->new("toplevel");
        $text_window->signal_connect("destroy", \&destroy_window,
                                     \$text_window);
        $text_window->signal_connect("delete_event", \&destroy_window,
@@ -1141,23 +1120,23 @@ sub create_text {
        $text_window->set_title( "gBootRoot Help" );
        $text_window->border_width(0);
 
-       my $main_vbox = new Gtk::VBox( $false, 0 );
+       my $main_vbox = Gtk::VBox->new( $false, 0 );
        $text_window->add( $main_vbox );
        $main_vbox->show();
 
-       my $vbox = new Gtk::VBox( $false, 10 );
+       my $vbox = Gtk::VBox->new( $false, 10 );
        $vbox->border_width( 10 );
        $main_vbox->pack_start( $vbox, $true, $true, 0 );
        $vbox->show();
 
-       my $table = new Gtk::Table( 2, 2, $false );
+       my $table = Gtk::Table->new( 2, 2, $false );
        $table->set_row_spacing( 0, 2 );
        $table->set_col_spacing( 0, 2 );
        $vbox->pack_start( $table, $true, $true, 0 );
        $table->show( );
 
        # Create the GtkText widget
-       my $text = new Gtk::Text( undef, undef );
+       my $text = Gtk::Text->new( undef, undef );
        $text->set_editable($false);
        $table->attach( $text, 0, 1, 0, 1,
                        [ 'expand', 'shrink', 'fill' ],
@@ -1167,7 +1146,7 @@ sub create_text {
        $text->show();
 
        # Add a vertical scrollbar to the GtkText widget
-       my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
+       my $vscrollbar = Gtk::VScrollbar->new( $text->vadj );
        $table->attach( $vscrollbar, 1, 2, 0, 1, 'fill',
                        [ 'expand', 'shrink', 'fill' ], 0, 0 );
        #my $logadj = $vscrollbar->get_adjustment();
@@ -1178,16 +1157,16 @@ sub create_text {
        $text->insert( undef, undef, undef, help() );
        $text->thaw();
 
-       my $separator = new Gtk::HSeparator();
+       my $separator = Gtk::HSeparator->new();
        $main_vbox->pack_start( $separator, $false, $true, 0 );
        $separator->show();
 
-       $vbox = new Gtk::VBox( $false, 10 );
+       $vbox = Gtk::VBox->new( $false, 10 );
        $vbox->border_width( 10 );
        $main_vbox->pack_start( $vbox, $false, $true, 0 );
        $vbox->show();
 
-       my $button = new Gtk::Button( "Close" );
+       my $button = Gtk::Button->new( "Close" );
        $button->signal_connect( 'clicked', sub { destroy $text_window; } );
        $vbox->pack_start( $button, $true, $true, 0 );
        $button->can_default( $true );
@@ -1206,7 +1185,7 @@ sub create_text {
 sub verbosity_box {
 
     
-       $verbosity_window = new Gtk::Window "toplevel";
+       $verbosity_window = Gtk::Window->new("toplevel");
        $verbosity_window->signal_connect("destroy", \&destroy_window,
                                     \$verbosity_window);
        $verbosity_window->signal_connect("delete_event", \&destroy_window,
@@ -1216,23 +1195,23 @@ sub verbosity_box {
        $verbosity_window->set_title( "Verbosity Box" );
        $verbosity_window->border_width(0);
 
-       my $main_vbox = new Gtk::VBox( $false, 0 );
+       my $main_vbox = Gtk::VBox->new( $false, 0 );
        $verbosity_window->add( $main_vbox );
        $main_vbox->show();
 
-       my $vbox = new Gtk::VBox( $false, 10 );
+       my $vbox = Gtk::VBox->new( $false, 10 );
        $vbox->border_width( 10 );
        $main_vbox->pack_start( $vbox, $true, $true, 0 );
        $vbox->show();
 
-       my $table = new Gtk::Table( 2, 2, $false );
+       my $table = Gtk::Table->new( 2, 2, $false );
        $table->set_row_spacing( 0, 2 );
        $table->set_col_spacing( 0, 2 );
        $vbox->pack_start( $table, $true, $true, 0 );
        $table->show( );
 
        # Create the GtkText widget
-       my $text = new Gtk::Text( undef, undef );
+       my $text = Gtk::Text->new( undef, undef );
        $text->set_editable($false);
        $table->attach( $text, 0, 1, 0, 1,
                        [ 'expand', 'shrink', 'fill' ],
@@ -1245,23 +1224,23 @@ sub verbosity_box {
        text_insert($text,$red,$blue); # yard thing
 
        # Add a vertical scrollbar to the GtkText widget
-       my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
+       my $vscrollbar = Gtk::VScrollbar->new( $text->vadj );
        $table->attach( $vscrollbar, 1, 2, 0, 1, 'fill',
                        [ 'expand', 'shrink', 'fill' ], 0, 0 );
        my $logadj = $vscrollbar->get_adjustment();
        logadj($logadj);
        $vscrollbar->show();
 
-       my $separator = new Gtk::HSeparator();
+       my $separator = Gtk::HSeparator->new();
        $main_vbox->pack_start( $separator, $false, $true, 0 );
        $separator->show();
 
-       $vbox = new Gtk::VBox( $false, 10 );
+       $vbox = Gtk::VBox->new( $false, 10 );
        $vbox->border_width( 10 );
        $main_vbox->pack_start( $vbox, $false, $true, 0 );
        $vbox->show();
 
-       #my $button = new Gtk::Button( "Close" );
+       #my $button = Gtk::Button->new( "Close" );
        #$button->signal_connect( 'clicked', 
        #				sub { destroy $verbosity_window; } );
        #$vbox->pack_start( $button, $true, $true, 0 );
@@ -1279,7 +1258,7 @@ sub fileselect {
 
     if (not defined $file_dialog) {
         # Create a new file selection widget
-        $file_dialog = new Gtk::FileSelection( "$name" );
+        $file_dialog = Gtk::FileSelection->new( "$name" );
         $file_dialog->signal_connect( "destroy",
                                      \&destroy_window, \$file_dialog);
         $file_dialog->signal_connect( "delete_event",
@@ -1343,7 +1322,7 @@ sub file_ok_sel {
 sub hbox {
     my $homogeneous;
     defined $_[0] ? ($homogeneous = 0) : ($homogeneous = 1);
-    $box2 = new Gtk::HBox( $homogeneous, 5 );
+    $box2 = Gtk::HBox->new( $homogeneous, 5 );
     $box2->border_width( 2 ); # was 10
     $box1->pack_start( $box2, $true, $true, 0 );
     #$box1->pack_start( $box2, $false, $true, 0 );
@@ -1354,7 +1333,7 @@ sub label {
 
     my($text) = @_;
 
-    $label = new Gtk::Label( $text );
+    $label = Gtk::Label->new( $text );
     $label->set_justify( "fill" );
     $box2->pack_start( $label, $false, $false, 5 );
     $label->show();
@@ -1365,7 +1344,7 @@ sub entry {
 
     my($edit,$num) = @_;
 
-    my $entry = new Gtk::Entry();
+    my $entry = Gtk::Entry->new();
     $entry->set_editable( $true );
 
     if ($num == 0) {
@@ -1431,7 +1410,7 @@ sub button {
 
     my ($text,$ent,$name,$order,$device) = @_;
 
-    my $button = new Gtk::Button($text);
+    my $button = Gtk::Button->new($text);
     if ($order == 1) {
       $tooltips->set_tip( $button, "Select the Kernel.", "" );
     }
@@ -2206,24 +2185,24 @@ sub mtab_window {
     my ($dialog,$error,$count,$pattern) = @_;
 
     if (not defined $mtab) {
-    $mtab = new Gtk::Dialog;
+    $mtab = Gtk::Dialog->new();
     $mtab->signal_connect("destroy", \&destroy_window, \$mtab);
     $mtab->signal_connect("delete_event", \&destroy_window, \$mtab);
     $mtab->set_title("gBootRoot: Device check");
     $mtab->border_width(15);
     $mtab->set_position('center');
-    my $label = new Gtk::Label($dialog);
+    my $label = Gtk::Label->new($dialog);
     $label->set_justify( 'left' );
     $label->set_pattern("_________") if defined $pattern;
     $mtab->vbox->pack_start( $label, $true, $true, 15 );
     $label->show();
-    my $button = new Gtk::Button("OK");
+    my $button = Gtk::Button->new("OK");
     $button->signal_connect("clicked", \&mtab_check, $count);
     $button->can_default(1);
     $mtab->action_area->pack_start($button, $false, $false,0);
     $button->grab_default;
     $button->show;
-    $button = new Gtk::Button("Cancel");
+    $button = Gtk::Button->new("Cancel");
     $button->signal_connect("clicked", sub { destroy $mtab} );
     $mtab->action_area->pack_start($button, $false, $false,0);
     $button->show;
