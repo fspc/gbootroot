@@ -33,6 +33,8 @@
 use Gtk;
 use strict;
 use Yard;
+use YardBox;
+use Error;
 use File::Basename;
 init Gtk;
 set_locale Gtk; 
@@ -127,7 +129,6 @@ my $verbosity_window;
 my @container;
 my @original_container;
 my $file_dialog;
-my $error_window;
 my ($kernel,$root_image,$device,$size);
 my $mtab;
 my ($tmp,$mnt);
@@ -154,7 +155,6 @@ my ($adj2,$adj3);
 my @strings;
 my ($root_device,$root_filename,$method,$template,$filesystem_size,
     $root_device_size);
-my $yard_window;
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -1045,192 +1045,17 @@ sub Generate {
 	return;
     }
 
+    # Stuff univeral for all root filesystem methods
+    my @method_stuff = qw($filesystem_size $obj_count_root $tmp);
+
     if ($method eq "yard") {
-	yard();
+	my $kernel = $container[1];
+	yard($kernel,$template_dir,$template);
     }
 
     #print "$root_selection $root_filename $method $template\n";
 
 } # end sub Generate
-
-######
-# YARD
-###### 
-sub yard {
-
-    #open(YARD,"$template_dir$template");
-    #my @stuff = <YARD>;
-    #print @stuff;
-    my $error;
-
-    # Error handling in Yard will take some strategy
-    if (!-d $container[1] && -f $container[1]) {
-        $error = kernel_version_check($container[1]);  
-                                              # Yard: kernel,kernel version
-                                              # Becomes $ENV{'RELEASE'}
-	return if $error && $error eq "ERROR";
-	open(CONTENTS, "<$template_dir$template") or 
-        ($error = error("$template_dir$template: $!"));
-	return "ERROR"if $error && $error eq "ERROR";
-	my @template = <CONTENTS>;
-	close(CONTENTS);
-	my $stuff = join("",@template);
-	yard_box($stuff);
-
-    }
-    else {
-	error_window("Kernel Selection required");
-        return;
-    }
-
-##    $error = read_contents_file("$template_dir$template");
-##    return if $error && $error eq "ERROR";
-
-##    $error = extra_links("$template_dir$template");
-##    return if $error && $error eq "ERROR";
-
-##    $error = hard_links();
-##    return if $error && $error eq "ERROR";
-
-##    $error = library_dependencies("$template_dir$template");
-##    return if $error && $error eq "ERROR";
-
-    ##$error = space_check($filesystem_size, 
-    ##             $lib_strip_check_root->get_active(),
-##		$bin_strip_check_root->get_active(), 
-##		$module_strip_check_root->get_active(), 
-##		$obj_count_root, $tmp);
-##    return if $error && $error eq "ERROR";
-
-} # end sub yard
-
-sub yard_box {
-    
-       $yard_window = new Gtk::Window "toplevel";
-       $yard_window->signal_connect("destroy", \&destroy_window,
-                                    \$yard_window);
-       $yard_window->signal_connect("delete_event", \&destroy_window,
-                                    \$yard_window);
-       $yard_window->set_usize( 525, 450 );
-       $yard_window->set_policy( $true, $true, $false );
-       $yard_window->set_title( "Yard Box" );
-       $yard_window->border_width(0);
-
-       my $main_vbox = new Gtk::VBox( $false, 0 );
-       $yard_window->add( $main_vbox );
-       $main_vbox->show();
-
-       my $vbox = new Gtk::HBox( $false, 50 );
-       $vbox->border_width( 10 );
-       $main_vbox->pack_start( $vbox, $false, $true, 0 );
-       $vbox->show();
-
-       $vbox = new Gtk::VBox( $false, 10 );
-       $vbox->border_width( 10 );
-       $main_vbox->pack_start( $vbox, $true, $true, 0 );
-       $vbox->show();
-
-       my $table = new Gtk::Table( 2, 2, $false );
-       $table->set_row_spacing( 0, 2 );
-       $table->set_col_spacing( 0, 2 );
-       $vbox->pack_start( $table, $true, $true, 0 );
-       $table->show( );
-
-       # Create the GtkText widget
-       my $length;
-       my $text = new Gtk::Text( undef, undef );
-       $text->set_editable($true);
-       my $start_length = $text->get_length();
-       my $beginning_text = $text->get_chars(0,$length);
-       $text->signal_connect("changed", sub { 
-	   $length =  $text->get_length();
-	   #my $changed_text = $text->get_chars(0,$length);
-	   print "$length\n"; } );
-       $table->attach( $text, 0, 1, 0, 1,
-                       [ 'expand', 'shrink', 'fill' ],
-                       [ 'expand', 'shrink', 'fill' ],
-                       0, 0 );
-       $text->grab_focus();
-       $text->show();
-
-       $text->freeze();
-       $text->insert( undef, undef, undef, $_[0]);
-       $text->thaw();
-
-       # Add a vertical scrollbar to the GtkText widget
-       my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
-       $table->attach( $vscrollbar, 1, 2, 0, 1, 'fill',
-                       [ 'expand', 'shrink', 'fill' ], 0, 0 );
-       $vscrollbar->show();
-
-       #_______________________________________ 
-       # Separator
-       my $separator = new Gtk::HSeparator();
-       $main_vbox->pack_start( $separator, $false, $true, 0 );
-       $separator->show();
-
-       #_______________________________________ 
-       # Check stage boxes
-       # check | links & deps | space | create | test
-       $vbox = new Gtk::HBox( $false, 0 );
-       $vbox->border_width( 0 );
-       $main_vbox->pack_start( $vbox, $false, $true, 0 );
-       $vbox->show();
-
-       my $check = new Gtk::CheckButton("Check");
-       $vbox->pack_start( $check, $true, $true, 10 );
-       show $check;       
-
-       my $dep = new Gtk::CheckButton("Links & Deps");
-       $vbox->pack_start( $dep, $true, $true, 0 );
-       show $dep;       
-
-       my $space = new Gtk::CheckButton("Space Left");
-       $vbox->pack_start( $space, $true, $true, 0 );
-       show $space;       
-
-       my $create = new Gtk::CheckButton("Create");
-       $vbox->pack_start( $create, $true, $true, 0 );
-       show $create;       
-
-       my $test = new Gtk::CheckButton("Test");
-       $vbox->pack_start( $test, $true, $true, 0 );
-       show $test;       
-
-       #_______________________________________ 
-       # Separator
-       $separator = new Gtk::HSeparator();
-       $main_vbox->pack_start( $separator, $false, $true, 0 );
-       $separator->show();
-
-       #_______________________________________ 
-       # Continue - Cancel - Save Buttons
-       $vbox = new Gtk::HBox( $false, 10 );
-       $vbox->border_width( 10 );
-       $main_vbox->pack_start( $vbox, $false, $true, 0 );
-       $vbox->show();
-
-       my $button = new Gtk::Button( "Continue" );
-       $button->signal_connect( 'clicked', 
-       				sub { destroy $yard_window; } );
-       $vbox->pack_start( $button, $true, $true, 0 );
-       $button->show();
-
-       $button = new Gtk::Button( "Close" );
-       $button->signal_connect( 'clicked', 
-       				sub { destroy $yard_window; } );
-       $vbox->pack_start( $button, $true, $true, 0 );
-       $button->show();
-
-       $button = new Gtk::Button( "Save" );
-       $button->signal_connect( 'clicked', 
-       				sub { destroy $yard_window; } );
-       $vbox->pack_start( $button, $true, $true, 0 );
-       $button->show();
-
-       show $yard_window;
-
-} # end sub yard_box
 
 sub button_advanced {
 
@@ -1353,9 +1178,9 @@ sub create_text {
        my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
        $table->attach( $vscrollbar, 1, 2, 0, 1, 'fill',
                        [ 'expand', 'shrink', 'fill' ], 0, 0 );
-       my $logadj = $vscrollbar->get_adjustment();
-       logadj($logadj);
-       $vscrollbar->show();
+       #my $logadj = $vscrollbar->get_adjustment();
+       #logadj($logadj);
+       #$vscrollbar->show();
 
        $text->freeze();
        $text->insert( undef, undef, undef, help() );
@@ -1384,6 +1209,78 @@ sub create_text {
        }
 
 } # end sub create_text
+
+# This monster needs different behavior than create_text.
+sub verbosity_box {
+
+    
+       $verbosity_window = new Gtk::Window "toplevel";
+       $verbosity_window->signal_connect("destroy", \&destroy_window,
+                                    \$verbosity_window);
+       $verbosity_window->signal_connect("delete_event", \&destroy_window,
+                                    \$verbosity_window);
+       $verbosity_window->set_usize( 450, 175 );  # 500 600
+       $verbosity_window->set_policy( $true, $true, $false );
+       $verbosity_window->set_title( "Verbosity Box" );
+       $verbosity_window->border_width(0);
+
+       my $main_vbox = new Gtk::VBox( $false, 0 );
+       $verbosity_window->add( $main_vbox );
+       $main_vbox->show();
+
+       my $vbox = new Gtk::VBox( $false, 10 );
+       $vbox->border_width( 10 );
+       $main_vbox->pack_start( $vbox, $true, $true, 0 );
+       $vbox->show();
+
+       my $table = new Gtk::Table( 2, 2, $false );
+       $table->set_row_spacing( 0, 2 );
+       $table->set_col_spacing( 0, 2 );
+       $vbox->pack_start( $table, $true, $true, 0 );
+       $table->show( );
+
+       # Create the GtkText widget
+       my $text = new Gtk::Text( undef, undef );
+       $text->set_editable($false);
+       $table->attach( $text, 0, 1, 0, 1,
+                       [ 'expand', 'shrink', 'fill' ],
+                       [ 'expand', 'shrink', 'fill' ],
+                       0, 0 );
+       $text->grab_focus();
+       $text->show();
+       my $red  = Gtk::Gdk::Color->parse_color("red");
+       my $blue  = Gtk::Gdk::Color->parse_color("blue");
+       text_insert($text,$red,$blue); # yard thing
+
+       # Add a vertical scrollbar to the GtkText widget
+       my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
+       $table->attach( $vscrollbar, 1, 2, 0, 1, 'fill',
+                       [ 'expand', 'shrink', 'fill' ], 0, 0 );
+       my $logadj = $vscrollbar->get_adjustment();
+       logadj($logadj);
+       $vscrollbar->show();
+
+       my $separator = new Gtk::HSeparator();
+       $main_vbox->pack_start( $separator, $false, $true, 0 );
+       $separator->show();
+
+       $vbox = new Gtk::VBox( $false, 10 );
+       $vbox->border_width( 10 );
+       $main_vbox->pack_start( $vbox, $false, $true, 0 );
+       $vbox->show();
+
+       #my $button = new Gtk::Button( "Close" );
+       #$button->signal_connect( 'clicked', 
+       #				sub { destroy $verbosity_window; } );
+       #$vbox->pack_start( $button, $true, $true, 0 );
+       #$button->can_default( $true );
+       #$button->grab_default();
+       #$button->show();
+
+       show $verbosity_window;
+
+} # end sub verbosity_box
+
 
 sub make_menu_item {
     my( $name, $callback, $data ) = @_;
@@ -1458,15 +1355,6 @@ sub file_ok_sel {
     destroy $file_dialog;
 
 }
-
-# pulled from test.pl
-sub destroy_window {
-        my($widget, $windowref, $w2) = @_;
-        $$windowref = undef;
-        $w2 = undef if defined $w2;
-        0;
-}
-
 
 sub hbox {
     my $homogeneous;
@@ -2182,7 +2070,7 @@ sub initrd {
   info(0, "Determine run-time link bindings\n");
   # Has a return code of 0 regardless
   sys("ldconfig -r $tmp/initrd_mnt");
-  info(0, "Umounting loop device, and compressing initrd");
+  info(0, "Umounting loop device, and compressing initrd\n");
   return if errum(sys("umount $tmp/initrd_mnt")) == 2;
   sys("gzip -f9 $tmp/$initrd");
   pb($I,10); # This takes the longest.
@@ -2418,208 +2306,6 @@ mtab_window($dialog,$error,$count) if $error == 0;
   }
 
 } # end sub mtab_check
-
-###############
-# Error Section
-###############
-# The biggest problem here is that err? are hardwired, perhaps one
-# could be used and message could just be $!, err_custom is nice.
-# All err? report errors if $? > 0.
-
-sub error_window {
-    my (@error) = @_;
-    my $output = join("",@error);
-
-    if (not defined $error_window) {
-    $error_window = new Gtk::Dialog;
-    $error_window->signal_connect("destroy", \&destroy_window,
-                                  \$error_window);
-    $error_window->signal_connect("delete_event", \&destroy_window, 
-                                  \$error_window);
-    $error_window->set_title("gBootRoot ERROR");
-    $error_window->border_width(15);
-    my $label = new Gtk::Label($output);
-    #$label->set_justify("left") if $_[1];
-    $error_window->vbox->pack_start( $label, $true, $true, 15 );
-    $label->show();
-    my $button = new Gtk::Button("OK");
-    $button->signal_connect("clicked", sub {destroy $error_window});
-    $button->can_default(1);
-    $error_window->action_area->pack_start($button, $false, $false,0);
-    $button->grab_default;
-    $button->show;
-   }
-     if (!visible $error_window) {
-         show $error_window;
-     }
-     else {
-        destroy $error_window;
-     }
-
-} # end sub error_window
-
-sub errmk {
-   error_window("gBootRoot: ERROR: Could not make important directories") if $? != 0;
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub errcp {
-   error_window("gBootRoot: ERROR: Could not copy over important stuff") if $? != 0;
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-
-sub errum {
-   error_window("gBootRoot: ERROR: Could not umount the device") if $? != 0;
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub errm {
-   error_window("gBootRoot: ERROR: Could not mount device") if $? != 0;
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub errrm {
-   error_window("gBootRoot: ERROR: Could not remove a directory or file")
-                if $? != 0;
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub err {
-   error_window("gBootRoot: ERROR: Not enough space after all") if ($? > 0);
-   if (defined $error_window) {
-       if ($error_window->visible) {
-          return 2;
-       }
-   }
-}
-
-sub err_custom {
-
-    if (defined $_[2]) {
-         system("$_[0] > /dev/null 2>&1");
-    }
-    else {
-     sys("$_[0]");
-    }
-    error_window($_[1]) if ($? != 0);
-    if (defined $error_window) {
-        if ($error_window->visible) {
-           return 2;
-        }
-    }
-}
-
-sub err_custom_perl {
-
-   if ((split(/ /, $_[0]))[0] eq "mkdir") {
-      my $two = (split(/ /, $_[0]))[1];
-      mkdir($two,0755); # Anyone allowed in
-    }
-    error_window($_[1]) if ($? != 0);
-    if (defined $error_window) {
-        if ($error_window->visible) {
-           return 2;
-        }
-    }
-}
-
-
-# This monster needs different behavior than create_text.
-sub verbosity_box {
-
-    
-       $verbosity_window = new Gtk::Window "toplevel";
-       $verbosity_window->signal_connect("destroy", \&destroy_window,
-                                    \$verbosity_window);
-       $verbosity_window->signal_connect("delete_event", \&destroy_window,
-                                    \$verbosity_window);
-       $verbosity_window->set_usize( 450, 175 );  # 500 600
-       $verbosity_window->set_policy( $true, $true, $false );
-       $verbosity_window->set_title( "Verbosity Box" );
-       $verbosity_window->border_width(0);
-
-       my $main_vbox = new Gtk::VBox( $false, 0 );
-       $verbosity_window->add( $main_vbox );
-       $main_vbox->show();
-
-       my $vbox = new Gtk::VBox( $false, 10 );
-       $vbox->border_width( 10 );
-       $main_vbox->pack_start( $vbox, $true, $true, 0 );
-       $vbox->show();
-
-       my $table = new Gtk::Table( 2, 2, $false );
-       $table->set_row_spacing( 0, 2 );
-       $table->set_col_spacing( 0, 2 );
-       $vbox->pack_start( $table, $true, $true, 0 );
-       $table->show( );
-
-       # Create the GtkText widget
-       my $text = new Gtk::Text( undef, undef );
-       $text->set_editable($false);
-       $table->attach( $text, 0, 1, 0, 1,
-                       [ 'expand', 'shrink', 'fill' ],
-                       [ 'expand', 'shrink', 'fill' ],
-                       0, 0 );
-       $text->grab_focus();
-       $text->show();
-       my $red  = Gtk::Gdk::Color->parse_color("red");
-       my $blue  = Gtk::Gdk::Color->parse_color("blue");
-       text_insert($text,$red,$blue); # yard thing
-
-       # Add a vertical scrollbar to the GtkText widget
-       my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
-       $table->attach( $vscrollbar, 1, 2, 0, 1, 'fill',
-                       [ 'expand', 'shrink', 'fill' ], 0, 0 );
-       my $logadj = $vscrollbar->get_adjustment();
-       logadj($logadj);
-       $vscrollbar->show();
-
-       my $separator = new Gtk::HSeparator();
-       $main_vbox->pack_start( $separator, $false, $true, 0 );
-       $separator->show();
-
-       $vbox = new Gtk::VBox( $false, 10 );
-       $vbox->border_width( 10 );
-       $main_vbox->pack_start( $vbox, $false, $true, 0 );
-       $vbox->show();
-
-       #my $button = new Gtk::Button( "Close" );
-       #$button->signal_connect( 'clicked', 
-       #				sub { destroy $verbosity_window; } );
-       #$vbox->pack_start( $button, $true, $true, 0 );
-       #$button->can_default( $true );
-       #$button->grab_default();
-       #$button->show();
-
-       show $verbosity_window;
-
-} # end sub verbosity_box
-
-
-###################
-# End Error Section
-###################
 
 ##################
 # Here Doc Section
