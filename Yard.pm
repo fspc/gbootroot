@@ -43,6 +43,7 @@ use FileHandle;
 use Cwd; #  I am not even sure if this is being used here now
 use English;  # I think this can be ditched for portability
 use File::Find; # used by check_root_fs
+# use Error; # missing temporarily
 
 my (%Included, %replaced_by, %links_to, %is_module, %hardlinked, 
     %strippable, %lib_needed_by, @Libs);
@@ -77,9 +78,6 @@ sub warning {
 sub verbosity { $verbosity = $_[0]; }
 sub text_insert { $text_insert = $_[0]; $red = $_[1]; $blue = $_[2]; }
 sub logadj { $logadj = $_[0]; }
-# This is because verbosity_box is in start_logging_output
-#sub verbosity_window { $verbosity_window = $_[0]; }
-
 
 ## REQUIRES $kernel opt. $kernel_version
 sub kernel_version_check {

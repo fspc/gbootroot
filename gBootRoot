@@ -264,9 +264,9 @@ start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name"
                                              # "verbosity level"
 
 
-# Gtk::check_version expects different arguments .7004 so will have
+# Gtk::check_version expects different arguments than .7004 so will have
 # to check for the version instead.
-# Right now >= 0.7000 is o.k.
+# Right now >= 0.7002 is o.k.
 #if (Gtk::check_version(undef,"1","0","7") =~ /too old/) {
 
 if (Gtk->major_version < 1) {
@@ -314,8 +314,8 @@ my ($circles,$mask) = Gtk::Gdk::Pixmap->create_from_xpm_d($window->window,
                                                         @xpm_data);
 $window->window->set_icon(undef, $circles, $mask);
 $window->window->set_icon_name("gBootRoot");
-#$window->window->set_decorations(['all', 'menu']); # Zas
-#$window->window->set_functions(['all', 'resize']); # Zas
+## $window->window->set_decorations(['all', 'menu']); # Zas
+## $window->window->set_functions(['all', 'resize']); # Zas
 
 my $tooltips = new Gtk::Tooltips();
 
