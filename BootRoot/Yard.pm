@@ -1292,7 +1292,12 @@ sub create_filesystem {
 
     #####  Tricky stuff is over with, now copy the remaining files.
 
-    info(0, "\nCopying files to $device\n");
+    if ( $uml_exclusively == 0 && $fs_type ne "genext2fs") {
+	info(0, "\nCopying files to $device\n");
+    }
+    else {
+	info(0, "\nCopying files to $mount_point\n");
+    }
 
     my(%copied);
 
@@ -1358,7 +1363,9 @@ sub create_filesystem {
     }
 
 
-    info(0, "\nFinished creating root filesystem.\n");
+    if ( $uml_exclusively == 0 ) {
+	info(0, "\nFinished creating root filesystem.\n");
+    }
 
     if (@Libs) {
 
@@ -1385,7 +1392,6 @@ sub create_filesystem {
 	my $device_table  = "$mnt/device_table.txt";
 
 
-	# Just for testing purposes .. working out the logic in a little bit.
 	if ( $uml_exclusively ) {
 
 
@@ -1408,7 +1414,8 @@ sub create_filesystem {
 	    my $command_line = "$expect_program $ubd0 $ubd1 $options " .
 		"$mount_point $preserve_ownership $filesystem";
 
-	    info(0,"\n$command_line\n\n");
+	    info(0,"\nUsing helper root_fs to $fs_type the filesystem:\n\n");
+	    info(0,"$command_line\n\n");
 
 	    # add error correction
 	    open(EXPECT,"$command_line|");
