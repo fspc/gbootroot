@@ -1196,7 +1196,7 @@ sub create_filesystem {
 		    $copied{$devino} = $floppy_file;
 		}
 	    }
-	    info(1, "$file -> $floppy_file\n");
+	    ##info(1, "$file -> $floppy_file\n");
 	    copy_strip_file($file, $floppy_file, $obj_count, $strip_lib, 
 			    $strip_bin, $strip_module);
 
@@ -2165,9 +2165,11 @@ sub which_tests {
 
     #  This goes first so we define %Termcap for use in children
     ## This now checks for ncurse setups, too.
-    return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
-    check_termcap();
-    return "ERROR" if errum(sys("umount $mount_point")) == 2;
+    if ( $fs_type ne "genext2fs" ) {
+	return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
+	check_termcap();
+	return "ERROR" if errum(sys("umount $mount_point")) == 2;
+    }
 
     #####  Here are the tests.
     my $t_fstab    = $chosen_tests->{30}{test_fstab};
