@@ -11,9 +11,9 @@ use File::Find;
 
 # This program uses dh-make, and copies your own defaults to 
 # $packaging_place/debian from your $packaging_defaults, and updates
-# to the proper date/times in changelog and copyright.  After this you will 
-# want to run debuild from devscripts (this uses lintian) as a non-root user.
-#  And finish stuff off with dpkg-scanpackages.
+# to the proper date/times and data in changelog, copyright, and files.  
+# After this debuild from devscripts (this uses lintian) runs. 
+# Now all you do is finish stuff off with dpkg-scanpackages.
 
 # User defined variables for directories and package
 
@@ -22,6 +22,9 @@ my $prog = "gbootroot";
 my $revision = 1;
 my $dist = "unstable";
 my $urgency = "low";
+my $arch = "all";
+my $group = "devel";
+my $priority = "optional";
 my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
 my $packaging_place = "$user_home/gbootroot/PACKAGING";
 my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg";
@@ -90,7 +93,9 @@ foreach (@make_lines) {
 	 system "cp -fa $dir $packaging_place/$base";
 	}
 	else {
-		system "$_";
+               if (!/mknod|dev/) {
+		    system "$_";
+               }
         }
 }
 
@@ -177,9 +182,6 @@ if (!$stop) {
 
 } # end if !$stop
 
-system "rm $packaging_place/debian/*";
-system "cp -fa $packaging_defaults/* $packaging_place/debian";
-
 # Set-up the copyright
 open(COPYRIGHT,">$packaging_defaults/copyright") 
     or die "Couldn't open up $packaging_defaults/copyright: $?\n";
@@ -189,6 +191,20 @@ print COPYRIGHT "Author: \n$name <$email>\n\n";
 print COPYRIGHT "Copyright:\n\n" .
 "On Debian GNU/Linux systems, the complete text of the GNU General Public\n" .
     "License can be found in /usr/share/common-licenses/GPL\n";
+close(COPYRIGHT);
+
+# Set-up files
+open(FILES,">$packaging_defaults/files") 
+    or die "Couldn't open up $packaging_defaults/files: $?\n";
+print FILES "$prog_$version-$revision_$arch.deb $group $priority\n";
+close(FILES);
+
+
+system "rm $packaging_place/debian/*";
+system "cp -fa $packaging_defaults/* $packaging_place/debian";
+
+chdir($packaging_place);
+system "debuild";
 
 sub home_builder {
 
