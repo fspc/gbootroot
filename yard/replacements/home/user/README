@@ -1,3 +1,6 @@
-The administrator has to change the user and group of the ENV files to the proper
-user and group.  The permissions of /tmp  and the users directory 
-also need to be made writable.    
+# $Id$
+# make_debian replacement
+
+The administrator has to change the user and group of the ENV files 
+to the proper user and group.  The permissions of /tmp and the users 
+directory also need to be made writable.    
