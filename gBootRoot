@@ -263,17 +263,32 @@ verbosity_box();
 start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
                                              # "verbosity level"
 
+
+# Gtk::check_version expects different arguments .7004 so will have
+# to check for the version instead.
 # Right now >= 0.7000 is o.k.
-if (Gtk::check_version("1","0","7") =~ /too old/) {
+#if (Gtk::check_version(undef,"1","0","7") =~ /too old/) {
+
+if (Gtk->major_version < 1) {
+    et();
+}
+elsif (Gtk->micro_version < 7) {
+    et();
+}
+elsif (Gtk->minor_version < 2) {
+    et();
+}
+
+sub et {
     error_window("gBootRoot is presently being developed with gtk-perl" . 
                  " version $gtk_perl_version.\nYou are using a" .
-                 " version of gtk-perl < 0.7000.  You may still be able\n" .
+                 " version of gtk-perl < 0.7002.  You may still be able\n" .
                  " to use this program, but you may encounter problems." .
                  " See the FAQ\nfor places to get a newer gtk-perl version." .
                  " \n\nThe most common error reported:\n\"Can't locate" .
                  "  object  method\"");
                  #,"center");
-    print "Using a version of gtk-perl < 0.7000\n";
+    print "Using a version of gtk-perl < 0.7002\n";
 }
 
 my $window = new Gtk::Window("toplevel");
@@ -1053,7 +1068,6 @@ sub Generate {
 	yard($kernel,$template_dir,$template);
     }
 
-    #print "$root_selection $root_filename $method $template\n";
 
 } # end sub Generate
 
@@ -1280,18 +1294,6 @@ sub verbosity_box {
        show $verbosity_window;
 
 } # end sub verbosity_box
-
-
-sub make_menu_item {
-    my( $name, $callback, $data ) = @_;
-    my $item;
-
-    $item = new Gtk::MenuItem( $name );
-    $item->signal_connect( "activate", $callback, $data );
-    $item->show();
-
-    return $item;
-}
 
 sub fileselect {
 
