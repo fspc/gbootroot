@@ -157,7 +157,7 @@ sub kernel_version_check {
 ## REQUIRES $contents_file
 sub read_contents_file {
 
-    my ($contents_file, $mnt) = @_;
+    my ( $contents_file, $mnt, $fs_size ) = @_;
     my $error;
 
     # It's a good idea to clear the text buffer in the verbosity box
@@ -196,7 +196,7 @@ sub read_contents_file {
 	system "rm -rf $mnt/loopback";
 
 	#<path> <type> <mode> <uid> <gid> <major> <minor> <start><inc><count> 
-	# /dev is always needs to be made automatically
+	# /dev always needs to be made automatically
 	open(DEVICE_TABLE, ">$mnt/device_table.txt") or
 	    ($error = error("$mnt/device_table.txt: $!"));
 	return "ERROR"if $error && $error eq "ERROR";
@@ -231,7 +231,7 @@ sub read_contents_file {
       # devices and process them individually, globbing if necessary,
       # and appending the changes to the device table. --freesource
 
-      if ( $fs_type eq "genext2fs" ) {
+      if ( $fs_type eq "genext2fs" && $fs_size <= 8192 ) {
 
 	  # If a device is found on the same line with a non-device(s)
 	  # the non-device(s) is sent on its merry way.
