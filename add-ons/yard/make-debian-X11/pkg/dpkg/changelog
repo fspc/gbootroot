@@ -1,3 +1,9 @@
+make-debian-x11 (1.0-2) unstable; urgency=low
+
+  * Added file-rc to the Depends in the control.
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Tue,  9 Oct 2001 21:40:26 -0400
+
 make-debian-x11 (1.0-1) unstable; urgency=low
 
   * Initial Release.
