@@ -1,0 +1,3 @@
+The administrator has to change the user and group of the ENV files to the proper
+user and group.  Sorry, but I didn't want to go around changing the group file of
+the host system to automate this.
