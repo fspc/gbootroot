@@ -1,9 +1,13 @@
+Compiled 2.4.16-2um linux and modules to specification for root_fs_helper.
+Makefile properly edited to copy over the config used.  Ext2, cramfs, minix,
+reiserfs, and romfs are built-in to the kernel.
+
 Got rid of the complete lock-up when large files are compressed, ofcourse,
 users won't want to try to compress more than one format at the same time, 
 because the logic will get skewed.  In the future may make this OO.  Added 
 some verbosity to tell when the process has begun and finished.
 
-Established logic for Filesystem Box bases on ownership.  Defaults need to
+Established logic for Filesystem Box based on ownership.  Defaults need to
 be different dependending on the user.  Normal users probably never will
 want to preserve permissions, but they may want to toggle off UML
 Exclusively to create different filesystem types when <= 8192 fs_size.
