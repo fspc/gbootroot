@@ -16,6 +16,7 @@ chown user /home/user/*
 chgrp user /home/user/*
 chown user /home/user/.*
 chgrp user /home/user/.*
+chmod 777 /tmp
 
 # swim --initdb
 
