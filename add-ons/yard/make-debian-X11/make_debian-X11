@@ -83,7 +83,15 @@ $Id
     
 # IMPORTANT NOTE:  Things slow down noticeably when the buffer gets too big in
 # the verbosity box so consider closing it with the slider for faster 
-# generation.  Look at /tmp/gbootroot_tmp'time-date'/verbose instead.
+# generation.  There are several ways to accomplish this:  
+# Choose Edit->Stages->"user defined" and go one stage at a time, closing 
+# the verbosity box with the slider bar between each stage, and then 
+# reopen the verbosity box.  If the stage is particularly long, you 
+# can toggle the slider bar to close the verbosity box and reopen it
+# again clearing the buffer in the process.  You may choose a lower 
+# verbosity level, or you may keep the verbosity box off altogether and
+# look at /tmp/gbootroot_tmp'time-date'/verbose or 
+# /tmp/gboot_non_root_`id -u`/verbose (normal user).
 
 # Todays Quote: Creating a root filesystem is all about stuff.
 
@@ -268,7 +276,7 @@ return $stuff;
 use strict;
 use File::Basename;
 my $rm = "\$";
-$main::Id = "# \$Id: make_debian-X11,v 1.35 2001/12/09 10:18:14 freesource Exp $rm"; 
+$main::Id = "# \$Id: make_debian-X11,v 1.36 2001/12/11 06:46:42 freesource Exp $rm"; 
 my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
 if ($sbin == 0) {
     $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
