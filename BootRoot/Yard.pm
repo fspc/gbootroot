@@ -1039,8 +1039,8 @@ sub copy_strip_file {
     my $error;
 
     if ($strippable{$from}) {
-        #  Copy it stripped
 
+        #  Copy it stripped
 	if ($strip_lib) {
 	    if (defined($lib_needed_by{$from})) {	
 		#  It's a library
@@ -1053,6 +1053,26 @@ sub copy_strip_file {
 		    sys("$objcopy --strip-debug $from $to");
 		}
 	    }   
+	}
+	if ($strip_module) {
+	    if (defined($is_module{$from})) {
+		info(1, "Copy/stripping module $from to $to\n");
+		sys("$objcopy --strip-debug $from $to");
+	    }
+	} 
+	if ($strip_bin) {
+	    if (!defined($is_module{$from}) && 
+		!defined($lib_needed_by{$from})) {
+		#  It's a binary executable
+		info(1, "Copy/stripping binary executable $from to $to\n");
+		sys("$objcopy --strip-all $from $to");
+	    }
+	}
+	else { # fallback just in case
+	#  Normal copy, no strip
+	info(1, "Copying $from to $to\n");
+	sys("cp -a $from $to");
+	}
 
 	# Copy file perms and owner
 	my($mode, $uid, $gid);
@@ -1060,49 +1080,15 @@ sub copy_strip_file {
 	my $from_base = basename($from);
 	chown($uid, $gid, $to) or ($error = 
 				   error("chown: $! \($from_base\)\n"));
-	##return "ERROR"if $error && $error eq "ERROR";
+	return "ERROR"if $error && $error eq "ERROR";
 	chmod($mode, $to)      or ($error = 
 				   error("chmod: $! \($from_base\)\n"));
-        ##return "ERROR"if $error && $error eq "ERROR";
-	}
-	elsif ($strip_module) {
-	    info(1, "Copy/stripping module $from to $to\n");
-	    sys("$objcopy --strip-debug $from $to");
-
-	    # Copy file perms and owner
-	    my($mode, $uid, $gid);
-	    (undef, undef, $mode, undef, $uid, $gid) = stat $from;
-	    my $from_base = basename($from);
-	    chown($uid, $gid, $to) or ($error = 
-				       error("chown: $! \($from_base\)\n"));
-	    ##return "ERROR"if $error && $error eq "ERROR";
-	    chmod($mode, $to)      or ($error = 
-				       error("chmod: $! \($from_base\)\n"));
-	    return "ERROR"if $error && $error eq "ERROR";
-	} elsif ($strip_bin) {
-	    #  It's a binary executable
-	    info(1, "Copy/stripping binary executable $from to $to\n");
-	    sys("$objcopy --strip-all $from $to");
-
-	    # Copy file perms and owner
-	    my($mode, $uid, $gid);
-	    (undef, undef, $mode, undef, $uid, $gid) = stat $from;
-	    my $from_base = basename($from);
-	    chown($uid, $gid, $to) or ($error = 
-				       error("chown: $! \($from_base\)\n"));
-	    ##return "ERROR"if $error && $error eq "ERROR";
-	    chmod($mode, $to)      or ($error = 
-				       error("chmod: $! \($from_base\)\n"));
-	    return "ERROR"if $error && $error eq "ERROR";
-	}
-	else {
-	#  Normal copy, no strip
-	sys("cp $from $to");
-	}
+        return "ERROR"if $error && $error eq "ERROR";
     }
     else {
 	#  Normal copy, no strip
-	sys("cp $from $to");
+	info(1, "Copying $from to $to\n");
+	sys("cp -a $from $to");
     }
 
 }
