@@ -1,0 +1,21 @@
+# $Id$
+# Example-EmptyFS.yard
+
+# The recommended way for creating empty filesystems is to run gbootroot as
+# a normal user, choose the size you want, choose uml exclusively in the 
+# Filesystem Box, choose a filesystem command like mkreiserfs, press return or
+# submit, choose the create stage (see next paragraph) and continue.
+#
+# If you just created a filesytem with stuff in it, you will want to choose
+# the check stage along with the create state or you can take a look at 
+# /tmp/gboot_non_root_`ud -u`/loopback, if there is stuff in it you can just 
+# delete it by hand, and then proceed with the create stage.
+#
+# Notes: jffs/jffs2, cramfs, and romfs filesystems always have the /initrd and 
+# /dev  directories added since these directories need to exist in order for 
+# the MTD Emulator to work.  Genext2fs will have devices added if 
+# /tmp/gboot_non_root_`ud -u`/device_table.txt exists, and many fiLesystem
+# creators automatically add the lost+found directory.
+#
+# jffs/jffs2, cramfs and romfs have their respective fs type appended to
+# the image name you choose: root_fs turns into root_fs_jffs2
