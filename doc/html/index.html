@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.92 2002/03/04 02:21:09 freesource Exp $</center>
+<center>$Id: index.html,v 1.93 2002/03/07 18:55:25 freesource Exp $</center>
 
 <p>
 
@@ -382,6 +382,11 @@ Notes:&nbsp;&nbsp;
 <ul>
 
 <li>Choose a filesystem type which corresponds with the root filesystem image.
+
+<li>
+
+The initrd uses pivot_root which means that the root filesystem must have
+chroot in order for the filsystem to properly boot.
 
 <li>
 
