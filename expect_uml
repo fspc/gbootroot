@@ -1,17 +1,18 @@
 #!/usr/bin/perl
 
 use BootRoot::UML;
+use File::Basename;
 
 if ( !$ARGV[0] ) {
     
-    die "expect_uml ubd0 ubd1 other-options mount-point preserve_permissions filesystem_command\n";
+    die "expect_uml ubd0 ubd1 other-options mount-point preserve_ownership filesystem_command\n";
 
 }
 
 
 my $arguments = "$ARGV[0] $ARGV[1] $ARGV[2]"; 
 my $mount_point = "$ARGV[3]";
-my $preserve_permissions = "$ARGV[4]";
+my $preserve_ownership = "$ARGV[4]";
 
 my $end = 6;
 my $filesystem;
@@ -46,12 +47,25 @@ my $uml  =
 
 $uml->boot();
 # Make the GID/UID 0 FS
-$uml->command("$filesystem /dev/ubd/1");
+if ( $filesystem =~ /^mkcramfs/ ) {
+    $uml->command("mke2fs -m0 /dev/ubd/1");
+}
+else {
+    $uml->command("$filesystem /dev/ubd/1");
+}
 $uml->command("mount /dev/ubd/1 /mnt1");
 $uml->command("mount -t hostfs none -o $mount_point /mnt2");
 $uml->command("cp -a /mnt2/* /mnt1");
-if ( $preserve_permissions == 0 ) {
+if ( $preserve_ownership == 0 ) {
     $uml->command("chown -R 0:0 /mnt1");
+}
+if ( $filesystem =~ /^mkcramfs/ ) {
+    my $cram_dir = dirname($mount_point);
+    my $root_fs_name = basename($ARGV[1]);
+    my $cramfs_name = "$root_fs_name" . "_cramfs";
+    $uml->command("umount /mnt2");
+    $uml->command("mount -t hostfs none -o $cram_dir /mnt2");
+    $uml->command("mkcramfs /mnt1 /mnt2/$cramfs_name");
 }
 $uml->command("umount /mnt1; umount /mnt2");   
 $uml->halt();
