@@ -140,7 +140,7 @@ sub read_contents_file {
     $text_insert->backward_delete($text_insert->get_length());
 
     # If the template changes it is time to clear all the values.
-    if ($contents_file_tmp ne $contents_file) {
+    if ($contents_file_tmp && $contents_file_tmp ne $contents_file) {
 	undef %Included; 
 	undef %replaced_by;
 	undef %links_to;
