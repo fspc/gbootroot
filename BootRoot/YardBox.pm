@@ -1259,9 +1259,20 @@ sub search {
 
 		    }
 		    else {
+			$offset = "";
+			my $tmp_offset;
+			if (!$case_sensitive->active) {
+			    $tmp_offset = rindex($tmp_ct, $tmp_k);
+			}
+			else {
+			    $tmp_offset = rindex($changed_text_from_template,
+						 $keywords);
+			}
 			question_window("Beginning of document reached; " . 
 					"continue from end?", 
-					$search_window, $submit_b);
+					$search_window, $submit_b,
+					-1);
+			print "$offset && $tmp_offset TOO\n";
 		    }
 		}
 
@@ -1339,6 +1350,7 @@ sub search {
 
 	    }
 	    $old_keywords = $keywords;	    
+	    print "$offset\n";
 
 	} );
 
