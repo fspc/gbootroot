@@ -1281,7 +1281,7 @@ sub uml_box {
 	$main_vbox->show();
 
 	##my $table_uml = Gtk::Table->new( 4, 3, $true );
-	my $table_uml = Gtk::Table->new( 5, 4, $false );
+	my $table_uml = Gtk::Table->new( 5, 6, $false );
 	##$main_vbox->pack_start( $table_uml, $true, $true, 0 );
 	$main_vbox->pack_start( $table_uml, $true, $false, 0 );
 	$table_uml->show();
@@ -1356,18 +1356,6 @@ sub uml_box {
 						[14]);
 		      
 
-		      # Figure out whether it's an old mconsole location
-		      # or new.
-
-		      my $umid_location = "/tmp/uml//mconsole";
-		      if ( -S "/tmp/uml/$umid/mconsole" ) {
-			  $umid_location = "/tmp/uml/$umid/mconsole";
-		      }
-		      elsif ( -S "$ENV{HOME}/.uml/$umid/mconsole" ) {
-			  $umid_location = "$ENV{HOME}/.uml/$umid/mconsole";
-		      }
-
-
  		      # cad
 		      if ( $entry_advanced[14] && 
 			   $entry_advanced[14] =~ m,cad, ) {
@@ -1378,7 +1366,7 @@ sub uml_box {
 			      {
 				  sys( 
 				       "uml_mconsole " .
-				      $umid_location .
+				      $umid .
 				       " cad");
 				  
 			      }
@@ -1398,7 +1386,7 @@ sub uml_box {
 			      {
 				  sys( 
 				       "uml_mconsole " .
-				      $umid_location .
+				      $umid .
 				       " help");
 				  
 			      }
@@ -1419,7 +1407,7 @@ sub uml_box {
 			      {
 				  sys( 
 				       "uml_mconsole " .
-				      $umid_location .
+				      $umid .
 				       " version");
 				  
 			      }
@@ -1440,7 +1428,7 @@ sub uml_box {
 			      {
 				  system
 				       "uml_mconsole " .
-				      $umid_location .
+				      $umid .
 				       " reboot&";
 				  
 			      }
@@ -1459,7 +1447,7 @@ sub uml_box {
 			      {
 				  system
 				       "uml_mconsole " .
-				      $umid_location .
+				      $umid .
 				       " halt&";
 				  
 			      }
@@ -1482,13 +1470,13 @@ sub uml_box {
 				       ^m$ | ^p$ | ^r$ | ^s$ | ^t$ | ^u$,x ) {
 				      system
 					  "uml_mconsole " . 
-					     $umid_location .
+					     $umid .
 					  " sysrq $command_parts[$co + 1]&";
 				  }
 				  else {
 				      system
 					  "uml_mconsole " . 
-					     $umid_location .
+					     $umid .
 					  " sysrq&";
 				  }
 			  
@@ -1510,7 +1498,7 @@ sub uml_box {
 
 				  sys(
 				      "uml_mconsole " . 
-					 $umid_location .
+					 $umid .
 					  " switch $command_parts[$co + 1]");
 			  
 				  $umid = $command_parts[$co + 1];
@@ -1533,7 +1521,7 @@ sub uml_box {
 			      {
 				  system
 				      "uml_mconsole " .
-					 $umid_location .
+					 $umid .
 					      " config " .
 						  "$command_parts[$co + 1]&";
  
@@ -1554,7 +1542,7 @@ sub uml_box {
 			      {
 				  system 
 				      "uml_mconsole " .
-					 $umid_location .
+					 $umid .
 					      " remove " .
 						  "$command_parts[$co + 1]&";
 				  
@@ -1568,7 +1556,7 @@ sub uml_box {
 	      } );
 
 
-	#_______________________________________
+        #_______________________________________
 	# Root Filesystem defaults to generated one if found.
 	label_advanced("Root_Fs:",0,1,2,3,$table_uml);
 	$eab3 = entry_advanced(1,4,2,3,10,$table_uml); # 1,2 & 2,3
@@ -1581,16 +1569,24 @@ sub uml_box {
 			   "Append with ubd?=.",
                            "" );
 
-	$table_uml->set_row_spacing( 2, 4);       
+
+        #_______________________________________
+	# MTD
+	#label_advanced("MTD:",0,1,3,4,$table_uml);
+	#label_advanced("MTD:",0,1,4,5,$table_uml);
+
+
+
+        $table_uml->set_row_spacing( 2, 4);       
 
 	#_______________________________________
 	# Submit Button
-	my $submit_b = button_advanced(0,1,3,4,"Submit",$table_uml);
+	my $submit_b = button_advanced(0,1,5,6,"Submit",$table_uml);
 	$tooltips->set_tip( $submit_b, 
                            "Start uml kernel processes.",
                            "" );
 	$submit_b->signal_connect("clicked",
-				  sub {  
+                                   sub {  
 				      # UML kernel = $entry_advanced[5]
 				      # xterm -e linux ubd#=root_fs 
                                       # root=/dev/ubd# 
@@ -1655,7 +1651,7 @@ sub uml_box {
         # This is the hard kill when all else fails, it also cleans up
         # lingering processess, but is considered a last resort, and
         # can be dangerous, it has even taken down a WM.
-	my $abort_b = button_advanced(3,4,3,4,"Abort",$table_uml);
+	my $abort_b = button_advanced(3,4,5,6,"Abort",$table_uml);
 	$tooltips->set_tip( $abort_b, 
                            "Abort uml kernel processes." .
                            "This serves three purposes:\n" .
@@ -1685,7 +1681,7 @@ sub uml_box {
 
 	#_______________________________________
 	# Reboot Button - mconsole
-	my $reboot_b = button_advanced(1,2,3,4,"Reboot",$table_uml);
+	my $reboot_b = button_advanced(1,2,5,6,"Reboot",$table_uml);
 	$tooltips->set_tip( $reboot_b, 
                            "Passes the reboot command to the mconsole.",
                            "" );
@@ -1696,15 +1692,14 @@ sub uml_box {
 					 m,\s*umid=([\w\d-]+)\s*,; 
 				     $umid = $1 if !$umid;
 				     system 
-				      "uml_mconsole /tmp/uml/$umid/mconsole" .
-					 " reboot&"; 
-
+					 "uml_mconsole $umid" .
+					     " reboot&"; 
 				 } );
 
 
 	#_______________________________________
 	# Halt Button - mconsole
-	my $halt_b = button_advanced(2,3,3,4,"Halt",$table_uml);
+	my $halt_b = button_advanced(2,3,5,6,"Halt",$table_uml);
 	$tooltips->set_tip( $halt_b, 
                            "Passes the halt command to the mconsole. " .
                            "If this fails use the Abort button.",
@@ -1715,14 +1710,14 @@ sub uml_box {
 				     $entry_advanced[9] =~  
 					 m,\s*umid=([\w\d-]+)\s*,; 
 				     $umid = $1 if !$umid;
-				     system 
-				      "uml_mconsole /tmp/uml/$umid/mconsole" .
-					 " halt&"; 
+					 system 
+					     "uml_mconsole $umid" .
+						 " halt&"; 
 				 } );
 
 	#_______________________________________
 	# Cancel button also kills UML kernel if still open
-	my $cancel_b = button_advanced(4,5,3,4,"Close",$table_uml);
+	my $cancel_b = button_advanced(4,5,5,6,"Close",$table_uml);
 	$tooltips->set_tip( $cancel_b, 
                            "Close uml box.",
                            "" );
@@ -1738,7 +1733,7 @@ sub uml_box {
        $uml_window->destroy;
    }
 
-}
+}  # sub uml_box
 
 # Someday .. like today .. this will be switched to using mconsole as the 
 # first means of cleaning processes:
