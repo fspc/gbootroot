@@ -5,7 +5,7 @@ Maintainer: Jonathan Rosenbaum <freesource@users.sourceforge.net>
 Build-Depends: debhelper (>> 3.0.0)
 Standards-Version: 3.5.2
 
-Package: make-debian-x11 
+Package: make-debian-x11
 Architecture: all
 Depends: gbootroot (>= 1.2.13), swim, debconf
 Description: BootRoot add-on. 
@@ -14,7 +14,7 @@ Description: BootRoot add-on.
  includes X11, and the ability to run gBootRoot from within its own creation.
  .
  See the script for information on how to customize it to your own 
- specifications.  This package depends on swim.  Add this line to you 
+ specifications.  This package depends on swim.  Add this line to your 
  sources.list:
  .
  deb http://prdownloads.sourceforge.net/avd ./ 

@@ -54,12 +54,18 @@ my $zoneinfo = get("make-debian-x11/make_debian_x11-zoneinfo");
 	close(SCRIPT);
     }
     else {
+	# Will run swim --initdb first rather then trying to interact
+	# with the make_debian-X11 script.
 	# Not a perfect approach, but the swim package will be updated
         # eventually.
-	print STDERR "Be patient, this will take a little while.\n";
-	open (SCRIPT, "|make_debian-X11 2&> /dev/null") 
+	print STDERR "Be patient, building the swim databases will take a little while.\n";
+	system "swim --initdb 2&> /dev/null";
+
+	# Now continue with the script.
+	#open (SCRIPT, "|make_debian-X11 2&> /dev/null") 
+	open (SCRIPT, "|make_debian-X11") 
 	or warn "Couldn't open make_debian-X11\n";
-	print SCRIPT $swim;
+	#print SCRIPT $swim;
 	print SCRIPT $doc;
 	print SCRIPT $zoneinfo;
 	close(SCRIPT);
