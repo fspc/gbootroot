@@ -52,7 +52,7 @@ use BootRoot::Error;
 
 my (%Included, %replaced_by, %links_to, %is_module, %hardlinked, 
     %strippable, %lib_needed_by, @Libs, %user_defined_link);
-my (%pam_repeats, $find_pam);
+my (%pam_repeats, $find_nss, $find_pam);
 my $cf_line = 0;
 my $BLKGETSIZE_ioctl = 4704; 
 my $BLKFLSBUF_ioctl  = 4705; 
@@ -502,7 +502,7 @@ sub extra_links {
     
 
     # First we find nss and pam stuff if asked for.
-    my $find_nss   = $nss_pam->{60}{conf_nss};
+    $find_nss   = $nss_pam->{60}{conf_nss};
     $find_pam   = $nss_pam->{61}{conf_pam};
 
     # Determine how the PASS is configured by the user.
@@ -624,13 +624,22 @@ sub library_dependencies {
 	## We make one exception here for pam service modules  --freesource
 	## This can be turned off and on.
 	if ( ( -f $file and -B _ and -x _ and $file_line =~ /executable/ ) ||
-	     ( $file =~ m,/security/pam_\w+\.so, )
+	     ( $file =~ m,/security/pam_\w+\.so, ||
+	       $file =~ m,lib/libnss_[\w\d\.-]*\.so,, )
 	     ) {
 
 	    ## Determine whether to continue with pam to keep original
 	    ## default behavior.
 	    if ( $find_pam != 1 ) {
 		if ( $file =~ m,/security/pam_\w+\.so, ) {
+		    next;
+		}
+	    }
+
+	    ## Determine whether to continue with nss to keep original
+	    ## default behavior.
+	    if ( $find_nss != 1 ) {
+		if ( $file =~  m,lib/libnss_[\w\d\.-]*\.so,, ) {
 		    next;
 		}
 	    }
