@@ -5,6 +5,8 @@ my $home = "$ENV{HOME}/.gbootroot";
 my $home_yard = "$home/yard";
 my $template_dir = "$home_yard/templates/";
 my $home_yard_replacements = "$home_yard/Replacements";
+my $nodename = `uname -n`; chomp $nodename;
+my $debian_yard = "Debian-$nodename.yard";
 
 # You need file-rc, and you may add other extra stuff.  These packages were
 # chosen for woody, so you may need something different.
@@ -36,7 +38,7 @@ close(SWIM);
 push(@required_packages,@extra_packages);
 push(@required_files,@extra_files);
 
-open(DEBIAN,">$template_dir/Debian.yard") 
+open(DEBIAN,">$template_dir/$debian_yard") 
 	or die "Couldn't open $?\n";
 open(FILERC,"/etc/runlevel.conf") or die "No runlevel.conf: $?\n";
 @filerc = <FILERC>;
