@@ -85,12 +85,12 @@
 telinit
 /sbin/shutdown
 /sbin/halt
-/etc/init.d/halt    # make this into a replacement
-/sbin/swapon               
-/sbin/reboot
-/etc/init.d/reboot  # make this into a replacement
-/etc/init.d/rc   <=    Replacements/etc/init.d/rc.example
-/etc/init.d/rcS <= Replacements/etc/init.d/rcS.example
+/etc/init.d/halt   <=   Replacements/etc/init.d/halt.example
+/sbin/reboot   
+/etc/init.d/reboot   <=   Replacements/etc/init.d/reboot.example
+/etc/init.d/rc   <=   Replacements/etc/init.d/rc.example
+/etc/init.d/rcS   <=  Replacements/etc/init.d/rcS.example
+/sbin/swapon 
 
 # Login stuff
 /bin/login 
