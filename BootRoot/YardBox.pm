@@ -1207,6 +1207,11 @@ sub search {
 			if ($tmp_k && $tmp_k ne $keywords) {
 			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
 			}
+			if ($tmp_ct 
+			    && $tmp_ct ne $changed_text_from_template) {
+			    ($tmp_ct = $changed_text_from_template) =~ 
+				tr/A-Z/a-z/;
+			}
 			$offset = rindex($tmp_ct, $tmp_k);
 
 		    }
@@ -1233,6 +1238,11 @@ sub search {
 			}
 			if ($tmp_k && $tmp_k ne $keywords) {
 			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			}
+			if ($tmp_ct 
+			    && $tmp_ct ne $changed_text_from_template) {
+			    ($tmp_ct = $changed_text_from_template) =~ 
+				tr/A-Z/a-z/;
 			}
 			$offset = rindex($tmp_ct, $tmp_k, $offset);
 		    }
@@ -1269,6 +1279,11 @@ sub search {
 			if ($tmp_k && $tmp_k ne $keywords) {
 			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
 			}
+			if ($tmp_ct 
+			    && $tmp_ct ne $changed_text_from_template) {
+			    ($tmp_ct = $changed_text_from_template) =~ 
+				tr/A-Z/a-z/;
+			}
 			$offset = index($tmp_ct, $tmp_k);
 		    }
 		    else {
@@ -1295,6 +1310,11 @@ sub search {
 			}
 			if ($tmp_k && $tmp_k ne $keywords) {
 			    ($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			}
+			if ($tmp_ct 
+			    && $tmp_ct ne $changed_text_from_template) {
+			    ($tmp_ct = $changed_text_from_template) =~ 
+				tr/A-Z/a-z/;
 			}
 			$offset = index($tmp_ct, $tmp_k, $offset);
 		    }
@@ -1342,6 +1362,7 @@ sub search {
 sub question_window {
 
     my ($output,$widget,$widget_button) = @_;
+    my ($ok_button, $c_button);
 
     if (not defined $question_window) {
     $question_window = new Gtk::Dialog;
@@ -1351,36 +1372,54 @@ sub question_window {
                                   \$question_window);
     $question_window->signal_connect("delete_event", \&destroy_window, 
                                   \$question_window);
+    $question_window->signal_connect("key_press_event", sub {
+	    my $event = pop @_; 
+	    if ($event->{'keyval'}) {
+		    if ($event->{'keyval'} == 65307) {
+			$question_window->destroy 
+		    }
+		    elsif ($event->{'keyval'} == 65293) {
+			$widget_button->clicked;
+			$question_window->destroy;
+		    }
+	    }
+    });
     $question_window->set_title("gBootRoot Question?");
     $question_window->border_width(15);
     my $label = new Gtk::Label($output);
     #$label->set_justify("left") if $_[1];
     $question_window->vbox->pack_start( $label, $true, $true, 15 );
     $label->show();
-    my $button = new Gtk::Button("OK");
-    $button->signal_connect("clicked", sub {
+
+    # OK button
+    #----------------------------------------
+    $ok_button = new Gtk::Button("OK");
+    $ok_button->signal_connect("clicked", sub {
 	$widget_button->clicked;
 	$question_window->destroy;
     });
-    $button->can_default(1);
-    $question_window->action_area->pack_start($button, $false, $false,0);
-    $button->grab_default;
-    $button->show;
+    $ok_button->can_default(1);
+    $question_window->action_area->pack_start($ok_button, $false, $false,0);
+    $ok_button->grab_default;
+    $ok_button->show;
 
-    my $c_button = new Gtk::Button("Cancel");
+    # Cancel button
+    #----------------------------------------
+    $c_button = new Gtk::Button("Cancel");
     $c_button->signal_connect("clicked", sub {
-	$question_window->destroy;
+	$question_window->destroy if $question_window;
     });
     $question_window->action_area->pack_start($c_button, $false, $false,0);
     $c_button->show;
-
-
 
    }
      if (!visible $question_window) {
          $question_window->show;
      }
-}
+
+    return ($ok_button,$c_button);
+
+} # end sub question_window
 
 
 sub yard_menu {
