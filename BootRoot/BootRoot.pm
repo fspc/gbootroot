@@ -829,7 +829,8 @@ else {
 	print "  --preserve-ownership=y|n  n\n\n";
 	print "                           (system kernel options)\n";
         print "  --kernel=path             specify different system kernel\n"; 
-	print "  --kernel-version=version  specify alternative version\n\n";
+	print "  --kernel-version=version  specify alternative version\n";
+	print "  --genext2fs-dir=dir       /usr/lib/bootroot/\n\n";
 	print "                           (print options)\n";
 	print "  --no-stdout               don't print to console\n\n";
 	print "filesytem-commands supported by root_fs_helper:\n";
