@@ -32,9 +32,9 @@
 
 use Gtk;
 use strict;
-use Yard;
-use YardBox;
-use Error;
+use BootRoot::Yard;
+use BootRoot::YardBox;
+use BootRoot::Error;
 use File::Basename;
 init Gtk;
 set_locale Gtk; 
@@ -119,7 +119,7 @@ my $home_uml_kernel = "$home/uml_kernel/";
 
 # Yard Stuff
 my $home_yard = "$home/yard";
-my $template_dir = "$home_yard/templates";
+my $template_dir = "$home_yard/templates/";
 my $home_yard_replacements = "$home_yard/replacements";
 
 my $initrd;
@@ -329,7 +329,7 @@ my $verbosity = 1; # info & sys use this as Global
 my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
 
 # Need this before everything.
-Gtk::Rc->parse("gbootrootrc");
+Gtk::Rc->parse("/etc/gbootroot/gbootrootrc");
 
 verbosity_box();
 start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
