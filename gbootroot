@@ -79,7 +79,19 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-use lib "/usr/share/perl5";
+
+# For distributions that don't adhere to the FHS.
+BEGIN {
+
+    my $fhs = grep(/\/usr\/share\/perl5/,@INC);
+
+    if ($fhs == 0) {
+	unshift(@INC,"/usr/share/perl5");
+    }
+
+
+}
+
 use Gtk;
 use strict;
 use BootRoot::Yard;
@@ -309,7 +321,7 @@ my $ars = {}; # anonymous hash
 # How the Boot/Root set is constructed for the 2 disk compression method:
 #
 # 1. submit() start the process.
-# 2. kernel_moudles() sets the $kernel_version.
+# 2. kernel_modules() sets the $kernel_version.
 # 3. lilo() is called.
 # 4. $ok determines what functions should be called for creating the
 #    Boot disk.
