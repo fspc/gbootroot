@@ -969,7 +969,8 @@ sub Generate {
 	        "kernel"             => $container[1],
 		"template_directory" => $template_dir,
 		"template"           => $entry_advanced[7],
-		"tmp"                => $tmp
+		"tmp"                => $tmp,
+		"mnt"                => $mnt    
 	       };
 
     my $template = $ars->{template};
