@@ -977,7 +977,7 @@ sub advanced_root_section {
                           " and any Kernel options desired afterwards.",
                           "" );
        button_fileselect_advanced(2,3,5,6,"Selection",$ear3,"Selection",13,
-				  $table_advanced_root);
+				  $table_advanced_root, $home_uml_kernel);
 
        #_______________________________________ 
        # Method
