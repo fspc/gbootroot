@@ -4,11 +4,13 @@
 /usr/bin/uml_moo
 /usr/bin/uml_net
 /usr/bin/uml_switch
+/usr/bin/tunctl
 /usr/bin/linux
 /usr/lib/bootroot/yard_chrooted_tests
 /usr/lib/bootroot/genext2fs
 /usr/lib/bootroot/expect_uml
 /usr/lib/bootroot/root_filesystem/root_fs_helper
+/usr/lib/bootroot/root_filesystem/Initrd.gz
 /usr/lib/bootroot/yard/Replacements/lib/modules/modules-2.2.tar
 /usr/lib/bootroot/yard/Replacements/lib/modules/modules-2.4.tar
 /usr/lib/bootroot/yard/Replacements/lib/modules/config
@@ -101,6 +103,7 @@
 /usr/share/gbootroot/yard/Replacements/root/.profile.debian
 /usr/share/gbootroot/yard/Replacements/root/umlnet
 /usr/share/gbootroot/yard/templates/Example-Debian.yard
+/usr/share/gbootroot/yard/templates/Example-EmptyFS.yard
 /usr/share/gbootroot/yard/templates/Example-Mini.yard
 /usr/share/gbootroot/yard/templates/Example.yard
 /usr/share/gbootroot/genext2fs/genext2fs.c
@@ -118,6 +121,7 @@
 /usr/share/doc/gbootroot/html/images/paths.jpg
 /usr/share/doc/gbootroot/html/images/replacements.jpg
 /usr/share/doc/gbootroot/html/images/screenshot.jpg
+/usr/share/doc/gbootroot/html/images/screenshot2.jpg
 /usr/share/doc/gbootroot/html/images/settings.jpg
 /usr/share/doc/gbootroot/html/images/stripping.jpg
 /usr/share/doc/gbootroot/html/images/template_search.jpg
@@ -125,6 +129,7 @@
 /usr/share/doc/gbootroot/html/images/uml_box.jpg
 /usr/share/doc/gbootroot/html/images/verbosity_box.jpg
 /usr/share/doc/gbootroot/html/images/yard_box.jpg
+/usr/share/doc/gbootroot/html/images/Editorspick.gif
 /usr/share/doc/gbootroot/html/images/peng-movie.4.gif
 /usr/share/doc/gbootroot/html/images/rateit80x18.gif
 /usr/share/doc/gbootroot/html/bootroot.html

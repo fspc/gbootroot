@@ -1,4 +1,4 @@
-$Id: README-debian-X11,v 1.4 2001/11/08 06:16:29 freesource Exp $
+$Id: README-debian-X11,v 1.7 2001/12/12 01:00:09 freesource Exp $
 make_debian-X11 replacement
 
 Setting up the root filesystem
@@ -23,10 +23,13 @@ Getting X working
 below assume your host (the computer you are running) has an ip of 192.168.1.4,
 a uml ip of 192.168.1.2 and a tap device ip of 192.168.1.5.
 
-2. If you haven't already done this, you will want to edit the 
+2.  You may need to give X server access control for the uml instance by 
+typing this on your host machine: xhost +192.168.1.2
+
+3. If you haven't already done this, you will want to edit the 
 /etc/network/interfaces file using vi.  This should be self-explanatory.
 
-3. You don't need to load any modules required by your host system, because
+4. You don't need to load any modules required by your host system, because
 uml_net will cause the modules to be loaded automatically - assuming your 
 kernel has kmod -  when it automatically configures the tap device interface 
 for ethertap.  But if you want or need to do it manually from your host 
@@ -37,19 +40,19 @@ system, you could do something like this:
  ifconfig tap0 192.168.1.5
  route add -host 192.168.1.4 gw 192.168.1.5
 
-4. The next time you start the uml kernel and boot the root_fs you will want 
+5. The next time you start the uml kernel and boot the root_fs you will want 
 to give it options like this where  HWaddr (see ifconfig) belongs to your 
 network device:
 
  ubd0=/root_fs_debian_x11 root=/dev/ubd0 eth0=ethertap,tap0,HWaddr,192.168.1.5 mem=64M
 
-5.  At this point you should be able to ping 192.168.1.4.
+6.  At this point you should be able to ping 192.168.1.4.
 
 Hint:  Check to make sure that uml_net came bundled with the uml kernel,
 because this is what enables networking, and make sure it is setuid root
 (chmod 4755).
 
-6.  Run startx.  It will ask for your host ip number.
+7.  Run startx.  It will ask for your host ip number.
 
 That's it.  
 
