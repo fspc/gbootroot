@@ -1,4 +1,4 @@
-#  $Id: Example.yard,v 1.13 2001/12/11 19:14:08 freesource Exp $
+#  $Id: Example.yard,v 1.14 2001/12/13 03:01:15 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with getty.  
@@ -10,7 +10,7 @@
 #  Works both with and without devfs, i.e devfs=nomount, assuming the correct
 #  replacement inittab is used.  In order to create a non-devfs from a host 
 #  system using devfs, either manually mknod /dev/tty[0-2] (major 4 minor 0-2)
-#  or  have devfsd automatically make these devices every time the root 
+#  or have devfsd automatically make these devices every time the root 
 #  filesystem starts.
 
 #############################################################################
