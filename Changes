@@ -3,12 +3,13 @@
 
 Updated to 2.4.19-45um and the latest uml tools 20021103.
 
-Added a nested package, gbootroot-nest1 to allow gbootroot to have
-full functionality under uml.
+Added nesting level 1 to the uml to allow gbootroot to have full
+functionality under another uml running on the host kernel.  This
+means the uml will use more memory, but its negligible.
 
 Wrote and added a C program skas-or-tt to automatically add the proper
 mode={skas,tt} to the commandline.  This means compilation will be
-optimized, and things won't lock up when using gbootroot-nest1 with a
+optimized, and things won't lock up when using gbootroot within a
 uml running on top of a host kernel without the skas patch.
 
 The MTD Emulator doesn't work as nicely as before.  Blkmtd seems
@@ -19,8 +20,8 @@ didn't change.
 
 Had to add user-mode-linux/usr/lib/uml to the PATH to allow --home to
 find port-helper, or otherwise root_fs complain.  Have no idea why
-this change exists with the new port-helper because wasn't the case
-before.  Also, added path for user-mode-linux/usr/bin to find the
+this change exists with the new port-helper because that wasn't the
+case before.  Also, added path for user-mode-linux/usr/bin to find the
 other tools.
 
 The Makefile has been altered quite a bit, and wgets necessary

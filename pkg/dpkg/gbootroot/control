@@ -27,6 +27,8 @@ Description: Boot/Root Filesystem Distribution testing and creation.
  .
  See manual in /usr/share/doc/gbootroot/html for instructions on how
  to add the proper lines to your sources.list.  Both binary and source
- packages are available.  If you want to run this program within a running 
- uml, install gbootroot-nest1 instead.
+ packages are available.  This program may be run within a uml by installing 
+ it in a root_fs because the included uml is set at nesting level 1; 
+ make_debian or the make_debian_x11 script from make-debian-x11 can 
+ be used to make Debian root_fs.
 
