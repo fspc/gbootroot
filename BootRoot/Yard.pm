@@ -48,7 +48,9 @@ use FileHandle;
 use Cwd; #  I am not even sure if this is being used here now
 use English;  # I think this can be ditched for portability
 use File::Find; # used by check_root_fs
+use BootRoot::BootRoot;
 use BootRoot::Error; 
+use BootRoot::UML;
 
 my (%Included, %replaced_by, %links_to, %is_module, %hardlinked, 
     %strippable, %lib_needed_by, @Libs, %user_defined_link);
@@ -157,12 +159,12 @@ sub kernel_version_check {
 ## REQUIRES $contents_file
 sub read_contents_file {
 
+
     my ( $contents_file, $mnt, $fs_size ) = @_;
     my $error;
 
     # It's a good idea to clear the text buffer in the verbosity box
     $text_insert->backward_delete($text_insert->get_length());
-
 
     # Need to know whether genext2fs is being used
     my $fs_type = (split(/\s/,$main::makefs))[0];
@@ -1108,7 +1110,7 @@ sub space_check {
 sub create_filesystem {
 
     my ($filename, $fs_size, $mnt, $strip_lib, 
-	$strip_bin, $strip_module, $obj_count) = @_;
+	$strip_bin, $strip_module, $obj_count, $uml_expect) = @_;
 
     $device = "$mnt/$filename";
     $mount_point = "$mnt/loopback";
@@ -1129,7 +1131,25 @@ sub create_filesystem {
     # the new mounted filesystem ubd1.  I'll automate this in the future.
     # --freesource
 
-    if ( $> != 0 && $fs_size > 8192 && $fs_type eq "genext2fs" ) {
+
+    # Before we go on make sure that the normal user knows what he
+    # is doing.  This gives him the opportunity to use the loop device,
+    # but his fs will almost definitely not work, because of permissions.
+
+    if ( $> != 0 && $uml_expect->{uml_exclusively} == 0 &&
+	 $fs_type ne "genext2fs" ) {
+
+
+    }
+
+
+    # Allow smaller than 8192 if exclusive.
+    if ( $uml_expect->{uml_exclusively} == 1 ) {
+	sync();
+	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
+	sync();
+    }
+    elsif ( $> != 0 && $fs_size > 8192 && $fs_type eq "genext2fs" ) {
 	sync();
 	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
 	sync();
@@ -1141,7 +1161,8 @@ sub create_filesystem {
     }
 
     # Maybe other fs will be represented in the future, but genext2fs is all 
-    # that exists now for non-root users.  --freesource
+    # that exists now for non-root users, but if uml_exclusively
+    # then the filsystem will be used from the helper machine. --freesource
     if ( $fs_type ne "genext2fs" ) {
 
 	if (-f $device) {
