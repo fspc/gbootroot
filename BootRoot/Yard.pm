@@ -159,6 +159,9 @@ sub read_contents_file {
     }
     $contents_file_tmp = $contents_file;
 
+    # Need to know whether genext2fs is being used
+    my $fs_type = (split(/\s/,$main::makefs))[0];
+
     info(0, "\n\nPASS 1:  Reading $contents_file");
     info(0, "\n");
 
@@ -178,6 +181,58 @@ sub read_contents_file {
 
       $line =~ s/^\s+//;		# Delete leading/trailing whitespace
       $line =~ s/\s+$//;
+
+      # If genext2fs is being used we want to grab the values for 
+      # devices and process them individually, globbing if necessary,
+      # and appending the changes to the device table. --freesource
+
+      if ( $fs_type eq "genext2fs" ) {
+
+	  # If a device is found on the same line with a non-device(s)
+	  # the non-device(s) is sent on its merry way.
+	  if ( $line =~  m,
+
+		  (?<![\w\d\+-])                    # can have \s before
+		  /dev(?![\w\d\+-]+)                # match /dev 
+		  
+		  ,x ) {
+
+	      my $expr;
+	      my @line;	      
+	      for $expr (split(' ', $line)) {
+		  if ( $expr =~  m,
+
+		       (?<![\w\d\+-])                    # can have \s before
+		       /dev(?![\w\d\+-]+)                # match /dev 
+		  
+		       ,x ) {
+		      
+		      # Do something here
+
+		  }
+		  else {
+		      push(@line,$expr);		      
+		  }
+
+	      }
+
+	  }
+
+=pod
+	  my($expr);
+	  for $expr (split(' ', $line)) {
+	      my(@globbed) = yard_glob($expr);
+	      if ($#globbed == -1) {
+		  cf_warn($contents_file, $expr, 
+			  "Warning: No files matched $expr");
+	      } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
+		  info(1, "Expanding $expr to @globbed\n");
+	      }
+	      push(@files, @globbed);
+	  }
+=cut
+
+      }
 
       if ($line =~ /->/) {	#####  EXPLICIT LINK
 	  if ($line =~ /[\*\?\[]/) {
@@ -1601,8 +1656,9 @@ sub test_glob {
   }
 }
 
-#####  Check glob() --  In some Perl versions it's reported not to work.
+#####  Check glob() --  In some Perl versions it's reported not to work. 
 sub yard_glob {
+
   my($expr) = @_;
 
   ## first part HISTORY
@@ -1614,7 +1670,8 @@ sub yard_glob {
   } else {
     glob($expr);
   }
-}
+
+} # end yard_glob
 
 
 sub mount_device {
