@@ -394,6 +394,8 @@ $entry5->set_usize(20,20);
 $box2->pack_start( $entry5, $true, $true, 0 );
 $entry5->show();
 
+
+my $button_advanced;
 ###########################
 # The ADVANCED BOOT SECTION 
 ###########################
@@ -409,12 +411,13 @@ $vbox_advanced->show();
 
 # The Advanced Boot Section button
 hbox_advanced($vbox_advanced);
-my $button_advanced = new Gtk::Button("Advanced Boot Section");
+$button_advanced = new Gtk::Button("Advanced Boot Section");
 $tooltips->set_tip( $button_advanced, 
                     "Change settings for the Boot Disk Image.", "" );
 $button_advanced->signal_connect("clicked",\&advanced_boot_section );
 $hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
 $button_advanced->show();
+
 ###########################
 # The ADVANCED ROOT SECTION 
 ###########################
@@ -430,6 +433,24 @@ $button_advanced->signal_connect("clicked",\&advanced_root_section );
 $hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
 $button_advanced->show();
 ###########################
+
+#############################
+# The ADVANCED KERNEL SECTION 
+#############################
+my $vbox_advanced_kernel = new Gtk::VBox($false,0);
+$box1->add($vbox_advanced_kernel);
+$vbox_advanced_kernel->show();
+
+hbox_advanced($vbox_advanced_kernel);
+$button_advanced = new Gtk::Button("Advanced Kernel Section");
+$tooltips->set_tip( $button_advanced, 
+          "Retrieve/Make Kernel Sources.", "" );
+#$button_advanced->signal_connect("clicked",\&advanced_root_section );
+$hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
+$button_advanced->show();
+#############################
+
+
 
 # Separator
 $separator = new Gtk::HSeparator();
@@ -1372,7 +1393,7 @@ sub button {
       $tooltips->set_tip( $button, "Select the Kernel.", "" );
     }
     elsif ($order == 2) {
-      $tooltips->set_tip( $button, "Select the Compressed Filesystem.", "" );
+      $tooltips->set_tip( $button, "Select the Root Filesystem.", "" );
     }
     else {
       $tooltips->set_tip( $button, "Select the Device.", "" );
