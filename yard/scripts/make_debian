@@ -234,8 +234,7 @@ return $stuff;
 use strict;
 use File::Basename;
 my $rm = "\$";
-my $what = "- part of md";
-$main::Id = "# \$Id: make_debian,v 1.52 2001/11/07 18:55:21 freesource Exp $what $rm"; 
+$main::Id = "# \$Id: make_debian,v 1.53 2001/11/07 19:03:55 freesource Exp $rm"; 
 my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
 if ($sbin == 0) {
     $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
