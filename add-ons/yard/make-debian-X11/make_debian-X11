@@ -20,13 +20,6 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-use strict;
-use File::Basename;
-my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
-if ($sbin == 0) {
-    $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
-}
-
 # You will need to get dswim at http://www.sourceforge.net/projects/avd
 my $home = "$ENV{HOME}/.gbootroot";
 my $home_yard = "$home/yard";
@@ -63,34 +56,8 @@ xserver-common xterm xutils zlib1g libgdbmg1 libxaw7 gbootroot
 flwm libfltk1 xnest make-debian-x11 ash); 
 # NEXT EDIT TEMPLATE 
 
-
 # Before starting make sure dswim and file-rc are present.
 start_up();
-
-print STDERR "Required packages:\n";
-system "swim --search \"Priority: required\" --no";
-my $swim_packages = "swim -qS|";
-my $swim_list = "swim -qSl|"; # Not using --df for empty directories.
-$, = " ";
-my $extra_files = "swim -ql @extra_packages|"; # Not using --df.
-$, = "";
-
-# All the packages
-open(SWIM,$swim_packages) or die "Couldn't open swim_packages: $?\n";
-my @required_packages = <SWIM>; chomp @required_packages;
-close(SWIM);
-
-# All the files
-open(SWIM,$swim_list) or die "Couldn't open swim_list: $!\n";
-my @required_files = <SWIM>; chomp @required_files;
-close(SWIM);
-
-open(SWIM,$extra_files) or die "Couldn't open extra_files: $!\n";
-my @extra_files = <SWIM>; chomp @extra_files;
-close(SWIM);
-
-push(@required_files,@extra_files);
-
 
 #################################################################
 #################################################################
@@ -282,6 +249,43 @@ return $stuff;
 # STOP EDITING
 #################################################################
 #################################################################
+
+
+#########################################
+## Collect Information from the System ##
+#########################################
+
+use strict;
+use File::Basename;
+my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
+if ($sbin == 0) {
+    $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
+}
+
+print STDERR "Required packages:\n";
+system "swim --search \"Priority: required\" --no";
+my $swim_packages = "swim -qS|";
+my $swim_list = "swim -qSl|"; # Not using --df for empty directories.
+$, = " ";
+my $extra_files = "swim -ql @extra_packages|"; # Not using --df.
+$, = "";
+
+# All the packages
+open(SWIM,$swim_packages) or die "Couldn't open swim_packages: $?\n";
+my @required_packages = <SWIM>; chomp @required_packages;
+close(SWIM);
+
+# All the files
+open(SWIM,$swim_list) or die "Couldn't open swim_list: $!\n";
+my @required_files = <SWIM>; chomp @required_files;
+close(SWIM);
+
+open(SWIM,$extra_files) or die "Couldn't open extra_files: $!\n";
+my @extra_files = <SWIM>; chomp @extra_files;
+close(SWIM);
+
+push(@required_files,@extra_files);
+
 
 ###################
 ## Package Check ##
