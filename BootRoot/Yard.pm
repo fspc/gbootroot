@@ -1179,6 +1179,9 @@ sub copy_strip_file {
        $strip_lib, $strip_bin, $strip_module) = @_;
     my $error;
 
+    # Need to know whether genext2fs is being used
+    my $fs_type = (split(/\s/,$main::makefs))[0];
+
     if ($strippable{$from}) {
 
         #  Copy it stripped
@@ -1187,18 +1190,18 @@ sub copy_strip_file {
 		#  It's a library
 		if ($strip_objfiles == 1) {
 		    info(1, "Copy/stripping library $from to $to\n");
-		    sys("$objcopy --strip-all $from $to");
+		    sys("$objcopy --strip-all -p $from $to");
 		}
 		elsif ($strip_objfiles == 0) {
 		    info(1, "Copy/stripping library $from to $to\n");
-		    sys("$objcopy --strip-debug $from $to");
+		    sys("$objcopy --strip-debug -p $from $to");
 		}
 	    }   
 	}
 	if ($strip_module) {
 	    if (defined($is_module{$from})) {
 		info(1, "Copy/stripping module $from to $to\n");
-		sys("$objcopy --strip-debug $from $to");
+		sys("$objcopy --strip-debug -p $from $to");
 	    }
 	} 
 	if ($strip_bin) {
@@ -1206,7 +1209,7 @@ sub copy_strip_file {
 		!defined($lib_needed_by{$from})) {
 		#  It's a binary executable
 		info(1, "Copy/stripping binary executable $from to $to\n");
-		sys("$objcopy --strip-all $from $to");
+		sys("$objcopy --strip-all -p $from $to");
 	    }
 	}
 	else { # fallback just in case
@@ -1231,21 +1234,26 @@ sub copy_strip_file {
 	}
 
 	# Copy file perms and owner
-	## non-root users will experience problems here so this is
-	## skipped. --freesource
+	## If non-root users are using genext2fs then it is safe to
+	## chmod, but not to chown. --freesource
 
 
 	my($mode, $uid, $gid);
 	(undef, undef, $mode, undef, $uid, $gid) = stat $from;
 	my $from_base = basename($from);
 
-	if ( $> == 0 ) {
-	    chown($uid, $gid, $to) or ($error = 
-				       error("chown: $! \($from_base\)\n"));
-	    return "ERROR"if $error && $error eq "ERROR";
+	if ( $> == 0 || $fs_type eq "genext2fs" ) {
+	    
+	    if ( $> == 0 ) {
+		chown($uid, $gid, $to) or ($error = 
+			 error("chown: $! \($from_base\)\n"));
+		return "ERROR"if $error && $error eq "ERROR";
+	    }
+
 	    chmod($mode, $to)      or ($error = 
 				       error("chmod: $! \($from_base\)\n"));
 	    return "ERROR"if $error && $error eq "ERROR";
+
 	}
 
 	## else {
