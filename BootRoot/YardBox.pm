@@ -450,6 +450,7 @@ sub file_system {
 	my $submit_b = button(0,1,2,3,"Submit",$table_filesystem);
 	$submit_b->can_default(1);
 	$submit_b->grab_default;
+        # It actually works o.k. with $fs1 (which doesn't belong here).
 	$fs1->signal_connect("key_press_event", sub {
 	    my $event = pop @_;
 	    if ($event->{'keyval'} == 65293) {
@@ -507,7 +508,7 @@ sub file_system {
 
 
 		$main::makefs = $entry[2];
-		info(1,"Filesystem Command is $entry[2]\n");
+		info(0,"Filesystem Command is $entry[2]\n");
 	    }
 
 
