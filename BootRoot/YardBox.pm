@@ -1911,7 +1911,8 @@ File Shortcuts
 
 Yard Box Shortcuts
 
- Esc  Close Yard Box
+ Alt-W  Close
+ Esc    Close
 SHORTCUTS
 
 sub path {
