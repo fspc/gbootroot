@@ -25,7 +25,7 @@
 %define utilities uml_utilities_%{util_ver}.tar.bz2
 %define base_dir %{home}/gbootroot/gbootroot
 %define source_dir %{base_dir}/sources
-%define build_dir /gbootroot-%{version}
+%define buildd_dir /gbootroot-%{version}
 %define filelist %{base_dir}/pkg/rpm/filelist
 
 
@@ -87,19 +87,19 @@ install -d $HOME/gbootroot/BUILD
 install -d $HOME/gbootroot/SOURCES
 install -d $HOME/gbootroot/SPECS
 install -d $HOME/gbootroot/SRPMS
-if [ ! -e $RPM_BUILD_DIR/%{build_dir}/sources/%{kernel_source} ] ; then  
+if [ ! -e $RPM_BUILD_DIR/%{buildd_dir}/sources/%{kernel_source} ] ; then  
     if [ -e %{source_dir}/%{kernel_source} ] ; then
-	cp -fa %{source_dir}/%{kernel_source} $RPM_BUILD_DIR/%{build_dir}/sources;
+	cp -fa %{source_dir}/%{kernel_source} $RPM_BUILD_DIR/%{buildd_dir}/sources;
     fi;
 fi;
-if [ ! -e $RPM_BUILD_DIR/%{build_dir}/sources/%{patch_1} ] ; then  
+if [ ! -e $RPM_BUILD_DIR/%{buildd_dir}/sources/%{patch_1} ] ; then  
     if [ -e %{source_dir}/%{patch_1} ] ; then
-    cp -fa %{source_dir}/%{patch_1} $RPM_BUILD_DIR/%{build_dir}/sources;
+    cp -fa %{source_dir}/%{patch_1} $RPM_BUILD_DIR/%{buildd_dir}/sources;
     fi;
 fi;
-if [ ! -e $RPM_BUILD_DIR/%{build_dir}/sources/%{utilities} ] ; then  
+if [ ! -e $RPM_BUILD_DIR/%{buildd_dir}/sources/%{utilities} ] ; then  
     if [ -e %{source_dir}/%{patch_1} ] ; then
-    cp -fa %{source_dir}/%{utilities} $RPM_BUILD_DIR/%{build_dir}/sources;
+    cp -fa %{source_dir}/%{utilities} $RPM_BUILD_DIR/%{buildd_dir}/sources;
     fi;
 fi;
 
@@ -119,7 +119,7 @@ rm -rf $RPM_BUILD_ROOT
 # Update this as necessary
 # dswim -ql gbootroot > ~/gbootroot/gbootroot/list
 # will read this all from a files list %files -f filelist
-%files -f %{_topdir}/BUILD/%{build_dir}/pkg/rpm/filelist
+%files -f %{_topdir}/BUILD/%{buildd_dir}/pkg/rpm/filelist
 %attr(- root root) %docdir /usr/share/doc/gbootroot
 %attr(4755, root, root) /usr/bin/uml_net
 %attr(- root root) %config /etc/gbootroot/gbootrootrc
