@@ -543,7 +543,9 @@ $box2->show();
 my $cbutton = Gtk::Button->new("Close");
 $cbutton->signal_connect("clicked",
                          sub {
-                           unlink "$verbosefn", "$tmp/initrd_image.gz";
+                           unlink "$verbosefn", "$tmp/initrd_image", 
+			   "$tmp/initrd_image.gz";
+			   system "umount $tmp/initrd_mnt";
                            rmdir "$tmp/initrd_mnt";
                            rmdir "$tmp";
                            rmdir "$mnt";
@@ -571,15 +573,20 @@ exit( 0 );
 
 # This works on GNU/Linux
 sub signal {
+
+   unlink "$verbosefn", "$tmp/initrd_image.gz";
+   system "umount $tmp/initrd_mnt";
+   rmdir "$tmp/initrd_mnt";
+   rmdir "$tmp";
+   rmdir "$mnt";
+
    $SIG{INT} = \&signal;
    $SIG{ABRT} = \&signal;
    $SIG{TERM} = \&signal;
    $SIG{QUIT} = \&signal;
    $SIG{KILL} = \&signal;
-   unlink "$verbosefn", "$tmp/initrd_image.gz";
-   rmdir "$tmp/initrd_mnt";
-   rmdir "$tmp";
-   rmdir "$mnt";
+   
+
    Gtk->exit(0);
 }
 
