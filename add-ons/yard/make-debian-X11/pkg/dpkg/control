@@ -13,7 +13,7 @@ Description: BootRoot add-on.
  gBootRoot's Yard Method.  The root filesystem created from this script
  includes X11, and the ability to run gBootRoot from within its own creation.
  .
- See the script for information on how to customize to your own 
+ See the script for information on how to customize it to your own 
  specifications.  This package depends on swim.  Add this line to you 
  sources.list:
  .
