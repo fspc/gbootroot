@@ -1,4 +1,4 @@
-# $Id: Helper.yard,v 1.7 2003/02/14 05:45:36 freesource Exp $
+# $Id: Helper.yard,v 1.8 2003/02/15 02:10:07 freesource Exp $
 #  Helper.yard
 #
 #############################################################################
@@ -28,31 +28,31 @@ telinit
 ##/sbin/swapon 
 
 # Login stuff
-/bin/login 
-/sbin/sulogin # used by inittab.debian-min
-/etc/securetty <= Replacements/etc/securetty.example
-/root/.bashrc <= Replacements/root/.bashrc.debian
-/root/.profile <= Replacements/root/.profile.debian
-/home/user/.bashrc <= Replacements/home/user/.bashrc.debian
-/home/user/.bash_profile <= Replacements/home/user/.bash_profile.debian
-/etc/hostname <= Replacements/etc/hostname
-/etc/motd <= Replacements/etc/motd
+##/bin/login 
+##/sbin/sulogin # used by inittab.debian-min
+##/etc/securetty <= Replacements/etc/securetty.example
+##/root/.bashrc <= Replacements/root/.bashrc.debian
+##/root/.profile <= Replacements/root/.profile.debian
+##/home/user/.bashrc <= Replacements/home/user/.bashrc.debian
+##/home/user/.bash_profile <= Replacements/home/user/.bash_profile.debian
+##/etc/hostname <= Replacements/etc/hostname
+##/etc/motd <= Replacements/etc/motd
 
 # login and mount stuff
 #
 /etc/fstab	<=  Replacements/etc/fstab.example
 #
-/etc/issue # nice to have
+##/etc/issue # nice to have
 #
 # No password for root or user.
 /etc/group <= Replacements/etc/group.example	
-/etc/passwd <= Replacements/etc/passwd.example
+##/etc/passwd <= Replacements/etc/passwd.example
 #
 # Shadow password  root=root user=user
 #/etc/group <= Replacements/etc/group.debian	
 #/etc/passwd <= Replacements/etc/passwd.debian
 #/etc/shadow <= Replacements/etc/shadow.debian
-/etc/login.defs
+##/etc/login.defs
 
 #  Specify these binaries absolutely because boot scripts need them to be here.
 /bin/echo # for inittab.debian.sample
@@ -77,11 +77,11 @@ telinit
 /etc/shells # Make sure all included shells are listed.
 
 #   PROVISIONS FOR PAM: 
-/etc/pam.d/other
-/etc/pam.d/login
-\ if ( /etc/pam.d/system-auth )
+##/etc/pam.d/other
+##/etc/pam.d/login
+##\ if ( /etc/pam.d/system-auth )
 	# RedHat uses this
-	/etc/pam.d/system-auth \
+##	/etc/pam.d/system-auth \
 # /etc/pam.conf
 
 #   PROVISIONS FOR NSS
@@ -96,31 +96,31 @@ telinit
 # still work.  Check your /etc/inittab to confirm, or create a new inittab 
 # replacement and edit as required.  Some gettys require /etc/gettydefs.
 #
+#
+#===== SLACKWARE and SUSE use agetty:
+##\
+##if ( agetty )
+
+##	/etc/inittab	<= Replacements/etc/inittab.example-agetty-helper
+##	/sbin/agetty
+##	/etc/gettydefs
+#
 #===== MANDRAKE, REDHAT  and many other modern RH based DISTS use mingetty:
 
-\
-if ( mingetty )
+##elsif ( mingetty )
 
-	/etc/inittab	<= Replacements/etc/inittab.example-mingetty-helper
-	/sbin/mingetty
-	/etc/gettydefs
-#
-#===== SLACKWARE uses agetty:
-
-elsif ( agetty )
-
-	/etc/inittab	<= Replacements/etc/inittab.example-agetty-helper
-	/sbin/agetty
-	/etc/gettydefs
+##	/etc/inittab	<= Replacements/etc/inittab.example-mingetty-helper
+##	/sbin/mingetty
+##	/etc/gettydefs
 #
 #===== DEBIAN uses a program called "getty" which is actually agetty in 
 #===== disguise:
 
-elsif ( getty )
+##elsif ( getty )
 
-	/etc/inittab	<= Replacements/etc/inittab.example-helper
-	/sbin/getty
-\
+##	/etc/inittab	<= Replacements/etc/inittab.example-helper
+##	/sbin/getty
+##\
 
 
 #####  utmp and wtmp.  
@@ -183,7 +183,7 @@ modprobe
 #
 ## There needs to be a helper root_fs for both 2.2 and 2.4!
 #
-#/modules-2.2.tar  <=  Replacements/lib/modules/modules-2.2.tar  
+##/modules-2.2.tar  <=  Replacements/lib/modules/modules-2.2.tar  
 ##/modules-2.4.tar  <=  Replacements/lib/modules/modules-2.4.tar
 
 #####  ESSENTIAL SYSTEM UTILITIES

@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.120 2003/02/18 18:48:17 freesource Exp $</center>
+<center>$Id: index.html,v 1.121 2003/02/18 19:47:45 freesource Exp $</center>
 
 <p>
 
@@ -1734,7 +1734,7 @@ Usage: gbootroot [OPTION]...
 
 <p>
 
-<li>    The if/elsif operator may be used to test for the existence of an
+<li>    The if/elsif statement may be used to test for the existence of an
     absolute or relative file condition.  If the condition is true
     than the following statements will be parsed, otherwise additional
     conditions are examined.  The statements can be specified by any
@@ -1756,13 +1756,13 @@ Usage: gbootroot [OPTION]...
     ---------
 
     \
-    if ( mingetty )
-	 /etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm
-	 /sbin/mingetty
-	 /etc/gettydefs
-    elsif ( agetty )
-	 /etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
+    if ( agetty )
+	 /etc/inittab	<= Replacements/etc/inittab.example.agetty-rpm
 	 /sbin/agetty
+	 /etc/gettydefs
+    elsif ( mingetty )
+	 /etc/inittab	<= Replacements/etc/inittab.example.mingetty-slack
+	 /sbin/mingetty
 	 /etc/gettydefs
     elsif ( getty )
 	 /etc/inittab	<= Replacements/etc/inittab.example-deb

@@ -178,7 +178,7 @@ chdir($gbootroot_cvs) or die "Couldn't change to $gbootroot_cvs: $!\n";
 # Basically we are just concerned with the first part of cp and will
 # use home_builder to make sure the directory exists.
 
-system "rm -rf $packaging_place";
+system "rm -rf $packaging_place" if $ARGV[0] ne "src";
 system "install -d $packaging_place";
 
 foreach (@make_lines) {
