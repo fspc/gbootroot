@@ -375,9 +375,9 @@ sub norm_root_device {
       }
     }
   }
-  open(VFN, ">> $verbosefn") or die "Oops! Can't open $verbosefn,";
-  print VFN "Root device found: $root_dev\n";
-  close(VFN);
+  #open(VFN, ">> $verbosefn") or die "Oops! Can't open $verbosefn,";
+  #print VFN "Root device found: $root_dev\n";
+  #close(VFN);
 
   return $root_dev;
 
