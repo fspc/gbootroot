@@ -528,9 +528,10 @@ if ( $< == 0 ) {
 }
 else {
 
-    # The Administrator just needs to add a line like this to the fstab for
+    # The Administrator just needs to add a line like below to the fstab for
     # each non-root user who wants to be able to create root_fs.
-    # Ofcourse the user is locked into the ext2 fs in this example
+    # Ofcourse, the user is locked into the ext2 fs in this example, and 
+    # `id -u` has to be the actual effective numeric user id.
     #
     # /tmp/gboot_non_root_`id -u`/root_fs  \ 
     # /tmp/gboot_non_root_`id -u`/loopback \
@@ -540,10 +541,10 @@ else {
 
     if (!-d "$tmp1/gboot_non_root_" . $user) {   
 	$tmp = "$tmp1/gboot_non_root" . $user if err_custom_perl(
-		"mkdir $tmp1/gboot_non_root" . $user,
+		"mkdir $tmp1/gboot_non_root_" . $user,
 		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
     }
-    $tmp = "$tmp1/gboot_non_root" . $user;
+    $tmp = "$tmp1/gboot_non_root_" . $user;
 
     if (!-d "$tmp1/gbootroot_mnt$time") {
 	$mnt = "$tmp1/gbootroot_mnt$time" if err_custom_perl(
