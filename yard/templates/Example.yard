@@ -1,4 +1,4 @@
-#  $Id: Example.yard,v 1.28 2003/02/24 06:41:03 freesource Exp $
+#  $Id: Example.yard,v 1.29 2003/02/25 05:53:18 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with
@@ -84,11 +84,11 @@
 #
 #    \
 #    if ( agetty )
-#	 /etc/inittab	<= Replacements/etc/inittab.example.agetty-rpm
+#	 /etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
 #	 /sbin/agetty
 #	 /etc/gettydefs
 #    elsif ( mingetty )
-#	 /etc/inittab	<= Replacements/etc/inittab.example.mingetty-slack
+#	 /etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm
 #	 /sbin/mingetty
 #	 /etc/gettydefs
 #    elsif ( getty )
