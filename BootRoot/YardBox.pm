@@ -965,7 +965,8 @@ sub yard_box {
        # Create the GtkText widget
        $text = new Gtk::Text( undef, undef );
        $text->set_editable($true);
-       $text->signal_connect("activate", sub { 
+       #$text->signal_connect("activate", sub { 
+       $text->signal_connect("changed", sub { 
 	   my $new_length =  $text->get_length();
 	   $changed_text_from_template = $text->get_chars(0,$new_length);
        } );
@@ -1195,8 +1196,10 @@ sub search {
 	$search_window->set_default($submit_b);
 	$submit_b->grab_default;
 	$submit_b->signal_connect( "clicked", sub {
+
 	    my $keywords = $search1->get_text();
 	    $before_offset = $offset if $offset != -1;
+
 	    if ($old_keywords ne $keywords) {
 		undef $before_offset;
 	    }
