@@ -3006,11 +3006,18 @@ sub initrd_size {
     # {ash,gzip,mount,umount} (required executables)
     # bzip2 if $compress eq bzip2 (optional)
     # 1 for ld.so.cache
-
+    
     # change dir size if needed
     my $dir_size = 9 + 1;
     my $initrd_size = $dir_size + $linuxrc_size;
 
+    # clean initrd_mnt if any garbage is found.
+    if (-d "$tmp/initrd_mnt") {
+	sys("rm -rf $tmp/initrd_mnt");
+    }    
+    if (!-d "$tmp/initrd_mnt") {
+	return if errmk(sys("mkdir $tmp/initrd_mnt")) == 2;
+    }
 
     # modules - see CVS:1.65 for previous non-size check.
     my @modules = kernel_modules();
@@ -3038,14 +3045,38 @@ sub initrd_size {
 	}    
 
 	# Do the depmod operation
+
 	if ($entry_advanced[13] && $entry_advanced[13] ne "") {
-	    return if err_custom("depmod -ae -F $entry_advanced[13] -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
 
-	}
-	else {
+	    if ( $> == 0 ) {
 
-	    return if err_custom("depmod -ae -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
-	}
+		return if err_custom("depmod -ae -F $entry_advanced[13] -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+
+	    }
+	    else {
+		
+		    return if err_custom("depmod -aer -F $entry_advanced[13] -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+		    
+	    
+		}
+			
+	    } # $entry_advanced[13] defined
+
+	    else {
+
+		if ( $> == 0 ) {
+
+		    return if err_custom("depmod -ae -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+		    
+		}
+		else {
+
+		    return if err_custom("depmod -aer -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+
+		}
+
+	    }
+
 
 	# Check all the files in the dirctory for their size, and unlink them.
 	opendir(DIR,"$tmp/initrd_mnt/lib/modules/$kernel_version") 
@@ -3272,7 +3303,7 @@ sub initrd {
 
     # DEVICES SECTION
     my @devices;
-    my $device_table  = "$tmp/boot_device_table.txt";
+    my $device_table  = "$tmp/initrd_device_table.txt";
     if ( $fs_type eq "genext2fs" ) {
 
 	info(0, "Making $device_table for genext2fs\n");
@@ -3347,14 +3378,34 @@ sub initrd {
 
 	if ($entry_advanced[13] && $entry_advanced[13] ne "") {
 
-	    info(1, "depmod -ae -F $entry_advanced[13] -b $tmp/initrd_mnt/lib/modules/$kernel_version $kernel_version\n");
-	    return if err_custom("depmod -ae -F $entry_advanced[13] -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+	    if ( $> == 0 ) {
+
+		info(1, "depmod -ae -F $entry_advanced[13] -b $tmp/initrd_mnt/lib/modules/$kernel_version $kernel_version\n");
+		return if err_custom("depmod -ae -F $entry_advanced[13] -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
 
 	}
+	    else {
+
+		info(1, "depmod -aer -F $entry_advanced[13] -b $tmp/initrd_mnt/lib/modules/$kernel_version $kernel_version\n");
+		return if err_custom("depmod -aer -F $entry_advanced[13] -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+
+	    }
+
+	} # $entry_advanced[13] defined
 	else {
 
-	    info(1, "depmod -ae -b $tmp/initrd_mnt/lib/modules/$kernel_version $kernel_version\n");
-	    return if err_custom("depmod -ae -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+	    if ( $> == 0 ) {
+
+		info(1, "depmod -ae -b $tmp/initrd_mnt/lib/modules/$kernel_version $kernel_version\n");
+		return if err_custom("depmod -ae -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+
+	    }
+	    else {
+
+		info(1, "depmod -aer -b $tmp/initrd_mnt/lib/modules/$kernel_version $kernel_version\n");
+		return if err_custom("depmod -aer -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+
+	    }
 
 	}
 
@@ -3453,6 +3504,7 @@ sub initrd {
 	my $error;
 	
 	# genext2fs doesn't make accurate sized filesystems.
+	# this will be user adjustable in the future.
 	$size_needed = $size_needed + 1000;
 
 	if (
