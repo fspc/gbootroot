@@ -355,6 +355,9 @@ if (@epc) {
     $, = " ";
     print STDERR @extra_packages, "\n\n";
     print STDERR "This is what wasn't installed on your system:\n\n";
+    # spooked myself
+    #print STDERR "[If any of the package(s) below are already installed\n";
+    #print STDERR " run 'swim --rebuilddb' and run make_debian-X11 again.]\n\n";
     print STDERR @epc , "\n\n";
     $, = "";
 }
