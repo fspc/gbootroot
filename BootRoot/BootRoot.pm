@@ -1650,6 +1650,7 @@ sub uml_box {
 		    } 
 		    unshift(@fs_types,$mtd_fs_type);
 	} );
+        $mtd_fs_type_combo->set_usize(20,0);
         $mtd_fs_type_combo->show();
 
 
