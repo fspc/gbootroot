@@ -115,6 +115,7 @@ my $norm_root_device;
 my ($hbox_advanced,$ha1,$ha2); 
 my $separator_advanced;
 my $button_count = 0;
+my $obj_count = 0;
 my ($lib_strip_check,$bin_strip_check);
 
 # My own creation - the roots touch the ground if three lines are added.
@@ -414,6 +415,36 @@ sub hbox_advanced {
     show $hbox_advanced;
 }
 
+sub objcopy_right_click_advanced {
+
+  my ( @data ) = @_;
+  my $event = pop( @data );
+          
+  if ( ( defined( $event->{'type'} ) ) 
+      and ( $event->{'type'} eq 'button_press' ) ) {
+      if ( $event->{'button'} == 3 ) {
+	  if ($obj_count == 0) {
+             $tooltips->set_tip( $lib_strip_check, 
+                           "This is generally a good idea.  Press right" .
+                           " mouse button to change from" .
+                           " [objcopy --strip-all] to" .
+                           " [objcopy --strip-debug].", "" );
+             $obj_count++;
+          }
+          else {
+              $tooltips->set_tip( $lib_strip_check, 
+                           "This is generally a good idea.  Press right" .
+                           " mouse button to change from" .
+                           " [objcopy --strip-debug] to" . 
+                           " [objcopy --strip-all].", "" );
+	      $obj_count--;
+          }
+      }
+  }
+
+}
+
+
 sub advanced_section {
 
     if ($button_count == 0) {  
@@ -428,16 +459,23 @@ sub advanced_section {
          : ($boolean = $lib_strip_check->get_active());
        $lib_strip_check = new Gtk::CheckButton("Libraries");
        $lib_strip_check->set_active($boolean);
+       $lib_strip_check->signal_connect( "button_press_event", 
+                                          \&objcopy_right_click_advanced); 
        $tooltips->set_tip( $lib_strip_check, 
-                           "This is generally a good idea. [--strip-debug]", "" );
+                           "This is generally a good idea.  Press right" .
+                           " mouse button to change from" .
+                           " [objcopy --strip-debug] to" . 
+                           " [objcopy --strip-all].", "" );
        $hbox_advanced->pack_start( $lib_strip_check, $false, $false, 0);
        show $lib_strip_check;
+
        !defined $bin_strip_check  ? ($boolean = 1) 
          : ($boolean = $bin_strip_check->get_active());
        $bin_strip_check = new Gtk::CheckButton("Binaries");
        $bin_strip_check->set_active($boolean);
        $tooltips->set_tip( $bin_strip_check, 
-                           "This is generally a good idea. [--strip-all]", "" );
+                           "This is generally a good idea." .
+                           " [objcopy --strip-all]", "" );
        $hbox_advanced->pack_start( $bin_strip_check, $true, $true, 0);
        show $bin_strip_check;
 
@@ -819,6 +857,8 @@ elsif (defined $container[0] && defined $container[1] &&
        : ($container[7] = $bin_strip_check->get_active());
      !$container[7] ? ($container[7] = 4) : ($container[7] = 3);  
 
+     $obj_count == 0 ? ($container[8] = 5) : ($container[8] = 6);
+
      if (@original_container) { # defined array deprecate Perl 5.6 -  zas@metaconcept.com
          # a hash check isn't perfect for two values which are the same
          # no need to check all the values
@@ -842,7 +882,8 @@ elsif (defined $container[0] && defined $container[1] &&
      }
      # reset
      @original_container = ($container[0],$root_image,$device,$size,
-                            $compress,$container[6],$container[7]);
+                            $compress,$container[6],$container[7],
+                            $container[8]);
 
      lilo();
  }
@@ -1143,8 +1184,15 @@ sub stripper {
      if ($not_stripped =~ m,not stripped,) {
 	 if (($_[1] eq "lib" && !defined $lib_strip_check) or
              ($_[1] eq "lib" && $lib_strip_check->active)) {
-	     system "objcopy --strip-debug $_[0] $tmp/$filename"; 
-	     return ( "$tmp/$filename", 1 );
+             # --strip-all works for initrd
+             if ($obj_count == 0) {
+	           system "objcopy --strip-debug $_[0] $tmp/$filename"; 
+	           return ( "$tmp/$filename", 1 );
+             }
+             elsif ($obj_count == 1) {
+	           system "objcopy --strip-all $_[0] $tmp/$filename"; 
+	           return ( "$tmp/$filename", 1 );
+	     }
          }
          elsif (($_[1] eq "bin" && !defined $bin_strip_check) or
                 ($_[1] eq "bin" && $bin_strip_check->active)) {
