@@ -245,6 +245,8 @@ unlink($pristine_source_package) if -e $pristine_source_package;
 system "tar cvfz  $pristine_source_package $prog-$version";
 print "$pristine_source_package $packaging_place\n";
 system "rm -rf $packaging_place_orig/gbootroot_$version*";
+print "$packaging_place_orig/gbootroot_$version*\n";
+
 
 # Now we to the dh_make thing, and setup the time, version, and defaults. 
 
