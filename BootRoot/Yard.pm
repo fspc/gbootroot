@@ -50,6 +50,7 @@ use English;  # I think this can be ditched for portability
 use File::Find; # used by check_root_fs
 use BootRoot::BootRoot;
 use BootRoot::Error; 
+use BootRoot::Options;
 
 my (%Included, %replaced_by, %links_to, %is_module, %hardlinked, 
     %strippable, %lib_needed_by, @Libs, %user_defined_link);
@@ -1826,10 +1827,9 @@ sub info {
   }
 
 
-  if ( $::commandline ) {
+  if ( %option ) {
       print @msgs;
   }
-
 
 }
 

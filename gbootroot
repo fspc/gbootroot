@@ -231,37 +231,63 @@ BEGIN {
 	$ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
     }
 
-    if ( !$ARGV[0] ) {
 
-	use Gtk;
-	init Gtk;
-	set_locale Gtk; 
+    use BootRoot::Options;
+    option();
+
+    $::commandline = \%option if %option;
+    $::commandline = $ARGV[0] if $ARGV[0];
+
+    if ( $Getopt::Long::error > 0 ) {
 	
-    }
-    else {
- 
-	$::commandline = $ARGV[0];
+	exit;
 
     }
+
+
+    if ( !%option ) {
+	if ( !$::commandline  ) {
+
+	    use Gtk;
+	    init Gtk;
+	    set_locale Gtk; 
+
+	}	
+
+    }
+
 
 }
 
 
 use strict;
 use BootRoot::BootRoot;
+#use BootRoot::Options;
+#use Getopt::Long;
 
 $main::editor = "emacs --font 6x13";
 $main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
 $main::sudo = "sudo";
 
+#print $option{"stdout"};
+#print %option;
+
 start();
 
-if ( !$ARGV[0] ) {
 
-    main Gtk;
-    exit( 0 );
+if ( !%option ) {
+    if ( !$::commandline  ) {
+
+	main Gtk;
+	exit( 0 );
  
+    }
 }
+
+
+
+
+
 
 
 

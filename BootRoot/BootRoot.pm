@@ -31,13 +31,13 @@ use Exporter;
 
 use strict;
 use POSIX;
-use Getopt::Long;  # only here for convenience
 use BootRoot::Yard;
 use BootRoot::YardBox;
 use BootRoot::Error;
 use File::Basename;
 use File::Find;
 use File::Path;
+use BootRoot::Options;
 
 $SIG{__WARN__} = 
     sub { warn @_ unless $_[0] =~ /Subroutine [\w:]+ redefined/io 
@@ -349,13 +349,16 @@ my $verbosity = 1; # info & sys use this as Global
 $verbosefn = "$tmp/verbose"; # All verbosity
 #my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
 
-# Need this before everything.
-Gtk::Rc->parse("/etc/gbootroot/gbootrootrc");
+if ( !%option ) {
+    if ( !$::commandline ) {
 
-if ( !$::commandline ) {
-verbosity_box(); 
-start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
-                                             # "verbosity level"
+	# Need this before everything.
+      Gtk::Rc->parse("/etc/gbootroot/gbootrootrc");
+	verbosity_box(); 
+	start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
+	                                             # "verbosity level"
+    }
+
 }
 
 #-------------------------------
@@ -436,27 +439,30 @@ if ( -d $global_yard_replacements_arch_dep ) {
 
 #-------------------------------
 
-if ( !$::commandline ) {
+if ( !%option ) {
+    if ( !$::commandline ) {
 
 # Gtk::check_version expects different arguments than .7004 so will have
 # to check for the version instead.
 # Right now >= 0.7002 is o.k.
 #if (Gtk::check_version(undef,"1","0","7") =~ /too old/) {
 
-    if (Gtk->major_version < 1) {
-	et();
-    }
-    elsif (Gtk->micro_version < 7) {
-	et();
-    }
-    elsif (Gtk->minor_version < 2) {
-	et();
+	if (Gtk->major_version < 1) {
+	    et();
+	}
+	elsif (Gtk->micro_version < 7) {
+	    et();
+	}
+	elsif (Gtk->minor_version < 2) {
+	    et();
+	}
     }
 }
 
 my $window;
 
-if ( !$::commandline ) {
+if ( !%option ) {
+    if ( !$::commandline  ) {
 
 $window = Gtk::Window->new("toplevel");
 # special policy
@@ -722,6 +728,7 @@ $box2->show();
 $window->show();
 
 }
+}
 
 # Here we put the logic if the program is going to be run from the commandline.
 # The logic is linear and the only feature planned to be included from the
@@ -792,31 +799,16 @@ else {
 
 # Let's read in the ARGV
 
-   my %option;
-  Getopt::Long::config("bundling","no_auto_abbrev");
-GetOptions (
-    
-    %option,
-    "root-filename=s",
-    "uml-kernel=s", 
-    "method=s",
-    "template=s",           # The only required argument
-    "filesystem-size=s",
-    "filesytem-type=s",
-    "uml-exclusively=s",
-    "preserve-ownership=s",
-    "kernel-version=s",
-
-    );
-
 
 start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
 
-
                                              # "verbosity level"
-info(1, "hello there\n");
+#info(1, "hello there\n");
 
 
+
+my $it = kernel_version_check();
+print $it;
 
 #    read_contents_file( "$template_dir$template", $tmp,
 #			    $filesystem_size, \%uml_expect );
