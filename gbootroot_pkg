@@ -58,10 +58,11 @@ my $email = "freesource\@users.sourceforge.net";
 my $name = "Jonathan Rosenbaum";
 my $makefile = "Makefile.pkg";
 
-# RPM stuff
+# RPM stuff - a filelist is used
 my $rpm_packaging_place = "$gbootroot_cvs/pkg/rpm";
-my $SOURCES = "/usr/src/rpm/SOURCES";
 my $SPECS = "/usr/src/rpm/SPECS";
+my $SOURCES = "/usr/src/rpm/SOURCES";
+my $BUILD = "/usr/src/rpm/BUILD";
 my @rpm_packages = qw(gbootroot.spec gbootroot-mdk.spec);
 
 
@@ -327,8 +328,8 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
 	# For now will just use one definite place for SOURCES
 	my $source = dirname($packaging_place) . "/" . $prog . "_" . $version;
 	system "cp $source*tar.gz $SOURCES";
-	system "cp $rpm_packaging_place/filelist $SOURCES";
 	system "cp $gbootroot_cvs/gbootroot.xpm $SOURCES";
+	system "cp $rpm_packaging_place/filelist $SOURCES";
 	system "cp $rpm_packaging_place/$package $SPECS";
 
 	# Time for the fun

@@ -1,3 +1,35 @@
+gbootroot (1.3.4-1) unstable; urgency=low
+
+  * Updated to 2.4.17-10um and added Jeff's initrd fix.
+  * Updated to 20020125 uml tools.
+  * The rpmized gbootroot package requires perl-Expect which in turn
+    requires perl-IO-Tty and perl-IO-Stty.  A search on the Net revealed
+    that the existing rpms out there are either outdated, don't have
+    their dependencies set-up properly, or require a particular version
+    of the perl5 series. I made these rpms so they work on any i386
+    architecture which is using the  perl5 series.  This includes 5.6.0
+    and 5.6.1 which are in common use on most  major distributions as of
+    the year 2002.  If you have a problem with the  automated Linux
+    virtual machine which appears related to these modules, please don't
+    hesitate to contact me.  They are available at
+    prdownloads.sourceforge.net/gbootroot.
+  * Created rpms for Mandrake type dists, and Red Hat type dists.
+  * Added vc/? and vcs? to the etc/securetty files because the new uml
+    kernel uses these now.
+  * Fixed the fhs situation again.  This time it will definitely work.
+    As I wrote in the code:  "I always thought the BEGIN statements were
+    executed before  everything else, but I have discovered that in this
+    case it has to be placed  before the use statements if exec
+    /usr/bin/gbootroot is done via $PATH ..  I guess that makes sense
+    because $PATH is established in this particular  BEGIN."  Other
+    executables have been fixed including expect_uml and
+    yard_chrooted_tests.
+  * Improved Replacements Box GUI.
+  * Added a button to open up the Filesystem Box from the ARS, this is
+    on the same line as Filesystem Size.
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Fri,  8 Feb 2002 19:33:13 -0500
+
 gbootroot (1.3.3-1) unstable; urgency=low
 
   * During the boot stage the filsystem type was used to determine

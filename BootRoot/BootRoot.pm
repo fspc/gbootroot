@@ -52,8 +52,8 @@ my $uml_xterm = "xterm -e";
 # and to update scripts/Debian.yard if
 # make_debian has been changed,
 # and to install -s linux.
-my $version = "1.3.3";
-my $date = "01.15.2002";
+my $version = "1.3.4";
+my $date = "02.08.2002";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";

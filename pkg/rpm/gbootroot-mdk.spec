@@ -9,7 +9,7 @@
 
 
 # Update this according to version
-%define version 1.3.3
+%define version 1.3.4
 %define release 1mdk
 
 
@@ -82,9 +82,11 @@ make
 %attr(4755, root, root) /usr/bin/uml_net
 %config /etc/gbootroot/gbootrootrc
 
+
 # Just include this
 ##/usr/lib/menu/gbootroot
 
 
 %changelog
+
 
