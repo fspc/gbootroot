@@ -1419,9 +1419,14 @@ sub create_filesystem {
 	    }
 
 	    if ( $fs_type eq "mkcramfs" ) {
+		# Will just keep appending _cramfs .. leaving it to the
+		# user to realize this is happening, that way the user
+		# has control over the dd file.
 		$device = $device . "_cramfs";
 		my $cramfs_name = basename($device);
-		$ear2->set_text($cramfs_name);
+		# If somebody closes ARS, this won't get updated,
+		# but that is a minor matter.
+		$ear2->set_text($cramfs_name) if $ear2;
 		$mount_point = dirname($device);
 	    }
 	    

@@ -1052,6 +1052,7 @@ sub advanced_root_section {
        $ear2->set_text("root_fs") if !$entry_advanced[4];
        $ars->{filename} = "root_fs" if !$entry_advanced[4];
        $ear2->set_text($entry_advanced[4]) if $entry_advanced[4];
+       root_filename($ear2);
        $ars->{filename} = $entry_advanced[4] if $entry_advanced[4];
        ars($ars);       
        $tooltips->set_tip( $ear2, "Give the Root Filesystem file a name.", 
@@ -3405,7 +3406,7 @@ sub initrd {
     }
     print LC initrd_heredoc($broot_image,$device); close(LC);
     # I could test this but somebody's system may do permissions differently
-    sys("chmod 755 $tmp/initrd_mnt/linuxrc");
+    sys("chmod 0755 $tmp/initrd_mnt/linuxrc");
     if ($fs_type ne "genext2fs" ) {
 	sys("rmdir $tmp/initrd_mnt/lost+found");
     }
@@ -3641,13 +3642,13 @@ sub initrd {
 	mkpath("$tmp/initrd_mnt/usr/i386-linux-uclibc/lib");
 	$path = "/usr/i386-linux-uclibc/lib/libuClibc-0.9.5.so";
 	return if errcp(sys("$tool $path $tmp/initrd_mnt/usr/i386-linux-uclibc/lib")) == 2;
-	sys("chmod 755  $tmp/initrd_mnt/usr/i386-linux-uclibc/lib/libuClibc-0.9.5.so");
+	sys("chmod 0755  $tmp/initrd_mnt/usr/i386-linux-uclibc/lib/libuClibc-0.9.5.so");
 	chdir("$tmp/initrd_mnt/lib");
 	symlink("../usr/i386-linux-uclibc/lib/libuClibc-0.9.5.so", "$tmp/initrd_mnt/lib/libc.so.0" );
 
 	$path = "/usr/i386-linux-uclibc/lib/ld-uClibc-0.9.5.so";
 	return if errcp(sys("$tool $path $tmp/initrd_mnt/usr/i386-linux-uclibc/lib")) == 2;
-	sys("chmod 755  $tmp/initrd_mnt/usr/i386-linux-uclibc/lib/ld-uClibc-0.9.5.so");
+	sys("chmod 0755  $tmp/initrd_mnt/usr/i386-linux-uclibc/lib/ld-uClibc-0.9.5.so");
 	chdir("$tmp/initrd_mnt/usr/i386-linux-uclibc/lib");
 	symlink("ld-uClibc-0.9.5.so", "$tmp/initrd_mnt/usr/i386-linux-uclibc/lib/ld-uClibc.so.0" ); 
 
