@@ -109,7 +109,7 @@ make
 make DESTDIR=$RPM_BUILD_ROOT install
 
 %clean
-#make clean
+make clean
 #make clean-sources
 rm -rf $RPM_BUILD_ROOT
 

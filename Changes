@@ -18,7 +18,7 @@ method.  Now distribute your template and let others easily recreate
 your root_fs without entering the gui by running "gbootroot --template
 your_template" and this is a nice way to manage a distribution you are
 developing.  This all means the source packages are completely
-automated now, which is quite awesome.
+automated now, and vastly improved, which is quite awesome.
 
 When root_fs_helper was running with the newer Expect.pm, and
 consequentially the newer uml kernel it became necessary to get out

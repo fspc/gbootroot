@@ -26,8 +26,8 @@ use File::Find;
 
 # The Lazy Guy's packaging tool for gBootRoot.
 # This program sets-up the archive which will be turned into a package and 
-# needs to be run as root.  The advantage of this program is that the 
-# archive will always represent the Makefile which is being tested
+# can be ran as any user.  The advantage of this program is that the 
+# archive will always represent the Makefile install  which is being tested
 # when development isn't being done with perl -I . ./gbootroot.
 # This program can be adapted for other packages.
 
@@ -44,12 +44,13 @@ use File::Find;
 
 # To get this to work properly I had to make two changes to the debian system
 # In dpkg-buildpackage noclean=false was changed to noclean=true, this is
-# to avoid the initial clean which is done, but if you turn noclean off with
+# to avoid the initial clean which is done because if you turn noclean off with
 # a cmdline switch only an build is done.
 #
 # In dpkg-source I added '.*bz2$| to $diff_ignore_default_regexp because the
 # -i switch seemed to ignore anything I added to it, either failing 
 # or ignoring, though recognizing the -i switch .. so this has been altered.
+# It may have been because dpkg-buildpackage expects -iregexp not -i regexp.
 
 my $user_home = "/home/mttrader";
 my $prog = "gbootroot";
@@ -208,6 +209,7 @@ system "cp -fa $makefile $packaging_place/Makefile";
 #  Basically this is stuff we want in the source package, but not the normal
 #  package
 system "cp -fa README $packaging_place/README";
+system "cp -fa COPYING $packaging_Place/COPYING";
 system "cp -fa user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch $packaging_place/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch";
 system "ln -sf $packaging_place/yard/replacements $packaging_place/yard/Replacements";
 mkdir("$packaging_place/sources");
@@ -243,13 +245,12 @@ exit if $ARGV[0] eq "src";
 chdir($packaging_place_orig);
 unlink($pristine_source_package) if -e $pristine_source_package;
 system "tar cvfz  $pristine_source_package $prog-$version";
+my $source = dirname($packaging_place) . "/" . $prog . "-" . $version;
+system "cp -f $source.tar.gz $source-pristine.tar.gz";
 print "$pristine_source_package $packaging_place\n";
 system "rm -rf $packaging_place_orig/gbootroot_$version*";
-print "$packaging_place_orig/gbootroot_$version*\n";
-
 
 # Now we to the dh_make thing, and setup the time, version, and defaults. 
-
 
 chdir($packaging_place) or die "Can't change to $packaging_place: $!\n";
 system "dh_make -e $email";
@@ -355,7 +356,6 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
     # a source package specific to rpm is made more than once.
 
     my $source = dirname($packaging_place) . "/" . $prog . "-" . $version;
-    system "mv $source.tar.gz $source-pristine.tar.gz";
 
     foreach my $package ( @rpm_packages ) {
 	open (RPM_PLACE, "$rpm_packaging_place/$package" ) or 
@@ -406,7 +406,6 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
         "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Root\n", 1, 
         "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Repository\n", 1, 
         "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Entries\n", 1, 
-        "/usr/share/doc/gbootroot/html/boot_root.4.gz\n", 1, 
         "/usr/share/doc/gbootroot/Changes.gz\n", 1, 
         "/usr/share/doc/gbootroot/copyright\n", 1, 
         "/usr/share/doc/gbootroot/changelog.Debian.gz\n", 1

@@ -1,4 +1,4 @@
-$Id$
+$Id: README,v 1.13 2002/12/20 19:28:50 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -28,9 +28,11 @@ CRUCIAL ones to get the build to work properly are mke2fs and
 mkcramfs.  Here's a list of what utilities are included: mke2fs mkcramfs
 genromfs mkfs.minix mkminix mkreiserfs mkfs.jffs mkfs.jffs2
 
-These are the build-depends from the debian source package: binutils,
-fileutils (>= 4.0), gcc | c-compiler, make, libc-dev, bin86, wget,
-mkcramfs, e2fsprogs, reiserfsprog, genromfs, util-linux, mtd-tools
+These are the build-depends from the debian source package which can
+be used as a guide for other distributions: binutils ((>=
+2.13.90.0.16), fileutils (>= 4.0), gcc (>= 2:2.95.4), make, libc6-dev
+(>= 2.3.1), bin86, wget, mkcramfs, e2fsprogs, reiserfsprog, genromfs,
+util-linux, mtd-tools, m4, libreadline4-dev
 
 INSTALLING
 ----------
@@ -55,7 +57,7 @@ REQUIREMENTS TO RUN GBOOTROOT
 Perl Modules:
 #############
 
-Gtk-Perl (Required)
+Gtk-Perl (Required for GUI)
 --------
 
 Version 0.7002 or greater.

@@ -14,17 +14,14 @@ KERNEL=$(BASE_DIR)/user-mode-linux/usr/bin/linuxbr
 IMAGE=$(BASE_DIR)/root_filesystem/root_fs_helper
 KERNEL_DIR=$(BASE_DIR)/linux-$(VERSION)
 KERNEL_SOURCE=linux-$(VERSION).tar.bz2
-KERNEL_SITE=http://www.uk.kernel.org/pub/linux/kernel/v2.4
+KERNEL_1_SITE=http://www.uk.kernel.org/pub/linux/kernel/v2.4 http://www.us.kernel.org/pub/linux/kernel/v2.4 http://www.au.kernel.org/pub/linux/kernel/v2.4 http://www.at.kernel.org/pub/linux/kernel/v2.4 http://www.br.kernel.org/pub/linux/kernel/v2.4 http://www.hr.kernel.org/pub/linux/kernel/v2.4 http://www.fr.kernel.org/pub/linux/kernel/v2.4 http://www.de.kernel.org/pub/linux/kernel/v2.4 http://www.il.kernel.org/pub/linux/kernel/v2.4 http://www.kr.kernel.org/pub/linux/kernel/v2.4 
 
-# Choose a site with works best
-PATCH_1_SITE=http://jdike.stearns.org/mirror
-#PATCH_1_SITE=http://uml-pub.ists.dartmouth.edu/uml
-#PATCH_1_SITE=http://ftp.nl.linux.org/pub/uml
-#PATCH_1_SITE=http://mirror.math.leidenuniv.nl/uml-pub.ists.dartmouth.edu
-
+PATCH_1_SITE=http://uml.stearns.org/mirror http://uml-pub.ists.dartmouth.edu/uml http://ftp.nl.linux.org/pub/uml http://mirror.math.leidenuniv.nl/uml-pub.ists.dartmouth.edu
 PATCH_1=uml-patch-$(VERSION)-$(PATCH_VERSION).bz2
 PATCH_2=$(BASE_DIR)/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch
-KCONFIG=$(BASE_DIR)/user-mode-linux/usr/lib/uml/config
+MODE=tt
+KCONFIG_FILE=config
+KCONFIG=$(BASE_DIR)/user-mode-linux/usr/lib/uml/${KCONFIG_FILE}
 
 # Genext2fs
 GENEXT2_DIR=$(BASE_DIR)/genext2fs
@@ -38,25 +35,34 @@ TOOLS = $(UTIL_DIR)/mconsole $(UTIL_DIR)/port-helper $(UTIL_DIR)/moo $(UTIL_DIR)
 all:   world
 world: sources initrd
 
-sources: $(BASE_DIR)
+sources:
 	@if [ ! -e $(SOURCE_DIR)/$(KERNEL_SOURCE) ] ; then \
 		while [ ! -f $(SOURCE_DIR)/$(KERNEL_SOURCE) ] ; do \
-			wget -P $(SOURCE_DIR) --passive $(KERNEL_SITE)/$(KERNEL_SOURCE); \
+			for URL in $(KERNEL_1_SITE) ; do \
+				if [ ! -f  $(SOURCE_DIR)/$(KERNEL_SOURCE) ] ; then \					wget -t1 -P $(SOURCE_DIR) --passive $$URL/$(KERNEL_1_SITE) ; \
+				fi; \
+			done; \
 		done; \
-	fi;
+	fi; 
 	@if [ ! -e $(SOURCE_DIR)/$(UTILITIES) ] ; then \
 		while [ ! -f $(SOURCE_DIR)/$(UTILITIES) ] ; do \
-			wget -P $(SOURCE_DIR) --passive $(PATCH_1_SITE)/$(UTILITIES); \
+			for URL in $(PATCH_1_SITE) ; do \
+				if [ ! -f  $(SOURCE_DIR)/$(UTILITIES) ] ; then \					wget -t2 -P $(SOURCE_DIR) --passive $$URL/$(UTILITIES) ; \
+				fi; \
+			done; \
 		done; \
-	fi;
+	fi; 
 	@if [ ! -d $(UTIL_DIR) ] ; then \
 		tar xvfj $(SOURCE_DIR)/$(UTILITIES); \
 	fi;
 	@if [ ! -e $(SOURCE_DIR)/$(PATCH_1) ] ; then \
 		while [ ! -f $(SOURCE_DIR)/$(PATCH_1) ] ; do \
-			wget -P $(SOURCE_DIR) --passive $(PATCH_1_SITE)/$(PATCH_1); \
+			for URL in $(PATCH_1_SITE) ; do \
+				if [ ! -f  $(SOURCE_DIR)/$(PATCH_1) ] ; then \					wget -t2 -P $(SOURCE_DIR) --passive $$URL/$(PATCH_1) ; \
+				fi; \
+			done; \
 		done; \
-	fi;
+	fi; 
 	@if [ ! -d $(KERNEL_DIR) ] ; then \
 		tar xvfj $(SOURCE_DIR)/$(KERNEL_SOURCE); \
 		bzcat $(SOURCE_DIR)/$(PATCH_1) | patch -d $(KERNEL_DIR) -p1; \
