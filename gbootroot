@@ -1425,6 +1425,7 @@ sub save_as {
 	$entry_advanced[4] = $new_template;
 
 	# This is a renaming deal and this time doesn't exist in the archive
+        # or $tmp.
 	if (!-f "$home_rootfs/$new_template") {
 	    if ($template ne $new_template) {
 		return if err_custom("mv $tmp/$template $tmp/$new_template",
@@ -1434,6 +1435,7 @@ sub save_as {
 
 	    return if errcp(sys("cp -a $tmp/$new_template $home_rootfs")) == 2;
 	    $ear2->set_text($new_template);
+	    $entry3->set_text("$tmp/$new_template");
 	    $save_as->destroy;
 	}
 
@@ -1442,10 +1444,11 @@ sub save_as {
 	       && -f "$home_rootfs/$new_template" )  {
 	    return if errcp(sys("cp -a $tmp/$new_template $home_rootfs")) == 2;
 	    $ear2->set_text($new_template);
+	    $entry3->set_text("$tmp/$new_template");
 	    $save_as->destroy;
 	}
 
-	# Here the file trying to be renamed already exist in the archive
+	# Here the file trying to be renamed already exists in the archive
 	# but doesn't exist in $tmp
 	else {
 
@@ -1468,12 +1471,12 @@ sub save_as {
 		    == 2;
 		$event_count = 0;
 		$ear2->set_text($new_template);
+		$entry3->set_text("$tmp/$new_template");
 		$save_as->destroy;
 	    }	    
 	    }
 	    $new_template_tmp = $new_template;
 	}
-	#$new_template_tmp = $new_template;
     },"clicked");
     $button->can_default(1);
     $save_as->action_area->pack_start($button, $false, $false,0);
