@@ -121,6 +121,7 @@ my $label_advanced;
 my $separator;
 my $order;
 my $text_window;
+my $verbosity_window;
 my @container;
 my @original_container;
 my $file_dialog;
@@ -243,17 +244,17 @@ if (!-d "$tmp1/gbootroot_mnt$$") {
         "gBootRoot: ERROR: Could not make mount directory") != 2;
 }
 
-# Verbosity should probably be controlled separately for each
-# method. 
+# Verbosity is universal for all methods, and controlled by a scale slider. 
 # Yard 
 #  0 --> only the important messages.
 #  1 --> all messages.
 my $verbosity = 1; # info & sys use this as Global
 
-## Both of these files are used, but that will be changed
-my $verbosefn = "$tmp/verbose"; # gBootRoot
-my $yard_temp = "/tmp/yard_verbose";  # Yard - always logged, but 0&1 = STDOUT
-start_logging_output($yard_temp,$verbosity); # Yard "tmp dir name" 
+## One hard copy log file is saved for the session, and the user can also 
+## save from the verbosity box.
+#my $verbosefn = "$tmp/verbose"; # All verbosity
+my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
+start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
                                              # "verbosity level"
 
 # Right now >= 0.7000 is o.k.
@@ -264,9 +265,8 @@ if (Gtk::check_version("1","0","7") =~ /too old/) {
                  " to use this program, but you may encounter problems." .
                  " See the FAQ\nfor places to get a newer gtk-perl version." .
                  " \n\nThe most common error reported:\n\"Can't locate" .
-                 "  object  method\""
-                 
-        ,"center");
+                 "  object  method\"");
+                 #,"center");
     print "Using a version of gtk-perl < 0.7000\n";
 }
 
@@ -378,6 +378,7 @@ $verbosity_scale->set_value_pos("right");
 $verbosity_scale->set_digits(0);
 $tooltips->set_tip( $verbosity_scale, "Adjust the Verbosity Level.", "" );
 $verbosity_scale->show();
+# Verbosity Box can be turned on/off here
 $adj1->signal_connect( "value_changed", sub {
     $verbosity = $verbosity_scale->get_adjustment->value - 1; 
     verbosity($verbosity);
@@ -1039,12 +1040,15 @@ sub yard {
     #open(YARD,"$template_dir$template");
     #my @stuff = <YARD>;
     #print @stuff;
+    my $error;
 
     # Error handling in Yard will take some strategy
     if (!-d $container[1] && -f $container[1]) {
-	create_text("yard");
-        kernel_version_check($container[1]);  # Yard: kernel,kernel version
+	verbosity_box();
+        $error = kernel_version_check($container[1]);  
+                                              # Yard: kernel,kernel version
                                               # Becomes $ENV{'RELEASE'}
+	return if $error && $error eq "ERROR";
     }
     else {
 	error_window("Kernel Selection required");
@@ -1052,18 +1056,23 @@ sub yard {
     }
 
 
-    read_contents_file("$template_dir$template");
+    $error = read_contents_file("$template_dir$template");
+    return if $error && $error eq "ERROR";
 
-    ##extra_links("$template_dir$template");
+    ##$error = extra_links("$template_dir$template");
+    return if $error && $error eq "ERROR";
 
-    ##library_dependencies("$template_dir$template");
+    ##$error = library_dependencies("$template_dir$template");
+    return if $error && $error eq "ERROR";
 
-    ##hard_links();
+    ##$error = hard_links();
+    return if $error && $error eq "ERROR";
 
-    ##space_check($filesystem_size, $lib_strip_check_root->get_active(),
+    ##$error = space_check($filesystem_size, $lib_strip_check_root->get_active(),
 ##		$bin_strip_check_root->get_active(), 
 ##		$module_strip_check_root->get_active(), 
 ##		$obj_count_root, $tmp);
+    return if $error && $error eq "ERROR";
 
 } # end sub yard
 
@@ -1142,9 +1151,10 @@ sub label_advanced {
 
 }
 
+# I created two of these, one for help (eventually there may be a different
+# approach), and one for verbosity.  I am sure there is a better OO way to
+# do it, though.
 sub create_text {
-
-    my ($text_type) = @_;
 
       if (not defined $text_window) {
        $text_window = new Gtk::Window "toplevel";
@@ -1180,8 +1190,8 @@ sub create_text {
                        [ 'expand', 'shrink', 'fill' ],
                        [ 'expand', 'shrink', 'fill' ],
                        0, 0 );
+       $text->grab_focus();
        $text->show();
-       text_insert($text); # yard thing
 
        # Add a vertical scrollbar to the GtkText widget
        my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
@@ -1192,12 +1202,7 @@ sub create_text {
        $vscrollbar->show();
 
        $text->freeze();
-       if ($text_type eq "help") {
-	   $text->insert( undef, undef, undef, help() );
-       }
-       #elsif ($text_type eq "yard") {
-       #   $text->insert( undef, undef, undef, "Stuff coming soon" );
-       #}
+       $text->insert( undef, undef, undef, help() );
        $text->thaw();
 
        my $separator = new Gtk::HSeparator();
@@ -1221,6 +1226,7 @@ sub create_text {
        } else {
                 destroy $text_window;
        }
+
 } # end sub create_text
 
 sub make_menu_item {
@@ -1414,7 +1420,9 @@ sub submit {
       my($kernel,$root_image);
 
       # comment this out for testing
-      unlink("$verbosefn");
+      # Since only one filehandle is now used, this won't work
+      # anymore.
+      #unlink("$verbosefn");
       open (MTAB, "/etc/mtab") or die "no mtab!\n";
       while (<MTAB>) {
          if (m,$mnt,) {
@@ -1934,7 +1942,11 @@ sub initrd {
   sys("dd if=/dev/zero of=$tmp/$initrd bs=1024 count=$size_needed");
   pb($I,2);
   # no need to enter y every time .. could use -F
-  open(T,"|mke2fs -m0 -i8192 $tmp/$initrd >> $verbosefn 2>&1") or die "Problem here: $!\n";  print T "y\n"; close(T);
+  my $error;
+  open(T,"|mke2fs -m0 -i8192 $tmp/$initrd >/dev/null 2>&1") or 
+  ($error = error("Can not make ext2 filesystem on initrd.\n")); 
+  return "ERROR" if $error && $error eq "ERROR";
+  print T "y\n"; close(T);
   pb($I,3);
   info(0, "Mounting initrd in tmp\n");
 
@@ -2256,7 +2268,8 @@ mtab_window($dialog,$error,$count) if $error == 0;
 # All err? report errors if $? > 0.
 
 sub error_window {
-    my ($error) = @_;
+    my (@error) = @_;
+    my $output = join("",@error);
 
     if (not defined $error_window) {
     $error_window = new Gtk::Dialog;
@@ -2266,8 +2279,8 @@ sub error_window {
                                   \$error_window);
     $error_window->set_title("gBootRoot ERROR");
     $error_window->border_width(15);
-    my $label = new Gtk::Label($error);
-    $label->set_justify("left") if $_[1];
+    my $label = new Gtk::Label($output);
+    #$label->set_justify("left") if $_[1];
     $error_window->vbox->pack_start( $label, $true, $true, 15 );
     $label->show();
     my $button = new Gtk::Button("OK");
@@ -2370,6 +2383,81 @@ sub err_custom_perl {
         }
     }
 }
+
+# This monster needs different behavior than create_text.
+sub verbosity_box {
+
+      if (not defined $verbosity_window) {
+       $verbosity_window = new Gtk::Window "toplevel";
+       $verbosity_window->signal_connect("destroy", \&destroy_window,
+                                    \$verbosity_window);
+       $verbosity_window->signal_connect("delete_event", \&destroy_window,
+                                    \$verbosity_window);
+       $verbosity_window->set_title("Help");
+       $verbosity_window->set_usize( 500, 600 );
+       $verbosity_window->set_policy( $true, $true, $false );
+       $verbosity_window->set_title( "Verbosity Box" );
+       $verbosity_window->border_width(0);
+
+       my $main_vbox = new Gtk::VBox( $false, 0 );
+       $verbosity_window->add( $main_vbox );
+       $main_vbox->show();
+
+       my $vbox = new Gtk::VBox( $false, 10 );
+       $vbox->border_width( 10 );
+       $main_vbox->pack_start( $vbox, $true, $true, 0 );
+       $vbox->show();
+
+       my $table = new Gtk::Table( 2, 2, $false );
+       $table->set_row_spacing( 0, 2 );
+       $table->set_col_spacing( 0, 2 );
+       $vbox->pack_start( $table, $true, $true, 0 );
+       $table->show( );
+
+       # Create the GtkText widget
+       my $text = new Gtk::Text( undef, undef );
+       $text->set_editable($false);
+       $table->attach( $text, 0, 1, 0, 1,
+                       [ 'expand', 'shrink', 'fill' ],
+                       [ 'expand', 'shrink', 'fill' ],
+                       0, 0 );
+       $text->grab_focus();
+       $text->show();
+       text_insert($text); # yard thing
+
+       # Add a vertical scrollbar to the GtkText widget
+       my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
+       $table->attach( $vscrollbar, 1, 2, 0, 1, 'fill',
+                       [ 'expand', 'shrink', 'fill' ], 0, 0 );
+       my $logadj = $vscrollbar->get_adjustment();
+       logadj($logadj);
+       $vscrollbar->show();
+
+       my $separator = new Gtk::HSeparator();
+       $main_vbox->pack_start( $separator, $false, $true, 0 );
+       $separator->show();
+
+       $vbox = new Gtk::VBox( $false, 10 );
+       $vbox->border_width( 10 );
+       $main_vbox->pack_start( $vbox, $false, $true, 0 );
+       $vbox->show();
+
+       my $button = new Gtk::Button( "Close" );
+       $button->signal_connect( 'clicked', 
+				sub { destroy $verbosity_window; } );
+       $vbox->pack_start( $button, $true, $true, 0 );
+       $button->can_default( $true );
+       $button->grab_default();
+       $button->show();
+       }
+       if (!visible $verbosity_window) {
+                show $verbosity_window;
+       } else {
+                destroy $verbosity_window;
+       }
+
+} # end sub verbosity_box
+
 
 ###################
 # End Error Section
