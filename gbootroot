@@ -507,7 +507,7 @@ my $time = sprintf("%02d:%02d:%02d-%02d-%02d-%04d",
 # Here's where stuff gets intersting, non-root users can create root_fs,
 # which is great for UML.
 
-if ( $< == 0 ) {
+if ( $> == 0 ) {
 
     if (!-d "$tmp1/gbootroot_tmp$time") {   
 	$tmp = "$tmp1/gbootroot_tmp$time" if err_custom_perl(
