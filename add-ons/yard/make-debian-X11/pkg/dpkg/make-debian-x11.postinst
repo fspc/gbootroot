@@ -47,6 +47,15 @@ my $zoneinfo = get("make-debian-x11/make_debian_x11-zoneinfo");
     }
 
     if (!$swim) {
+	if ($ARGV[0] && $ARGV[0] eq "configure") {
+	    print STDERR
+		"During make-debian-x11 package installation warnings\n" .
+		"about make-debian-x11 not being installed on the\n" .
+		"system are taken into account by the make_debian-x11\n" .
+		"script and the template properly reflects an installed\n" .
+		"make-debian-x11 package.  This warning won't be issued\n" .
+                "when reconfiguring make-debian-x11.\n\n";
+	}
 	open (SCRIPT, "|make_debian-X11") 
 	or warn "Couldn't open make_debian-X11\n";
 	print SCRIPT $doc;
@@ -63,6 +72,15 @@ my $zoneinfo = get("make-debian-x11/make_debian_x11-zoneinfo");
 
 	# Now continue with the script.
 	#open (SCRIPT, "|make_debian-X11 2&> /dev/null") 
+	if ($ARGV[0] && $ARGV[0] eq "configure") {
+	    print STDERR
+		"During make-debian-x11 package installation warnings\n" .
+		"about make-debian-x11 not being installed on the\n" .
+		"system are taken into account by the make_debian-x11\n" .
+		"script and the template properly reflects an installed\n" .
+		"make-debian-x11 package.  This warning won't be issued\n" .
+                "when reconfiguring make-debian-x11.\n\n";
+	}
 	open (SCRIPT, "|make_debian-X11") 
 	or warn "Couldn't open make_debian-X11\n";
 	#print SCRIPT $swim;
