@@ -14,8 +14,7 @@ Description: Boot/Root Filesystem Distribution testing and creation.
  simple with its Root Methods (Yard) and user-mode-linux test bed.  Finish 
  the product with a Boot Method (2-disk compression supported).  Includes the 
  make_debian script to create a testable user-mode-linux base Debian system.  
- Add-ons available, see "apt-cache search gBootRoot."  Despite the programs
- name, you don't have to be root to run it or root to create root filesystems.
+ Add-ons available, see "apt-cache search gBootRoot."  
  .
  The latest and greatest gbootroot and stuff can be retrieved from here: 
  .	
