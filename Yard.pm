@@ -1681,6 +1681,8 @@ sub which_tests {
     sys("yard_chrooted_tests $mount_point $t_fstab $t_inittab $t_scripts",
 	"TESTING"); 
 
+    # Now the question is whether or not these next tests depend on
+    # chroot, since they must have before.
     if ( $chosen_tests->{33}{test_links}   == 1 ) {
 	info(0,"\nTEST: links\n");
 	check_links();                   
