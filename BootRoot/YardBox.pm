@@ -1123,7 +1123,10 @@ sub search {
 	$search_window->signal_connect("key_press_event", sub {
 	    my $event = pop @_; 
 	    if ($event->{'keyval'}) {
-		$search_window->destroy if $event->{'keyval'} == 65307;
+		if ($event->{'keyval'} == 65307) {
+		    $search_window->destroy;
+		    undef $offset;
+		}
 	    }
 	},
 	);
@@ -1359,6 +1362,7 @@ sub search {
 	my $close_b = button(2,3,3,4,"Cancel",$table_search);
 	$close_b->signal_connect("clicked",
 				 sub {
+				     undef $offset;
 				     $search_window->destroy() 
 					 if $search_window;
 				 } );
