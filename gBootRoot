@@ -141,6 +141,9 @@ my $button_count = 0;
 my $button_count_root = 0;
 my $obj_count = 0;
 my ($lib_strip_check,$bin_strip_check);
+my ($lib_strip_check_root,$bin_strip_check_root);
+my ($bz2_toggle,$gz_toggle);
+my ($bz2_toggle_root,$gz_toggle_root);
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -336,14 +339,14 @@ label("Device Size");
 # gz and bz2 radio buttons
 my $rbutton = new Gtk::RadioButton( "gz" );
 $tooltips->set_tip( $rbutton, "Choose Compression used on the Filesystem.", "" );
-my $gz_toggle = $rbutton;
+$gz_toggle = $rbutton;
 $rbutton->set_active( $true );
 $box2->pack_start( $rbutton, $false, $false, 0 );
 $rbutton->show();
 $rbutton = new Gtk::RadioButton( "bz2", $rbutton );
 $rbutton->set_usize(1,1);
 $tooltips->set_tip( $rbutton, "Choose Compression used on the Filesystem.", "" );
-my $bz2_toggle = $rbutton;
+$bz2_toggle = $rbutton;
 $box2->pack_start( $rbutton, $true, $true, 0);
 $rbutton->show();
 
@@ -371,7 +374,8 @@ $vbox_advanced->show();
 # The Advanced Boot Section button
 hbox_advanced($vbox_advanced);
 my $button_advanced = new Gtk::Button("Advanced Boot Section");
-$tooltips->set_tip( $button_advanced, "Change settings for the bootdisk.", "" );
+$tooltips->set_tip( $button_advanced, 
+                    "Change settings for the bootdisk.", "" );
 $button_advanced->signal_connect("clicked",\&advanced_boot_section );
 $hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
 $button_advanced->show();
@@ -384,7 +388,8 @@ $vbox_advanced_root->show();
 
 hbox_advanced($vbox_advanced_root);
 $button_advanced = new Gtk::Button("Advanced Root Section");
-$tooltips->set_tip( $button_advanced, "Generate a root system and/or use a different root device.", "" );
+$tooltips->set_tip( $button_advanced, 
+          "Generate a root system and/or use a different root device.", "" );
 $button_advanced->signal_connect("clicked",\&advanced_root_section );
 $hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
 $button_advanced->show();
@@ -506,11 +511,12 @@ sub advanced_boot_section {
        #$vbox_advanced->set_usize(321,300);
 	my $boolean;
 
-       # The strip section
+       # The table section
        $table_advanced = new Gtk::Table( 4, 3, $true );
        $vbox_advanced->pack_start( $table_advanced, $true, $true, 0 );
        $table_advanced->show();
-       
+
+       #_______________________________________        
        # lib_strip_check
        label_advanced("Stripping:",0,1,0,1,$table_advanced);
        !defined $lib_strip_check ? ($boolean = 1) 
@@ -524,7 +530,6 @@ sub advanced_boot_section {
                            " right mouse button to change from" .
                            " [objcopy --strip-debug] to" . 
                            " [objcopy --strip-all].", "" );
-       #$hbox_advanced->pack_start( $lib_strip_check, $false, $false, 0);
        $table_advanced->attach($lib_strip_check,1,2,0,1, 
                                ['expand'],['fill','shrink'],0,0);
        show $lib_strip_check;
@@ -537,11 +542,11 @@ sub advanced_boot_section {
        $tooltips->set_tip( $bin_strip_check, 
                            "This is generally a good idea." .
                            " [objcopy --strip-all]", "" );
-       #$hbox_advanced->pack_start( $bin_strip_check, $true, $true, 0);
        $table_advanced->attach($bin_strip_check,2,3,0,1, 
                                ['expand'],['fill','shrink'],0,0);
        show $bin_strip_check;
 
+       #_______________________________________ 
        # Development Drive
        label_advanced("Devel Device:",0,1,1,2,$table_advanced);
        $ea1 = entry_advanced(1,2,1,2,0,$table_advanced);
@@ -557,6 +562,7 @@ sub advanced_boot_section {
                                  "" ); 
        $ea1->set_text($container[3]) if defined $container[3];
 
+       #_______________________________________ 
        # Optional Device(s)
        label_advanced("Opt. Device(s)",0,1,2,3,$table_advanced);
        $ea2 = entry_advanced(1,2,2,3,1,$table_advanced);
@@ -568,6 +574,7 @@ sub advanced_boot_section {
                                     "");
        $ea2->set_text($entry_advanced[1]) if defined $entry_advanced[1];
 
+       #_______________________________________ 
        # Append Options
        label_advanced("append =",0,1,3,4,$table_advanced);
        $ea3 = entry_advanced(1,3,3,4,2,$table_advanced);
@@ -595,30 +602,110 @@ sub advanced_root_section {
 
        $table_advanced_root = new Gtk::Table( 7, 3, $true );
        # temp solution?
-       $table_advanced_root->set_row_spacings( 3 );
-       $vbox_advanced_root->pack_start( $table_advanced_root, $true, $true, 0 );
-
-
-
+       #$table_advanced_root->set_row_spacings( 3 );
+       $vbox_advanced_root->pack_start( $table_advanced_root, $true, 
+                                        $true, 0 );
+       #_______________________________________ 
        # Root Device selection
        label_advanced("Root Device:",0,1,0,1,$table_advanced_root);
-       $ear1 = entry_advanced(1,2,0,1,0,$table_advanced_root);
+       # $_[4] shares with advanced_boot_sections @entry_advanced
+       $ear1 = entry_advanced(1,2,0,1,3,$table_advanced_root);
        $ear1->set_text($container[3]) if defined $container[3];
        $tooltips->set_tip( $ear1, 
                           "Type in the location of the Root Device to use.",
                           "" );
-       button_advanced(2,3,0,1,"Selection",$ear1,"Selection",4,"/dev/fd0");
+       button_fileselect_advanced(2,3,0,1,"Selection",$ear1,"Selection",4,
+                                  "/dev/fd0");
 
+       #_______________________________________ 
        # Root Device Size
        label_advanced("Root Device Size:",0,1,1,2,$table_advanced_root);
        $spinner_advanced = new Gtk::SpinButton( $adj, 0, 0 );
        $table_advanced_root->attach($spinner_advanced,1,2,1,2,
                             ['shrink','fill','expand'],['fill','shrink'],0,0);
-       $tooltips->set_tip( $spinner_advanced, "Choose the Root Device Size.", "" );
+       $tooltips->set_tip( $spinner_advanced, "Choose the Root Device Size.",
+                            "" );
        $spinner_advanced->set_wrap( $true );
        $spinner_advanced->set_numeric( $true );
        $spinner_advanced->set_shadow_type( 'in' );
        $spinner_advanced->show();
+
+       #_______________________________________ 
+       # Root File Name
+       label_advanced("Root Filename:",0,1,2,3,$table_advanced_root);
+       $ear2 = entry_advanced(1,2,2,3,4,$table_advanced_root);
+       $ear2->set_text("root_fs");
+       $tooltips->set_tip( $ear2, "Give the Root Filesystem file a name.", 
+                           "" );
+
+       #_______________________________________ 
+       # Compression
+       label_advanced("Compression:",0,1,3,4,$table_advanced_root);
+       $rbutton = new Gtk::RadioButton( "gz" );
+       $tooltips->set_tip( $rbutton, 
+                           "Choose Compression used on the Filesystem.", "" );
+       $gz_toggle_root = $rbutton;
+       $rbutton->set_active( $true );
+       $table_advanced_root->attach($rbutton,1,2,3,4, 
+                              ['expand'],['fill','shrink'],0,0);
+       $rbutton->show();
+       $rbutton = new Gtk::RadioButton( "bz2", $rbutton );
+       $tooltips->set_tip( $rbutton, 
+                           "Choose Compression used on the Filesystem.", "" );
+       $bz2_toggle_root = $rbutton;
+       $table_advanced_root->attach($rbutton,2,3,3,4, 
+                              ['expand'],['fill','shrink'],0,0);
+       $rbutton->show();
+
+
+       #_______________________________________ 
+       # lib_strip_check
+       label_advanced("Stripping:",0,1,4,5,$table_advanced_root);
+       !defined $lib_strip_check_root ? ($boolean = 1) 
+         : ($boolean = $lib_strip_check_root->get_active());
+       $lib_strip_check_root = new Gtk::CheckButton("Libraries");
+       $lib_strip_check_root->set_active($boolean);
+       $lib_strip_check_root->signal_connect( "button_press_event", 
+                                             \&objcopy_right_click_advanced); 
+       $tooltips->set_tip( $lib_strip_check_root, 
+                           "This is generally a good idea.  Press the" .
+                           " right mouse button to change from" .
+                           " [objcopy --strip-debug] to" . 
+                           " [objcopy --strip-all].", "" );
+       $table_advanced_root->attach($lib_strip_check_root,1,2,4,5, 
+                               ['expand'],['fill','shrink'],0,0);
+       show $lib_strip_check_root;
+
+       # bin_strip_check
+       !defined $bin_strip_check_root  ? ($boolean = 1) 
+         : ($boolean = $bin_strip_check_root->get_active());
+       $bin_strip_check_root = new Gtk::CheckButton("Binaries");
+       $bin_strip_check_root->set_active($boolean);
+       $tooltips->set_tip( $bin_strip_check_root, 
+                           "This is generally a good idea." .
+                           " [objcopy --strip-all]", "" );
+       $table_advanced_root->attach($bin_strip_check_root,2,3,4,5, 
+                               ['expand'],['fill','shrink'],0,0);
+       show $bin_strip_check_root;
+
+       #_______________________________________ 
+       # UML Kernel 
+       label_advanced("UML Kernel:",0,1,5,6,$table_advanced_root);
+       # $_[4] shares with advanced_boot_sections @entry_advanced
+       $ear3 = entry_advanced(1,2,5,6,5,$table_advanced_root);
+       $tooltips->set_tip( $ear3, 
+                          "If you have a User Mode Linux Kernel, type in" .
+                          " the Kernel's location.",
+                          "" );
+       button_fileselect_advanced(2,3,5,6,"Selection",$ear3,"Selection",5);
+
+       #_______________________________________ 
+       # Generate - UML - Accept buttons
+       my $generate_b = button_advanced(0,1,6,7,"Generate");
+       my $UML_b = button_advanced(1,2,6,7,"UML");
+       my $accept_b = button_advanced(2,3,6,7,"Accept");
+       $table_advanced_root->set_row_spacing( 5, 10);       
+
 
        $table_advanced_root->show();
        $button_count_root++;
@@ -632,7 +719,20 @@ sub advanced_root_section {
 
 } # end sub advanced_root_section
 
+
 sub button_advanced {
+
+    # cretzu should like this
+    my ($left_attach,$right_attach,$top_attach,$bottom_attach,$text) = @_;
+    my $button = new Gtk::Button($text);
+    $table_advanced_root->attach($button,$left_attach,$right_attach,
+                                 $top_attach,$bottom_attach, 
+                            ['shrink','fill','expand'],['fill','shrink'],2,2);
+    show $button;
+
+}
+
+sub button_fileselect_advanced {
 
     # cretzu should like this
     my ($left_attach,$right_attach,$top_attach,$bottom_attach,$text,$ent,
@@ -641,7 +741,7 @@ sub button_advanced {
     my $button = new Gtk::Button($text);
     $table_advanced_root->attach($button,$left_attach,$right_attach,
                                  $top_attach,$bottom_attach, 
-                            ['shrink','fill','expand'],['fill','shrink'],0,0);
+                            ['shrink','fill','expand'],['fill','shrink'],2,2);
 
     # example
     if ($order == 1) {
@@ -657,7 +757,7 @@ sub button_advanced {
     $button->show();
 
 
-}
+} # end sub button_fileselect_advanced
 
 
 sub entry_advanced {
