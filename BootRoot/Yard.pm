@@ -1479,6 +1479,31 @@ sub create_expect_uml {
 	if ( $uml_exclusively ) {
 
 
+	    if ( $fs_type eq "mkcramfs" || $fs_type eq "genromfs" ||
+		 $fs_type eq "mkfs.jffs" || $fs_type eq "mkfs.jffs2") {
+
+		my $mount_pt = dirname($device);
+
+		# fail-safe /dev and /initrd directory check
+		if ( -f "$mount_pt/loopback/dev" || 
+		     -l "$mount_pt/loopback/dev" ) {
+		    warning("$mount_pt/loopback/dev isn't a directory " .
+			    "not a file\n");
+		} 
+		elsif ( !-d "$mount_pt/loopback/dev" ) {
+		    errmk(sys("mkdir $mount_pt/loopback/dev"));
+		}
+
+		if ( -f "$mount_pt/loopback/initrd" ) {
+		    warning("$mount_pt/loopback/initrd should be a directory" .
+			    " not a file\n");
+		} 
+		elsif ( !-d "$mount_pt/loopback/initrd" ) {
+		    errmk(sys("mkdir $mount_pt/loopback/initrd"));
+		}
+
+	    }
+
 	    my $expect_program = "/usr/lib/bootroot/expect_uml";
 	    my $version = "2.4";
 	    my $ubd0 =
@@ -1517,8 +1542,7 @@ sub create_expect_uml {
 		# Will just keep appending _cramfs .. leaving it to the
 		# user to realize this is happening, that way the user
 		# has control over the dd file.
-##		$fs_type eq "mkcramfs" ? ($device = $device . "_cramfs") : 
-##		    ($device = $device . "_romfs");
+		
 
 		if ( $fs_type eq "mkcramfs" ) {
 		    $device = $device . "_cramfs";

@@ -38,6 +38,10 @@ use File::Basename;
 use File::Find;
 use File::Path;
 
+$SIG{__WARN__} = 
+    sub { warn @_ unless $_[0] =~ /Subroutine [\w:]+ redefined/io 
+	      || $_[0] =~ /Use of uninitialized value in concatenation/};
+
 # If you want gBootRoot to do it's stuff somewhere else, change the
 # value for $tmp1.
 my $tmp1 = "/tmp";              # tmp should be default - Cristian
@@ -1733,7 +1737,7 @@ sub uml_box {
 
 
 	#_______________________________________
-# Submit Button
+        # Submit Button
         my $submit_b = button_advanced(0,1,7,8,"Submit",$table_uml);
 	$tooltips->set_tip( $submit_b, 
                            "Start uml kernel processes.",
@@ -1922,10 +1926,8 @@ sub uml_box {
 						  
 						  # ramdisk_size
 						  if ( !$ramdisk_size ) {
-						      $ramdisk_size = "ramdisk_size=$total_size";
-						      if ( $ramdisk_size < 4096 ) {
-							  $ramdisk_size = 4096;
-						      }
+						      #$ramdisk_size = "ramdisk_size=$total_size";
+						      $ramdisk_size = "ramdisk_size=4096";
 						  }
 						  else {
 						      undef $ramdisk_size;
