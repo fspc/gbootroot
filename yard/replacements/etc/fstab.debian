@@ -1,3 +1,6 @@
+# $Id$
+# make_debian replacement
+
 # DEVICE        MOUNTPOINT      TYPE    OPTIONS DUMP    FSCKORDER
 #----------------------------------------------------------------
 ## Choose an appropriate root mount.

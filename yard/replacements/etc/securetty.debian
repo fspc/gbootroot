@@ -1,5 +1,8 @@
 # /etc/securetty: list of terminals on which root is allowed to login.
 # See securetty(5) and login(1).
+#
+# $Id$
+# make_debian replacement
 ttys/0
 ttys/1
 ttys/2

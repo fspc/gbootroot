@@ -1,2 +1,5 @@
+# $Id$
+# make_debian replacement
+
 Edit /etc/network/interfaces to the requirements of your network
 to bring up your interfaces.  

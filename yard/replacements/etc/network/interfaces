@@ -1,4 +1,7 @@
 # /etc/network/interfaces -- configuration file for ifup(8), ifdown(8)
+#
+# $Id$
+# make_debian replacement
 
 # The loopback interface
 auto lo

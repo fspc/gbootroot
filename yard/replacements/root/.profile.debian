@@ -1,4 +1,7 @@
 # ~/.profile: executed by Bourne-compatible login shells.
+#
+# $Id$
+# make_debian replacement
 
 if [ -f ~/.bashrc ]; then
   . ~/.bashrc
