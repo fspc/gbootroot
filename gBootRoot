@@ -144,6 +144,8 @@ my ($lib_strip_check,$bin_strip_check);
 my ($lib_strip_check_root,$bin_strip_check_root);
 my ($bz2_toggle,$gz_toggle);
 my ($bz2_toggle_root,$gz_toggle_root);
+my ($combo);
+
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -286,6 +288,7 @@ $box1->show();
 # First row
 hbox();
 my $entry = entry($false,0);
+$tooltips->set_tip( $entry, "Choose the Boot method.", "" );
 
 # Menu - later this may be improved if new methods are added.
 my $opt = new Gtk::OptionMenu();
@@ -600,7 +603,7 @@ sub advanced_root_section {
 	my $boolean; 
 
 
-       $table_advanced_root = new Gtk::Table( 7, 3, $true );
+       $table_advanced_root = new Gtk::Table( 9, 3, $true );
        # temp solution?
        #$table_advanced_root->set_row_spacings( 3 );
        $vbox_advanced_root->pack_start( $table_advanced_root, $true, 
@@ -637,6 +640,16 @@ sub advanced_root_section {
        $ear2->set_text("root_fs");
        $tooltips->set_tip( $ear2, "Give the Root Filesystem file a name.", 
                            "" );
+       my $ear2_save = new Gtk::CheckButton("save");
+       $ear2_save->set_active($true);
+       $tooltips->set_tip( $ear2_save, 
+                           "Save Root File.  Press right button to change" .
+                           " Directory file is saved in.",
+                           "" );
+       $table_advanced_root->attach($ear2_save,2,3,2,3, 
+                               ['expand'],['fill','shrink'],0,0);
+       show $ear2_save;
+
 
        #_______________________________________ 
        # Compression
@@ -695,16 +708,64 @@ sub advanced_root_section {
        $ear3 = entry_advanced(1,2,5,6,5,$table_advanced_root);
        $tooltips->set_tip( $ear3, 
                           "If you have a User Mode Linux Kernel, type in" .
-                          " the Kernel's location.",
+                          " the Kernel's location," .
+                          " and any Kernel options desired afterwards.",
                           "" );
        button_fileselect_advanced(2,3,5,6,"Selection",$ear3,"Selection",5);
 
        #_______________________________________ 
+       # Method
+       label_advanced("Method:",0,1,6,7,$table_advanced_root);
+       $ear4 = entry_advanced(1,2,6,7,6,$table_advanced_root);
+       $ear4->set_editable($false);
+       $tooltips->set_tip( $ear4, 
+                           "Choose the Root Filesystem Generation Method.", 
+                           "" );
+       my $opt_root = new Gtk::OptionMenu();
+       $tooltips->set_tip( $opt_root, 
+                           "Choose the Root Filesystem Generation Method.", 
+                           "" );
+       my $menu_root = new Gtk::Menu();
+       my $item_root = new Gtk::MenuItem("Yard" );
+       $item_root->show();
+       $item_root->signal_connect( 'activate',sub { 
+                                    $ear4->set_text("yard"); });
+       $menu_root->append( $item_root );
+       $opt_root->set_menu( $menu_root );
+       $table_advanced_root->attach($opt_root,2,3,6,7, 
+                              ['expand','fill'],['fill','shrink'],0,0);
+       $opt_root->show();
+
+       #_______________________________________ 
+       # Template
+       label_advanced("Template:",0,1,7,8,$table_advanced_root);
+       my @strings = qw(nothing is here now);
+       $combo = new Gtk::Combo(); 
+       $combo->set_popdown_strings( @strings );
+       $tooltips->set_tip( Gtk::Combo::entry($combo), 
+                           "Choose a Template for the Method.", 
+                           "" );
+       $table_advanced_root->attach($combo,1,3,7,8, 
+                               ['expand','fill'],['fill','shrink'],0,0);
+       show $combo;
+
+       #_______________________________________ 
        # Generate - UML - Accept buttons
-       my $generate_b = button_advanced(0,1,6,7,"Generate");
-       my $UML_b = button_advanced(1,2,6,7,"UML");
-       my $accept_b = button_advanced(2,3,6,7,"Accept");
-       $table_advanced_root->set_row_spacing( 5, 10);       
+       $table_advanced_root->set_row_spacing( 7, 10);       
+
+       # The Generation process is determined by the method chosen.  Yard -
+       #  asks the user if they want to modify the template, and/or save a 
+       #  new template with modifications (to be added to Template menu).
+       my $generate_b = button_advanced(0,1,8,9,"Generate");
+       $tooltips->set_tip( $generate_b, "Generate Root Filesystem.", "" );
+
+       my $UML_b = button_advanced(1,2,8,9,"UML");
+       $tooltips->set_tip( $UML_b, "Test Filesystem with User Mode Linux.", 
+                            "" );
+
+       my $accept_b = button_advanced(2,3,8,9,"Accept");
+       $tooltips->set_tip( $accept_b, "Accept Filesystem.", "" );
+
 
 
        $table_advanced_root->show();
@@ -729,6 +790,7 @@ sub button_advanced {
                                  $top_attach,$bottom_attach, 
                             ['shrink','fill','expand'],['fill','shrink'],2,2);
     show $button;
+    return $button;
 
 }
 
