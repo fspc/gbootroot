@@ -421,8 +421,8 @@ my $verbosity = 1; # info & sys use this as Global
 
 ## One hard copy log file is saved for the session, and the user can also 
 ## save from the verbosity box including saving a selection.
-#my $verbosefn = "$tmp/verbose"; # All verbosity
-my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
+my $verbosefn = "$tmp/verbose"; # All verbosity
+#my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
 
 # Need this before everything.
 Gtk::Rc->parse("/etc/gbootroot/gbootrootrc");
@@ -3108,7 +3108,7 @@ changed from the highest (2) to the lowest setting (1) or to be turned off (0)
 or on again.  At times it may be advantageous to turn off the verbosity box 
 since large quantities of output to this box may cause gbootroot to use too 
 much cpu power; however, output may still be found in the text file "verbose" 
-in /tmp.  
+in /tmp/gbootroot_tmp'time-date'.  
 
 Advanced Boot Section:
 
