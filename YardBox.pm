@@ -32,12 +32,10 @@ use Error;
 
 my $yard_window;
 my $item_factory;
-my $accel_group;
 my $true = 1;
 my $false = 0;
+my ($continue_button,$close_button,$save_button);
 
-
-my $item_type = '<Title>';
 my @menu_items = ( { path        => '/File',
 		     type        => '<Branch>' },
 		   { path        => '/File/file_tearoff',
@@ -46,7 +44,7 @@ my @menu_items = ( { path        => '/File',
                      accelerator => '<control>S',
                      callback    => sub { print "hello"; } },
                    { path        => '/File/Save _As ...',
-		     accelerator => '<alt>A',
+		     accelerator => '<alt>S',
 		     callback    => sub { print "hello\n"; } },
                    { path        => '/File/file_separator',
                      type        => '<Separator>' },
@@ -68,7 +66,7 @@ my @menu_items = ( { path        => '/File',
 		   { path        => '/Edit/Settings/Stripping/Libraries',
 		     action      => "1",
 		     type        => '<CheckItem>' },
-		   { path        => '/Edit/Settings/Stripping/settings/' },
+		   { path        =>  '/Edit/Settings/Stripping/settings/' },
 		   { path        => '/Edit/Settings/Stripping/settings/strip-all',
 		     action      => "10",
 		     type        => '<RadioItem>' },
@@ -120,33 +118,31 @@ my @menu_items = ( { path        => '/File',
 		     action      => 17,
 		     type        => '<CheckItem>' },
 			 
-	 		   
-                   { path        => '/_Tests',
+		   { path        => '/_Tests',
                      type        => '<Branch>' },
 		   { path        => '/Tests/tests_tearoff',
 		     type        => '<Tearoff>' },
 		   { path        => '/Tests/fstab',
-		     action      => 18,
+		     action      => 30,
 		     type        => '<CheckItem>' },
 		   { path        => '/Tests/inittab',
-		     action      => 19,
+		     action      => 31,
 		     type        => '<CheckItem>' },
 		   { path        => '/Tests/scripts',
-		     action      => 19,
+		     action      => 32,
 		     type        => '<CheckItem>' },
 		   { path        => '/Tests/links',
-		     action      => 20,
+		     action      => 33,
 		     type        => '<CheckItem>' },
 		   { path        => '/Tests/passwd',
-		     action      => 21,
+		     action      => 34,
 		     type        => '<CheckItem>' },
 		   { path        => '/Tests/pam',
-		     action      => 22,
+		     action      => 35,
 		     type        => '<CheckItem>' },
 		   { path        => '/Tests/nss',
-		     action      => 23,
+		     action      => 36,
 		     type        => '<CheckItem>' },
-
 
                    { path        => '/_Help',
                      type        => '<LastBranch>' },
@@ -160,8 +156,18 @@ my @menu_items = ( { path        => '/File',
 ###### 
 sub yard {
     
-    my ($kernel,$template_dir,$template) = @_;
+    my ($ars) = @_;
+
     my $error;
+    my $device           = $ars->{device};
+    my $device_size      = $ars->{device_size};
+    my $filename         = $ars->{filename};
+    my $filename_size    = $ars->{filename_size};
+    my $kernel           = $ars->{kernel};
+    my $template_dir     = $ars->{template_directory};
+    my $template         = $ars->{template};
+    my $tmp              = $ars->{tmp};
+    my $mnt              = $ars->{mnt};
     
     # Error handling in Yard will take some strategy
     if (!-d $kernel && -f $kernel) {
@@ -204,6 +210,19 @@ sub yard {
 
 } # end sub yard
 
+sub continue {
+
+
+
+} # end sub continue
+
+
+
+
+# cut little booleans for Gtk::CheckMenuItem
+my $lib_bool = 1;
+my $bin_bool = 1;
+my $mod_bool = 1;
 sub yard_box {
     
        $yard_window = new Gtk::Window "toplevel";
@@ -241,6 +260,84 @@ sub yard_box {
        $table->set_col_spacing( 0, 2 );
        $vbox->pack_start( $table, $true, $true, 0 );
        $table->show( );
+
+       #_______________________________________ 
+       # Manipulate Gtk::ItemFactory - 
+       # The trick here is to use the real path.
+
+
+       # Stripping
+
+       # Libraries
+
+           # objcopy parameters for Libraries
+           my $lib_all_strip = $item_factory->get_item
+	       ('/Edit/Settings/Stripping/settings/strip-all');
+           
+           my $lib_debug_strip = $item_factory->get_item
+	       ('/Edit/Settings/Stripping/settings/strip-debug');
+
+       my $lib_strip = $item_factory->get_item
+	   ('/Edit/Settings/Stripping/Libraries');
+       
+       $lib_strip->set_active($true);
+       $lib_strip->signal_connect( "activate", 
+				   sub {  
+				       # off   
+				       if ($lib_bool == 1) {
+					     $lib_bool--;
+					     $lib_strip->set_active($lib_bool);
+				         }
+					 # on
+					 else {
+					     $lib_bool++;
+					     $lib_strip->set_active($lib_bool);
+					 }
+					 print "$lib_bool\n";
+				     }
+                                   ); 
+
+
+       # Binaries
+       my $bin_strip = $item_factory->get_item
+	   ('/Edit/Settings/Stripping/Binaries');
+       $bin_strip->set_active($true);
+       $bin_strip->signal_connect( "activate", 
+				   sub { 
+					 # off
+					 if ($bin_bool == 1) {
+					     $bin_bool--;
+					     $bin_strip->set_active($bin_bool);
+				         }
+					 # on
+					 else {
+					     $bin_bool++;
+					     $bin_strip->set_active($bin_bool);
+					 }
+					 print "$bin_bool\n";
+				     }
+				 ); 
+
+
+       # Modules
+       my $mod_strip = $item_factory->get_item
+	   ('/Edit/Settings/Stripping/Modules');
+       $mod_strip->set_active($true);
+       $mod_strip->signal_connect( "activate", 
+				   sub { 
+					 # off
+					 if ($mod_bool == 1) {
+					     $mod_bool--;
+					     $mod_strip->set_active($mod_bool);
+				         }
+					 # on
+					 else {
+					     $mod_bool++;
+					     $mod_strip->set_active($mod_bool);
+					 }
+					 print "$mod_bool\n";
+				     }
+				 ); 
 
        #_______________________________________ 
        # Create the GtkText widget
@@ -285,6 +382,7 @@ sub yard_box {
        $vbox->show();
 
        my $check = new Gtk::CheckButton("Check");
+       $check->set_active($true);
        $vbox->pack_start( $check, $true, $true, 10 );
        show $check;       
 
@@ -317,23 +415,23 @@ sub yard_box {
        $main_vbox->pack_start( $vbox, $false, $true, 0 );
        $vbox->show();
 
-       my $button = new Gtk::Button( "Continue" );
-       $button->signal_connect( 'clicked', 
+       $continue_button = new Gtk::Button( "Continue" );
+       $continue_button->signal_connect( 'clicked', 
        				sub { destroy $yard_window; } );
-       $vbox->pack_start( $button, $true, $true, 0 );
-       $button->show();
+       $vbox->pack_start( $continue_button, $true, $true, 0 );
+       $continue_button->show();
 
-       $button = new Gtk::Button( "Close" );
-       $button->signal_connect( 'clicked', 
+       $close_button = new Gtk::Button( "Close" );
+       $close_button->signal_connect( 'clicked', 
        				sub { destroy $yard_window; } );
-       $vbox->pack_start( $button, $true, $true, 0 );
-       $button->show();
+       $vbox->pack_start( $close_button, $true, $true, 0 );
+       $close_button->show();
 
-       $button = new Gtk::Button( "Save" );
-       $button->signal_connect( 'clicked', 
+       $save_button = new Gtk::Button( "Save" );
+       $save_button->signal_connect( 'clicked', 
        				sub { destroy $yard_window; } );
-       $vbox->pack_start( $button, $true, $true, 0 );
-       $button->show();
+       $vbox->pack_start( $save_button, $true, $true, 0 );
+       $save_button->show();
     
        show $yard_window;
 
@@ -352,7 +450,7 @@ sub yard_menu {
 
     my ($window) = @_;
 
-    $accel_group = new Gtk::AccelGroup();
+    my $accel_group = new Gtk::AccelGroup();
     $item_factory = new Gtk::ItemFactory( 'Gtk::MenuBar', '<main>', 
                                              $accel_group );
     $accel_group->attach($window);
@@ -360,17 +458,8 @@ sub yard_menu {
     ##$item_factory->delete_item('/File/Checkbox');
     ##$item_factory->create_item(['/File/Checkbox', undef, undef, <Item>]);
 
-    # Manipulate Gtk::ItemFactory - The trick here is to use the real path.
-    ##my $checkbox = $item_factory->get_item('/File/Checkbox');
-    ##my $otherbox = $item_factory->get_item('/File/Save');
-
-
     return ( $item_factory->get_widget( '<main>' ) );
 
 } 
 
 1;
-
-
-
-
