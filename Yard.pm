@@ -54,26 +54,22 @@ my $objcopy = "objcopy";
 my($Warnings) = 0;
 my $verbosity;
 
+# This solves an annoying problem with the new Perl-5.6 built in glob,
+# allowing earlier versions of Perl to run.
+# But the new glob is a good thing for this program since it doesn't have to
+# depend on outside programs, making Tom's test_glob() history.
+BEGIN {
+    if ($] =~ /006/) {
+	require File::Glob;
+    }
+}
+
 STDOUT->autoflush(1);
 
 sub warning {
   info(0, "Warning: ", @_);
   $Warnings++;
 }
-
-# This is a good thing to be used for all device checking in
-# gBootRoot, but it may be restrictive since sometimes it is a 
-# good thing to mount a whole device .. cdroms for instance.
-#  Check for sane device choice before we start using it.
-#@@ check_device();
-
-#  Make sure $::device isn't already mounted and $::mount_point is free
-#@@ load_mount_info();
-
-#  Have to test this every time so we can work around.
-## This will get replaced with a readdir loop, no sense relying on people's
-## shells.  Anotherwards, yard_glob get changed.
-#@@ test_glob();
 
 ## REQUIRES $kernel opt. $kernel_version
 sub kernel_version_check {
@@ -121,7 +117,7 @@ sub kernel_version_check {
 ## cf_die, must_be_abs, replaced_by, yard_glob 
 ## REQUIRES $contents_file
 sub read_contents_file {
-    
+
     my ($contents_file) = @_;
 
     info(0, "\n\nPASS 1:  Reading $contents_file");
@@ -132,6 +128,7 @@ sub read_contents_file {
     my($line);
 
   LINE: while (defined($line = <CONTENTS>)) {
+
       my(@files);
       $cf_line++;
       chomp $line;
@@ -155,14 +152,14 @@ sub read_contents_file {
 	  #####  call include_file until pass two after all explicit links
 	  #####  have been seen.
 	  my($abs_file) = find_file_in_path($file);
-	  $Included{$abs_file} = 1;
+	  $Included{$abs_file} = 1 if $abs_file;
 	  ####   Have to be careful here.  Record the rel link for use
 	  ####   in setting up the root fs, but use the abs_link in @files
 	  ####   so next loop gets any actual files.
 	  my($abs_link) = make_link_absolute($abs_file, $link);
 	  my($rel_link) = make_link_relative($abs_file, $link);
-	  $links_to{$abs_file} = $rel_link;
-	  info(1, "$line links $abs_file to $rel_link\n");
+	  $links_to{$abs_file} = $rel_link if $abs_file;
+	  info(1, "$line links $abs_file to $rel_link\n") if $abs_file;
 	  @files = ($abs_link);
 	  
       } elsif ($line =~ /<=/) {	#####  REPLACEMENT SPEC
@@ -209,8 +206,8 @@ sub read_contents_file {
 	for $expr (split(' ', $line)) {
 	    my(@globbed) = yard_glob($expr);
 	    if ($#globbed == -1) {
-		cf_warn($contents_file, $line, 
-                        "Warning: No files matched $expr");
+		cf_warn($contents_file, $expr, 
+                        "Warning: No files matched $line");
 	    } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
 		info(1, "Expanding $expr to @globbed\n");
 	    }
@@ -893,6 +890,7 @@ sub sys {
   0;				# like system()
 }
 
+## history
 sub load_mount_info {
   undef %::mounted;
   undef %::fs_type;
@@ -955,7 +953,7 @@ sub find_file_in_path {
 
   if (!@path) {
     #####  Initialize @pathlist if necessary
-    if (!defined(@pathlist)) {
+    if (!@pathlist) {
       @pathlist = split(':', $ENV{'PATH'});
       if (defined(@::additional_dirs)) {
 	unshift(@pathlist, @::additional_dirs);
@@ -1012,6 +1010,7 @@ sub make_link_relative {
   my($abs_file, $link) = @_;
   my($newlink);
 
+  if ($abs_file) {
   if ($link =~ m|^/(.*)$|) {
     #  It's absolute -- we have to relativize it
     #  The abs_file guaranteed not to have any funny
@@ -1023,17 +1022,21 @@ sub make_link_relative {
     $newlink = $link;
   }
   cleanup_link($newlink);
+  }
 }
 
 #  I don't know if this information is worth caching.
 my(%path_length);
 sub path_length {
   my($path) = @_;
-  return $path_length{$path} if defined($path_length{$path});
-  my($length) = -1;
-  while ($path =~ m|/|g) { $length++ } # count slashes
-  $path_length{$path} = $length;
-  $length
+
+  if ($path) {
+      return $path_length{$path} if defined($path_length{$path});
+      my($length) = -1;
+      while ($path =~ m|/|g) { $length++ } # count slashes
+      $path_length{$path} = $length;
+      $length
+  }
 }
 
 
@@ -1169,11 +1172,14 @@ sub kernel_version {
     #  it can also be something like 2.2.15-27mdk.  Don't make any assumptions
     #  except that beginning must be dotted triple and it's space delimited.
     my($version) = $str =~ /^(\d+\.\d+\.\d+\S*)\s/;
+    
     return $version
+
   }
 }
 
 
+## HISTORY
 #####  Eventually move this into configure since it doesn't have to be
 #####  done with every make_root_fs.  But yard_glob would have to be
 #####  configured, and yard_utils.pl isn't configured.
@@ -1193,11 +1199,11 @@ sub test_glob {
   }
 }
 
-
 #####  Check glob() --  In some Perl versions it's reported not to work.
 sub yard_glob {
   my($expr) = @_;
 
+  ## first part HISTORY
   if ($glob_broken) {
     my($line) = `echo $expr`;
     chop($line);
