@@ -1,0 +1,42 @@
+DESTDIR = 
+
+TOOLS = mconsole moo redhat uml_net uml_router 
+
+modules: 
+
+	cd linux-2.4.16 ; \
+		mkdir ../modules-2.4 ; \
+		make modules ARCH=um ; \
+		make modules_install ARCH=um \
+			INSTALL_MOD_PATH=`pwd`/../modules-2.4
+	cp -al modules-2.4 modules-2.2
+
+	dir=`echo modules-2.2/lib/modules/*` ;\
+	for pair in "kernel/fs fs" "kernel/drivers/net net"; \
+	do \
+		from=`echo $$pair | awk '{print $$1}'` ; \
+		to=`echo $$pair | awk '{print $$2}'` ; \
+		echo "pair = $$pair, from = $$from, to = $$to" ; \
+		mkdir $$dir/$$to ; \
+		cp `find $$dir/$$from -name "*.o" -print` $$dir/$$to ; \
+	done ; \
+#	rm -rf $$dir/kernel ;
+
+	cd modules-2.4 ; tar cf ../modules-2.4.tar .
+	rm -rf modules-2.4
+	cd modules-2.2 ; tar cf ../modules-2.2.tar .
+	rm -rf modules-2.2
+
+install : all
+	for d in $(TOOLS) ; \
+	do \
+	    DESTDIR=$(DESTDIR) $(MAKE) -C $$d install ; \
+	done
+	install -d $(DESTDIR)/usr/bin/
+	install -s linux/linux $(DESTDIR)/usr/bin/linux
+	install -d $(DESTDIR)/usr/lib/uml
+	install modules-2.4.tar modules-2.2.tar $(DESTDIR)/usr/lib/uml
+
+clean :
+	$(MAKE) -C linux mrproper
+	for d in $(TOOLS) ; do $(MAKE) -C $$d clean ; done
