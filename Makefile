@@ -4,7 +4,8 @@ all: install
 install:
 	install -d /usr/bin
 	cp -fa gbootroot /usr/bin/gbootroot
-	cp -fa yard_chrooted_tests /usr/bin/yard_chrooted_tests
+	install -d /usr/lib/bootroot
+	cp -fa yard_chrooted_tests /usr/lib/bootroot/yard_chrooted_tests
 	cp -fa yard/scripts/make_debian /usr/bin/make_debian
 	install -d /usr/share/perl5/BootRoot
 	cp -fa BootRoot/*.pm /usr/share/perl5/BootRoot
@@ -27,7 +28,7 @@ install:
 
 remove:
 	rm /usr/bin/gbootroot
-	rm /usr/bin/yard_chrooted_tests
+	rm /usr/lib/bootroot/yard_chrooted_tests
 	rm /usr/bin/make_debian
 	rm /usr/share/perl5/BootRoot/*
 	rmdir /usr/share/perl5/BootRoot
