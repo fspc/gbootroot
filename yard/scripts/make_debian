@@ -134,7 +134,9 @@ $/ = "\n";
 my @info;
 foreach my $rp (@required_packages) {
     $rp = (split(/_/,$rp))[0];
-    
+    # Get rid of the escape from the previous invocation.
+    $rp =~ s/\\//g if $rp =~ /\\+/g;
+
     # Figure out info/*  .. this covers it for now.
     if (-f "$info/$rp.preinst") {
 	push(@info,"$info/$rp.preinst\n");
