@@ -22,12 +22,28 @@ this program will be able to help with the uml compile.
 Perl Modules:
 #############
 
-Gtk-Perl
+Gtk-Perl (Required)
 --------
 
 Version 0.7002 or greater.
 http://freshmeat.net/projects/gtk-perl
 
+[ The next three are required for automated normal (non-root) user 
+  functionality . ]
+
+Expect (tested with 1.11)
+------
+http://www.perl.com/CPAN/modules/by-module/Expect/
+http://sourceforge.net/projects/expectperl
+
+IO::Stty
+--------
+http://www.perl.com/CPAN/modules/by-module/IO/IO-Stty-.02.tar.gz
+
+IO::Tty
+-------
+http://www.perl.com/CPAN/modules/by-module/IO/IO-Tty-0.04.tar.gz
+http://sourceforge.net/projects/expectperl
 
 Binaries:
 #########  
