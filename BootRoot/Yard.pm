@@ -2202,10 +2202,42 @@ sub check_pam {
       chomp;
       next if /^\#/ or /^\s*$/;          # Skip comments and empty lines
       my($file) = (split)[3];	# Get fourth field
-      if (!-e "$mount_point/$file") {
-	warning_test "$pam_conf($.): $_\n",
-	"\tLibrary $file does not exist on root fs\n";
+
+      # This adds a more extensive path search --freesource
+      my @file;
+      if ( $file !~ m,^/, ) {
+	  my $base = basename($file);
+	  @file = ("/usr/lib/security/$base", "/lib/security/$base");
       }
+      else {
+	  @file = ($file);
+      }
+
+      my (%file_check, $ok);
+      foreach my $files ( @file ) {
+	  if (!-e "$mount_point/$files") {
+	      info(0,"NO $mount_point/$files\n");
+	      $file_check{$files} = 0;
+	  }
+	  else {
+	      info(0,"OK $mount_point/$files\n");
+	      $file_check{$files} = 1;
+	  }
+      }
+
+      for ( values %file_check ) {
+	  $ok = 1 if $_ == 1;
+      }
+      
+      if ( !$ok ) {
+
+	  foreach $file ( @file ) {
+	      warning_test "$pam_conf($.): $_\n",
+	      "\tLibrary $file does not exist on root fs\n";
+	  }
+
+      }
+
       #  That's all we check for now
     }
     close(PAM)				or error("Closing PAM: $!");
@@ -2226,14 +2258,52 @@ sub check_pam {
 	   next if /^\#/ or /^\s*$/;           # Skip comments and empty lines
 	   my($file) = (split)[2]; ## Get third field --freesource
 	   $pam_configured = 1;
-	   if (!-e "$mount_point/$file") {
-	      warning_test "$file2($.): $_\n",
-	      	  "\tLibrary $file does not exist on root fs\n";
+
+	   # This adds a more extensive path search --freesource
+	   my @file;
+	   if ( $file !~ m,^/, ) {
+	       my $base = basename($file);
+	       @file = ("/usr/lib/security/$base", "/lib/security/$base");
 	   }
+	   else {
+	       @file = ($file);
+	   }
+
+	   my (%file_check, $ok);
+	   foreach my $files ( @file ) {
+	       if (!-e "$mount_point/$files") {
+		   info(0,"NO $mount_point/$files\n");
+		   $file_check{$files} = 0;
+	       }
+	       else {
+		   info(0,"OK $mount_point/$files\n");
+		   $file_check{$files} = 1;
+	       }
+	   }
+
+	   for ( values %file_check ) {
+	       $ok = 1 if $_ == 1;
+	   }
+      
+	   if ( !$ok ) {
+
+	       foreach $file ( @file ) {
+		   warning_test "$pam_conf($.): $_\n",
+		   "\tLibrary $file does not exist on root fs\n";
+	       }
+
+	   }
+
+	#   if (!-e "$mount_point/$file") {
+	#      warning_test "$file2($.): $_\n",
+	#      	  "\tLibrary $file does not exist on root fs\n";
+	#   }
+
 	}
 	close(PF);
      }
      closedir(PAMD);
+     info(0, "Done with $pamd_dir\n");
   }
 
   #  Finally, see whether PAM configuration is needed
