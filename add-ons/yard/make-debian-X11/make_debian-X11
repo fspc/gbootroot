@@ -204,26 +204,13 @@ $Id
 /root/setup <= Replacements/root/setup-debian-X11
 /root/README <= Replacements/root/README-debian-X11
 
-# Devices - optional stuff which can be picked up by devfsd.
+
+# Devices - leaving a console (just in case) and MAKEDEV if you
+# want to make devices which will only exist until you reboot or halt
+# the system.  If you need devices which last from one invocation to
+# the next, install devfsd and edit /etc/devfs/devices. 
 /dev/MAKEDEV # a link
-/dev/mem	
-/dev/kmem
-/dev/null       
-/dev/zero
-/dev/ram*
 /dev/console
-/dev/tty[0-9]
-/dev/hd[abcd]*              
-/dev/ttyS[0-9]		    
-/dev/fd0*                   
-/dev/sd*                    
-#/dev/cdrom 
-#/dev/modem       
-/dev/pts*
-/dev/ptmx
-/dev/initctl
-/dev/urandom
-/dev/ubd0 <= Replacements/dev/ubd0
 
 #  Empty directories with no stuff.
 /mnt        
@@ -276,7 +263,7 @@ return $stuff;
 use strict;
 use File::Basename;
 my $rm = "\$";
-$main::Id = "# \$Id: make_debian-X11,v 1.36 2001/12/11 06:46:42 freesource Exp $rm"; 
+$main::Id = "# \$Id: make_debian-X11,v 1.37 2001/12/11 07:17:34 freesource Exp $rm"; 
 my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
 if ($sbin == 0) {
     $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
