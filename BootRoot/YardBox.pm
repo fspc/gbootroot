@@ -81,7 +81,7 @@ my @menu_items = ( { path        => '/File',
                    { path        => '/File/_New Template',
                      accelerator => '<alt>N',
                      callback    => \&saved,
-		     action      =>  100 },
+		     action      =>  103 },
                    { path        => '/File/file_separator',
                      type        => '<Separator>' },
                    { path        => '/File/_Save',
@@ -1183,7 +1183,7 @@ sub saved {
 	    return if $error && $error eq "ERROR"; 
 	}
     }
-    elsif ($whoami == 101) {
+    elsif ($whoami == 101 || $whoami == 103) {
 	save_as();
     }
 
@@ -1581,7 +1581,8 @@ sub yard_menu {
 
 } 
 
-# This will just be a simple dialog
+# This will just be a simple dialog, and doubles as New Template as
+# well as Save As
 my $write_over;
 sub save_as {
 
@@ -1592,6 +1593,15 @@ sub save_as {
     $save_as = Gtk::Dialog->new();
     $save_as->signal_connect("destroy", \&destroy_window, \$save_as);
     $save_as->signal_connect("delete_event", \&destroy_window, \$save_as);
+    $save_as->signal_connect("key_press_event", sub {
+	my $event = pop @_; 
+	if ($event->{'keyval'}) {
+	    if ($event->{'keyval'} == 65307) {
+		$save_as->destroy;
+	    }
+	}
+    },
+			     );
     $save_as->set_title("Save As");
     $save_as->border_width(12);
     $save_as->set_position('center');
