@@ -1097,17 +1097,23 @@ sub copy_strip_file {
 	## non-root users will experience problems here so this is
 	## skipped. --freesource
 
+
+	my($mode, $uid, $gid);
+	(undef, undef, $mode, undef, $uid, $gid) = stat $from;
+	my $from_base = basename($from);
+
 	if ( $> == 0 ) {
-	    my($mode, $uid, $gid);
-	    (undef, undef, $mode, undef, $uid, $gid) = stat $from;
-	    my $from_base = basename($from);
 	    chown($uid, $gid, $to) or ($error = 
 				       error("chown: $! \($from_base\)\n"));
 	    return "ERROR"if $error && $error eq "ERROR";
 	    chmod($mode, $to)      or ($error = 
 				       error("chmod: $! \($from_base\)\n"));
 	    return "ERROR"if $error && $error eq "ERROR";
-    }
+	}
+	else {
+	    sys("$main::sudo chown $uid $gid $to");
+	    sys("$main::sudo chmod $mode $to");
+	}
 
     }
     else {
