@@ -2,7 +2,7 @@ make-debian-x11 (1.0-1) unstable; urgency=low
 
   * Initial Release.
 
- -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Mon,  8 Oct 2001 14:52:59 -0400
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Tue,  9 Oct 2001 01:42:51 -0400
 
 Local variables:
 mode: debian-changelog
