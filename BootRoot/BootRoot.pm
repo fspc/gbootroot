@@ -1862,6 +1862,29 @@ sub uml_box {
 					      }
 
 
+					      # Memory needs to be figure out in 16384K blocks
+					      # otherwise it fails, and it needs to be at least 16384 
+					      # for uml. 
+
+					      # mem
+					      my $mem_size;
+					      if ( $total_size < 16384 ) {
+						  $mem_size = 16384;
+					      }
+					      else {
+						  $mem_size = 16384 * ceil($mtd_total_size / 16384);
+						  if ( $total_size == $mem_size ) {
+						      $mem_size = $mem_size + 16384;
+						  }
+					      }
+					      
+					      if ( !$mem ) {
+						  $mem = "mem=$mem_size" . "K";
+					      }
+					      else {
+						  undef $mem;
+					      }
+
 
 					      # Will use this format 
 					      # initrd=Initrd mem=? mtd=type,fs_type,size,erasure
@@ -1886,28 +1909,6 @@ sub uml_box {
 						      undef $ramdisk_size;
 						  }
 
-						  # Memory needs to be figure out in 16384K blocks
-						  # otherwise it fails, and it needs to be at least 16384 
-						  # for uml.
-
-						  # mem
-						  my $mem_size;
-						  if ( $total_size < 16384 ) {
-						      $mem_size = 16384;
-						  }
-						  else {
-						      $mem_size = 16384 * ceil($mtd_total_size / 16384);
-						      if ( $total_size == $mem_size ) {
-							  $mem_size = $mem_size + 16384;
-						      }
-						  }
-						  
-						  if ( !$mem ) {
-						      $mem = "mem=$mem_size" . "K";
-						  }
-						  else {
-						      undef $mem;
-						  }
 
 						  # Order does matter because it's used by linuxrc
 						  $entry_advanced[9] = 
@@ -1927,7 +1928,7 @@ sub uml_box {
 						  # Order does matter because it's used by linuxrc
 						  $entry_advanced[9] = 
 						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size,, " .
-							  "$initrd " .
+							  "$mem $initrd " .
 							  $entry_advanced[9]; 
 
 					      }
