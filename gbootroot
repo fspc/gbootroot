@@ -115,6 +115,9 @@ $main::makefs = "mke2fs -F -m0 -i8192";
 #                  provides a testing bed for root filesystems.  Previous
 #                  Options are remembered to save typing, Abort button 
 #                  provides excellent process clean-up.       
+#                * Wrote an automated package creation script which can
+#                  be modified for other packages.  This script can be found
+#                  in CVS.
 #                * Bugs closed: 422436, 225252
 #
 #       1.2.2 - 09/03/2000
@@ -171,7 +174,7 @@ $main::makefs = "mke2fs -F -m0 -i8192";
 
 # I need to remember to edit this
 my $version = "1.2.13";
-my $date = "08.30.2001";
+my $date = "09.28.2001";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
