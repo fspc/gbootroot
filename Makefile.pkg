@@ -17,6 +17,7 @@ install:
 	cp -fa yard/replacements/* $(DESTDIR)/usr/share/gbootroot/yard/Replacements
 	install -d $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/modules* $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules
+	cp -fa user-mode-linux/usr/lib/uml/config $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/CVS $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules/CVS
 
 	install -d $(DESTDIR)/usr/share/gbootroot/yard/templates
