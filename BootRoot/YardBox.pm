@@ -40,7 +40,8 @@ my($check,$dep,$space,$create,$test);
 my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
-my ($replacements_window, $filesystem_window, $path_window);
+my ($replacements_window, $filesystem_window, $path_window, $shortcut);
+my $Shortcuts;
 my @entry;
 my $file_dialog;
 
@@ -204,7 +205,8 @@ my @menu_items = ( { path        => '/File',
 		   { path        => '/Help/help_tearoff',
 		     type        => '<Tearoff>' },
                    { path        => '/_Help/Tutorial' },
-                   { path        => '/_Help/Shortcuts' } );
+                   { path        => '/_Help/Shortcuts', 
+		     callback    => \&shortcut	} );
 
 
 
@@ -1210,8 +1212,73 @@ sub save_as {
         save_as($error,$count) if $error == 0;
      }
 
+} # end sub save_as
+
+sub shortcut {
+
+   if (not defined $shortcut) {
+    $shortcut = Gtk::Dialog->new();
+    $shortcut->signal_connect("destroy", \&destroy_window, \$shortcut);
+    $shortcut->signal_connect("delete_event", \&destroy_window, \$shortcut);
+    $shortcut->set_title("Save As");
+    $shortcut->border_width(12);
+    $shortcut->set_position('center');
+
+    my $label = Gtk::Label->new($Shortcuts);
+    $label->set_justify( 'left' );
+#    $label->set_pattern("_________");
+    $shortcut->vbox->pack_start( $label, $false, $false, 2 );
+    $label->show();
+ 
+    my $button = Gtk::Button->new("OK");
+    $button->signal_connect("clicked", sub {
+
+	    $shortcut->destroy;
+    });
+    $button->can_default(1);
+    $shortcut->action_area->pack_start($button, $false, $false,0);
+    $button->grab_default;
+    $button->show;
+
+
+    }
+     if (!visible $shortcut) {
+         $shortcut->show();
+     }
+     else {
+        $shortcut->destroy();
+     }
 
 }
+
+
+$Shortcuts = << "SHORTCUTS";
+Motion Shortcuts 
+
+ Ctrl-A Beginning of line 
+ Ctrl-E End of line 
+ Ctrl-N Next Line 
+ Ctrl-P Previous Line 
+ Ctrl-B Backward one character 
+ Ctrl-F Forward one character 
+ Alt-B Backward one word 
+ Alt-F Forward one word 
+
+ Editing Shortcuts 
+
+ Ctrl-H Delete Backward Character (Backspace) 
+ Ctrl-D Delete Forward Character (Delete) 
+ Ctrl-W Delete Backward Word 
+ Alt-D Delete Forward Word 
+ Ctrl-K Delete to end of line 
+ Ctrl-U Delete line 
+
+Selection Shortcuts 
+
+ Ctrl-X Cut to clipboard 
+ Ctrl-C Copy to clipboard 
+ Ctrl-V Paste from clipboard
+SHORTCUTS
 
 sub path {
 
