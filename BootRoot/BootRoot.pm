@@ -3,7 +3,7 @@
 ##############################################################################
 ##
 ##  BootRoot.pm 
-##  Copyright (C) 2000, 2001, 2002  by Jonathan Rosenbaum 
+##  Copyright (C) 2000, 2001, 2002, 2003   by Jonathan Rosenbaum 
 ##                              <freesource@users.sourceforge.net>
 
 ##
@@ -363,9 +363,7 @@ if ( !%option || $option{gui_mode} ) {
 # /tmp
 home_builder($tmp1);
 
-# gbootroot will need to be run at least once without options to make these
-# directories
-if ( !%option ) {
+if ( !( $option{home} || $option{help} || $option{h} ) ) {
 
 # $HOME/.gbootroot/root_filesystem
     home_builder($home_rootfs);
@@ -1573,7 +1571,10 @@ sub uml_box {
                            "Alter value for each Linux virtual " .
                            "machine invocation, and use the " . 
 			   "mconsole's switch options to gain " .
-			   "control of the new machine.", 
+			   "control of the new machine.\n" .
+			   "mtd_init is a special option that " .
+			   "allows a MTD root_fs to start with an " .
+			   "alternative init like /bin/bash.", 
                            "" );
 	$eab2->show();
 

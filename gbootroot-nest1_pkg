@@ -214,9 +214,10 @@ system "cp -fa $makefile $packaging_place/Makefile";
 #  Basically this is stuff we want in the source package, but not the normal
 #  package
 system "cp -fa README $packaging_place/README";
-system "cp -fa COPYING $packaging_Place/COPYING";
+system "cp -fa COPYING $packaging_place/COPYING";
 system "cp -fa user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch $packaging_place/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch";
-system "ln -sf $packaging_place/yard/replacements $packaging_place/yard/Replacements";
+chdir("$packagine_place/yard");
+system "ln -sf replacements $packaging_place/yard/Replacements";
 mkdir("$packaging_place/sources");
 
 # Now we get to clean out any CVS directories and make sure that the 
