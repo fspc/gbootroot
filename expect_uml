@@ -145,10 +145,10 @@ elsif ( $filesystem =~ /^mkfs\.jffs/ ) {
     $uml->command("umount /mnt2");
     $uml->command("mount -t hostfs none -o $jffs_dir /mnt2");
     if ( $filesystem =~ /^mkfs\.jffs\s*$/ ) {
-	$uml->command("mkfs.jffs2 -r /mnt1 -o /mnt2/$jffs2_name  -e 0x20000 -p");
+	$uml->command("mkfs.jffs -d /mnt1 -o /mnt2/$jffs2_name  -e 0x20000");
     }
     else {
-	$uml->command("$filesystem -r /mnt1 -o /mnt2/$jffs2_name");
+	$uml->command("$filesystem -d /mnt1 -o /mnt2/$jffs2_name");
     }
 }
 
