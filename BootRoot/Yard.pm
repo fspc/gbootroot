@@ -792,44 +792,56 @@ sub create_filesystem {
     my $file;
     my $error;
 
+    my $fs_type = (split(/\s/,$main::makefs))[0];
+
     info(0, "Creating root filesystem.\n");
-    info(0, "Description:  $fs_size K ext2 file system\n");
+    info(0, "Description:  $fs_size K root file system\n");
     info(0, "Where:  $device\n");
 
-    sync();
-    sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
-    sync();
+    # Maybe other fs will be represented in the future, but genext2fs is all 
+    # that exists now for non-root users.
+    if ( $fs_type ne "genext2fs" ) {
 
-    if (-f $device) {
-	#####  If device is a plain file, it means we're using some loopback
-	#####  device.  Use -F switch in mke2fs so it won't complain.
-	## Options here can be changed.
-	## Originally, this was -b 1024 switched with the inode approach.
+	sync();
+	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
+	sync();
+
+	if (-f $device) {
+	    #####  If device is a plain file, it means we're using some 
+	    #####  loopback device.  Use -F switch in mke2fs so it 
+	    #####  won't complain.
+	    ## Options here can be changed.
+	    ## Originally, this was -b 1024 switched with the inode approach.
 	    if (sys("$main::makefs $device $fs_size") !~ 
 		/^0$/ ) {
-		my $fs_type = (split(/\s/,$main::makefs))[0];
 		$error = error("Can not $fs_type filesystem.");
 		return "ERROR" if $error && $error eq "ERROR";
 
 	    }
-    } else {
+	} else {
 	    if (sys("$main::makefs $device $fs_size") !~ 
 		/^0$/ ) {
-		my $fs_type = (split(/\s/,$main::makefs))[0];
 		$error = error("Can not $fs_type filesystem.");
 		return "ERROR" if $error && $error eq "ERROR";
 	    }
+	}
+	
     }
 
     if (!-d $mount_point) {
        return "ERROR" if errmk(sys("mkdir $mount_point")) == 2;
     }
 
-    return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
-    ##### lost+found on a ramdisk is pointless
-    sys("rm -rf $mount_point/lost+found");
 
-    sync();
+    if ( $fs_type ne "genext2fs" ) {
+
+	return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
+	##### lost+found on a ramdisk is pointless
+	sys("rm -rf $mount_point/lost+found");
+
+	sync();
+
+    }
 
     #####  Setting up the file structure is tricky.  Given a tangled set
     #####  of symbolic links and directories, we have to create the
@@ -960,11 +972,32 @@ sub create_filesystem {
 	sys("ldconfig -v -r $mount_point");
     }
 
-    ## Probably will want to umount here
-    return "ERROR" if errum(sys("umount $mount_point")) == 2;
 
-    info(0, "\nDone making the root filesystem.  $Warnings warnings.\n",
-	 "$device is now umounted from $mount_point\n\n");
+    if ( $fs_type ne "genext2fs" ) {
+	## Probably will want to umount here
+	return "ERROR" if errum(sys("umount $mount_point")) == 2;
+    }
+
+    # This is fun.
+    else {
+	# The -D option is unique to the newest unreleased version of 
+	# genextfs modified by BusyBox maintainer Erick Andersen
+	# August 20, 2001.
+
+	my $device_table; # to be removed once device table creation is 
+	                  # added.
+
+	if (
+	    sys("$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
+	    /^0$/ ) {
+	    $error = error("Can not $fs_type filesystem.");
+	    return "ERROR" if $error && $error eq "ERROR";
+	    }
+
+    }
+
+	info(0, "\nDone making the root filesystem.  $Warnings warnings.\n",
+	     "$device is now umounted from $mount_point\n\n");
 
     #info(0, "All done!\n");
     #info(0, "You can run more tests with the UML kernel\n", 

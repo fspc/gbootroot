@@ -276,6 +276,9 @@ sub file_system {
 	# Editor and execute options
 	label("Filesystem Command:",0,1,0,1,$table_filesystem);
 	my $fs1 = entry(1,3,0,1,2,$table_filesystem);
+	if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
+	    $main::makefs = "genext2fs -i8192";
+	}
 	$fs1->set_text($main::makefs);
 
 	$table_filesystem->set_row_spacing( 0, 2);       
