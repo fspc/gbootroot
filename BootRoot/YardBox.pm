@@ -2193,7 +2193,7 @@ sub path {
 		    }
 		}
 
-		info(1, "Search path is now:\n", 
+		info(0, "Search path is now:\n", 
 		     join(" ", @additional_dirs), " ",
 		     join(" ", @pathlist), "\n");
 	    }
