@@ -1,9 +1,9 @@
-#  $Id: Example.yard,v 1.15 2001/12/13 03:02:18 freesource Exp $
+#  $Id: Example.yard,v 1.16 2001/12/14 04:34:46 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with getty.  
-#  Tested on Debian unstable/testing,  but should work on other distributions 
-#  (Mandrake,  RedHat, Slackware, etc.) by using the proper inittab and getty.
+#  Tested on Debian unstable/testing, Red Hat 7.2, Mandrake 8.1, but should 
+#  work on other distributions by using the proper inittab and getty.
 # 
 #  Create either as a normal user or root.
 #
@@ -12,6 +12,8 @@
 #  system using devfs, either manually mknod /dev/tty[0-2] (major 4 minor 0-2)
 #  or have devfsd automatically make these devices every time the root 
 #  filesystem starts.
+#
+#  On both Red Hat 7.2 and Mandrake 8.1, shadow password had to be used.
 
 #############################################################################
 #
