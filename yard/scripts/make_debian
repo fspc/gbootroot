@@ -8,6 +8,7 @@ my $home_yard_replacements = "$home_yard/Replacements";
 my $nodename = `uname -n`; chomp $nodename;
 my $debian_yard = "Debian-$nodename.yard";
 my $status = "/var/lib/dpkg/status";
+my $info = "/var/lib/dpkg/info";
 
 # You need file-rc, and you may add other extra stuff.  These packages were
 # chosen for woody, so you may need something different.  Check dependencies,
@@ -72,6 +73,10 @@ foreach (@required_files) {
 	}		   
     }
 }
+
+print DEBIAN "\n# Scripts associated with packages found in info/*\n";
+print DEBIAN status_info();
+
 close(DEBIAN);
 
 
@@ -100,18 +105,22 @@ close(MY_FILERC);
 #
 # Conffiles would have to be handled both before and after Root Filesystem
 # creation so that their md5sums could be accounted for in status.
+#
+# And this finds all the scripts associated with a package in info/*.
+
+sub status_info {
 
 $/ = "";
 open(STATUS,"$status") or die "Can't find /var/lib/dpkg/status: $!\n";
-my @status = <STATUS>;
-close(STATUS);
 home_builder("$home_yard_replacements/var/lib/dpkg");
 open(NEW_STATUS,">$home_yard_replacements/var/lib/dpkg/status")
     or die "Couldn't open $home_yard_replacements/var/lib/dpkg/status: $!\n";
-foreach my $stat (@status) { # keep the order
+while (<STATUS>) { # keep the order
+    $stat = $_;
     my $stat2 = (split(/\n/,$stat))[0]; # might as well
     foreach my $rp (@required_packages) {
 	$rp = (split(/_/,$rp))[0];
+	# Deal with names with +
 	$rp =~ s/\+/\\+/g if $rp !~ /\\+/g;
 	if ($stat2 =~ /^Package: $rp$/) {
 	    print NEW_STATUS $stat;
@@ -119,13 +128,31 @@ foreach my $stat (@status) { # keep the order
     }
 }
 close(NEW_STATUS);
+close(STATUS);
 $/ = "\n";
 
-# This figures out all the info/* files shipped with the package.
-# Swim is more efficient here because info directories can get huge.
-foreach (@required_packages) {
-
+my @info;
+foreach my $rp (@required_packages) {
+    $rp = (split(/_/,$rp))[0];
+    
+    # Figure out info/*
+    if (-f "$info/$rp.preinst") {
+	push(@info,"$info/$rp.preinst\n");
+    }
+    if (-f "$info/$rp.postinst") {
+	push(@info,"$info/$rp.postinst\n");        
+    }
+    if (-f "$info/$rp.prerm") {
+	push(@info,"$info/$rp.prerm\n");        
+    }
+    if (-f "$info/$rp.postrm") {
+	push(@info,"$info/$rp.postrm\n");        
+    }
 }
+
+return @info;
+
+} # end sub status_info
 
 sub stuff {
 
