@@ -95,6 +95,7 @@ my $true = 1;
 my $ok;
 my $box2;
 my $label;
+my $separator;
 my $order;
 my $text_window;
 my @container;
@@ -105,6 +106,10 @@ my ($kernel,$root_image,$device,$size);
 my $mtab;
 my ($tmp,$mnt);
 my $norm_root_device;
+
+
+# temporarily for a test
+my $strip = $true;
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -196,6 +201,8 @@ if (!-d "$tmp1/gbootroot_mnt$$") {
 my $verbosefn = "$tmp/verbose";
 
 my $window = new Gtk::Window("toplevel");
+# special policy
+$window->set_policy( $false, $true, $true );
 $window->set_title("gBootRoot");
 $window->set_position('center');
 $window->signal_connect("destroy",
@@ -299,8 +306,64 @@ $entry5->set_usize(15,20);
 $box2->pack_start( $entry5, $true, $true, 0 );
 $entry5->show();
 
+# The FUTURE ADVANCED SECTION 
+##################################
 # Separator
-my $separator = new Gtk::HSeparator();
+$separator = new Gtk::HSeparator();
+$box1->pack_start( $separator, $false, $true, 0 );
+$separator->show();
+
+# This is cool how this works.
+my $box10 = new Gtk::VBox($false,0);
+$box1->add($box10);
+$box10->show();
+
+my $box_special; my $box_special2;
+my $button_count = 0;
+
+hbox_special();
+
+# The button
+my $button_special = new Gtk::Button("Advanced Section");
+$tooltips->set_tip( $button_special, "This is where all the advanced stuff is found.", "" );
+$button_special->signal_connect("clicked", sub { 
+                    if ($button_count == 0) {  
+                       $box10->set_usize(321,300);
+                       hbox_special();
+    # test stuff
+    my $label2 = new Gtk::Label( "Nothing here yet." );
+    $label2->set_justify( "fill" );
+    $box_special->pack_start( $label2, $false, $false, 5 );
+    $label2->show();
+    $label2 = new Gtk::Label( "Nothing here yet." );
+    $label2->set_justify( "fill" );
+    $box_special->pack_start( $label2, $false, $false, 5 );
+    $label2->show();
+
+                       $button_count++;
+                    }
+                    else {
+                        $box10->set_usize(321,0);
+                        destroy $box_special;
+                        $button_count--;
+                    }
+                                             } );
+$box_special->pack_start( $button_special, $true, $true, 0 );
+$button_special->show();
+
+
+sub hbox_special {
+    $box_special = new Gtk::HBox(1,1 );
+    $box_special->border_width( 2 ); # was 10
+    $box_special->set_usize(321, 20);
+    $box10->pack_start( $box_special, 0, 0, 0 );
+    show $box_special;
+}
+
+#######################################
+
+# Separator
+$separator = new Gtk::HSeparator();
 $box1->pack_start( $separator, $false, $true, 0 );
 $separator->show();
 
@@ -350,6 +413,7 @@ $tooltips->set_tip( $hbutton, "Help about gBootRoot.", "" );
 $hbutton->show();
 $box2->pack_start( $hbutton, $true, $true, 0 );
 $box2->show();
+
 
 $window->show();
 main Gtk;
@@ -1043,23 +1107,32 @@ sub initrd_size {
   }
 
   # lib sizes
+  # for testing purposes change $lib_place value
+  my $lib_place = "/home/mttrader/test";
   open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd
    while (<L>) {
       $lib = (split(/=>/,$_))[0];
       $lib =~ s/\s+//;
       $lib = basename($lib);
       $lib =~ s/\s+$//;
-      open (SL,"ls -l /lib/$lib|") or die "humm: $!\n";
+      open (SL,"ls -l $lib_place/$lib|") or die "humm: $!\n";
         while (<SL>) {
           # symbolic link
-          if (-l "/lib/$lib") {
+          if (-l "$lib_place/$lib") {
             $what = (split(/\s+/,$_))[10];
             $initrd_size = $initrd_size + 1;
-            $initrd_size = $initrd_size + ((stat("/lib/$what"))[12]/2);
+            $initrd_size = $initrd_size + ((stat("$lib_place/$what"))[12]/2);
           }
           # no symbolic link
           else {
-           $initrd_size = $initrd_size + ((stat("/lib/$lib"))[12]/2);
+              # This is a test right now
+	      if ($strip == 1) {
+		  system "objcopy $lib_place/$lib /tmp/$lib";
+                  $initrd_size = $initrd_size + ((stat("/tmp/$lib"))[12]/2);
+              }
+              else {
+                   $initrd_size = $initrd_size + ((stat("$lib_place/$lib"))[12]/2);
+	      }
           }
         }
    }
@@ -1168,6 +1241,7 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $verbosefn 2>&1; mount -o loop 
         }
    }
 
+  
   #V#print "Determine run-time link bindings\n";
   # Has a return code of 0 regardless
   system "ldconfig -r $tmp/initrd_mnt";
