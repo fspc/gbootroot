@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.75 2002/01/11 02:28:32 freesource Exp $</center>
+<center>$Id: index.html,v 1.76 2002/01/11 04:51:36 freesource Exp $</center>
 
 <p>
 
@@ -31,6 +31,8 @@ testing of distributions fun and simple.</P>
 <P align="center">
 <b>Newest version</b><br>
 
+(Version 1.3.2 dedicated to Liav Asseraf for an important bug report and questions.)
+<br>
 (Milestone version 1.3.1 dedicated to  the first ever 
 <a href="http://www.morlug.org">MORLUG</a> meeting in my
 hometown!)
@@ -429,7 +431,7 @@ create a UID/GID 0 fs.&nbsp;&nbsp;Both types of users can turn this button on
 at any time regardless of the filesystem size, and assuming they provide a 
 filesystem command suppored by the root_fs helper; however, normal users 
 should keep this on when the filesystem 
-size is greater than 8192k.&nbsp;&nbsp;Preserve Permissions are off by 
+size is greater than 8192k.&nbsp;&nbsp;Preserve Ownership is off by 
 default for normal
 users, and on by default for root, these are good defaults since a normal
 user would create a fs with their own UID/GID if they turned this on.
@@ -693,7 +695,7 @@ filesystem type:  ext2, minix, reiserfs, romfs or cramfs.
 18.&nbsp;&nbsp;Open up the Filesystem Box (Edit->'File System") and click on
 the UML Exclusively check button, and enter a filesystem command.  For this
 example <code>mkminix</code> will be used to create a minix filesystem.
-&nbsp;&nbsp;Normal users will want to keep the Preserve Permissions check
+&nbsp;&nbsp;Normal users will want to keep the Preserve Ownership check
 button off.&nbsp;&nbsp;Press the submit button when finished.
 
 <p>
@@ -1049,7 +1051,7 @@ distribution, anotherwards, one which uses dpkg, apt and file-rc to maintain
 its packaging and boot hierarchy.&nbsp;&nbsp;Dswim is used to collect
 information used in making the template.&nbsp;&nbsp;When you run the
 template in the Yard Box as 
-a normal user make sure that uml exclusively is on in the filesystem box, and
+a normal user make sure that UML Exclusively is on in the filesystem box, and
 that you assign an adequate filesystem size in the ARS.&nbsp;&nbsp;This is a 
 good opportunity to find out how your installation would run on top of 
 different filesystem types like reiserfs.</p>
@@ -1301,10 +1303,10 @@ box.&nbsp;&nbsp;Considering that mkreiserfs doesn't allow loop devices to
 be used,
 this is an easy way to get around this limitation, and most importantly it
 allows non-root users to create UID/GID 0 root filesystems.&nbsp;&nbsp;
-Try creating a root filesystem as a normal user with both "uml exclusively" and
-"preserve ownership" turned on and discover if you can successfully create
+Try creating a root filesystem as a normal user with both "UML Exclusively" and
+"Preserve Ownership" turned on and discover if you can successfully create
 a working root filesystem.&nbsp;&nbsp;Answer: No, you will not be able 
-to unless preserve ownership is off.
+to unless Preserve Ownership is off.
 
 <p>
 
