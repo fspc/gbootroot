@@ -1507,26 +1507,38 @@ sub accept_button {
 			info(0, "Already bzip2 compressed.\n");
 		    }
 		    else {
-			my $command_line =
-			    "$compress -c9 $tmp/$entry_advanced[4]|";
-			info(0,"Compressing $entry_advanced[4] with $compress\n");
-			open (PLACE, ">$tmp/$entry_advanced[4].gz");
-			open (COMP,"$command_line");
-			while (<COMP>) {
-			    print PLACE $_;
-			    while (Gtk->events_pending) 
-			    { Gtk->main_iteration; }
-			}
-			close(COMP);
-			close(PLACE);
-			info(0,"Done compressing $entry_advanced[4] with $compress\n");
-=pod
-			system 
-	  "$compress -c9 $tmp/$entry_advanced[4] > $tmp/$entry_advanced[4].gz";
-=cut
-			$entry_advanced[4] = "$entry_advanced[4].gz";
-			$entry3->set_text("$tmp/$entry_advanced[4]");
 
+
+			info(0,"Compressing $entry_advanced[4] with $compress\n");
+			system "$compress -c9 $tmp/$entry_advanced[4] > $tmp/$entry_advanced[4].gz&";
+
+
+			$, = "";
+			my @ps_check = `ps w -C $compress 2> /dev/null`;
+			$, = "\n";
+
+			my @pids;
+			foreach my $line ( @ps_check ) {
+			    if ( $line =~ 
+				 m,$compress -c $tmp/$entry_advanced[4]$, ) {
+
+				my $pid = (split(" ",$line))[0];
+				push(@pids,$pid);
+			    }
+
+			}
+
+			foreach my $pid ( @pids ) {
+			    do {
+				while (Gtk->events_pending) 
+				{ Gtk->main_iteration; }
+			    } while -d "/proc/$pid"; 
+			}
+
+			info(0,"Done compressing $entry_advanced[4] with $compress\n");
+                        $entry_advanced[4] = "$entry_advanced[4].gz";
+                        $entry3->set_text("$tmp/$entry_advanced[4]");
+			
 		    }
 		}
 		close(F);
@@ -1553,27 +1565,37 @@ sub accept_button {
 			info(0, "Already bzip2 compressed.\n");
 		    }
 		    else {
-
-			my $command_line =
-			    "$compress -c $tmp/$entry_advanced[4]|";
+    
 			info(0,"Compressing $entry_advanced[4] with $compress\n");
-			open (PLACE, ">$tmp/$entry_advanced[4].bz2");
-			open (COMP,"$command_line");
-			while (<COMP>) {
-			    print PLACE $_;
-			    while (Gtk->events_pending) 
-			    { Gtk->main_iteration; }
-			}
-			close(COMP);
-			close(PLACE);
-			info(0,"Done compressing $entry_advanced[4] with $compress\n");
 
-=pod
-			system 
-         "$compress -c $tmp/$entry_advanced[4] >  $tmp/$entry_advanced[4].bz2";
-=cut
+
+			system"$compress -c $tmp/$entry_advanced[4] > $tmp/$entry_advanced[4].bz2&";
+
+			$, = "";
+			my @ps_check = `ps w -C $compress 2> /dev/null`;
+			$, = "\n";
+
+			my @pids;
+			foreach my $line ( @ps_check ) {
+			    if ( $line =~ 
+				 m,$compress -c $tmp/$entry_advanced[4]$, ) {
+
+				my $pid = (split(" ",$line))[0];
+				push(@pids,$pid);
+			    }
+
+			}
+
+			foreach my $pid ( @pids ) {
+			    do {
+				while (Gtk->events_pending) 
+				{ Gtk->main_iteration; }
+			    } while -d "/proc/$pid"; 
+			}
+
+			info(0,"Done compressing $entry_advanced[4] with $compress\n");
 			$entry_advanced[4] =  "$entry_advanced[4].bz2";
-			$entry3->set_text("$tmp/$entry_advanced[4]");
+                        $entry3->set_text("$tmp/$entry_advanced[4]");
 
 		    }
 		}
