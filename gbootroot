@@ -1237,8 +1237,13 @@ sub uml_box {
 	my $abort_b = button_advanced(1,2,3,4,"Abort",$table_uml);
 	$tooltips->set_tip( $abort_b, 
                            "Abort uml kernel processes." .
-			   "Use with care, `shutdown -h now` " .
-			    "is preferable.", 
+                           "This serves two purposes:\n" .
+                           "1.  Your creation doesn't boot.\n" .
+                           "2.  Your creation does work and" . 
+			   " you use something like" . 
+                           " `shutdown -h now`.  When you are all done use" .
+                           " Abort because it provides an excellent" .
+                           " way to kill any ghost processes.",
                            "" );
 	$abort_b->signal_connect("clicked",
 				 sub {
