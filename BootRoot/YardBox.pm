@@ -41,7 +41,7 @@ my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
 my ($replacements_window, $filesystem_window, $path_window, $shortcut);
-my $search_window;
+my ($search_window, $question_window);
 my $Shortcuts;
 my @entry;
 my $file_dialog;
@@ -1243,7 +1243,9 @@ sub search {
 
 		    }
 		    else {
-
+			question_window("Beginning of document reached; " . 
+					"continue from end?", 
+					$search_window, $submit_b);
 		    }
 		}
 
@@ -1272,9 +1274,6 @@ sub search {
 			$length = $length + $offset;
 			$text->select_region($offset, $length);
 		    }
-		    else {
-
-		    }
 		}
 		else {
 		    $offset = $offset + 1;
@@ -1299,7 +1298,9 @@ sub search {
 			$text->select_region($offset,$length);
 		    }
 		    else {
-
+			question_window("End of document reached;"
+					. " continue from beginning?", 
+					$search_window,$submit_b);
 		    }
 		}
 
@@ -1323,6 +1324,52 @@ sub search {
    } 
 
 } # end sub search
+
+
+# Just a universal dialog box with OK and Cancel
+sub question_window {
+
+    my ($output,$widget,$widget_button) = @_;
+
+    if (not defined $question_window) {
+    $question_window = new Gtk::Dialog;
+    $question_window->set_modal($true);
+    $question_window->set_transient_for($widget);
+    $question_window->signal_connect("destroy", \&destroy_window,
+                                  \$question_window);
+    $question_window->signal_connect("delete_event", \&destroy_window, 
+                                  \$question_window);
+    $question_window->set_title("gBootRoot Question?");
+    $question_window->border_width(15);
+    my $label = new Gtk::Label($output);
+    #$label->set_justify("left") if $_[1];
+    $question_window->vbox->pack_start( $label, $true, $true, 15 );
+    $label->show();
+    my $button = new Gtk::Button("OK");
+    $button->signal_connect("clicked", sub {
+	$widget_button->clicked;
+	$question_window->destroy;
+    });
+    $button->can_default(1);
+    $question_window->action_area->pack_start($button, $false, $false,0);
+    $button->grab_default;
+    $button->show;
+
+    my $c_button = new Gtk::Button("Cancel");
+    $c_button->signal_connect("clicked", sub {
+	$question_window->destroy;
+    });
+    $question_window->action_area->pack_start($c_button, $false, $false,0);
+    $c_button->show;
+
+
+
+   }
+     if (!visible $question_window) {
+         $question_window->show;
+     }
+}
+
 
 sub yard_menu {
 
