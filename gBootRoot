@@ -136,7 +136,7 @@ my ($ea1,$ea2,$ea3);
 my ($ear1,$ear2,$ear3,$ear4); # entry advanced root
 my $table_advanced;
 my $table_advanced_root;
-my $spinner_advanced;
+my ($spinner_advanced,$spinner_size);
 my $button_count = 0;
 my $button_count_root = 0;
 my $obj_count = 0;
@@ -145,7 +145,7 @@ my ($lib_strip_check_root,$bin_strip_check_root);
 my ($bz2_toggle,$gz_toggle);
 my ($bz2_toggle_root,$gz_toggle_root);
 my ($combo);
-
+my ($adj2,$adj3);
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -335,7 +335,8 @@ $spinner->set_shadow_type( 'in' );
 $spinner->show();
 $container[4] = 1722; # A better value - a rtbt trick.
 $adj->signal_connect( "value_changed", sub {
-    $container[4] = $spinner->get_value_as_int();});
+    $container[4] = $spinner->get_value_as_int();
+    $adj2->set_value($container[4]) if defined $adj2;});
 $box2->pack_start( $spinner, $true, $true, 0 );
 label("Device Size");
 
@@ -603,7 +604,7 @@ sub advanced_root_section {
 	my $boolean; 
 
 
-       $table_advanced_root = new Gtk::Table( 9, 3, $true );
+       $table_advanced_root = new Gtk::Table( 10, 3, $true );
        # temp solution?
        #$table_advanced_root->set_row_spacings( 3 );
        $vbox_advanced_root->pack_start( $table_advanced_root, $true, 
@@ -623,10 +624,15 @@ sub advanced_root_section {
        #_______________________________________ 
        # Root Device Size
        label_advanced("Root Device Size:",0,1,1,2,$table_advanced_root);
-       $spinner_advanced = new Gtk::SpinButton( $adj, 0, 0 );
+       $adj2 = new Gtk::Adjustment( 1722.0, 0.0, 360000000.0, 282.0, 
+                                    360.0, 0.0 );
+       $adj2->set_value($container[4]) if defined $adj2;
+       $spinner_advanced = new Gtk::SpinButton( $adj2, 0, 0 );
        $table_advanced_root->attach($spinner_advanced,1,2,1,2,
-                            ['shrink','fill','expand'],['fill','shrink'],0,0);
-       $tooltips->set_tip( $spinner_advanced, "Choose the Root Device Size.",
+                            ['shrink','fill','expand'],['fill','shrink'],
+                            0,0);
+       $tooltips->set_tip( $spinner_advanced, 
+                           "Choose the Root Device Size.",
                             "" );
        $spinner_advanced->set_wrap( $true );
        $spinner_advanced->set_numeric( $true );
@@ -650,30 +656,46 @@ sub advanced_root_section {
                                ['expand'],['fill','shrink'],0,0);
        show $ear2_save;
 
+       #_______________________________________ 
+       # Filesystem Size
+       label_advanced("Filesystem Size:",0,1,3,4,$table_advanced_root);
+       $adj3 = new Gtk::Adjustment( 4096.0, 0.0, 1000000000.0, 128.0, 
+                                    1024.0, 0.0 );
+       $spinner_size = new Gtk::SpinButton( $adj3, 0, 0 );
+       $table_advanced_root->attach($spinner_size,1,2,3,4,
+                            ['shrink','fill','expand'],['fill','shrink'],
+                            0,0);
+       $tooltips->set_tip( $spinner_size, 
+                           "Choose the Filesystem Size.",
+                            "" );
+       $spinner_size->set_wrap( $true );
+       $spinner_size->set_numeric( $true );
+       $spinner_size->set_shadow_type( 'in' );
+       $spinner_size->show();
 
        #_______________________________________ 
        # Compression
-       label_advanced("Compression:",0,1,3,4,$table_advanced_root);
+       label_advanced("Compression:",0,1,4,5,$table_advanced_root);
        $rbutton = new Gtk::RadioButton( "gz" );
        $tooltips->set_tip( $rbutton, 
                            "Choose Compression used on the Filesystem.", "" );
        $gz_toggle_root = $rbutton;
        $rbutton->set_active( $true );
-       $table_advanced_root->attach($rbutton,1,2,3,4, 
+       $table_advanced_root->attach($rbutton,1,2,4,5, 
                               ['expand'],['fill','shrink'],0,0);
        $rbutton->show();
        $rbutton = new Gtk::RadioButton( "bz2", $rbutton );
        $tooltips->set_tip( $rbutton, 
                            "Choose Compression used on the Filesystem.", "" );
        $bz2_toggle_root = $rbutton;
-       $table_advanced_root->attach($rbutton,2,3,3,4, 
+       $table_advanced_root->attach($rbutton,2,3,4,5, 
                               ['expand'],['fill','shrink'],0,0);
        $rbutton->show();
 
 
        #_______________________________________ 
        # lib_strip_check
-       label_advanced("Stripping:",0,1,4,5,$table_advanced_root);
+       label_advanced("Stripping:",0,1,5,6,$table_advanced_root);
        !defined $lib_strip_check_root ? ($boolean = 1) 
          : ($boolean = $lib_strip_check_root->get_active());
        $lib_strip_check_root = new Gtk::CheckButton("Libraries");
@@ -685,7 +707,7 @@ sub advanced_root_section {
                            " right mouse button to change from" .
                            " [objcopy --strip-debug] to" . 
                            " [objcopy --strip-all].", "" );
-       $table_advanced_root->attach($lib_strip_check_root,1,2,4,5, 
+       $table_advanced_root->attach($lib_strip_check_root,1,2,5,6, 
                                ['expand'],['fill','shrink'],0,0);
        show $lib_strip_check_root;
 
@@ -697,26 +719,26 @@ sub advanced_root_section {
        $tooltips->set_tip( $bin_strip_check_root, 
                            "This is generally a good idea." .
                            " [objcopy --strip-all]", "" );
-       $table_advanced_root->attach($bin_strip_check_root,2,3,4,5, 
+       $table_advanced_root->attach($bin_strip_check_root,2,3,5,6, 
                                ['expand'],['fill','shrink'],0,0);
        show $bin_strip_check_root;
 
        #_______________________________________ 
        # UML Kernel 
-       label_advanced("UML Kernel:",0,1,5,6,$table_advanced_root);
+       label_advanced("UML Kernel:",0,1,6,7,$table_advanced_root);
        # $_[4] shares with advanced_boot_sections @entry_advanced
-       $ear3 = entry_advanced(1,2,5,6,5,$table_advanced_root);
+       $ear3 = entry_advanced(1,2,6,7,5,$table_advanced_root);
        $tooltips->set_tip( $ear3, 
                           "If you have a User Mode Linux Kernel, type in" .
                           " the Kernel's location," .
                           " and any Kernel options desired afterwards.",
                           "" );
-       button_fileselect_advanced(2,3,5,6,"Selection",$ear3,"Selection",5);
+       button_fileselect_advanced(2,3,6,7,"Selection",$ear3,"Selection",5);
 
        #_______________________________________ 
        # Method
-       label_advanced("Method:",0,1,6,7,$table_advanced_root);
-       $ear4 = entry_advanced(1,2,6,7,6,$table_advanced_root);
+       label_advanced("Method:",0,1,7,8,$table_advanced_root);
+       $ear4 = entry_advanced(1,2,7,8,6,$table_advanced_root);
        $ear4->set_editable($false);
        $tooltips->set_tip( $ear4, 
                            "Choose the Root Filesystem Generation Method.", 
@@ -732,38 +754,40 @@ sub advanced_root_section {
                                     $ear4->set_text("yard"); });
        $menu_root->append( $item_root );
        $opt_root->set_menu( $menu_root );
-       $table_advanced_root->attach($opt_root,2,3,6,7, 
+       $table_advanced_root->attach($opt_root,2,3,7,8, 
                               ['expand','fill'],['fill','shrink'],0,0);
        $opt_root->show();
 
        #_______________________________________ 
        # Template
-       label_advanced("Template:",0,1,7,8,$table_advanced_root);
-       my @strings = qw(nothing is here now);
+       label_advanced("Template:",0,1,8,9,$table_advanced_root);
+       my @strings = ("nothing is here now");
        $combo = new Gtk::Combo(); 
        $combo->set_popdown_strings( @strings );
        $tooltips->set_tip( Gtk::Combo::entry($combo), 
                            "Choose a Template for the Method.", 
                            "" );
-       $table_advanced_root->attach($combo,1,3,7,8, 
+       $table_advanced_root->attach($combo,1,3,8,9, 
                                ['expand','fill'],['fill','shrink'],0,0);
        show $combo;
 
        #_______________________________________ 
        # Generate - UML - Accept buttons
-       $table_advanced_root->set_row_spacing( 7, 10);       
+       $table_advanced_root->set_row_spacing( 8, 10);       
 
        # The Generation process is determined by the method chosen.  Yard -
        #  asks the user if they want to modify the template, and/or save a 
        #  new template with modifications (to be added to Template menu).
-       my $generate_b = button_advanced(0,1,8,9,"Generate");
+       my $generate_b = button_advanced(0,1,9,10,"Generate");
        $tooltips->set_tip( $generate_b, "Generate Root Filesystem.", "" );
 
-       my $UML_b = button_advanced(1,2,8,9,"UML");
+       my $UML_b = button_advanced(1,2,9,10,"UML");
        $tooltips->set_tip( $UML_b, "Test Filesystem with User Mode Linux.", 
                             "" );
 
-       my $accept_b = button_advanced(2,3,8,9,"Accept");
+       # Will check to make sure that Filesystem fits device.
+       # Method determines whether or not compression is used.
+       my $accept_b = button_advanced(2,3,9,10,"Accept");
        $tooltips->set_tip( $accept_b, "Accept Filesystem.", "" );
 
 
