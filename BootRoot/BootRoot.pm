@@ -131,7 +131,7 @@ my $separator_advanced;
 my @entry_advanced;
 my ($ea1,$ea2,$ea3,$ea4,$ea5,$ea6); # entry advanced boot  
 my ($ear1,$ear2,$ear3,$ear4); # entry advanced root
-my ($eab1,$eab2,$eab3); # entry advanced uml
+my ($eab1,$eab2,$eab3,$eab4); # entry advanced uml
 my $uml_window;
 my $table_advanced;
 my $table_advanced_root;
@@ -160,6 +160,7 @@ my $entry5;
 my $pbar;
 my $rbutton;
 my $verbosefn;
+my $umid;
 
 # Value set by kernel_modules
 my $kernel_version;  
@@ -1279,7 +1280,7 @@ sub uml_box {
 	$uml_window->signal_connect("delete_event", \&destroy_window,
 				      \$uml_window);
 	##$uml_window->set_usize( 500, 95 );  # 450 175 || 500 600
-	$uml_window->set_default_size( 500, 95 );  # 450 175 || 500 600
+	$uml_window->set_default_size( 525, 95 );  # 450 175 || 500 600
 	$uml_window->set_policy( $true, $true, $false );
 	$uml_window->set_title( "UML Box" );
 	$uml_window->border_width(1);    
@@ -1289,7 +1290,7 @@ sub uml_box {
 	$main_vbox->show();
 
 	##my $table_uml = Gtk::Table->new( 4, 3, $true );
-	my $table_uml = Gtk::Table->new( 4, 5, $false );
+	my $table_uml = Gtk::Table->new( 5, 4, $false );
 	##$main_vbox->pack_start( $table_uml, $true, $true, 0 );
 	$main_vbox->pack_start( $table_uml, $true, $false, 0 );
 	$table_uml->show();
@@ -1297,12 +1298,13 @@ sub uml_box {
 	#_______________________________________
 	# Xterm and execute options
 	label_advanced("Xterm:",0,1,0,1,$table_uml);
-	$eab1 = entry_advanced(1,4,0,1,8,$table_uml); # 1,2
+	$eab1 = entry_advanced(1,2,0,1,8,$table_uml); # 1,2
 	$eab1->set_text($uml_xterm);
        $tooltips->set_tip( $eab1, 
                            "Choose an xterm with " .
 			   "its executable option switch.", 
                            "" );
+
 
 	#_______________________________________
 	# UML options
@@ -1339,6 +1341,166 @@ sub uml_box {
 			   "Halt is pressed." , 
                            "" );
 	$eab2->show();
+
+
+	#_______________________________________
+	# mconsole
+	label_advanced("mconsole:",2,3,0,1,$table_uml);
+	$eab4 = entry_advanced(3,5,0,1,14,$table_uml);
+	$tooltips->set_tip( $eab4, 
+                           "Pass commands to the mconsole.\n" .
+			    "sysrq [0-9|b|e|i|l|m|p|r|s|t|u]  " . 
+			    "  config <dev>=<config>    remove <dev>    " .
+			    "  switch <umid>   version   help",
+                           "" );
+	$eab4->signal_connect("activate",
+	      sub {
+		  if ( $entry_advanced[9] ) {
+		      $entry_advanced[9] =~  
+			  m,\s*umid=([\w\d-]+)\s*,;
+		      $umid = $1 if !$umid;
+		      my @command_parts = split(" ", 
+						$entry_advanced
+						[14]);
+		      
+		      # help
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,help, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "help"
+				   ) 
+			      {
+				  sys( 
+				       "uml_mconsole " .
+				       "/tmp/uml/$umid/mconsole" .
+				       " help");
+				  
+			      }
+			      
+			  }
+			  
+		      }
+		      
+
+		      # version
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,version, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "version"
+				   ) 
+			      {
+				  sys( 
+				       "uml_mconsole " .
+				       "/tmp/uml/$umid/mconsole" .
+				       " version");
+				  
+			      }
+			      
+			  }
+			  
+		      }
+
+
+		      # sysrq
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,sysrq, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "sysrq"
+				   ) 
+			      {
+				  if ( !$command_parts[$co + 1] || 
+				       $command_parts[$co + 1] =~
+				       m,^[0-9]{n}$ | ^b$ | ^e$ | ^i$ | ^l$ |
+				       ^m$ | ^p$ | ^r$ | ^s$ | ^t$ | ^u$,x ) {
+				      system
+					  "uml_mconsole " . 
+					      "/tmp/uml/$umid/mconsole" .
+					  " sysrq $command_parts[$co + 1]&";
+				  }
+				  else {
+				      system
+					  "uml_mconsole " . 
+					      "/tmp/uml/$umid/mconsole" .
+					  " sysrq&";
+				  }
+			  
+			      }
+			      
+			  }
+			  
+		      }
+
+
+		      # switch
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,switch, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "switch"
+				   ) 
+			      {
+
+				  sys(
+				      "uml_mconsole " . 
+					  "/tmp/uml/$umid/mconsole" .
+					  " switch $command_parts[$co + 1]");
+			  
+				  $umid = $command_parts[$co + 1];
+				  #$eab4->changed();
+				  
+			      }
+			      
+			  }
+			  
+		      }
+
+
+		      # config
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,config, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "config"
+				   ) 
+			      {
+				  system
+				      "uml_mconsole " .
+					  "/tmp/uml/$umid/mconsole" .
+					      " config " .
+						  "$command_parts[$co + 1]&";
+ 
+			      }
+			      
+			  }
+
+		      }
+		      
+
+		      # remove
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,remove, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "remove"
+				   ) 
+			      {
+				  system 
+				      "uml_mconsole " .
+					  "/tmp/uml/$umid/mconsole" .
+					      " remove " .
+						  "$command_parts[$co + 1]&";
+				  
+			      }
+			      
+			  }
+			  
+		      }
+		  }
+		  
+	      } );
 
 
 	#_______________________________________
@@ -1458,8 +1620,6 @@ sub uml_box {
 
 	#_______________________________________
 	# Reboot Button - mconsole
-        # This is the hard kill when all else fails, it also cleans up
-        # lingering processess, but is considered a last resort
 	my $reboot_b = button_advanced(1,2,3,4,"Reboot",$table_uml);
 	$tooltips->set_tip( $reboot_b, 
                            "Passes the reboot command to mconsole.",
@@ -1469,8 +1629,9 @@ sub uml_box {
 				     # use first one found
 				     $entry_advanced[9] =~  
 					 m,\s*umid=([\w\d-]+)\s*,; 
+				     $umid = $1 if !$umid;
 				     system 
-					 "uml_mconsole /tmp/uml/$1/mconsole" .
+				      "uml_mconsole /tmp/uml/$umid/mconsole" .
 					 " reboot&"; 
 
 				 } );
@@ -1478,8 +1639,6 @@ sub uml_box {
 
 	#_______________________________________
 	# Halt Button - mconsole
-        # This is the hard kill when all else fails, it also cleans up
-        # lingering processess, but is considered a last resort
 	my $halt_b = button_advanced(2,3,3,4,"Halt",$table_uml);
 	$tooltips->set_tip( $halt_b, 
                            "Passes the halt command to mconsole. " .
@@ -1490,8 +1649,9 @@ sub uml_box {
 				     # use first one found
 				     $entry_advanced[9] =~  
 					 m,\s*umid=([\w\d-]+)\s*,; 
+				     $umid = $1 if !$umid;
 				     system 
-					 "uml_mconsole /tmp/uml/$1/mconsole" .
+				      "uml_mconsole /tmp/uml/$umid/mconsole" .
 					 " halt&"; 
 				 } );
 
@@ -1841,6 +2001,7 @@ sub Generate {
     # 11 = Kernel Modules  .. from the Boot Method
     # 12 = Kernel Version  .. from the Boot Method
     # 13 = System.map      .. from the Boot Method
+    # 14 = mcosole         .. from the UML Box
 
     # $root_device_size;
     # $filesystem_size;
@@ -1948,18 +2109,31 @@ sub entry_advanced {
     my $numa = $_[4];
     my $entry_advanced = Gtk::Entry->new();
     $entry_advanced->set_editable( $true );
-    $entry_advanced->signal_connect( "changed", sub {
-	$entry_advanced[$numa] = $entry_advanced->get_text();
-	if ($numa == 4) {
-	    $ars->{filename} = $entry_advanced[$numa];
-	    ars($ars);
-	}
-	if ( $numa == 12 ) {
-	    $ars->{kernel_version_choice} = $entry_advanced[$numa];
-	    ars($ars);	    
-	    ars2($ars);
-	}
-    } );
+
+    if ( $numa != 14 ) {
+
+	$entry_advanced->signal_connect( "changed", sub {
+	    $entry_advanced[$numa] = $entry_advanced->get_text();
+	    if ($numa == 4) {
+		$ars->{filename} = $entry_advanced[$numa];
+		ars($ars);
+	    }
+	    if ( $numa == 12 ) {
+		$ars->{kernel_version_choice} = $entry_advanced[$numa];
+		ars($ars);	    
+		ars2($ars);
+	    }
+	} );
+
+    }
+    else {
+
+	$entry_advanced->signal_connect( "activate", sub {
+	    $entry_advanced[$numa] = $entry_advanced->get_text();
+	} );
+
+    }
+
     $entry_advanced->set_usize(100,20);
     $_[5]->attach($entry_advanced,$_[0],$_[1],$_[2],$_[3], 
                             ['shrink','fill','expand'],['fill','shrink'],0,0);

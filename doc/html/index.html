@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.55 2001/12/23 09:11:44 freesource Exp $</center>
+<center>$Id: index.html,v 1.56 2001/12/23 18:05:22 freesource Exp $</center>
 
 <p>
 
@@ -253,25 +253,35 @@ button or a put together a complete Boot/Root set with the Submit button.</p>
 
 "mconsole:"&nbsp;&nbsp;Allow you to pass the help, sysrq, config, and remove
 commands to the mconsole to control the Linux virtual machine specified
-with the umid value.
+with the umid value.&nbsp;&nbsp;Good information about sysrq is found in
+Documentation/sysrq.txt in the Linux sources.
 
 <pre>
   sysrq (Shows option values in virtual machine.)
   sysrq [0-9|b|e|i|l|m|p|r|s|t|u]
   config &lt;dev&gt;=&lt;config&gt; 
   remove &lt;dev&gt;
+  switch &lt;umid&gt;
+  version
+  help
 </pre>
 
 <p>
 
 "Options"&nbsp;&nbsp;Enter uml command-line options like: <code>mem=64, 
 devfs=nomount</code>.&nbsp;&nbsp;The <code>umid</code> option is used by
-the Reboot and Halt button to determine which Linux virtual machine is 
-running.&nbsp;&nbsp;Many different machines can be controlled by submitting 
-each
-machine with a different name, and then changing the umid when control is
-required for a different machine when using these two buttons.
+the Reboot and Halt to determine which Linux virtual machine is 
+running.&nbsp;&nbsp;The umid value may be changed by 
+altering the value for the <code>switch</code> option in the mconsole entry
+box to allow control of a different Linux virtual machine.
 </p>
+
+<pre>
+  umid=bootroot
+  mconsole:  switch bootroot2 [Enter]
+  mconsole:  sysrq s sysrq u sysrq b [Enter]
+  mconsole:  switch bootroot  [Enter]
+</pre>
 
 <p>
 
