@@ -709,7 +709,7 @@ sub advanced_root_section {
 	my $boolean; 
 
 
-       $table_advanced_root = new Gtk::Table( 10, 3, $true );
+       $table_advanced_root = new Gtk::Table( 9, 3, $true );
        # temp solution?
        #$table_advanced_root->set_row_spacings( 3 );
        $vbox_advanced_root->pack_start( $table_advanced_root, $true, 
@@ -846,80 +846,22 @@ sub advanced_root_section {
        $hbox_between->pack_start( $compression_off, $true, $false, 0 );
        $compression_off->show();
 
-
-       # This whole section will be relocated to the Yard box,
-       # since stripping isn't universal amongst methods.
-       #_______________________________________ 
-       # lib_strip_check
-       # $strip_objfiles 1 - yes 0 - no  altered Yard.pm to take
-       # into account adjustable library stripping
-
-       my $hbox_between2 = new Gtk::HBox(1,1);
-       $table_advanced_root->attach($hbox_between2,0,3,5,6,
-                              ['fill'],
-			      ['fill','shrink'],15,0 );
-       $hbox_between2->show;
-
-       # label
-       my $label_strip = new Gtk::Label( "Stripping:" );
-       $label_strip->set_justify( "right" );
-       $hbox_between2->pack_start( $label_strip, $false, $false, 0 );
-       $label_strip->show();
-
-       #label_advanced("Stripping:",0,1,5,6,$table_advanced_root);
-       !defined $lib_strip_check_root ? ($boolean = 1) 
-         : ($boolean = $lib_strip_check_root->get_active());
-       $lib_strip_check_root = new Gtk::CheckButton("Libraries");
-       $lib_strip_check_root->set_active($boolean);
-       $lib_strip_check_root->signal_connect( "button_press_event", 
-                                             \&objcopy_right_click_advanced); 
-       $tooltips->set_tip( $lib_strip_check_root, 
-                           "This is generally a good idea.  Press the" .
-                           " right mouse button to change from" .
-                           " [objcopy --strip-debug] to" . 
-                           " [objcopy --strip-all].", "" );
-       $hbox_between2->pack_start( $lib_strip_check_root, $false, $false, 0 );
-       show $lib_strip_check_root;
-
-       # bin_strip_check
-       !defined $bin_strip_check_root  ? ($boolean = 1) 
-         : ($boolean = $bin_strip_check_root->get_active());
-       $bin_strip_check_root = new Gtk::CheckButton("Binaries");
-       $bin_strip_check_root->set_active($boolean);
-       $tooltips->set_tip( $bin_strip_check_root, 
-                           "This is generally a good idea." .
-                           " [objcopy --strip-all]", "" );
-       $hbox_between2->pack_start( $bin_strip_check_root, $false, $false, 0 );
-       show $bin_strip_check_root;
-
-       # module_strip_check
-       !defined $module_strip_check_root  ? ($boolean = 1) 
-         : ($boolean = $module_strip_check_root->get_active());
-       $module_strip_check_root = new Gtk::CheckButton("Modules");
-       $module_strip_check_root->set_active($boolean);
-       $tooltips->set_tip( $module_strip_check_root, 
-                           "This is generally a good idea." .
-                           " [objcopy --strip-debug]", "" );
-	$hbox_between2->pack_start( $module_strip_check_root, 
-				    $false, $false, 0 );
-       show $module_strip_check_root;
-
        #_______________________________________ 
        # UML Kernel 
-       label_advanced("UML Kernel:",0,1,6,7,$table_advanced_root);
+       label_advanced("UML Kernel:",0,1,5,6,$table_advanced_root);
        # $_[4] shares with advanced_boot_sections @entry_advanced
-       $ear3 = entry_advanced(1,2,6,7,5,$table_advanced_root);
+       $ear3 = entry_advanced(1,2,5,6,5,$table_advanced_root);
        $tooltips->set_tip( $ear3, 
                           "If you have a User Mode Linux Kernel, type in" .
                           " the Kernel's location," .
                           " and any Kernel options desired afterwards.",
                           "" );
-       button_fileselect_advanced(2,3,6,7,"Selection",$ear3,"Selection",13);
+       button_fileselect_advanced(2,3,5,6,"Selection",$ear3,"Selection",13);
 
        #_______________________________________ 
        # Method
-       label_advanced("Method:",0,1,7,8,$table_advanced_root);
-       $ear4 = entry_advanced(1,2,7,8,6,$table_advanced_root);
+       label_advanced("Method:",0,1,6,7,$table_advanced_root);
+       $ear4 = entry_advanced(1,2,6,7,6,$table_advanced_root);
        $ear4->set_editable($false);
        $tooltips->set_tip( $ear4, 
                            "Choose the Root Filesystem Generation Method.", 
@@ -954,14 +896,14 @@ sub advanced_root_section {
        $yard->show();
 
        $opt_root->set_menu( $menu_root );
-       $table_advanced_root->attach($opt_root,2,3,7,8, 
+       $table_advanced_root->attach($opt_root,2,3,6,7, 
                               ['expand','fill'],['fill','shrink'],0,0);
        $opt_root->show();
 
        #_______________________________________ 
        # Template
        # $::contents_file
-       label_advanced("Template:",0,1,8,9,$table_advanced_root);
+       label_advanced("Template:",0,1,7,8,$table_advanced_root);
        $combo = new Gtk::Combo(); 
        $combo->entry->set_text($entry_advanced[7]) if $entry_advanced[7];
         #$button_count_root_open = 1 + $button_count_root_open;
@@ -976,28 +918,28 @@ sub advanced_root_section {
        $entry_advanced[7] = $combo->entry->get_text(); # nothing selected
        $combo->entry->signal_connect("changed", sub {
 	   $entry_advanced[7] = $combo->entry->get_text(); } );
-       $table_advanced_root->attach($combo,1,3,8,9, 
+       $table_advanced_root->attach($combo,1,3,7,8, 
                                ['expand','fill'],['fill','shrink'],0,0);
        show $combo;
 
        #_______________________________________ 
        # Generate - UML - Accept buttons
-       $table_advanced_root->set_row_spacing( 8, 10);       
+       $table_advanced_root->set_row_spacing( 7, 9);       
 
        # The Generation process is determined by the method chosen.  Yard -
        #  asks the user if they want to modify the template, and/or save a 
        #  new template with modifications (to be added to Template menu).
-       my $generate_b = button_advanced(0,1,9,10,"Generate");
+       my $generate_b = button_advanced(0,1,8,9,"Generate");
        $generate_b->signal_connect("clicked",\&Generate);
        $tooltips->set_tip( $generate_b, "Generate Root Filesystem.", "" );
        
-       my $UML_b = button_advanced(1,2,9,10,"UML");
+       my $UML_b = button_advanced(1,2,8,9,"UML");
        $tooltips->set_tip( $UML_b, "Test Filesystem with User Mode Linux.", 
                             "" );
 
        # Will check to make sure that Filesystem fits device.
        # Method determines whether or not compression is used.
-       my $accept_b = button_advanced(2,3,9,10,"Accept");
+       my $accept_b = button_advanced(2,3,8,9,"Accept");
        $tooltips->set_tip( $accept_b, "Accept Filesystem.", "" );
 
 
