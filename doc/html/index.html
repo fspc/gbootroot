@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.68 2002/01/09 19:18:39 freesource Exp $</center>
+<center>$Id: index.html,v 1.69 2002/01/09 19:22:10 freesource Exp $</center>
 
 <p>
 
@@ -1105,7 +1105,8 @@ filesystem.</P>
 <p>
 
 If you are creating a boot disk in which the kernel knows where to
-find the root filesystem and the root filesystem is uncompressed, then nothing
+find the root filesystem and the root filesystem is not compressed with
+gzip or bzip2 (i.e. a cramfs could be used), then nothing
 else but a kernel is required
 assuming it is copied in a way that is starts at block 0 on the device
 media, and then rdeved in such a way that it knows that the ramdisk and the 
@@ -1113,11 +1114,11 @@ prompt
 flag are on, i.e., rdev -r /dev/fd0 49152, and that the root filesystem starts
 at block
 0 on the other floppy.&nbsp;&nbsp;
-However, the 2 disk compression method copies over a compressed root 
-filesystem
+However, the 2 disk compression method copies over a compressed (gz or bz2) 
+root filesystem
 to the second disk.&nbsp&nbsp;In order to boot /dev/fd0 from /dev/fd0 when 
 the root 
-filesystem is compressed  the kernel has to
+filesystem is compressed with gzip or bzip2 the kernel has to
 mount the initial boot disk, and then after the new root disk is inserted it
 uncompresses the root filesystem and then changes over to the real root 
 device, 
