@@ -1350,6 +1350,7 @@ sub uml_box {
 	$tooltips->set_tip( $eab4, 
                            "Pass commands to the mconsole.\n" .
 			    "sysrq [0-9|b|e|i|l|m|p|r|s|t|u]  " . 
+			    " reboot   halt   " .
 			    "  config <dev>=<config>    remove <dev>    " .
 			    "  switch <umid>   version   help",
                            "" );
@@ -1381,8 +1382,9 @@ sub uml_box {
 			  }
 			  
 		      }
-		      
 
+
+		      
 		      # version
 		      if ( $entry_advanced[14] && 
 			   $entry_advanced[14] =~ m,version, ) {
@@ -1403,6 +1405,45 @@ sub uml_box {
 		      }
 
 
+
+		      # reboot
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,reboot, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "reboot"
+				   ) 
+			      {
+				  system
+				       "uml_mconsole " .
+				       "/tmp/uml/$umid/mconsole" .
+				       " reboot&";
+				  
+			      }
+			      
+			  }
+			  
+		      }
+
+		      # halt
+		      if ( $entry_advanced[14] && 
+			   $entry_advanced[14] =~ m,halt, ) {
+			  for my $co (0 ..  $#command_parts ) {
+			      if ( $command_parts[$co] eq 
+				   "halt"
+				   ) 
+			      {
+				  system
+				       "uml_mconsole " .
+				       "/tmp/uml/$umid/mconsole" .
+				       " halt&";
+				  
+			      }
+			      
+			  }
+			  
+		      }
+
 		      # sysrq
 		      if ( $entry_advanced[14] && 
 			   $entry_advanced[14] =~ m,sysrq, ) {
@@ -1413,7 +1454,7 @@ sub uml_box {
 			      {
 				  if ( !$command_parts[$co + 1] || 
 				       $command_parts[$co + 1] =~
-				       m,^[0-9]{n}$ | ^b$ | ^e$ | ^i$ | ^l$ |
+				       m,^[0-9]{1}$ | ^b$ | ^e$ | ^i$ | ^l$ |
 				       ^m$ | ^p$ | ^r$ | ^s$ | ^t$ | ^u$,x ) {
 				      system
 					  "uml_mconsole " . 
