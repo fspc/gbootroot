@@ -156,8 +156,8 @@ $main::sudo = "sudo";
 #               * The lastest user-mode-linux is included: 2.4.12
 #               * Updated the documentation, and it includes a better 
 #                 explanation in step 7 for "How can I test gBootRoot?"
-#               * Added checks for the existence of ash and lilo for the 2 
-#                 disk compression method.
+#               * Added checks for the existence of ash, lilo, bzip2 and file
+#                 for the 2 disk compression method.
 #
 #       1.2.13 - 09/28/2001
 #                * Renamed "lilo" Boot method to "2 disk compression." 
