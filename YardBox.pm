@@ -69,11 +69,11 @@ my @menu_items = ( { path        => '/File',
 		   { path        =>  '/Edit/Settings/Stripping/settings/' },
 		   { path        => '/Edit/Settings/Stripping/settings/strip-all',
 		     action      => "10",
-		     type        => '<CheckItem>',
+		     type        => '<RadioItem>',
 		     callback    => \&strip_all },
                    { path        => '/Edit/Settings/Stripping/settings/strip-debug',
 		     action      => '11',
-                     type        => '<CheckItem>', 
+                     type        => '<RadioItem>', 
 		     callback    => \&strip_debug },
 		     
 		   { path        => '/Edit/Settings/Stripping/Binaries',
@@ -115,12 +115,17 @@ my @menu_items = ( { path        => '/File',
 		     type        => '<Tearoff>' },
 		   { path        => '/Create/Replacements/fstab',
 		     action      => 16,
-		     type        => '<CheckItem>' },
-		   { path        => '/Create/Replacements/fstab directory name',
-		     type        => '<Title>' },
+		     type        => '<CheckItem>',
+		     callback    => \&check_stage },
 		   { path        => '/Create/Replacements/rc',
 		     action      => 17,
-		     type        => '<CheckItem>' },
+		     type        => '<CheckItem>',
+		     callback    => \&check_stage },
+		   { path        => '/Create/Replacements/fstab directory name',
+		     action      => 18,
+		     type        => '<Title>',
+		     callback    => \&check_stage },
+
 			 
 		   { path        => '/_Tests',
                      type        => '<Branch>' },
@@ -128,25 +133,32 @@ my @menu_items = ( { path        => '/File',
 		     type        => '<Tearoff>' },
 		   { path        => '/Tests/fstab',
 		     action      => 30,
-		     type        => '<CheckItem>' },
+		     type        => '<CheckItem>', 
+		     callback    => \&tests },
 		   { path        => '/Tests/inittab',
 		     action      => 31,
-		     type        => '<CheckItem>' },
+		     type        => '<CheckItem>',
+		     callback    => \&tests },
 		   { path        => '/Tests/scripts',
 		     action      => 32,
-		     type        => '<CheckItem>' },
+		     type        => '<CheckItem>',
+		     callback    => \&tests },
 		   { path        => '/Tests/links',
 		     action      => 33,
-		     type        => '<CheckItem>' },
+		     type        => '<CheckItem>',
+		     callback    => \&tests },
 		   { path        => '/Tests/passwd',
 		     action      => 34,
-		     type        => '<CheckItem>' },
+		     type        => '<CheckItem>',
+		     callback    => \&tests },
 		   { path        => '/Tests/pam',
 		     action      => 35,
-		     type        => '<CheckItem>' },
+		     type        => '<CheckItem>',
+		     callback    => \&tests },
 		   { path        => '/Tests/nss',
 		     action      => 36,
-		     type        => '<CheckItem>' },
+		     type        => '<CheckItem>',
+		     callback    => \&tests },
 
                    { path        => '/_Help',
                      type        => '<LastBranch>' },
@@ -214,57 +226,39 @@ sub yard {
 
 } # end sub yard
 
-sub continue {
 
-
-
-} # end sub continue
-
+###########
+# OBJCOPY #
+###########
 # There is a subtle, but important difference between set_active and
 # active which makes the next magic possible.  set_active is like actually
 # pressing the button.  It's a lot easier to work with checkbuttons than
-# with radio buttons, because there is no easy way to establish a group, and
-# radio buttons act weird otherwise.
+# with radio buttons, because there is no easy way to establish a group.
 
-my $strip_bool = 0;
+my $lib_strip_all;
+my $lib_strip_debug;
+my $strip_bool = "strip-all";
 sub strip_all {
 
-    my($lib_strip_debug);
-    $lib_strip_debug = $item_factory->get_item
-	('/Edit/Settings/Stripping/settings/strip-debug');
-
-    if ($strip_bool == 0 ) {
-        $lib_strip_debug->active(0);
-        $strip_bool++;
-    }
-    else {
-	$lib_strip_debug->active(1);
-        $strip_bool--;
-    }	
-    print $strip_bool;
+    $lib_strip_debug->active(0);
+    $strip_bool = "strip-all";
+    print "$strip_bool\n";
 
 }
 
 sub strip_debug {
 
-    my($lib_strip_all);
-    $lib_strip_all = $item_factory->get_item
-	('/Edit/Settings/Stripping/settings/strip-all');
+    $lib_strip_all->active(0);
+    $strip_bool = "strip-debug";
+    print "$strip_bool\n";
 
-    if ($strip_bool == 0) {
-        $lib_strip_all->active(1);
-	$strip_bool++;
-    }
-    else {
-	$lib_strip_all->active(0);
-        $strip_bool--;
-    }	
-    print $strip_bool;
 }
 
-# Stages
+##########
+# STAGES #
+##########
 
-my $stages_bool;
+my $stages_bool = "one-by-one";
 my $one_by_one;
 my $continuous;
 my $user_defined;
@@ -273,7 +267,7 @@ sub stages_one_by_one {
     $continuous->active(0);
     $user_defined->active(0);
     $stages_bool = "one-by-one";
-    print "1\n";
+    print "$stages_bool\n";
 
 }
 
@@ -282,7 +276,7 @@ sub stages_continuous {
     $one_by_one->active(0);
     $user_defined->active(0);
     $stages_bool = "continuous";
-    print "2\n";
+    print "$stages_bool\n";
 
 }
 
@@ -291,13 +285,108 @@ sub stages_user_defined {
     $one_by_one->active(0);
     $continuous->active(0);
     $stages_bool = "user-defined";
-    print "3\n";
+    print "$stages_bool\n";
 }
 
+
+#########
+# TESTS #
+#########
+my %tests = (
+	    30 => {
+		test_fstab => 1,
+	    },
+	    31 => {
+		test_inittab => 1,
+	    },
+	    32 => { 
+		test_scripts => 1,
+	    },
+	    33 => { 
+		test_links => 1,
+            },
+	    34 => {
+		test_passwd => 1,
+            },
+	    35 => {
+		test_pam => 1,
+            },
+	    36 => {
+		test_nss => 1,
+	    },
+);
+
+sub tests {
+
+    my ($widget,$action) = @_;
+
+    my @label = keys( %{ $tests{$action} } );
+    # off
+    if ($tests{$action}{$label[0]} == 1) {
+	$tests{$action}{$label[0]} = 0;
+    }
+    # on
+    else {
+	$tests{$action}{$label[0]} = 1;
+    }
+    print "$label[0]", $tests{$action}{$label[0]} , "\n";
+
+}
+
+#########################
+# CHECK STAGE VARIABLES #
+#########################
+
+my %checks = (
+	    16 => {
+		fstab => 0,
+	    },
+	    18 => {
+		fstab_directory_name => 0,
+	    },
+	    17 => { 
+		rc => 0,
+	    }	
+);
+
+sub check_stage {
+
+    my ($widget,$action) = @_;
+
+    my @label = keys( %{ $checks{$action} } );
+    # off
+    if ($checks{$action}{$label[0]} == 1) {
+	$checks{$action}{$label[0]} = 0;
+	if ($label[0] eq "fstab") {
+	    $item_factory->delete_item
+		('/Create/Replacements/fstab directory name');
+	}
+    }
+    # on
+    else {
+	$checks{$action}{$label[0]} = 1;
+	# Fancy, but not quite what I want
+	if ($label[0] eq "fstab") {
+	    $item_factory->delete_item
+		('/Create/Replacements/fstab directory name');
+	    $item_factory->create_item
+		(['/Create/Replacements/fstab directory name', 
+		  undef, undef, <Item>]);
+	}
+    }
+    print "$label[0]", $checks{$action}{$label[0]} , "\n";
+
+}
+
+###########
+# YARDBOX #
+###########
 # cut little booleans for Gtk::CheckMenuItem
-my $lib_bool = 1;
-my $bin_bool = 1;
-my $mod_bool = 1;
+my $lib_bool =            1;
+my $bin_bool =            1;
+my $mod_bool =            1;
+my $replacement_bool =    1;
+my $module_bool =         1;
 sub yard_box {
     
        $yard_window = new Gtk::Window "toplevel";
@@ -339,7 +428,48 @@ sub yard_box {
        #_______________________________________ 
        # Manipulate Gtk::ItemFactory - 
        # The trick here is to use the real path.
-       
+
+       #     GUIDE TO VARIABLES AND THEIR VALUES 
+       #
+       #          objcopy <RadioItem>
+       #          -------------------
+       # $strip_bool  strip-all (default)
+       #              strip-debug
+       #
+       #          stages <RadioItem>  
+       #          ------------------
+       #               one-by-one (default)
+       # $stages_bool  continuous
+       #               user-defined
+       #
+       #          stripping <CheckItem>
+       #          ---------------------
+       #                      on           off
+       #                      --           ---
+       # $lib_bool             1 (default)  0
+       # $bin_bool             1 (default)  0
+       # $mod_bool             1 (default)  0
+       #
+       #           Checking Settings <CheckItem>
+       #           -----------------------------
+       # $replacement_bool     1 (default)  0
+       # $module_bool          1 (default)  0
+       #
+       #            Check Stage Variables HOH = %checks
+       #            -----------------------------------
+       # 16 fstab              1            0 (default)
+       # 17 rc                 1            0 (default
+       # 18 'fstab directory name'  if fstab == 0
+       #
+       #            Tests  <CheckItem> HOH = %tests
+       #            --------------------------------
+       # 30 test_fstab          1 (default)  0
+       # 31 test_inittab        1 (default)  0
+       # 32 test_scripts        1 (default)  0
+       # 33 test_links          1 (default)  0
+       # 34 test_passwd         1 (default)  0
+       # 35 test_pam            1 (default)  0
+       # 36 test_nss            1 (default)  0
 
        # Stages
        $one_by_one =  $item_factory->get_item('/Edit/Stages/one-by-one');
@@ -354,7 +484,7 @@ sub yard_box {
        my $lib_strip = $item_factory->get_item
 	   ('/Edit/Settings/Stripping/Libraries');
        
-       $lib_strip->set_active($true);
+       $lib_strip->active($true);
        $lib_strip->signal_connect( "activate", 
 				   sub {  
 				       # off   
@@ -370,15 +500,16 @@ sub yard_box {
                                    ); 
 
            # objcopy parameters for Libraries
-           my($lib_strip_all,$lib_strip_debug);
            $lib_strip_all = $item_factory->get_item
-	       ('/Edit/Settings/Stripping/settings/strip-all');
-           $lib_strip_all->set_active($true);
+               ('/Edit/Settings/Stripping/settings/strip-all');
+           $lib_strip_debug = $item_factory->get_item
+	       ('/Edit/Settings/Stripping/settings/strip-debug');
+           $lib_strip_debug->active(0);
 
        # Binaries
        my $bin_strip = $item_factory->get_item
 	   ('/Edit/Settings/Stripping/Binaries');
-       $bin_strip->set_active($true);
+       $bin_strip->active($true);
        $bin_strip->signal_connect( "activate", 
 				   sub { 
 					 # off
@@ -397,7 +528,7 @@ sub yard_box {
        # Modules
        my $mod_strip = $item_factory->get_item
 	   ('/Edit/Settings/Stripping/Modules');
-       $mod_strip->set_active($true);
+       $mod_strip->active($true);
        $mod_strip->signal_connect( "activate", 
 				   sub { 
 					 # off
@@ -411,6 +542,60 @@ sub yard_box {
 					 print "$mod_bool\n";
 				     }
 				 ); 
+
+
+       # Checking - Replacements and/or Modules?
+
+       # Replacements
+       my $replacement_check = $item_factory->get_item
+	   ('/Edit/Settings/Replacements');
+       $replacement_check->active($true);
+       $replacement_check->signal_connect( "activate", 
+				   sub { 
+					 # off
+					 if ($replacement_bool == 1) {
+					     $replacement_bool--;
+				         }
+					 # on
+					 else {
+					     $replacement_bool++;
+					 }
+					 print "$replacement_bool\n";
+				     }
+				 );        
+
+       # Modules
+       my $modules_check = $item_factory->get_item('/Edit/Settings/Modules');
+       $modules_check->active($true);
+       $modules_check->signal_connect( "activate", 
+				   sub { 
+					 # off
+					 if ($module_bool == 1) {
+					     $module_bool--;
+				         }
+					 # on
+					 else {
+					     $module_bool++;
+					 }
+					 print "$module_bool\n";
+				     }
+				 );        
+
+       # Tests
+       my $test_fstab = $item_factory->get_item('/Tests/fstab'); 
+       $test_fstab->active(1);
+       my $test_inittab = $item_factory->get_item('/Tests/inittab');  
+       $test_inittab->active(1);
+       my $test_scripts = $item_factory->get_item('/Tests/scripts'); 
+       $test_scripts->active(1);
+       my $test_links = $item_factory->get_item('/Tests/links'); 
+       $test_links->active(1);
+       my $test_passwd = $item_factory->get_item('/Tests/passwd'); 
+       $test_passwd->active(1);
+       my $test_pam = $item_factory->get_item('/Tests/pam'); 
+       $test_pam->active(1);
+       my $test_nss = $item_factory->get_item('/Tests/nss');
+       $test_nss->active(1);
 
        #_______________________________________ 
        # Create the GtkText widget
