@@ -1,3 +1,8 @@
+Got rid of the complete lock-up when large files are compressed; however,
+there is still a lock-up  between each large chunk, but added a little 
+verbosity to tell when the process has begun and finished.  Probably should
+add -v.
+
 Established logic for Filesystem Box bases on ownership.  Defaults need to
 be different dependending on the user.  Normal users probably never will
 want to preserve permissions, but they may want to toggle off UML
