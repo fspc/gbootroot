@@ -9,6 +9,7 @@ Package: gbootroot
 Architecture: all
 Depends:  ${perl:Depends}, perl-modules, libgtk-perl (>= 0.7002), ash, file, binutils, bzip2
 Recommends: dswim, lilo
+Suggests: make-debian-x11
 Description: Boot/Root Filesystem Distribution testing and creation.
  BootRoot makes the construction and development of distributions fun and 
  simple with its Root Methods (Yard) and user-mode-linux test bed.  Finish 
@@ -20,4 +21,3 @@ Description: Boot/Root Filesystem Distribution testing and creation.
  .	
  deb http://prdownloads.sourceforge.net/gbootroot ./
  deb http://prdownloads.sourceforge.net/avd ./
- .
