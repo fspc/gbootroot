@@ -563,6 +563,9 @@ start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name"
 # info($verbosity setting can be {0=blue,1=red}, "text") writes to verbosity
 # box and to the LOGFILE $tmp/verbosity.   Realative to the slider 1 == 2 and 
 # 0 == 1.
+# 
+# warning("text") produces 0=blue output with "Warning: " appended and keeps
+# count of warning via the $Warnings variable.
 #
 # error("text") returns ERROR, writes to verbosity box (Error: "text"), and 
 # produces "gBootRoot: ERROR: "text" in error_window(), and writes to the
@@ -790,6 +793,7 @@ $entry2->set_text($container[KERNEL]);
 if ($container[KERNEL]) {
     $ars->{kernel} = $container[KERNEL];
     ars($ars);
+    ars2($ars);
 }
 button("Kernel Selection",$entry2,"Kernel Selection",1);
 
@@ -2042,12 +2046,17 @@ sub entry_advanced {
     my $entry_advanced = Gtk::Entry->new();
     $entry_advanced->set_editable( $true );
     $entry_advanced->signal_connect( "changed", sub {
-    $entry_advanced[$numa] = $entry_advanced->get_text();
-          if ($numa == 4) {
-	     $ars->{filename} = $entry_advanced[$numa];
-	      ars($ars);
-	 }
-     } );
+	$entry_advanced[$numa] = $entry_advanced->get_text();
+	if ($numa == 4) {
+	    $ars->{filename} = $entry_advanced[$numa];
+	    ars($ars);
+	}
+	if ( $numa == 12 ) {
+	    $ars->{kernel_version_choice} = $entry_advanced[$numa];
+	    ars($ars);	    
+	    ars2($ars);
+	}
+    } );
     $entry_advanced->set_usize(100,20);
     $_[5]->attach($entry_advanced,$_[0],$_[1],$_[2],$_[3], 
                             ['shrink','fill','expand'],['fill','shrink'],0,0);
@@ -2273,6 +2282,7 @@ sub file_ok_sel {
     if ($order == 1) {
 	$ars->{kernel} = $container[$order];
 	ars($ars);
+	ars2($ars);
     }
 
     # auto-detect compression if system has file
@@ -2339,6 +2349,7 @@ sub entry {
 		 if ($num == 1) {
 		     $ars->{kernel} = $container[$num];
 		     ars($ars);
+		     ars2($ars);
 		 }
                  # here's where types in entry3, types other places
                  if (defined $ea1 and $num == 3) { 

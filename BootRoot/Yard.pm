@@ -36,8 +36,9 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys device_table 
-              text_insert error logadj *LOGFILE which_tests create_fstab
-	      make_link_absolute make_link_relative cleanup_link yard_glob); # these last two added
+              text_insert error warning logadj *LOGFILE which_tests 
+	      create_fstab ars2 make_link_absolute make_link_relative 
+	      cleanup_link yard_glob); # these last two added
                                                       # as a test
 
 use strict;
@@ -88,31 +89,44 @@ sub warning {
 sub verbosity { $verbosity = $_[0]; }
 sub text_insert { $text_insert = $_[0]; $red = $_[1]; $blue = $_[2]; }
 sub logadj { $logadj = $_[0]; }
+my ($ars, $kernel, $kernel_version_choice);
+sub ars2 { $ars = $_[0]; 
+
+	   $kernel                    = $ars->{kernel};
+	   $kernel_version_choice     = $ars->{kernel_version_choice};
+}
+
 
 ## REQUIRES $kernel opt. $kernel_version
 sub kernel_version_check {
 
     my($kernel,$kernel_version) = @_;
 
-    if (defined($kernel_version)) {
+
+
+    if ( $kernel_version ) {
 
 	#  Check to see if it agrees
 	my($version_guess) = kernel_version($kernel);
+
 	if ($version_guess ne $kernel_version) {
             ## Is this really necessary, it can be assumed a person knows
             ## what they are doing.
 	    info(0, 
           "You declared kernel $kernel to be version $kernel_version\n",
 	    "even though a probe says $version_guess.",
-	    "  I'll assume you're right.\n")
+		 "  I'll assume you're right.\n");
+	    $ENV{'RELEASE'} = $kernel_version;
+	    return $ENV{'RELEASE'};
 	}
 
 	$ENV{'RELEASE'} = $kernel_version;
 
-    } elsif (defined($ENV{'RELEASE'} = kernel_version($kernel))) {
+    } elsif ( kernel_version($kernel) ne "ERROR" ) {
+	$ENV{'RELEASE'} = kernel_version($kernel);
 	info(0, "\nVersion probe of $kernel returns: $ENV{'RELEASE'}\n");
     } else {
-	warning "Can't determine kernel version of $kernel\n";
+	warning "Can't determine kernel version of ($kernel)\n";
 	my($release) = `uname -r`;
 	if ($release) {
 	    chomp($release);
@@ -166,6 +180,8 @@ sub read_contents_file {
 	undef @Libs;
     }
     $contents_file_tmp = $contents_file;
+
+    kernel_version_check($kernel, $kernel_version_choice);
 
 
     # Open DEVICE_TABLE
@@ -1764,8 +1780,10 @@ sub kernel_version {
 
   # check if we have a normal file (-f dereferences symbolic links)
   if (!-f $image) {
-    $error = error("Kernel image ($image) is not a plain file.\n");
-    return "ERROR"if $error && $error eq "ERROR";
+    #$error = error("Kernel image ($image) is not a plain file.\n");
+    #return "ERROR"if $error && $error eq "ERROR";
+    $error = warning("Kernel image ($image) is not a plain file.\n");
+    return "ERROR";
 
   } else {
     my($str)	       = "";
