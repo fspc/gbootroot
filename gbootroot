@@ -125,8 +125,10 @@ my $home_yard = "$home/yard";
 my $template_dir = "$home_yard/templates/";
 my $home_yard_replacements = "$home_yard/Replacements";
 $main::global_yard =  $home_yard;
+$main::oldroot = "/OLDROOT";
 my $global_yard_replacements = "/usr/share/gbootroot/yard/Replacements";
 my $global_yard_templates = "/usr/share/gbootroot/yard/templates";
+
 
 my $initrd;
 my $compress;
