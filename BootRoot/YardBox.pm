@@ -828,7 +828,7 @@ sub yard_box {
     my $main_vbox = new Gtk::VBox( $false, 0 );
     $main::yard_window->add( $main_vbox );
     $main_vbox->show();
-
+    
     my $vbox = new Gtk::VBox( $false, 0 );
     $vbox->border_width( 0 );
     $main_vbox->pack_start( $vbox, $false, $true, 0 );
@@ -913,11 +913,11 @@ sub yard_box {
     $user_defined->active(0);
 
     # Stripping
-
+    
     # Libraries
     my $lib_strip = $item_factory->get_item
 	('/Edit/Settings/Stripping/Libraries');
-       
+    
     $lib_strip->active($true);
     $lib_strip->signal_connect( "activate", 
 				sub {  
@@ -937,17 +937,17 @@ sub yard_box {
 
     # objcopy parameters for Libraries
     $lib_strip_all = $item_factory->get_item
-    ('/Edit/Settings/Stripping/settings/strip-all');
+      ('/Edit/Settings/Stripping/settings/strip-all');
     $lib_strip_debug = $item_factory->get_item
-    ('/Edit/Settings/Stripping/settings/strip-debug');
+      ('/Edit/Settings/Stripping/settings/strip-debug');
     $lib_strip_debug->active(0);
 
     # Binaries
     my $bin_strip = $item_factory->get_item
-    ('/Edit/Settings/Stripping/Binaries');
+      ('/Edit/Settings/Stripping/Binaries');
     $bin_strip->active($true);
     $bin_strip->signal_connect( "activate", 
-				   sub { 
+    sub { 
 				         if ($bin_bool eq "") {
 					    $bin_bool = 0;
 				         }
@@ -964,12 +964,12 @@ sub yard_box {
 				 ); 
 
 
-       # Modules
-       my $mod_strip = $item_factory->get_item
-	   ('/Edit/Settings/Stripping/Modules');
-       $mod_strip->active($true);
-       $mod_strip->signal_connect( "activate", 
-				   sub { 
+    # Modules
+    my $mod_strip = $item_factory->get_item
+    ('/Edit/Settings/Stripping/Modules');
+    $mod_strip->active($true);
+     $mod_strip->signal_connect( "activate", 
+                                        sub { 
 					 # off
 				         if ($mod_bool eq "") {
 					     $mod_bool = 0;
@@ -986,7 +986,7 @@ sub yard_box {
 				 ); 
 
 
-       # Checking - Replacements and/or Modules?
+      # Checking - Replacements and/or Modules?
 
        # Replacements
 ##       my $replacement_check = $item_factory->get_item
@@ -1023,27 +1023,45 @@ sub yard_box {
 ##				     }
 ##				 );        
 
+
+
        # Tests
        my $test_fstab = $item_factory->get_item('/Tests/fstab'); 
-       $test_fstab->active(1);
+       $tests{30}{test_fstab} == 1 ? $test_fstab->active(1) : 
+       $test_fstab->active(0);
+
        my $test_inittab = $item_factory->get_item('/Tests/inittab');  
-       $test_inittab->active(1);
+       $tests{31}{test_inittab} == 1 ? $test_inittab->active(1) :
+       $test_inittab->active(0);
+
        my $test_scripts = $item_factory->get_item('/Tests/scripts'); 
-       $test_scripts->active(1);
+       $tests{32}{test_scripts} == 1 ? $test_scripts->active(1) : 
+       $test_scripts->active(0);
+
        my $test_links = $item_factory->get_item('/Tests/links'); 
-       $test_links->active(1);
+       $tests{33}{test_links} == 1 ? $test_links->active(1) :
+       $test_links->active(0);
+
        my $test_passwd = $item_factory->get_item('/Tests/passwd'); 
-       $test_passwd->active(1);
+       $tests{34}{test_passwd} == 1 ? $test_passwd->active(1) :
+       $test_passwd->active(0);
+
        my $test_pam = $item_factory->get_item('/Tests/pam'); 
-       $test_pam->active(1);
+       $tests{35}{test_pam} == 1 ? $test_pam->active(1) :
+       $test_pam->active(0);
+
        my $test_nss = $item_factory->get_item('/Tests/nss');
-       $test_nss->active(1);
+       $tests{36}{test_nss} == 1 ? $test_nss->active(1) :
+       $test_nss->active(0);
 
        # PAM NSS Conf
        my $conf_nss = $item_factory->get_item('/Edit/Settings/NSS Config'); 
-       $conf_nss->active(1);
+       $nss_pam{60}{conf_nss} == 1 ? $conf_nss->active(1) :
+       $conf_nss->active(0);
+
        my $conf_pam = $item_factory->get_item('/Edit/Settings/PAM Config'); 
-       $conf_pam->active(1);
+       $nss_pam{61}{conf_pam} == 1 ? $conf_pam->active(1) :
+       $conf_pam->active(0);
 
        #_______________________________________ 
        # Create the GtkText widget
