@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: rcS.example,v 1.4 2001/12/18 19:58:41 freesource Exp $
+# $Id: rcS.helper,v 1.1 2002/12/11 23:41:50 freesource Exp $
 # Used by the Example.yard template.
 # /etc/rcS:  System initialization script.
 #
@@ -10,7 +10,8 @@
 echo "Checking root file system..."
 
 mount -n /proc
-cramfsck /dev/ubd/0
+
+#cramfsck /dev/ubd/0
 
 # fsck -C /dev/ubd/0
 
