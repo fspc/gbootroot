@@ -1034,7 +1034,7 @@ sub yard_menu {
 sub save_as {
 
 # Will just use a dialog box.
-    my ($dialog,$error,$count,$pattern) = @_;
+    my ($error,$count,$pattern) = @_;
 
     if (not defined $save_as) {
     $save_as = Gtk::Dialog->new();
@@ -1054,7 +1054,7 @@ sub save_as {
     $save_as->vbox->pack_start( $entry, $false, $false, 0);
     $entry->show();
 
-    my $label = Gtk::Label->new($dialog);
+    my $label = Gtk::Label->new();
     $label->set_justify( 'left' );
     $label->set_pattern("_________") if defined $pattern;
     $save_as->vbox->pack_start( $label, $false, $false, 2 );
@@ -1087,7 +1087,7 @@ sub save_as {
      }
      else {
         destroy $save_as;
-        save_as($dialog,$error,$count) if $error == 0;
+        save_as($error,$count) if $error == 0;
      }
 
 
