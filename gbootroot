@@ -580,8 +580,8 @@ else {
     # disk.  In this example the user is locked into using one type of device 
     # for the boot/root
     #
-    # /tmp/gboot_not_root_`id -u`/initrd_image \ 
-    # /tmp/gboot_not_root_'id -u1`/initrd_mnt  \
+    # /tmp/gboot_non_root_`id -u`/initrd_image \ 
+    # /tmp/gboot_non_root_'id -u1`/initrd_mnt  \
     # auto   defaults,noauto,user,loop       0      0
     #
     # /dev/fd0 /tmp/gboot_not_root_mnt_`id -u` auto  defaults,noauto,user 0 0
