@@ -252,6 +252,7 @@ STUFF
 
 return $stuff;
 } # end sub stuff
+# STOP EDITING
 #################################################################
 #################################################################
 
@@ -732,7 +733,7 @@ sub start_up {
 	home_builder("$home_yard_replacements/etc");
     }
 
-    # print "Everything is in order, but it never hurts to rebuild dxswim " .
+    # print "Everything is in order, but it never hurts to rebuild dswim " .
     # "with --rebuilddb\n";
 
 

@@ -806,10 +806,6 @@ sub start_up {
 	home_builder("$home_yard_replacements/etc");
     }
 
-    #print STDERR "Everything is in order, but it never hurts to rebuild dswim "
-    #	. "with --rebuilddb if you haven't done it in awhile\n";
-
-
 } # end start_up
 
 
