@@ -1175,7 +1175,8 @@ sub save_as {
 			     "writable.\nUse [ File->Save As ] or " .
 			     "[Alt-S] with the yard suffix.");		     
 		$save_as->destroy;
-		save_as();
+		return;
+		#save_as();
 	    }
 	}
 
@@ -1190,6 +1191,24 @@ sub save_as {
 	# An existing file shouldn't be written over unless the user wants
 	# this to happen.
 	if (-f $new && !$write_over) {
+
+	    if ( file_mode("$new") =~ /l/ ) {
+		error_window("gBootRoot: ERROR: " . 
+			     "$new is not " .
+			     "writable.\nUse [ File->Save As ] or " .
+			     "[Alt-S] with the yard suffix.");		     
+		$save_as->destroy;
+		return;
+	    }
+	    elsif ( file_mode("$new") !~ /w/ ) {
+		error_window("gBootRoot: ERROR: " . 
+			     "$new is not " .
+			     "writable.\nUse [ File->Save As ] or " .
+			     "[Alt-S] with the yard suffix.");		     
+		$save_as->destroy;
+		return;
+		#save_as();
+	    }
 
 	    my $label = Gtk::Label->new("$new_template already exists, 
 	    				do you want to write over it?");
