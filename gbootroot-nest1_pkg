@@ -1,0 +1,491 @@
+#!/usr/bin/perl
+
+###########################################################################
+##
+##  gbootroot_pkg 
+##  Copyright (C) 2001 by Jonathan Rosenbaum <freesource@users.sourceforge.net>
+##
+##  This program is free software; you may redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation; either version 2 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##  GNU General Public License for more details.
+##
+##  You should have received a copy of the GNU General Public License
+##  along with this program; if not, write to the Free Software
+##  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+##
+##############################################################################
+
+use File::Basename;
+use File::Find;
+
+# The Lazy Guy's packaging tool for gBootRoot.
+# This program sets-up the archive which will be turned into a package and 
+# can be ran as any user.  The advantage of this program is that the 
+# archive will always represent the Makefile install  which is being tested
+# when development isn't being done with perl -I . ./gbootroot.
+# This program can be adapted for other packages.
+
+# This program uses dh-make, and copies your own defaults to 
+# $packaging_place/debian from your $packaging_defaults, and updates
+# to the proper date/times and data in changelog and copyright.  
+# After this debuild from devscripts (this uses lintian) runs. 
+# Now all you do is finish stuff off with dpkg-scanpackages ..
+# something like this:
+# dpkg-scanpackages . override | gzip > Packages.gz
+
+# User defined variables for directories and package
+# Makefile.pkg in $gbootroot_cvs in used as the packages Makefile.
+
+# To get this to work properly I had to make two changes to the debian system
+# In dpkg-buildpackage noclean=false was changed to noclean=true, this is
+# to avoid the initial clean which is done because if you turn noclean off with
+# a cmdline switch only an build is done.
+#
+# In dpkg-source I added '.*bz2$| to $diff_ignore_default_regexp because the
+# -i switch seemed to ignore anything I added to it, either failing 
+# or ignoring, though recognizing the -i switch .. so this has been altered.
+# It may have been because dpkg-buildpackage expects -iregexp not -i regexp.
+
+my $user_home = "/home/mttrader";
+my $prog = "gbootroot-nest1";
+my $prog_real_name = "/BootRoot/BootRoot.pm";
+my $revision = 1;
+my $dist = "unstable";
+my $urgency = "low";
+#my $arch = "all";
+#my $group = "utils";
+#my $priority = "optional";
+my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
+my $gbootroot_cvs_rep = "$gbootroot_cvs/yard/replacements";
+my $packaging_place = "$user_home/gbootroot/PACKAGING";
+my $packaging_place_orig = $packaging_place;
+my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg/gbootroot-nest1";
+my $email = "freesource\@users.sourceforge.net";
+my $name = "Jonathan Rosenbaum";
+my $makefile = "Makefile.pkg";
+
+
+# RPM stuff - a filelist is used
+my $rpm_packaging_place = "$gbootroot_cvs/pkg/rpm";
+my $SPECS = "$ENV{HOME}/gbootroot/SPECS";
+my $SOURCES = "$ENV{HOME}/gbootroot/SOURCES";
+my $BUILD = "$ENV{HOME}/gbootroot/BUILD";
+my @rpm_packages = qw(gbootroot.spec gbootroot-mdk.spec);
+#my @rpm_packages = qw(gbootroot-mdk.spec);
+
+
+# Other vars
+my ($real_uid, $real_gid) = (stat($user_home))[4,5];
+
+# Find the version
+
+my $version;
+open(CVS, "$gbootroot_cvs/$prog_real_name") or 
+	die "Couldn't find $prog_real_name in $gbootroot_cvs: $!\n";
+	while (<CVS>) {
+		if (/\my \$version/) {
+			$version = (split(/=/,$_))[1];
+			chomp $version;
+			$version =~ s/ //;
+			$version =~ s/"//g;
+			$version =~ s/;//;
+		}			
+
+	}
+close(CVS);
+
+
+$packaging_place = "$packaging_place/$prog-$version";
+my $packaging_place_rep = "$packaging_place/yard/replacements";
+#my $pristine_source_package = "$packaging_place_orig/$prog-$version" . 
+#".tar.gz";
+my $pristine_source_package = "$prog-$version" . ".tar.gz";
+
+# Do we want a deb, rpm or both
+
+if (!( $ARGV[0] eq "both" || $ARGV[0] eq "deb" || $ARGV[0] eq "rpm" || 
+       $ARGV[0] eq "src" || $ARGV[0] eq "cvs" ) ) {
+
+ die "Specify: both, deb, or rpm or src or cvs\n";
+
+}
+
+
+# Here's where we get to copy over all the pristine sources from the build
+if ( -e $packaging_place && $ARGV[0] eq "cvs" ) {
+
+# sources 
+system "cp -a $packaging_place/sources/* $gbootroot_cvs/sources/";
+
+# modules
+system "cp -a $packaging_place_rep/usr/src/linux-um/drivers/mtd/devices/blkmtd.o $gbootroot_cvs_rep/usr/src/linux-um/drivers/mtd/devices/blkmtd.o";
+system "cp -a $packaging_place_rep/usr/src/linux-um/drivers/mtd/devices/mtdram.o $gbootroot_cvs_rep/usr/src/linux-um/drivers/mtd/devices/mtdram.o";
+system "cp -a $packaging_place/user-mode-linux/usr/lib/uml/modules* $gbootroot_cvs/user-mode-linux/usr/lib/uml/";
+
+# tools & kernel
+system "cp -a $packaging_place/user-mode-linux/usr/lib/uml/port-helper $gbootroot_cvs/user-mode-linux/usr/lib/uml/port-helper";
+system "cp -a $packaging_place/user-mode-linux/usr/bin/* $gbootroot_cvs/user-mode-linux/usr/bin/";
+
+# kernel config
+ system "cp -a $packaging_place/user-mode-linux/usr/lib/uml/config $gbootroot_cvs/user-mode-linux/usr/lib/uml/";
+
+# genext2fs
+system "cp -a $packaging_place/genext2fs/genext2fs $gbootroot_cvs/genext2fs/genext2fs";
+
+# root_fs_helper & Initrd.gz
+system "cp -a $packaging_place/root_filesystem/root_fs_helper $gbootroot_cvs/root_filesystem/root_fs_helper";
+system "cp -a $packaging_place/root_filesystem/Initrd.gz $gbootroot_cvs/root_filesystem/Initrd.gz";
+
+exit;
+
+}
+
+if ( $ARGV[0] eq "both" || $ARGV[0] eq "deb" || $ARGV[0] eq "src") { 
+
+# Make sure the directory exists.
+
+home_builder($packaging_place);
+
+# Because I am too lazy to clean out CVS, I only want the stuff copied over
+# which is in the Makefile, I'll also have to clean out any CVS directories.
+
+$/  = "";
+my @make_paragraph;
+open(CVS, "$gbootroot_cvs/Makefile") or 
+	die "Couldn't find Makefile in $gbootroot_cvs: $!\n";
+
+	while (<CVS>) {
+		push(@make_paragraph,$_);				
+	}
+close(CVS);
+$/ = "\n";
+
+chomp $make_paragraph[1];
+my @make_lines = split(/\n/,$make_paragraph[1]);
+shift(@make_lines);
+
+chdir($gbootroot_cvs) or die "Couldn't change to $gbootroot_cvs: $!\n";
+
+# Basically we are just concerned with the first part of cp and will
+# use home_builder to make sure the directory exists.
+
+system "rm -rf $packaging_place";
+system "install -d $packaging_place";
+
+foreach (@make_lines) {
+	s/\t//;
+	if (/cp|mkdir/) {
+	 my $dir = ((split))[2];
+	 my $base;
+         	if ($dir =~ m,/,) {
+	 	$base = dirname($dir);
+		home_builder("$packaging_place/$base");
+		}
+         if ( $_ =~ /cp/ ) {
+	       system "cp -fa $dir $packaging_place/$base";
+         }
+         else {
+	       system "install -d $packaging_place/$dir";
+         }
+
+	}
+	else {
+               if (!/mknod|dev/) {
+                    ## no need to do this
+		    ##system "$_";
+               }
+        }
+}
+
+# Stuff not in the Makefile
+system "cp -fa $makefile $packaging_place/Makefile";
+
+#  Basically this is stuff we want in the source package, but not the normal
+#  package
+system "cp -fa README $packaging_place/README";
+system "cp -fa COPYING $packaging_Place/COPYING";
+system "cp -fa user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch $packaging_place/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch";
+system "ln -sf $packaging_place/yard/replacements $packaging_place/yard/Replacements";
+mkdir("$packaging_place/sources");
+
+# Now we get to clean out any CVS directories and make sure that the 
+# permissions are all for the user who will be creating the package.
+if (-d $packaging_place) {
+        finddepth sub {  
+
+                 my($uid,$gid) = (stat($File::Find::name))[4,5];
+                 if ($real_uid != $uid) {
+                    system "chown $real_uid $File::Find::name";
+                 }
+                 if ($real_gid != $gid) {
+                    system "chgrp $real_gid $File::Find::name";
+                 }  
+
+                 # Keeping versioning is a great idea for Replacements
+                 # if (/CVS/) {
+                 #    chdir(dirname($File::Find::name));
+                 #    system "rm -rf CVS";
+                 # }
+               
+         } , $packaging_place ;
+}
+
+# At this point we should make a normal tar.gz source package.  This is
+# a necessary step for packagers who don't want a pre-conditioned package,
+# however there will be sections of the Makefile set-up for my own
+# personal automation used by this program.
+
+exit if $ARGV[0] eq "src";
+chdir($packaging_place_orig);
+unlink($pristine_source_package) if -e $pristine_source_package;
+system "tar cvfz  $pristine_source_package $prog-$version";
+my $source = dirname($packaging_place) . "/" . $prog . "-" . $version;
+system "cp -f $source.tar.gz $source-pristine.tar.gz";
+print "$pristine_source_package $packaging_place\n";
+system "rm -rf $packaging_place_orig/gbootroot_$version*";
+
+# Now we to the dh_make thing, and setup the time, version, and defaults. 
+
+chdir($packaging_place) or die "Can't change to $packaging_place: $!\n";
+system "dh_make -e $email";
+
+# Here we ask the user what changes to add to the changelog and set the proper
+# time using 822-date.  If it is the initial release we don't do anything.
+
+if ( !-e "$packaging_defaults/changelog" ) {
+    system 
+	"cp -a $packaging_place/debian/changelog $packaging_defaults";
+}
+
+open(CHANGELOG,"$packaging_defaults/changelog") 
+    or die "Couldn't open $packaging_place/changelog: $!\n";
+my @changelog = <CHANGELOG>;
+close (CHANGELOG);
+
+my $stop;
+foreach (@changelog) {
+    if (/$version-$revision/) {
+	print "\nThe changelog for $version-$revision already exists, this may mean\n" .
+        "that this is the first invocation or that you haven't changed the\n" .
+	"version in the $prog program.\n";	
+	$stop = 1;
+    }
+}
+
+
+# Set-up the copyright
+open(COPYRIGHT,">$packaging_defaults/copyright") 
+    or die "Couldn't open up $packaging_defaults/copyright: $!\n";
+print COPYRIGHT "This package was debianized by $name\n";
+print COPYRIGHT "$email on " , `822-date`, ".\n";
+print COPYRIGHT "Author: \n$name <$email>\n\n";
+print COPYRIGHT "Copyright:\n\n" .
+"On Debian GNU/Linux systems, the complete text of the GNU General Public\n" .
+    "License can be found in /usr/share/common-licenses/GPL\n";
+close(COPYRIGHT);
+system "chown $real_uid $packaging_defaults/copyright";
+system "chgrp $real_gid $packaging_defaults/copyright";
+
+system "rm $packaging_place/debian/*";
+system "chown $real_uid:$real_gid $packaging_defaults/changelog";
+system "cp -fa $packaging_defaults/* $packaging_place/debian";
+
+
+chdir($packaging_place);
+
+# Using dch for the changelog .. very convenient and debian proper.
+if (!$stop) {
+
+    $ENV{EMAIL} = $email;
+    $ENV{DEBFULLNAME} = $name;
+
+    system "chown $real_uid:$real_gid $packaging_place/debian/changelog";
+
+    $/ = ""; 
+    open(CHANGES, "$gbootroot_cvs/Changes") 
+	or die "Couldn't open $gbootroot_cvs/Changes: $!\n"; 
+
+    my $change_watch = 0;
+    while (<CHANGES>) { 
+	if (!m,^-+$,m ) { 
+	    last if $what == 2;  
+	    $_  =~ s/\n/ /gm; 
+	    if ( $change_watch == 0 ) {
+		system "dch", "--newversion", "$version-$revision", "$_"; 
+	    }
+	    else {		
+		system "dch",  "$_";
+	    }
+	    $change_watch++;
+	}  
+	
+	else { 
+	    $what++; 
+	}
+    }
+    close(CHANGES);
+
+    $/ = "\n";
+
+    system "cp -a $packaging_place/debian/changelog $packaging_defaults";
+
+
+} # end if !$stop
+
+# dpkg-buildpackage  .. no sense dl the sources
+system "cp -fa $gbootroot_cvs/sources/*bz2 $packaging_place/sources/";
+system "debuild -rfakeroot -i\`.*bz2$\` -k2DAB7037";
+
+
+} # both or deb
+
+
+if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
+
+
+    # Here the defined version and revision are updated ..
+    # Ofcourse maybe the revision shouldn't be touched.
+
+    # The pristine source package is made once for debian, but
+    # a source package specific to rpm is made more than once.
+
+    my $source = dirname($packaging_place) . "/" . $prog . "-" . $version;
+
+    foreach my $package ( @rpm_packages ) {
+	open (RPM_PLACE, "$rpm_packaging_place/$package" ) or 
+	    die "Couldn't open up $rpm_packaging_place/$package: $!\n";
+	my @specs = <RPM_PLACE>;
+	close(RPM_PLACE);
+
+	open (RPM_PLACE, ">$rpm_packaging_place/$package" ) or 
+	    die "Couldn't open up $rpm_packaging_place/$package: $!\n";	
+	foreach ( @specs ) {
+
+	    if ( m,^\%define\s+version\s+[\d\.]+\s*$,) {
+		print RPM_PLACE "%define version $version\n";
+
+	    }
+	    elsif ( m,^\%define\s+release\s+[\d\.]+\s*$,) {
+		if ( /mdk/ ) {
+		    print RPM_PLACE "%define release $revision" . "mdk\n";
+		}
+		else {
+		    print RPM_PLACE "%define release $revision\n";
+		}
+
+	    }
+	    else {
+		print RPM_PLACE $_;
+
+	    }
+
+	}
+	close(RPM_PLACE);
+	
+
+	# Here we create a filelist from the debian package
+	# and get to add to the pristine sources with the updated
+	# filelist in pkg/rpm/filelist which will be used by the spec.
+	# We also make modification to things which are Debian so
+	# the filelist works.
+	# The files which don't exist in *deb are pruned out here, this
+	# could be automated, but it is better to do it manually just to
+	# to make sure no necessary files aren't being included, the output
+	# from rpm -bl specfile
+
+	my %extra_files = ( 
+
+        "/usr/share/doc-base/gbootroot\n", 1,
+        "/usr/lib/menu/gbootroot\n", 1, 
+        "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Root\n", 1, 
+        "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Repository\n", 1, 
+        "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Entries\n", 1, 
+        "/usr/share/doc/gbootroot/Changes.gz\n", 1, 
+        "/usr/share/doc/gbootroot/copyright\n", 1, 
+        "/usr/share/doc/gbootroot/changelog.Debian.gz\n", 1
+
+			      );
+
+	my $arch = `grep Architecture $packaging_defaults/control |\
+                    cut -d " " -f 2`; 
+	chomp $arch;
+	my $program = dirname($packaging_place) . "/" .$prog . "_" 
+	.  "$version-$revision" . "_" . $arch . ".deb";
+	die "Can't fine $program\n" if !-e $program;
+	
+	my $files = "dswim -qpl $program|";
+	open (FILELIST,">$rpm_packaging_place/filelist") or
+	die "Couldn't open $rpm_packaging_place/filelist: $!\n";
+	open (FILES, $files ) or 
+	die "Couldn't open $files: $!\n";
+	while ( <FILES> ) {
+
+	    if ( m,^\./, ) {
+		s,^\.,,;
+		if ( $extra_files{"$_"} == 1 ) {
+		    if ( /Changes\.gz/ ) { 
+			s/Changes\.gz/Changes/;
+		    }
+		    else {
+			next;
+		    }
+		}
+		print FILELIST "%attr(- root root) $_";
+	    }
+
+	}
+
+	# For now will just use one definite place for SOURCES
+	my $filelist = "pkg/rpm";
+	system "cp $gbootroot_cvs/gbootroot.xpm $SOURCES";
+	system "cp $rpm_packaging_place/$package $SPECS";
+	system "install -d $packaging_place/$filelist";
+	system "cp $rpm_packaging_place/filelist $packaging_place/$filelist";
+	unlink($pristine_source_package) if -e $pristine_source_package;
+	chdir($packaging_place_orig);
+	system "tar cvfz  $pristine_source_package $prog-$version";
+	system "cp $source.tar.gz $SOURCES";
+
+	# Time for the fun
+	system "rpm -ba $SPECS/$package";
+    }
+
+}  # both or rpm 
+
+
+
+sub home_builder {
+
+    my ($home_builder) = @_; 
+
+    if (!-d $home_builder) {
+	if (-e $home_builder) {
+	    print "ERROR: A file exists where $home_builder should be.\n";
+	}	 
+	else {
+	    my @directory_parts = split(m,/,,$home_builder);
+	    my $placement = "/";
+	    for (1 .. $#directory_parts) {
+		$_ == 1 ? ($placement = "/$directory_parts[$_]")
+		    : ($placement = $placement . "/" . $directory_parts[$_]);
+		-d $placement or mkdir $placement;
+		system "chown $real_uid $placement";
+		system "chgrp $real_gid $placement";
+	    }
+	}
+    }
+
+} # end home_builder
+
+
+
+
+
+
+
