@@ -53,6 +53,7 @@
 #
 #    Genext2fs
 #    Xavier Bestel <xavier.bestel@free.fr>
+#    Erik Andersen    
 #
 #    Perl
 #    Larry Wall <larry@wall.org>
@@ -2856,20 +2857,17 @@ sub lilo_put_it_together {
 
   if ( $fs_type eq "genext2fs" ) {
 
-#      info(0,"HERE /usr/lib/bootroot/$main::makefs -b $device_size -d  $mnt -D $device_table $entry_advanced[0]");
-
       my $error;
-#
 
       # When creating a fs on floppy, specifying -i causes genext2fs to fail, 
       # its better to just let the program figure out the inode size for now.
       if (
-	  sys("/usr/lib/bootroot/genext2fs -z -b $device_size -d  $mnt -D $device_table $entry_advanced[0]") !~ 
+	  sys("/usr/lib/bootroot/genext2fs -z -r0 -b $device_size -d  $mnt -D $device_table $entry_advanced[0]") !~ 
 	  /^0$/ ) {
 	  $error = error("Cannot $fs_type filesystem.\n");
 	  return "ERROR" if $error && $error eq "ERROR";
       }
-#
+
   }
 
 
@@ -2902,7 +2900,7 @@ sub lilo_put_it_together {
   # This enforces that lilo is only wil run on a bootable drive,
   # otherwise the user has to do it manually.
   if ($container[BOOT_DEVICE] eq $entry_advanced[0]) {
-#
+
       # root can happily chroot
       if ( $> == 0 ) {
 
@@ -2918,13 +2916,26 @@ sub lilo_put_it_together {
       # root lilo power, before going on.
       else {
 
+	  # Ask the user if they have su lilo priviliges.
+	  # Hopefully, password free, but that can be incorporated.
+	  mtab(3);
+	  do {
+		  if ( $mtab == 2 ) {
+		      undef $mtab;
+		      chdir($pwd); 
+		      return if errum(sys("umount $mnt")) == 2;
+		      return;
+		  }
+	      while (Gtk->events_pending) { Gtk->main_iteration; }
+	  } while $mtab;
+
+	  # It's o.k. if lilo fails.
 	  if ( err_custom("$main::sudo lilo -v -C $mnt/brlilo.conf -b $entry_advanced[0]", "gBootRoot: ERROR: lilo failed") == 2 ) {
 	      chdir($pwd); 
-	      return;
 	  }
 
       }
-#
+
   }
 
 
@@ -3040,7 +3051,7 @@ sub device2 {
 	
 
 	if (
-	    sys("/usr/lib/bootroot/$main::makefs -b $device_size -d $tmp/rootdisk $entry_advanced[3]") !~ 
+	  sys("/usr/lib/bootroot/genext2fs -z -r0 -b $device_size -d $mnt $entry_advanced[3]") !~ 
 	    /^0$/ ) {
 	    info( 0, "/usr/lib/bootroot/$main::makefs -b $device_size -d $tmp/rootdisk $entry_advanced[3]\n");
 	    $error = error("Cannot $fs_type filesystem.\n");
@@ -3459,6 +3470,8 @@ sub initrd {
     my $fs_type = (split(/\s/,$main::makefs))[0];
 
     if ( $fs_type eq "genext2fs" ) {
+	# Assuming busybox is being used, so bzip2 should still be standard
+	# just another link .. just for testing.
 	if ( $compress eq "bzip2" ) {
 	    $compress  = "bunzip2";
 	}
@@ -3960,7 +3973,8 @@ sub mtab_window {
     $mtab->set_position('center');
     my $label = Gtk::Label->new($dialog);
     $label->set_justify( 'left' );
-    $label->set_pattern("_________") if defined $pattern;
+    $label->set_pattern("_________") if $pattern == 9;
+    $label->set_pattern("_____") if $pattern == 5;
     $mtab->vbox->pack_start( $label, $true, $true, 15 );
     $label->show();
     my $button = Gtk::Button->new("OK");
@@ -3970,7 +3984,7 @@ sub mtab_window {
     $button->grab_default;
     $button->show;
     $button = Gtk::Button->new("Cancel");
-    $button->signal_connect("clicked", sub { destroy $mtab} );
+    $button->signal_connect("clicked", sub { destroy $mtab; $mtab = 2; } );
     $mtab->action_area->pack_start($button, $false, $false,0);
     $button->show;
     }
@@ -3995,14 +4009,23 @@ sub mtab{
              ."Press OK when the drive and its storage medium is ready.\n"
              ."The Boot Disk will now be made.  All data already on\n"
                  ."the storage medium will be erased.";
-    mtab_window($dialog,1,$_[0],1);
+    mtab_window($dialog,1,$_[0],9);
   }
   elsif ($_[0] == 1) {
     my $dialog = "ROOTDISK:\n"
              ."Press OK when the drive and its storage medium is ready.\n"
              ."The Root Disk will now be made.  All data already on\n"
                  ."the storage medium will be erased.";
-    mtab_window($dialog,1,$_[0],1);
+    mtab_window($dialog,1,$_[0],9);
+  }
+  elsif ( $_[0] == 3 ) {
+    my $dialog = "LILO:\n"
+             ."Lilo will now be executed.  In order for the bootloader\n"
+             ."to work properly you need superuser privileges to run lilo.\n"
+             ."See FAQ for ways to accomplish this.  Even if you don't have\n"
+	     ."privileges, the program will continue to make a boot disk.\n"
+             ."Lilo may be ran as root at a later time on the boot disk.";
+    mtab_window($dialog,3,$_[0],5);
   }
 
 
@@ -4019,35 +4042,39 @@ sub mtab_check {
     my $fs_type = (split(/\s/,$main::makefs))[0];
 
 # Check to see if $device is mounted
-    open (MTAB, "/etc/mtab") or die "no mtab!\n";
-    while (<MTAB>) {
 
-	if  ($count == 1) {
+    if ( $count < 3 ) {
+	open (MTAB, "/etc/mtab") or die "no mtab!\n";
+	while (<MTAB>) {
 
-	    # ROOT_DEVICE
-	    if ( m,$entry_advanced[3], ) {
-		# Safety Check:
-		$dialog = 
-	       "Please umount the device first.\nPress OK when you are ready.";
-		$error = 0;
+	    if  ($count == 1) {
+		
+		# ROOT_DEVICE
+		if ( m,$entry_advanced[3], ) {
+		    # Safety Check:
+		    $dialog = 
+			"Please umount the device first.\nPress OK when you are ready.";
+		    $error = 0;
+	    }
+		
+	    }
+
+	    elsif ( $count == 0  ) {
+
+		# BOOT_DEVICE
+		if (m,$entry_advanced[0],) {
+		    # Safety Check:
+		    $dialog = 
+			"Please umount the device first.\nPress OK when you are ready.";
+		    $error = 0;
+		}
+		
 	    }
 	    
 	}
-
-	elsif ( $count == 0  ) {
-
-	    # BOOT_DEVICE
-	    if (m,$entry_advanced[0],) {
-		# Safety Check:
-		$dialog = 
-	       "Please umount the device first.\nPress OK when you are ready.";
-		$error = 0;
-	    }
-	    
-	}
-
+	close(MTAB);
+	
     }
-    close(MTAB);
 
     mtab_window($dialog,$error,$count) if $error == 0;
 
@@ -4109,6 +4136,12 @@ sub mtab_check {
 
     }
 
+    # Warned the user about something
+    if ( $error == 3 ) {
+	$mtab->destroy;
+    }
+
+
 } # end sub mtab_check
 
 ##################
@@ -4116,6 +4149,7 @@ sub mtab_check {
 ##################
 
 # This should be user accessible
+# This should be called linuxrc.
 sub initrd_heredoc {
 
     my($broot_image,$root_device) = @_;
@@ -4129,16 +4163,26 @@ export PATH=/bin:/sbin:/usr/bin:
 
 echo Preparing to setup ramdisk.
 
-mount -o remount,rw / 2>/dev/null
+# Before busybox experimentation this was the state of things:
+# mount -o remount,rw / 2>/dev/null
+# echo Mounting proc...
+# mount -t proc none /proc
 
 echo Mounting proc...
 mount -t proc none /proc
+
+echo Mounting $root_device readable-writable
+mount -o remount,rw $root_device / 
 
 echo -n 'Please insert the root floppy, and press [Enter]: '
 read ENTER
 
 echo Mounting $root_device readonly ...
-mount -o ro -t ext2 $root_device /mnt
+
+# -t causes busybox to fail here, -o doesn't help much either .. needs to
+# be repeated twice, which is silly .. the mounting.
+#mount -o ro -t ext2 $root_device /mnt
+mount $root_device /mnt
 
 echo -n Copying new root to ramdisk .. please wait ...
 $compress -cd /mnt/$broot_image > /dev/ram1
