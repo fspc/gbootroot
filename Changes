@@ -1,3 +1,6 @@
+Updated the documentation and graphics to reflect the new changes, and provide
+a new exercise.
+
 If the sources created from the template had a symlink in them from a previous
 creation, you couldn't just press create again without symlink() complaining 
 (for instance, for genext2f and the new uml_exclusively).  This has been fixed.
