@@ -372,6 +372,7 @@ while (<STDIN>) {
     }
 }
 
+system "rm -f $template_dir/$debian_yard";
 open(DEBIAN,">$template_dir/$debian_yard") 
 	or die "Couldn't open $template_dir$debian_yard: $!\n";
 open(FILERC,"/etc/runlevel.conf") or die "No runlevel.conf: $!\n";
@@ -737,7 +738,7 @@ sub start_up {
     }
 
     # Swim has been installed but is removed or purged
-    my $dpkg_s = "dpkg -s swim|";
+    my $dpkg_s = "dpkg -s dswim|";
     open(DPKG,"$dpkg_s") or die "Couldn't find dpkg: $!\n";
     while (<DPKG>) {
 	if (/Status:/) {
