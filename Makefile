@@ -11,9 +11,10 @@ install:
 	install -d /usr/share/perl5/BootRoot
 	cp -fa BootRoot/*.pm /usr/share/perl5/BootRoot
 	install -d /usr/share/gbootroot/yard/Replacements
-	mknod yard/replacements/dev/ubd0 b 98 0
 	cp -fa yard/replacements/* /usr/share/gbootroot/yard/Replacements
-	rm yard/replacements/dev/ubd0
+	install -d /usr/lib/bootroot/yard/Replacements
+	cp -fa user-mode-linux/usr/lib/uml/modules* /usr/lib/bootroot/yard/Replacements/lib/modules
+	cp -fa user-mode-linux/usr/lib/uml/CVS /usr/lib/bootroot/yard/Replacements/lib/modules/CVS
 	install -d /usr/share/gbootroot/yard/templates
 	chmod 444 yard/templates/*.yard
 	cp -fa yard/templates/Example* /usr/share/gbootroot/yard/templates

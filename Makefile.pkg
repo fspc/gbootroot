@@ -12,6 +12,10 @@ install:
 	cp -fa BootRoot/*.pm $(DESTDIR)/usr/share/perl5/BootRoot
 	install -d $(DESTDIR)/usr/share/gbootroot/yard/Replacements
 	cp -fa yard/replacements/* $(DESTDIR)/usr/share/gbootroot/yard/Replacements
+	install -d $(DESTDIR)/usr/lib/bootroot/yard/Replacements
+	cp -fa user-mode-linux/usr/lib/uml/modules* $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules
+	cp -fa user-mode-linux/usr/lib/uml/CVS $(DESTDIR)/usr/lib/bootroot/yard/Replacements/lib/modules/CVS
+
 	install -d $(DESTDIR)/usr/share/gbootroot/yard/templates
 	cp -fa yard/templates/Example* $(DESTDIR)/usr/share/gbootroot/yard/templates	
 	install -d $(DESTDIR)/usr/share/gbootroot/genext2fs
