@@ -246,10 +246,12 @@ sub read_contents_file {
       $line =~ s/\s+$//;
 
       # --freesource
+      # IF ELSIF
+      #
       # Here we get to decide which files to filter out and which
       # to send on based on the 
       #  \ if ( condition ) \n  statement  \n elsif (condition) \n  statement  
-      #   \n else \n  statement \ 
+      #  
       # control structure.  \ is chosen as the beginning deliminator
       # then the structure is parsed until the ending deliminator \ is
       # found. The fun part is check the logic, all () need to be closed
@@ -264,15 +266,14 @@ sub read_contents_file {
       # statement or a line or so afterwards
       #
       # This is non-strict checking .. junk can be after conditionals (maybe) -
-      # or last delimiter - which will be ignored - and else can preceed 
-      # an elsif :-)
+      # or last delimiter - which will be ignored - 
       # The most important check is to avoid never finding a final delimiter
       # 
       # Error conditions in order - all these things need to exist or there
       #                             is an ERROR.
       #  ( remember outer parens )
       #  1. if && ( && ) && statments
-      #  2. elsif && ( && ) && statements || else && statements
+      #  2. elsif && ( && ) && statements
       #  3. end deliminator \ has to be found before EOF
       # 
       # Example (not practical ofcourse):
@@ -289,7 +290,8 @@ sub read_contents_file {
 
 
       # First line found with \ &&  may be an if ()
-      if ( $line =~ /\s*\\/  ) {
+      # \ OR \ IF
+      if ( $line =~ /\s*\\/ && !%control_structure  ) {
 
 	  # Keep checking for logic
 	  $control_structure{WATCH}++;
@@ -299,7 +301,7 @@ sub read_contents_file {
 	      next LINE;
 	  }
 	  else {
-##########
+
 	      $control_structure{if}++;
 
 	      
@@ -360,14 +362,25 @@ sub read_contents_file {
 	      # not going to worry about garbage at the end if the conditional
 	      # is proper .. this isn't a new computer language :-)
 	      
-###################
-
 	  }  # line equaled if
 	      	
       }
 
-      # Next line if it exists between \ \
+      # IF ELSIF
       elsif ( %control_structure && $control_structure{WATCH} < 2 ) {
+
+
+	  my $end;
+
+	  # Keep checking for logic
+	  if ( $line =~ /\s*\\/ ) {
+       
+	      $control_structure{WATCH}++ ;
+	      $line =~ s/\\//;
+	      $end = 1;
+
+	  }
+
 
 	  # if condition is true because on same line as \ or now true
 	  if ( $control_structure{if_true} ) {
@@ -398,6 +411,10 @@ sub read_contents_file {
 		      $control_structure{WATCH} < 2 ) {
 		  next LINE;
 	      }
+	      elsif ( $control_structure{else_false} && $end ) {
+		  next LINE;
+	      }
+	      
 
 	  }  # true elsif condition
 
@@ -476,7 +493,7 @@ sub read_contents_file {
 	  }
 
 
-	  # ELSIF && ELSE
+	  # ELSIF 
 	  # if if didn't have anything we come here
 	  # This is weird it just skips over this logic
 	  if ( !$control_structure{if_true} &&
@@ -485,9 +502,7 @@ sub read_contents_file {
 
 	      if ( $line =~ m,\s*else\s*|\s*elsif\s*, ) {
 
-#########
 		  if ( $line =~ m,\s*elsif\s*, ) {
-
 
 		      $control_structure{elsif}++;
 
@@ -516,7 +531,6 @@ sub read_contents_file {
 				      next LINE;
 				  }
 				  
-				  #next LINE;
 			      }
 		      
 			  } # end for glob condition
@@ -547,10 +561,6 @@ sub read_contents_file {
 		      
 		  }  # end elsif
 
-###########
-
-
-
 	      }
 
 
@@ -560,34 +570,20 @@ sub read_contents_file {
 
 	  }
 
-##
 
       }
 
-
-      # Control Structure Trap
-      # If a condition is false the control structure falls through until it
-      # reaches a true condtion,  this prevents that.
-      if ( 
-	   $line =~ m,\s*if\(.*\)|\s*elsif\(.*\)|\s*else\s*, ) {
-
-	  print "$line IMADEITHERE\n";
-	 
-	  next LINE;
-      }
 
 
       # last line found with ending \ can be besides a statement or by itself
       if ( %control_structure && $control_structure{WATCH} == 2 ) {
 	  
 	  # Better make sure we actually get here
-
 	  undef %control_structure;
 
       }
   
     
-
 
       # If genext2fs is being used we want to grab the values for 
       # devices and process them individually, globbing if necessary,
