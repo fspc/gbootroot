@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.38 2001/12/06 22:01:20 freesource Exp $</center>
+<center>$Id: index.html,v 1.39 2001/12/06 23:14:40 freesource Exp $</center>
 
 <p>
 
@@ -606,20 +606,33 @@ Replacements
 from add-ons are placed in the 
 /usr/share/gbootroot/yard/Replacements directory.&nbsp;&nbsp;
 When a user opens up gBootRoot, the program checks to see if there are any
-new replacements and then creates symlink from the 
+new replacements and then creates symlinks from the 
 $HOME/.gbootroot/yard/Replacements directory to the 
 replacements repository.&nbsp;&nbsp;
 In general the repository for replacements is owned by root, so normal 
-users can't make changes to these files anyways; however, root should make 
-it a policy always to make changes from the $HOME location while using 
-an editor  which respects versioned files (i.e. Emacs).  Then the 
+users can't make changes to these files; however, when root is 
+editing replacements in the $HOME Replacements location, it should be the 
+administrator's  policy to use an editor which respects versioned files (i.e. Emacs).  Then the 
 administrator will not be able to 
 make any changes to the replacements repository because the CVS directories 
 keep date information which prevents the editing of these
 files.&nbsp;&nbsp;It is highly recommended to follow this procedure, and
 not to delete the CVS directories because /usr/share is meant to be used
-for data which shouldn't be modified 
+for data which shouldn't be modified directly by any user 
 (see <a href="http://www.pathname.com/fhs/">FHS</a>).</p>
+
+<p>
+
+<em>Note for users of version 1.2.14 or earlier</em>:  Verions of gbootroot
+before 1.3.0 didn't have this set-up, instead there were just copies of add-on
+replacements in the $HOME replacement directory to allow the user
+to directly modify add-on replacements.&nbsp;&nbsp;
+In order to get the full benefit of the new change you will need to
+rename any of the $HOME/.gbootroot/yard/Replacements 
+you've modified and put them in a safe place, then remove the old 
+replacements, and return the renamed replacements.
+
+<p>
 
 <a name="5"><b>Can I use a program linked to uClibc in the template?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
