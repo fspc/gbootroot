@@ -1,4 +1,4 @@
-# $Id: Helper.yard,v 1.3 2003/02/07 18:29:26 freesource Exp $
+# $Id: Helper.yard,v 1.4 2003/02/11 03:17:28 freesource Exp $
 #  Helper.yard
 #
 #############################################################################
@@ -214,7 +214,7 @@ less
 dircolors
 grep
 egrep
-msg         
+mesg         
 tail       
 mknod		   	
 ##ps			   	
