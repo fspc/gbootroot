@@ -231,13 +231,6 @@ sub yard {
 	$changed_text_from_template = join("",@template);
 	yard_box();
 
-    #}
-    #else {
-	##error_window("Kernel Selection required");
-        ##return;
-    #}
-
-
 } # end sub yard
 
 ###############
@@ -283,13 +276,12 @@ sub file_system {
 		# Check to see if it actually exists
 		my $executable = (split(/\s+/,$entry[2]))[0];
 		if (!find_file_in_path(basename($executable))) {
-		    error_window("gBootRoot Error: " .
-				 "Enter a valid command");
+		    error_window("gBootRoot: ERROR: Enter a valid command");
 		    return;
 		}
 		if ($executable =~ m,/,) {
 		    if (! -e $executable) {
-			error_window("gBootRoot Error: " .
+			error_window("gBootRoot: ERROR: " .
 				     "Enter a valid path for the command.");
 			return;
 		    }
@@ -575,7 +567,7 @@ sub continue {
 }
 
 sub check {
-    
+
     $error = read_contents_file("$template_dir$template");
     return if $error && $error eq "ERROR";
 
@@ -745,7 +737,7 @@ sub yard_box {
                                     \$main::yard_window);
        $main::yard_window->set_usize( 525, 450 );
        $main::yard_window->set_policy( $true, $true, $false );
-       $main::yard_window->set_title( "Yard Box" );
+       $main::yard_window->set_title( "Yard Box - $template" );
        $main::yard_window->border_width(0);
 
        my $main_vbox = new Gtk::VBox( $false, 0 );
@@ -1073,12 +1065,14 @@ sub saved {
     # It's not necessary to use lsMode, but it's a cool program by MJD.
     if  ($whoami == 100 || $whoami == 102 ) {
 	if ( file_mode("$template_dir$template") =~ /l/ ) {
-	    error_window("gBootRoot: ERROR: $template_dir$template is not " .
+	    error_window("gBootRoot: ERROR: " . 
+			 "$template_dir$template is not " .
 			 "writable.\nUse [ File->Save As ] or " .
 			 "[Alt-S] with the yard suffix.");		     
 	}
 	elsif ( file_mode("$template_dir$template") !~ /w/ ) {
-	    error_window("gBootRoot: ERROR: $template_dir$template is not " .
+	    error_window("gBootRoot: ERROR: " . 
+			 "$template_dir$template is not " .
 			 "writable.\nUse [ File->Save As ] or " .
 			 "[Alt-S] with the yard suffix.");		     
 	}
@@ -1087,12 +1081,12 @@ sub saved {
 	    # check
 	    my $new = "$template_dir$template" . ".new";
 	    open(NEW,">$new") or 
-		($error = error("gBootRoot: ERROR: Can't create $new"));
+		($error = error("Can't create $new"));
 	    return if $error && $error eq "ERROR";    
 	    print NEW $changed_text_from_template;
 	    close(NEW);
 	    rename($new, "$template_dir$template") or
-		($error = error("gBootRoot: ERROR: Can't rename $new to " .
+		($error = error("Can't rename $new to " .
 				"$template_dir$template"));
 	    return if $error && $error eq "ERROR"; 
 	}
@@ -1101,7 +1095,7 @@ sub saved {
 	save_as();
     }
 
-}
+} # end sub saved
 
 sub print_hello { 
     my ($menu_item, $action, $date) = @_;
@@ -1129,6 +1123,7 @@ sub yard_menu {
 } 
 
 # This will just be a simple dialog
+my $write_over;
 sub save_as {
 
 # Will just use a dialog box.
@@ -1154,33 +1149,62 @@ sub save_as {
 
     my $label = Gtk::Label->new();
     $label->set_justify( 'left' );
-    $label->set_pattern("_________") if defined $pattern;
+    #$label->set_pattern("_________") if defined $pattern;
     $save_as->vbox->pack_start( $label, $false, $false, 2 );
     $label->show();
     my $button = Gtk::Button->new("OK");
     $button->signal_connect("clicked", sub {
-	    # Here's where we get to undef Yard variable and start over at 
-	    # check
-	my $new = "$template_dir$new_template";
 
-	if (!basename($new)) {
+	# Here's where we get to undef Yard variable and start over at 
+	# check
+	my $new = "$template_dir$new_template" if $new_template;
+
+	#if (!basename($new)) {
+	if (!$new_template) {
 	    if ( file_mode("$template_dir$template") =~ /l/ ) {
-		error_window("gBootRoot: ERROR: $template_dir$template is not " .
+		error_window("gBootRoot: ERROR: " . 
+			     "$template_dir$template is not " .
 			     "writable.\nUse [ File->Save As ] or " .
 			     "[Alt-S] with the yard suffix.");		     
 		$save_as->destroy;
 		return;
 	    }
 	    elsif ( file_mode("$template_dir$template") !~ /w/ ) {
-		error_window("gBootRoot: ERROR: $template_dir$template is not " .
+		error_window("gBootRoot: ERROR: " . 
+			     "$template_dir$template is not " .
 			     "writable.\nUse [ File->Save As ] or " .
 			     "[Alt-S] with the yard suffix.");		     
 		$save_as->destroy;
-		return;
+		save_as();
 	    }
 	}
+
+	# An open template should just be saved not saved_as.
+	if (!$new_template) {
+	    error_window("gBootRoot: ERROR: $template already exists, " . 
+			 "use Save instead.");
+	    $save_as->destroy;
+	    return;
+	}
+
+	# An existing file shouldn't be written over unless the user wants
+	# this to happen.
+	if (-f $new && !$write_over) {
+
+	    my $label = Gtk::Label->new("$new_template already exists, 
+	    				do you want to write over it?");
+	    $label->set_justify( 'left' );
+	    $save_as->vbox->pack_start( $label, $false, $false, 2 );
+	    $label->show();
+	    $write_over = 1;
+	}
+	else {
+	    $write_over = "";
+	}
+
+	if (!$write_over) { 
 	open(NEW,">$new") or 
-		($error = error("gBootRoot: ERROR: Can't create $new"));
+		($error = error("Can't create $new"));
 	return if $error && $error eq "ERROR";    
 	print NEW $changed_text_from_template;
 	close(NEW);
@@ -1191,9 +1215,12 @@ sub save_as {
 	closedir(DIR);
 	$main::combo->set_popdown_strings( @templates ) if @templates; 
 	$main::combo->entry->set_text($new_template);
+	$main::yard_window->set_title( "Yard Box - $template" );
+	$save_as->destroy;
+        }
 
-	    $save_as->destroy;
     });
+
     $button->can_default(1);
     $save_as->action_area->pack_start($button, $false, $false,0);
     $button->grab_default;
@@ -1205,11 +1232,11 @@ sub save_as {
     $button->show;
     }
      if (!visible $save_as) {
-         show $save_as;
+        show $save_as;
      }
      else {
         destroy $save_as;
-        save_as($error,$count) if $error == 0;
+        #save_as($error,$count) if $error == 0;
      }
 
 } # end sub save_as
@@ -1400,13 +1427,12 @@ sub Replacements {
 		# Check to see if it actually exists
 		my $executable = (split(/\s+/,$entry[0]))[0];
 		if (!find_file_in_path(basename($executable))) {
-		    error_window("gBootRoot Error: " .
-				 "Enter a valid editor.");
+		    error_window("gBootRoot: ERROR: Enter a valid editor.");
 		    return;
 		}
 		if ($executable =~ m,/,) {
 		    if (! -e $executable) {
-			error_window("gBootRoot Error: " .
+			error_window("gBootRoot: ERROR: " . 
 				     "Enter a valid path for the editor.");
 			return;
 		    }
