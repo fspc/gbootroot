@@ -1866,6 +1866,9 @@ sub stripper {
 
 sub initrd_size {
 
+ info(0,"Boot Method: 2 disk\n", 
+      "Type: initrd boot disk with LILO/root filesystem disk\n");
+
   my ($linuxrc_size) = @_;
   my ($what,$lib);
   my ($path,$value);
