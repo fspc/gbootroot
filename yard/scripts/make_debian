@@ -7,6 +7,7 @@ my $template_dir = "$home_yard/templates/";
 my $home_yard_replacements = "$home_yard/Replacements";
 my $nodename = `uname -n`; chomp $nodename;
 my $debian_yard = "Debian-$nodename.yard";
+my $status = "/var/lib/dpkg/status";
 
 # You need file-rc, and you may add other extra stuff.  These packages were
 # chosen for woody, so you may need something different.  Check dependencies,
@@ -27,26 +28,27 @@ my $extra_files = "swim -ql @extra_packages|";
 $, = "";
 
 # All the packages
-open(SWIM,$swim_packages) or die "Couldn't open $?\n";
+open(SWIM,$swim_packages) or die "Couldn't open $!\n";
 my @required_packages = <SWIM>; chomp @required_packages;
 close(SWIM);
 
 push(@required_packages,@extra_packages);
 
 # All the files
-open(SWIM,$swim_list) or die "Couldn't open $?\n";
+open(SWIM,$swim_list) or die "Couldn't open $!\n";
 my @required_files = <SWIM>; chomp @required_files;
 close(SWIM);
 
-open(SWIM,$extra_files) or die "Couldn't open $?\n";
+open(SWIM,$extra_files) or die "Couldn't open $!\n";
 my @extra_files = <SWIM>; chomp @extra_files;
 close(SWIM);
 
 push(@required_files,@extra_files);
 
+## Template Creation
 open(DEBIAN,">$template_dir/$debian_yard") 
-	or die "Couldn't open $?\n";
-open(FILERC,"/etc/runlevel.conf") or die "No runlevel.conf: $?\n";
+	or die "Couldn't open $!\n";
+open(FILERC,"/etc/runlevel.conf") or die "No runlevel.conf: $!\n";
 @filerc = <FILERC>;
 close(FILERC);
 
@@ -77,13 +79,53 @@ close(DEBIAN);
 # out which symlinks to use in /etc/rc?d.
 
 open(MY_FILERC,">$home_yard_replacements/etc/runlevel.conf") 
-    or die "Couldn't open $home_yard_replacements/etc/runlevel.conf: $?\n"; 
+    or die "Couldn't open $home_yard_replacements/etc/runlevel.conf: $!\n"; 
 my @sortedrc = map { $_->[1] }
 sort { $a->[0] <=> $b->[0] }
 map { [ (split(/\s/,$_))[0], $_ ] }
 @file_rc;
 print MY_FILERC @sortedrc;
 close(MY_FILERC);
+
+# This creates a status file for use by dpkg and swim.
+# Although swim could be used to do this, it is more effecient just to
+# parse the status file.  But because this is a good exercise for
+# using this script to create a status file found from packages on a system 
+# which doesn't actually have a status file .. here would be the order 
+# needed when using swim to query:
+#
+# Package, Status, Priority, Section, Installed-Size, Maintainer, Source, 
+# Version, Replaces, Provides, Depends, Pre-Depends, Recommends, Suggests,
+# Conflicts, Conffiles, Description.
+#
+# Conffiles would have to be handled both before and after Root Filesystem
+# creation so that their md5sums could be accounted for in status.
+
+$/ = "";
+open(STATUS,"$status") or die "Can't find /var/lib/dpkg/status: $!\n";
+my @status = <STATUS>;
+close(STATUS);
+home_builder("$home_yard_replacements/var/lib/dpkg");
+open(NEW_STATUS,">$home_yard_replacements/var/lib/dpkg/status")
+    or die "Couldn't open $home_yard_replacements/var/lib/dpkg/status: $!\n";
+foreach my $stat (@status) { # keep the order
+    my $stat2 = (split(/\n/,$stat))[0]; # might as well
+    foreach my $rp (@required_packages) {
+	$rp = (split(/_/,$rp))[0];
+	$rp =~ s/\+/\\+/g if $rp !~ /\\+/g;
+	if ($stat2 =~ /^Package: $rp$/) {
+	    print NEW_STATUS $stat;
+	} 
+    }
+}
+close(NEW_STATUS);
+$/ = "\n";
+
+# This figures out all the info/* files shipped with the package.
+# Swim is more efficient here because info directories can get huge.
+foreach (@required_packages) {
+
+}
 
 sub stuff {
 
@@ -101,12 +143,12 @@ $stuff = << "STUFF";
 		    Uses devfs.
     
 # Alternatives aren't working so you will have to use the real name like
-# nvi for vi and w.procps for w.  Not all libs are associate with packages
+# nvi for vi and w.procps for w.  Not all libs are associated with packages
 # but that isn't a big deal.
 
 # IMPORTANT NOTE:  Things slow down noticeably when the buffer gets too big in
 # the verbosity box so consider closing it with the slider for faster 
-# generation.  Look at /tmp/verbosity instead.
+# generation.  Look at /tmp/verbose instead.
 
 # Todays Quote: Creating a root filesystem is all about stuff.
 
@@ -191,3 +233,23 @@ STUFF
 return $stuff;
 } # end sub stuff
 
+sub home_builder {
+
+    my ($home_builder) = @_; 
+
+    if (!-d $home_builder) {
+	if (-e $home_builder) {
+	    print "ERROR: A file exists where $home_builder should be.\n";
+	}	
+	else {
+	    my @directory_parts = split(m,/,,$home_builder);
+	    my $placement = "/";
+	    for (1 .. $#directory_parts) {
+		$_ == 1 ? ($placement = "/$directory_parts[$_]")
+		    : ($placement = $placement . "/" . $directory_parts[$_]);
+		-d $placement or mkdir $placement;
+	    }
+	}
+    }
+
+} # end home_builder
