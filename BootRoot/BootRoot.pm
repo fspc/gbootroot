@@ -1691,7 +1691,7 @@ sub uml_box {
 	       $mtd_total_size = $blocks * 1024;
 	}
         $eab3->signal_connect( "changed", sub {
-	   my $root_fs = (split(/ubd0=/,$entry_advanced[10]))[1];
+	   my $root_fs = (split(/ubd0\w?=/,$entry_advanced[10]))[1];
 	   if ( -f  $root_fs ) {
 	       my $stat_size =  (stat("$root_fs"))[12]/2; 
 	       my $blocks  = ($stat_size + ( $stat_size * 0.30 ))/1024;
@@ -1822,16 +1822,18 @@ sub uml_box {
 						  }
 
 						  # Grab the file being used
-						  if ( m,(ubd0=[/\d\w-]+), ) {
+						  if ( m,(ubd0\w?=[/\d\w-]+), ) {
 						      if (  $1 !~ /_dd/ ) {
 							  my $ubd0_replacement = $1;
 							  $ubd0  = (split(/=/,$1))[1];
 							  chomp $ubd0;
 							  $ubd0 = $ubd0 . "_dd";
-							  s/$ubd0_replacement/ubd0=$ubd0/;
+							  #s/$ubd0_replacement/ubd0=$ubd0/;
+							  my $ubd0_replacement_dd = $ubd0_replacement . "_dd";
+							  s/$ubd0_replacement/$ubd0_replacement_dd/;
 						      }
 						      else {
-							  m,(ubd0=[/\d\w-]+),;
+							  m,(ubd0\w?=[/\d\w-]+),;
 							  $ubd0  = (split(/=/,$1))[1];
 							  chomp $ubd0;
 						      }
@@ -1917,7 +1919,7 @@ sub uml_box {
 
 						  # blkmtd uses the _dd images, mtdram uses the real image
 						  for ( $entry_advanced[10],$entry_advanced[9] ) {
-						      if ( m,(ubd0=[/\d\w-]+), ) {
+						      if ( m,(ubd0\w?=[/\d\w-]+), ) {
 							  if (  $1 =~ /_dd/ ) {
 							      s/_dd//g;
 							  }
