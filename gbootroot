@@ -1321,6 +1321,7 @@ sub accept_button {
 			$entry3->set_text("$tmp/$entry_advanced[4]");
 		    }
 		}
+		close(F);
 		if ($ear2_save->active) {
 		    return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
 		}
@@ -1341,6 +1342,7 @@ sub accept_button {
 			$entry3->set_text("$tmp/$entry_advanced[4]");
 		    }
 		}
+		close(F);
 		if ($ear2_save->active) {
 		    return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
 		}
@@ -1735,6 +1737,7 @@ sub file_ok_sel {
 		    info(0, "Neither gz or bz2 compression found\n");
 		}
              }
+	   close(F);
         }
     }
 
@@ -1807,6 +1810,7 @@ sub entry {
 				      "Neither gz or bz2 compression found\n");
 			     }
                           }
+		       close(F);
                        }  
                      }
                  }
