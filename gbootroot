@@ -1549,11 +1549,11 @@ sub Generate {
 	error_window("gBootRoot: ERROR: Root Device not defined");	
 	return;
     }
-    # devfs may change this
-    if (!-b $root_device) {
-	error_window("gBootRoot: ERROR: Not a valid Block Device");	
-	return;
-    }    
+    # devfs may change this .. it did, this is silly.
+##    if (!-b $root_device) {
+##	error_window("gBootRoot: ERROR: Not a valid Block Device");	
+##	return;
+##    }    
 
     if (!$root_filename || $root_filename eq "") {
 	error_window("gBootRoot: ERROR: Root Filename not given");	
