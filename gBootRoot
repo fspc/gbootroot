@@ -32,6 +32,7 @@
 
 use Gtk;
 use strict;
+use Yard;
 
 init Gtk;
 
@@ -240,14 +241,13 @@ if (!-d "$tmp1/gbootroot_mnt$$") {
 
 # Verbosity should probably be controlled separately for each
 # method. 
-
 # Yard 
 #  0 --> only the important messages.
 #  1 --> all messages.
-my $verbosity = 1;
+my $verbosity = 1; # info & sys use this as Global
 my $verbosefn = "$tmp/verbose"; # gBootRoot
-my $yard_temp = "$tmp/yard_verbose";  # Yard - always logged, but 0&1 = STDOUT
-
+my $yard_temp = "/tmp/yard_verbose";  # Yard - always logged, but 0&1 = STDOUT
+start_logging_output($yard_temp); # Yard "tmp dir name"
 
 # Right now >= 0.7000 is o.k.
 if (Gtk::check_version("1","0","7") =~ /too old/) {
@@ -1184,12 +1184,13 @@ if (!defined $container[0]) {
     return;
 }
 if (defined $container[1] && -e $container[1] && !-d $container[1]) {
-    $kernel = $container[1];
+    $kernel = $container[1];    
     # Better be sure it isn't in the mount directory
     if ($kernel =~ m,^$mnt,) {
       error_window("gBootRoot: ERROR: Kernel found below Device mount point: $mnt");
       return;
     }
+    kernel_version_check($kernel);  # Yard: kernel,kernel version
 
 }
 elsif (defined $container[0])  {
