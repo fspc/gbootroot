@@ -755,7 +755,7 @@ sub create_filesystem {
 
     my ($filename, $fs_size, $mnt, $strip_lib, 
 	$strip_bin, $strip_module, $obj_count) = @_;
-        
+
     $device = "$mnt/$filename";
     $mount_point = "$mnt/loopback";
 
@@ -1674,7 +1674,6 @@ sub which_tests {
     my ($chosen_tests) = @_;
     my ($action, $label);
 
-    return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
 
     #  This is a little crude.  Technically we should read /etc/conf.getty
     #  to make sure we're not supposed to be using a different login binary.
@@ -1699,6 +1698,8 @@ sub which_tests {
     sys("yard_chrooted_tests $mount_point $t_fstab $t_inittab $t_scripts",
 	"TESTING"); 
 
+    return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
+
     # Now the question is whether or not these next tests depend on
     # chroot, since they must have before.
     if ( $chosen_tests->{33}{test_links}   == 1 ) {
@@ -1719,6 +1720,7 @@ sub which_tests {
     }
 
     return "ERROR" if errum(sys("umount $mount_point")) == 2;
+
     
 } # end sub which_tests
 
@@ -1900,7 +1902,7 @@ sub check_nss {
 	    }
 	 }
       }
-
+      close(NSS) or error("Closing NSS: $!");
    } else {
       #  No nsswitch.conf is present, figure out if maybe there should be one.
       if (-e $login_binary) {
