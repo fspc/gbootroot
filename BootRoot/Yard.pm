@@ -1760,7 +1760,7 @@ sub which_tests {
     my $t_scripts  = $chosen_tests->{32}{test_scripts};
 
     return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
-    sys("yard_chrooted_tests $mount_point $t_fstab $t_inittab $t_scripts",
+    sys("/usr/lib/bootroot/yard_chrooted_tests $mount_point $t_fstab $t_inittab $t_scripts",
 	"TESTING"); 
     return "ERROR" if errum(sys("umount $mount_point")) == 2;
 
