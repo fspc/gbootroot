@@ -83,7 +83,7 @@ flwm libfltk1 xnest make-debian-x11 ash);
 #     /var/cache/archives /var/lib/apt/lists, /etc/network/interface 
 #     should be commented in again. 
 # 7.  remove linux uml_* or just leave them. 
-# 8.  run /etc/cron.daily/sysklogd & /etc/cron.daily.weekly/sysklogd
+# 8.  run /etc/cron.daily/sysklogd & /etc/cron.weekly/sysklogd
 #     and clean out *.0
 # 9.  halt and mount filesystem on loop and remove .bash_history if you 
 #     want to.
