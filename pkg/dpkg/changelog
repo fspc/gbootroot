@@ -1,3 +1,33 @@
+gbootroot (1.2.14-1) unstable; urgency=low
+
+  * Append field in the ABS now saves state for non-root users.  Before it only
+    remembered state if lilo.conf could actually be read, ofcourse, this wasn't
+    an option for non-root users.  The beginnings of non-root boot and root_fs
+    creation capabilities have been put into place, but haven't been fully
+    implemented.  The end result of this is that directories created in
+    $tmp are now static for non-root users and now use the userid number to 
+    keep track of different non-root users.
+
+  * The author of swim came out with a new version he now calls dswim.  This
+    means Debian System Wide Information Manager, but the "d" could also stand 
+    for different.  Changes have been made to make_debian to facilitate this 
+    much more stable version of swim, and better non-installed package checks 
+    have been implemented in make_debian.
+
+  * The control dependencies have been vastly improved, and reflect the change
+    from swim to dswim.  Yard_chrooted_tests is now put in a gbootroot specific
+    directory since it is unique to gbootroot.
+
+  * The lastest user-mode-linux is included: 2.4.12
+
+  * Updated the documentation, and it includes a better explanation in step 7
+    for "How can I test gBootRoot?"
+
+  * Added checks for the existence of ash, lilo, bzip2, and file for the 2 
+    disk compression method.
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Wed, 24 Oct 2001 13:03:32 -0400
+
 gbootroot (1.2.13-1) unstable; urgency=low
 
   * Initial Release.
