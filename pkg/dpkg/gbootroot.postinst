@@ -1,0 +1,10 @@
+#!/bin/sh
+
+mknod /usr/share/gbootroot/yard/replacements/dev/ubd0 b 98 0
+
+
+if [ "$1" = "configure" ]; then
+   if [ -d /usr/doc -a ! -e /usr/doc/gbootroot -a -d /usr/share/doc/gbootroot ]; then
+      ln -sf ../share/doc/gbootroot /usr/doc/gbootroot
+   fi
+fi
