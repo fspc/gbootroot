@@ -127,6 +127,19 @@ my $order;
 my $text_window;
 my $verbosity_window;
 my @container;
+# Make container verbose
+use constant  METHOD               => 0  ;
+use constant  KERNEL               => 1  ;
+use constant  ROOT_DEVICE          => 2  ;
+use constant  BOOT_DEVICE          => 3  ;
+use constant  SIZE                 => 4  ;
+use constant  COMPRESS             => 5  ;
+use constant  LIB_STRIP            => 6  ;
+use constant  BIN_STRIP            => 7  ;
+use constant  OBJCOPY_BOOL         => 8  ;
+use constant  ABS_DEVICE           => 9  ;
+use constant  ABS_OPT_DEVICE       => 10 ;
+use constant  ABS_APPEND           => 11 ;
 my @original_container;
 my $file_dialog;
 my ($kernel,$root_image,$device,$size);
@@ -216,7 +229,7 @@ $SIG{TERM} = \&signal;
 $SIG{QUIT} = \&signal;
 $SIG{KILL} = \&signal;
 
-(undef,$container[1],$container[11]) = gdkbirdaao();
+(undef,$container[KERNEL],$container[ABS_APPEND]) = gdkbirdaao();
 
 if (!-d $tmp1) {
     if (-e $tmp1) {
@@ -314,8 +327,8 @@ my ($circles,$mask) = Gtk::Gdk::Pixmap->create_from_xpm_d($window->window,
                                                         @xpm_data);
 $window->window->set_icon(undef, $circles, $mask);
 $window->window->set_icon_name("gBootRoot");
-## $window->window->set_decorations(['all', 'menu']); # Zas
-## $window->window->set_functions(['all', 'resize']); # Zas
+$window->window->set_decorations(['all', 'menu']); # Zas
+$window->window->set_functions(['all', 'resize']); # Zas
 
 my $tooltips = Gtk::Tooltips->new();
 
@@ -335,7 +348,7 @@ my $item = Gtk::MenuItem->new("Method -> lilo" );
 $item->show();
 # Eventually get_menu, or something totally different will be used.
 $item->signal_connect( 'activate',sub { $entry->set_text("lilo");
-                                        $container[0] = "lilo"});
+                                        $container[METHOD] = "lilo"});
 $menu->append( $item );
 $opt->set_menu( $menu );
 $box2->pack_start( $opt, $true, $true, 0 );
@@ -347,9 +360,9 @@ $box2->show();
 # default ( null|gdkkbirdaao) &&  entry() && fileselect->file_ok_sel 
 hbox();
 my $entry2 = entry($true,1);
-$entry2->set_text($container[1]);
-if ($container[1]) {
-    $ars->{kernel} = $container[1];
+$entry2->set_text($container[KERNEL]);
+if ($container[KERNEL]) {
+    $ars->{kernel} = $container[KERNEL];
     ars($ars);
 }
 button("Kernel Selection",$entry2,"Kernel Selection",1);
@@ -364,8 +377,8 @@ button("Root Filesystem",$entry3,"Root Filesystem",2);
 # Fourth row
 hbox();
 my $entry4 = entry($true,3);
-$container[3] = "/dev/fd0";
-$entry4->set_text($container[3]);
+$container[BOOT_DEVICE] = "/dev/fd0";
+$entry4->set_text($container[BOOT_DEVICE]);
 button("Device Selection",$entry4,"Device Selection",3,$true);
 
 # Fifth row
@@ -377,10 +390,10 @@ $spinner->set_wrap( $true );
 $spinner->set_numeric( $true );
 $spinner->set_shadow_type( 'in' );
 $spinner->show();
-$container[4] = 1722; # A better value - a rtbt trick.
+$container[SIZE] = 1722; # A better value - a rtbt trick.
 $adj->signal_connect( "value_changed", sub {
-    $container[4] = $spinner->get_value_as_int();
-    $adj2->set_value($container[4]) if defined $adj2;});
+    $container[SIZE] = $spinner->get_value_as_int();
+    $adj2->set_value($container[SIZE]) if defined $adj2;});
 $box2->pack_start( $spinner, $true, $true, 0 );
 #label("Device Size");
 
@@ -544,6 +557,7 @@ $hbutton->show();
 $box2->pack_start( $hbutton, $true, $true, 0 );
 $box2->show();
 
+Gtk::Rc->parse("gbootrootrc");
 $window->show();
 main Gtk;
 exit( 0 );
@@ -658,7 +672,7 @@ sub advanced_boot_section {
                                  " later time on the actual" . 
                                  " boot device.",
                                  "" ); 
-       $ea1->set_text($container[3]) if defined $container[3];
+       $ea1->set_text($container[BOOT_DEVICE]) if defined $container[BOOT_DEVICE];
 
        #_______________________________________ 
        # Optional Device(s)
@@ -712,7 +726,7 @@ sub advanced_root_section {
 	    $ear1->set_text($entry_advanced[3]);
 	}
 	else {
-	    $ear1->set_text($container[3]);
+	    $ear1->set_text($container[BOOT_DEVICE]);
         }
        $tooltips->set_tip( $ear1, 
                           "Type in the location of the Root Device to use.",
@@ -741,14 +755,14 @@ sub advanced_root_section {
        $root_device_size = 1722 if !$root_device_size;
        $adj2->signal_connect( "value_changed", sub {
 	       $root_device_size = $spinner_advanced->get_value_as_int();});
-        # For some reason $container[4] is tranforming into [3] when
+        # For some reason $container[SIZE] is tranforming into [3] when
         # device selection is changed. & in ABS devel device doesn't keep 
         # state.
 	if ($root_device_size) {
 	    $spinner_advanced->set_value($root_device_size);
 	}
 	else {
-	    $adj2->set_value($container[4]) if defined $adj2;
+	    $adj2->set_value($container[SIZE]) if defined $adj2;
 	}    
 
 
@@ -1299,10 +1313,10 @@ sub file_ok_sel {
     }
 
     # auto-detect compression if system has file
-    if ($container[2]) {
+    if ($container[ROOT_DEVICE]) {
         my $file = sys("which file > /dev/null 2>&1");
         if ($file == 0) {
-           open(F,"file $container[2] > /dev/null 2>&1|"); # no error check 
+           open(F,"file $container[ROOT_DEVICE] > /dev/null 2>&1|"); # no error check 
 	                                                   # here
              while (<F>) {
                 if (/gzip/) {
@@ -1370,8 +1384,8 @@ sub entry {
                  if ($num == 2) {
                      my $file = sys("which file");
                      if ($file == 0) {
-		       if ($container[2]) {
-                       open(F,"file $container[2] > /dev/null 2>&1|"); # no error check here 
+		       if ($container[ROOT_DEVICE]) {
+                       open(F,"file $container[ROOT_DEVICE] > /dev/null 2>&1|"); # no error check here 
                           while (<F>) {
                              if (/gzip/) {
                                $gz_toggle->set_active( $true );
@@ -1453,12 +1467,13 @@ sub submit {
     }
 
 # Run some checks
-if (!defined $container[0]) {
+if (!defined $container[METHOD]) {
     error_window("gBootRoot: ERROR: No Method supplied");
     return;
 }
-if (defined $container[1] && -e $container[1] && !-d $container[1]) {
-    $kernel = $container[1];    
+if (defined $container[KERNEL] && -e $container[KERNEL] && 
+    !-d $container[KERNEL]) {
+    $kernel = $container[KERNEL];    
     # Better be sure it isn't in the mount directory
     if ($kernel =~ m,^$mnt,) {
       error_window("gBootRoot: ERROR: Kernel found below Device mount point: $mnt");
@@ -1466,12 +1481,13 @@ if (defined $container[1] && -e $container[1] && !-d $container[1]) {
     }
 
 }
-elsif (defined $container[0])  {
+elsif (defined $container[METHOD])  {
     error_window("gBootRoot: ERROR: Kernel not found");
     return;
 }
-if (defined $container[2] && -e $container[2] && !-d $container[2] ) {
-    $root_image = $container[2];
+if (defined $container[ROOT_DEVICE] && -e $container[ROOT_DEVICE] && 
+    !-d $container[ROOT_DEVICE] ) {
+    $root_image = $container[ROOT_DEVICE];
     if ($root_image =~ m,^$mnt,) {
       # Bug revealed by Cristian Ionescu-Idbohrn <cii@axis.com>
       error_window(
@@ -1479,66 +1495,70 @@ if (defined $container[2] && -e $container[2] && !-d $container[2] ) {
       return;
     }
 }
-elsif (defined $container[0] && defined $container[1]) {
+elsif (defined $container[METHOD] && defined $container[KERNEL]) {
     error_window("gBootRoot: ERROR: Rootimage not found");
     return;
 }
 # we need to check for this, too.
-if (defined $container[3] && -b $container[3]) {
-         $device = $container[3];
+if (defined $container[BOOT_DEVICE] && -b $container[BOOT_DEVICE]) {
+         $device = $container[BOOT_DEVICE];
 }
-elsif (defined $container[0] && defined $container[1]
-       && defined $container[2]) {
+elsif (defined $container[METHOD] && defined $container[KERNEL]
+       && defined $container[ROOT_DEVICE]) {
     error_window("gBootRoot: ERROR: Not a valid Block Device");
     return;
 }
-if (defined $container[4]) {
-          $size = $container[4];
+if (defined $container[SIZE]) {
+          $size = $container[SIZE];
 }
 
 # pretty unlikely
-elsif (defined $container[0] && defined $container[1] &&
-       defined $container[2] && defined $container[3]) {
+elsif (defined $container[METHOD] && defined $container[KERNEL] &&
+       defined $container[ROOT_DEVICE] && defined $container[BOOT_DEVICE]) {
     error_window("gBootRoot: ERROR: No size specified");
     return;
 }
-
 
  # kernel value can change without effecting initrd
  # no sense doing this until important stuff is filled in
  if (defined $kernel && defined $root_image &&
      defined $device && defined $size) {
-     $container[5] = $compress;
+     $container[COMPRESS] = $compress;
  
      # 1 .. 4 - its a hash .. not too simple     
-     !defined $lib_strip_check  ? ($container[6] = 1) 
-       : ($container[6] = $lib_strip_check->get_active());
-     !$container[6] ? ($container[6] = 2) : ($container[6] = 1);  
-     !defined $bin_strip_check  ? ($container[7] = 3) 
-       : ($container[7] = $bin_strip_check->get_active());
-     !$container[7] ? ($container[7] = 4) : ($container[7] = 3); 
+     !defined $lib_strip_check  ? ($container[LIB_STRIP] = 1) 
+       : ($container[LIB_STRIP] = $lib_strip_check->get_active());
+     !$container[LIB_STRIP]     ? ($container[LIB_STRIP] = 2) 
+	                        : ($container[LIB_STRIP] = 1);  
+     !defined $bin_strip_check  ? ($container[BIN_STRIP] = 3) 
+	                        : ($container[BIN_STRIP] = 
+				   $bin_strip_check->get_active());
+     !$container[BIN_STRIP]     ? ($container[BIN_STRIP] = 4) 
+	                        : ($container[BIN_STRIP] = 3); 
  
-     if ($container[6] == 1) {     
-        $obj_count == 0 ? ($container[8] = 5) : ($container[8] = 6);
+     if ($container[LIB_STRIP] == 1) {     
+        $obj_count == 0 ? ($container[OBJCOPY_BOOL] = 5) 
+	                : ($container[OBJCOPY_BOOL] = 6);
      }
 
      if (!defined $entry_advanced[0]) {
-        $container[9] = $device . "ea1"; 
+        $container[ABS_DEVICE] = $device . "ea1"; 
 	$entry_advanced[0] = $device;
      }
      else {
-	 $container[9] = $entry_advanced[0] . "ea1";
+	 $container[ABS_DEVICE] = $entry_advanced[0] . "ea1";
      }
 
      # Works now .. whoosh!
-     if ($container[10]) {
-        if ($container[10] ne "") {
-            $container[10] = $entry_advanced[1] if $entry_advanced[1];
+     if ($container[ABS_OPT_DEVICE]) {
+        if ($container[ABS_OPT_DEVICE] ne "") {
+            $container[ABS_OPT_DEVICE] = $entry_advanced[1] 
+		if $entry_advanced[1];
         }
         if (defined $entry_advanced[1] and $entry_advanced[1] eq "") {
-            $container[10] = "";
+            $container[ABS_OPT_DEVICE] = "";
         }
-        elsif ($container[10] eq "") {
+        elsif ($container[ABS_OPT_DEVICE] eq "") {
            push(@original_container,$entry_advanced[1]);         
         }
      }
@@ -1548,14 +1568,15 @@ elsif (defined $container[0] && defined $container[1] &&
      }
 
      # pretty complex and works properly even for !-e lilo.conf
-     if ($container[11]) {
-        if ($container[11] ne "") {
-            $container[11] = $entry_advanced[2] if $entry_advanced[2];
+     if ($container[ABS_APPEND]) {
+        if ($container[ABS_APPEND] ne "") {
+            $container[ABS_APPEND] = $entry_advanced[2] 
+		if $entry_advanced[2];
         }
         if (defined $entry_advanced[2] and $entry_advanced[2] eq "") {
-            $container[11] = "";
+            $container[ABS_APPEND] = "";
         }
-        elsif ($container[11] eq "") {
+        elsif ($container[ABS_APPEND] eq "") {
            push(@original_container,$entry_advanced[2]);         
         }
      }
@@ -1571,17 +1592,19 @@ elsif (defined $container[0] && defined $container[1] &&
          my @temp_container = @container;
 
          # Got it! - how to deal with fields with no init value
-         if (defined $container[10] and $container[10] eq "") {
-	     $container[10] = $entry_advanced[1];
+         if (defined $container[ABS_OPT_DEVICE] and 
+	     $container[ABS_OPT_DEVICE] eq "") {
+	     $container[ABS_OPT_DEVICE] = $entry_advanced[1];
          }
-         if (!defined $container[10]) {
-	     $container[10] = $entry_advanced[1];
+         if (!defined $container[ABS_OPT_DEVICE]) {
+	     $container[ABS_OPT_DEVICE] = $entry_advanced[1];
          }
-         if (defined $container[11] and $container[11] eq "") {
-	     $container[11] = $entry_advanced[2];
+         if (defined $container[ABS_APPEND] and 
+	     $container[ABS_APPEND] eq "") {
+	     $container[ABS_APPEND] = $entry_advanced[2];
          }
-         if (!defined $container[11]) {
-	     $container[11] = $entry_advanced[2];
+         if (!defined $container[ABS_APPEND]) {
+	     $container[ABS_APPEND] = $entry_advanced[2];
          }
 
          # no sense looking at undef values
@@ -1624,10 +1647,17 @@ elsif (defined $container[0] && defined $container[1] &&
      }
 
      # reset
-     @original_container = ($container[0],$root_image,$device,$size,
-                            $compress,$container[6],$container[7],
-                            $container[8],$container[9],$container[10],
-                            $container[11]);
+     @original_container = (  $container[METHOD],
+			      $root_image,
+			      $device,
+			      $size,
+                              $compress,$container[LIB_STRIP],
+			      $container[BIN_STRIP],
+			      $container[OBJCOPY_BOOL],
+			      $container[ABS_DEVICE],
+			      $container[ABS_OPT_DEVICE],
+			      $container[ABS_APPEND]
+			    );
 
      lilo();
  }
@@ -1640,10 +1670,10 @@ sub lilo {
   sys("rm $tmp/initrd_image.gz") if $ok == 1;
   sys("umount $tmp/initrd_mnt");
 
-  $kernel = $container[1];
-  $root_image = $container[2];
-  $device = $container[3];
-  $size = $container[4];
+  $kernel = $container[KERNEL];
+  $root_image = $container[ROOT_DEVICE];
+  $device = $container[BOOT_DEVICE];
+  $size = $container[SIZE];
 
   if ($ok == 1 || $ok == 2) {
     my $value = initrd($kernel,$root_image,$device,$size);
@@ -2335,7 +2365,7 @@ sub brlilo {
 
     my ($device) = @_;
     $entry_advanced[2] ? $entry_advanced[2] = $entry_advanced[2] 
-                       : $entry_advanced[2] = $container[11];
+                       : $entry_advanced[2] = $container[ABS_APPEND];
 
 # HEREDOC
 my $brlilo = << "LILOCONF";
