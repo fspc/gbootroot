@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.54 2001/12/23 09:03:25 freesource Exp $</center>
+<center>$Id: index.html,v 1.55 2001/12/23 09:11:44 freesource Exp $</center>
 
 <p>
 
@@ -248,6 +248,19 @@ button or a put together a complete Boot/Root set with the Submit button.</p>
 <p>
 
 "Xterm"&nbsp;&nbsp;Choose an xterm with its executable options switch.</p>
+
+<p>
+
+"mconsole:"&nbsp;&nbsp;Allow you to pass the help, sysrq, config, and remove
+commands to the mconsole to control the Linux virtual machine specified
+with the umid value.
+
+<pre>
+  sysrq (Shows option values in virtual machine.)
+  sysrq [0-9|b|e|i|l|m|p|r|s|t|u]
+  config &lt;dev&gt;=&lt;config&gt; 
+  remove &lt;dev&gt;
+</pre>
 
 <p>
 
