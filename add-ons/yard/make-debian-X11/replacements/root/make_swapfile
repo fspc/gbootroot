@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# $Id$
+# make_debian-X11 replacement
+
 dd if=/dev/zero of=/swapfile bs=1024 count=32768
 mkswap /swapfile
 swapon /swapfile

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# $Id$
+# make_debian-X11 replacement
+
 # This is usually enough for a minimalistic system
 dpkg-reconfigure xfree86-common
 dpkg-reconfigure xserver-common

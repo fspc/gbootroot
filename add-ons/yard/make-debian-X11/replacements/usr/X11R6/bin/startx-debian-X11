@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+# $Id$
+# make_debian-X11 replacement
+
 print "Please enter your Hosts ip: ";
 my $answer = <STDIN>;
 chomp $answer;
