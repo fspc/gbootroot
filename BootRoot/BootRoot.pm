@@ -1336,9 +1336,9 @@ sub uml_box {
 			   "The umid value is used by mconsole to " .
 			   "recognize which machine is running. " .
                            "Alter value for each Linux virtual " .
-                           "machine invocation, because this value is " .
-			   "parsed from the Options line when Reboot or " .
-			   "Halt is pressed." , 
+                           "machine invocation, and use the " . 
+			   "mconsole's switch options to gain " .
+			   "control of the new machine.", 
                            "" );
 	$eab2->show();
 
