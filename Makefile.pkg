@@ -2,7 +2,7 @@
 # buildroot, UML, and gbootroot.
 
 VERSION=2.4.19
-PATCH_VERSION=35
+PATCH_VERSION=38
 UTIL_VER=20021103
 
 BASE_DIR=${shell pwd}
@@ -48,7 +48,7 @@ TOOLS = $(UTIL_DIR)/mconsole $(UTIL_DIR)/port-helper $(UTIL_DIR)/moo $(UTIL_DIR)
 ##BUSYBOX_SITE=http://busybox.lineo.com
 
 all:   world
-world: kernel target
+world: sources initrd
 
 sources: $(BASE_DIR)
 	@if [ ! -e $(SOURCE_DIR)/$(KERNEL_SOURCE) ] ; then \
@@ -77,7 +77,7 @@ sources: $(BASE_DIR)
 	fi;
 
 
-kernel:
+kernel: 
 	@if [ ! -f $(KERNEL_DIR)/.config ] ; then \
 		cp $(KCONFIG) $(KERNEL_DIR)/.config; \
 		(cd $(KERNEL_DIR); make oldconfig); \
@@ -92,7 +92,7 @@ kernel:
 
 
 
-root_fs_helper:
+root_fs_helper: genext2fs
 
 	@if [ ! -f $(ROOT_FS_DIR)/root_fs_helper ] ; then \
 		perl -I . ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command "genext2fs -z -r0" --genext2fs-dir genext2fs/ ; \
@@ -103,7 +103,7 @@ root_fs_helper:
 		cp -fa $(TMP)/root_fs_helper_cramfs $(ROOT_FS_DIR)/root_fs_helper; \
 	fi;
 
-initrd: root_fs_helper
+initrd: modules root_fs_helper
 
 	@if [ ! -f $(ROOT_FS_DIR)/Initrd.gz ] ; then \
 		perl -I. ./gbootroot --home . --template Initrd.yard --root-filename Initrd --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper --filesystem-size 4096; \
@@ -111,7 +111,7 @@ initrd: root_fs_helper
 	fi;
 
 
-modules: 
+modules: kernel
 	cd linux-$(VERSION) ; \
 		mkdir ../modules-2.4 ; \
 		make modules ARCH=um ; \
@@ -142,7 +142,7 @@ tools:
 	for d in $(TOOLS) ; do $(MAKE) -C $$d all ; done
 	for d in $(TOOLS) ; do $(MAKE) -C $$d install DESTDIR=$(BASE_DIR)/user-mode-linux; done
 
-genext2fs:
+genext2fs: tools
 	@if [ ! -f $(GENEXT2_DIR)/genext2fs ] ; then \
 		$(MAKE) -C $(GENEXT2_DIR); \
 	fi;
