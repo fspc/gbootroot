@@ -1,9 +1,17 @@
-1.3.0 - 12/07/2001
+1.3.0 - 12/11/2001
 ------------------
+
+Added a README for people installing from the source package.
+
+Removed the enforcement of the yard suffix rule for templates, because it 
+was never really documented; however, it is still a nice rule to follow 
+despite that it is not enforced anymore.
+
+Added an archictecture-dependent replacements repository directory.
 
 Fixed the freezing behavior for particularly large templates, like the ones
 produced by make_debian, and make_debian-X11.  However, overly large buffers
-in the verbosity box, still hogs cpu in a big way.  The best procedure for
+in the verbosity box still hog cpu in a big way.  The best procedure for
 now is to open and close the box between stages.
 
 Made the termcap check just a warning if terminfo or termcap don't exist,
