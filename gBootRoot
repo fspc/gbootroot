@@ -36,7 +36,6 @@ init Gtk;
 #Gtk->print('Gtk->major_version, "  ", Gtk->minor_version, "  ", Gtk->micro_version');
 
 
-
 # Perhaps you are wondering where to learn how to program with Gtk-Perl?
 # There is an excellent tutorial by Stephen Wilhelm at
 # http://personal.riverusers.com/~swilhelm/perlgtk/.  Please
@@ -96,7 +95,7 @@ my $lilo_conf = "/etc/lilo.conf";
 # right libraries are copied over to initrd and the size is checked).
 
 # I need to remember to edit this
-my $version = "v1.0.3";
+my $version = "version to be announced soon!";
 my $date = "08.09.2000";
 my $pwd = `pwd`; chomp $pwd;
 use File::Basename;
@@ -510,8 +509,8 @@ sub advanced_section {
                                  " device, use this field" .
                                  " to indicate that device." .
                                  "  You will have to run" .
-                                 " \"lilo -v -C brlilo.conf -r" .
-                                 " device-mount\" manually at a" . 
+                                 " lilo -v -C brlilo.conf -r" .
+                                 " \"device mount point\" manually at a" . 
                                  " later time on the actual" . 
                                  " boot device.",
                                  "" ); 
@@ -773,6 +772,24 @@ sub entry {
                  if (defined $ea1 and $num == 3) { 
                      $ea1->set_text($container[$num]); 
                  } 
+     
+                 # auto-detect compression if system has file
+                 if ($num == 2) {
+                     my $file = system "which file > /dev/null 2>&1";
+                     if ($file == 0) {
+		       if ($container[2]) {
+                       open(F,"file $container[2]|"); # no error check here 
+                          while (<F>) {
+                             if (/gzip/) {
+                               $gz_toggle->set_active( $true );
+                             }
+                             elsif (/bzip2/) {
+                               $bz2_toggle->set_active( $true );
+                             }
+                          }
+                       }  
+                     }
+                 }
                                                  });
      }
     if (defined $num and $num != 0) {
@@ -1882,25 +1899,34 @@ sub help {
 << "HELP";
 
 gBootRoot $version $date GNU GPL
-email:  Jonathan Rosenbaum <mttrader\@access.mountain.net>
-site -> http://the.netpedia.net/gBootRoot.html
+email contact -> Jonathan Rosenbaum <mttrader\@access.mountain.net>
+Homepage -> http://the.netpedia.net/gBootRoot.html
+Submit a Bug -> http://sourceforge.net/bugs/?group_id=9513
+Development site -> http://sourceforge.net/projects/gbootroot
+Help forum -> http://sourceforge.net/forum/forum.php?forum_id=29639
+Open forum -> http://sourceforge.net/forum/forum.php?forum_id=29638
+gbootroot-devel mailing list -> http://sourceforge.net/mail/?group_id=9513
 
 gBootRoot is a Gtk+/Perl program useful for both beginners and advanced
 GNU/Linux users.  It makes the construction/development of emergency and
 mini distributions simple.
 
-- A GNU/Linux user can easily create an emergency Boot/Root set.  There
-are a multitude of pre-existing compressed filesystems readily available.
-Please check the gBootRoot FAQ at the gBootRoot site listed above.
-** If you are a developer please send me links to Kernel/Filesystems which
-I can share with users of gBootRoot.
+- A GNU/Linux user can easily create an emergency Boot/Root set.
+  There are a multitude of pre-existing compressed filesystems readily
+  available.  Please check the gBootRoot FAQ at the gBootRoot site
+  listed above.
 
-- A developer creating a mini distribution can concentrate his efforts on
-perfecting the filesystem, and then he can use gBootRoot to quickly create a
-Boot/Root set to run tests.
+** If you are a developer please send me links to Kernel/Filesystems
+   which I can share with users of gBootRoot.
 
-- Disk sets allow for more space to include interesting and necessary things.
-The size of the Kernel is increasing every day making sets advantageous.
+- A developer creating a mini distribution can concentrate his efforts
+  on perfecting the filesystem, and then he can use gBootRoot to
+  quickly create a Boot/Root set to run tests.
+
+- Disk sets allow for more space to include interesting and necessary
+  things.  The size of the Kernel is increasing every day making sets
+  advantageous.
+
 
 How to Use gBootRoot:
 
@@ -1910,8 +1936,8 @@ with is the Submit button which starts the whole process, dialogs are
 presented as the process continues asking you if you want to continue "OK" or
 stop "Cancel".
 
-There are 5 rows.  The boot method column has only one choice "lilo."
-Clicking on the menu on the right selects the method.
+The first row has only one choice "lilo."  Clicking on the menu on the right 
+selects the boot method.
 
 The second row allows you to select the kernel for the Boot/Root set.  You
 may either use the file selector button on the right hand side, or you may
@@ -1923,10 +1949,28 @@ providing, using either of the two ways mentioned before.
 The fourth row allows you to select the device you want to use.  The default
 device is the first floppy disk (/dev/fd0).
 
-The fifth row allows you to choose the size of the device being used.
-If you choose the compressed filesystem with the file selector the program
-should automatically detect the compression used, otherwise, click on the
-appropriate radio button to choose either gzip or bzip2 compression.
+The fifth row allows you to choose the size of the device being used.  The
+default size is 1722 which works fine with 1440 floppy drives. Click on the 
+appropriate radio button to choose either gzip or bzip2 compression if the 
+program doesn't automatically detect it.
+
+Advanced Section:
+
+"Stripping"  On by default for libraries and binaries.  The stripping 
+behavior for libraries may be changed by clicking on the right mouse button 
+to change from --strip-debug to --strip-all.
+
+"Devel Device"  If the device used for development is different than the 
+actual boot device, use this field to indicate that device.  You will have to 
+run lilo -v -C brlilo.conf -r "device mount point" manually at a later time 
+on the actual boot device.
+
+"Opt. Device"  Add devices to the boot disk which are necessary for the
+kernel to function properly.  Put a space between each device.  For instance,
+/dev/fb0 for frame buffer devices.
+
+"append ="  Add append options to brlilo.conf.  If you are using a frame
+buffer device you could add something like video=matrox:vesa:402,depth:16.
 
 Little things you may want to know:
 
