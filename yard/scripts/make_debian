@@ -105,7 +105,7 @@ my $stuff = << "STUFF";
     
 # IMPORTANT NOTE:  Things slow down noticeably when the buffer gets too big in
 # the verbosity box so consider closing it with the slider for faster 
-# generation.  Look at /tmp/verbose instead.
+# generation.  Look at /tmp/gbootroot_tmp'time-date'/verbose instead.
 #
 # The windows will appear to freeze up while using this template, this is 
 # natural, be patient, because it will complete.  If you want to create 

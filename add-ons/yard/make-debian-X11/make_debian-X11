@@ -55,7 +55,7 @@ perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils
 binutils bzip2 file libbz2-1.0 libfreetype6 libglib1.2 libgtk-perl 
 libgtk1.2 make xfonts-base xfree86-common xlibmesa3 xlibs 
 xserver-common xterm xutils zlib1g libgdbmg1 libxaw7 gbootroot
-flwm libfltk1 xnest); 
+flwm libfltk1 xnest make-debian-x11); 
 
 # --------------------------------------------------------------------
 # DIRECTIONS
@@ -140,7 +140,7 @@ my $stuff = << "STUFF";
     
 # IMPORTANT NOTE:  Things slow down noticeably when the buffer gets too big in
 # the verbosity box so consider closing it with the slider for faster 
-# generation.  Look at /tmp/verbose instead.
+# generation.  Look at /tmp/gbootroot_tmp'time-date'/verbose instead.
 #
 # The windows will appear to freeze up while using this template, this is 
 # natural, be patient, because it will complete.  If you want to create 
