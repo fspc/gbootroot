@@ -82,10 +82,15 @@
 # interpreter around).  
 #
 # Bash is good for this minimalistic example because it includes echo 
-# (amongst many things) to let you see what is around.  You pass the option 
+# (amongst many things) to let you see what is around, and is standard
+# for the vast majority of distributions.  You pass the option 
 # init=/bin/bash to the kernel to start in the S runlevel.  
 
 bash
 /dev/console
+
+
+
+
 
 
