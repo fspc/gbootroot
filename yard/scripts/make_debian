@@ -494,7 +494,10 @@ sub alternatives {
     while (<LS>) {
 	if (/->/) {
 	    my($left,$right) = split(" -> ");
-	    chomp $right;
+	    chomp $right; 
+	    # Yard adds this stuff.
+	    $right =~ s/\.\.\/\.\.//g; 
+
 	    $left =~ s/^.*\d+\s//g;
 	    if (!$alternatives{$right}) {
 		$alternatives{$right} = [$left]; 
@@ -622,6 +625,8 @@ sub start_up {
 		    }
 		}
 		system "swim --initdb" if $db_reply eq "yes\n";
+		die "Sorry, can't continue until database is " .
+		    "generated\n" if $db_reply eq "no\n";
 	    }
 	}
     close(SWIM);
@@ -638,6 +643,11 @@ sub start_up {
 	}
     }
     close(DPKG);
+
+    if (!-d $home) {
+	home_builder($template_dir);
+	home_builder("$home_yard_replacements/etc");
+    }
 
     print "Everything is in order, but it never hurts to rebuild swim " .
 	"with --rebuilddb\n";
