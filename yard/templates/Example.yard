@@ -1,4 +1,4 @@
-#  $Id: Example.yard,v 1.25 2003/02/13 07:37:48 freesource Exp $
+#  $Id: Example.yard,v 1.26 2003/02/20 03:24:07 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with
@@ -214,11 +214,12 @@ telinit
 # (devfs=nomount)
 #
 #
-#===== SLACKWARE and SUSE use agetty:
+#===== SLACKWARE and SUSE use agetty, and agetty is often installed in REDHAT:
 \
 if ( agetty )
 
-	/etc/inittab	<= Replacements/etc/inittab.example-agetty-helper
+	/etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
+	#/etc/inittab	<= Replacements/etc/inittab.example.agetty-slack-nodevfs
 	/sbin/agetty
 	/etc/gettydefs
 #
