@@ -2049,6 +2049,9 @@ sub initrd {
     foreach (@initrd_stuff) {
 	($path,$value) = stripper(find_file_in_path($_),"bin");
 	$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+	if (!$path) {
+	    info(1,"gBootRoot Error: Couldn't find $_\n");
+	}
 	return if errcp(sys("$tool $path $tmp/initrd_mnt/bin")) == 2;
     }
 
