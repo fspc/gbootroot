@@ -4,7 +4,7 @@
 #
 #    AUTHOR
 #    ------
-#    Lead Developer and Project Coordinator
+#    [ Lead Developer and Project Coordinator ]
 #    Jonathan Rosenbaum <freesource@users.sourceforge.net>
 #
 #    CONTRIBUTORS
@@ -3042,25 +3042,25 @@ sub stripper {
              ($_[1] eq "lib" && $lib_strip_check->active)) {
              # --strip-all works for initrd
              if ($obj_count == 0) {
-	           sys("objcopy --strip-debug $_[0] $tmp/$filename"); 
+	           sys("objcopy --strip-debug -p $_[0] $tmp/$filename"); 
 		   info(1,"--strip-debug $filename\n");
 	           return ( "$tmp/$filename", 1 );
              }
              elsif ($obj_count == 1) {
-	           sys("objcopy --strip-all $_[0] $tmp/$filename"); 
+	           sys("objcopy --strip-all -p $_[0] $tmp/$filename"); 
 		   info(1,"--strip-all $filename\n");
 	           return ( "$tmp/$filename", 1 );
 	     }
          }
          elsif (($_[1] eq "bin" && !defined $bin_strip_check) or
                 ($_[1] eq "bin" && $bin_strip_check->active)) {
-	     sys("objcopy --strip-all $_[0] $tmp/$filename"); 
+	     sys("objcopy --strip-all -p $_[0] $tmp/$filename"); 
 	     info(1,"--strip-all $filename\n");
 	     return ( "$tmp/$filename", 1 );
          }
          elsif (($_[1] eq "mod" && !defined $mod_strip_check) or
                 ($_[1] eq "mod" && $mod_strip_check->active)) {
-	     sys("objcopy --strip-debug $_[0] $tmp/$filename"); 
+	     sys("objcopy --strip-debug -p $_[0] $tmp/$filename"); 
 	     info(1,"--strip-debug $filename\n");
 	     return ( "$tmp/$filename", 1 );
          }
