@@ -2342,10 +2342,15 @@ sub check_nss {
       info(0, "You're using $libc\n");
    }
    
-   ## Have no idea why this was being done, must have been true in
-   ## the historic past as noted above.  --freesource
-   #my($X) = $libc_version + 1;
-   my($X) = $libc_version;  # better than the return value
+   ## glibc 2.2 uses version 2 for its services
+   ## 
+   my $X;
+   if ( $libc_version == 2 ) {
+       $X = $libc_version;  
+   }
+   else {
+       $X = $libc_version + 1;
+   }
 
    if (-e $nss_conf) {
       open(NSS, "<$nss_conf")		or die "open($nss_conf): $!";
