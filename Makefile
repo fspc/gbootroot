@@ -7,6 +7,7 @@ install:
 	install -d /usr/lib/bootroot
 	cp -fa yard_chrooted_tests /usr/lib/bootroot/yard_chrooted_tests
 	cp -fa genext2fs/genext2fs /usr/lib/bootroot/genext2fs
+	cp -fa expect_uml /usr/lib/bootroot/expect_uml
 	cp -fa yard/scripts/make_debian /usr/bin/make_debian
 	install -d /usr/share/perl5/BootRoot
 	cp -fa BootRoot/*.pm /usr/share/perl5/BootRoot
@@ -23,6 +24,8 @@ install:
 	cp -fa genext2fs/Makefile /usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/dev* /usr/share/gbootroot/genext2fs
 	cp -fa user-mode-linux/usr/bin/uml_* /usr/bin
+	chown 0:0 /usr/bin/uml_*
+	chmod 4755 /usr/bin/uml_net
 	cp -fa user-mode-linux/usr/bin/linux /usr/bin/linux
 	install -d /etc/gbootroot
 	cp -fa gbootrootrc /etc/gbootroot/gbootrootrc
