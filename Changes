@@ -1,8 +1,9 @@
 Fixed the fhs situation again.  This time it will definitely work.  As I wrote
-in the code:  I always thought the BEGIN statements were executed before 
+in the code:  "I always thought the BEGIN statements were executed before 
 everything else, but I have discovered that in this case it has to be placed 
 before the use statements if exec /usr/bin/gbootroot is done via $PATH .. 
-I guess that makes sense because $PATH is established in this particular BEGIN.
+I guess that makes sense because $PATH is established in this particular BEGIN."
+Other executables have been fixed including expect_uml and yard_chrooted_tests.
 
 Improved Replacements Box GUI.
 
