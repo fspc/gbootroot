@@ -542,6 +542,52 @@ verbosity_box();
 start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
                                              # "verbosity level"
 
+# While on the subject of error output:
+#
+# info($verbosity setting can be {0=blue,1=red}, "text") writes to verbosity
+# box.
+#
+# error("text") returns ERROR, writes to verbosity box, and produces 
+# "gBootRoot: ERROR: "text" in error_window() .. used to report an error
+#
+# sys("command action",TESTING) is like system(), if the command fails to open 
+# it calls error() and returns ERROR, if the command succeeds it writes the
+# output from the action to info(1,$) if $_[1] doesn't equal TESTING, otherwise
+# info(3,$_) which is really info(0,"text").  If the command fails it returns
+# the error code $? or 0 on success.
+# 
+# error_window("text") pop-ups an error dialog box with the text, but doesn't
+# write to the verbosity box.
+#
+# The next commands are wrapped around sys() and produce pre-defined text for
+# the error_window if an error occurs which returns 2, ofcourse because sys
+# is called the output is sent to the verbosity box if the command succeeds.
+#
+# errmk() "gBootRoot: ERROR: Could not make important directories" if $? != 0;
+#
+# errcp() "gBootRoot: ERROR: Could not copy over important stuff" if $? != 0;
+#
+# errum() "gBootRoot: ERROR: Could not umount the device" if $? != 0;
+#
+# errm()  "gBootRoot: ERROR: Could not mount device" if $? != 0;
+#
+# errrm() "gBootRoot: ERROR: Could not remove a directory or file" if $? != 0;
+#
+# err() "gBootRoot: ERROR: Not enough space after all" if $? > 0
+#
+# The next commands are both wrapped around sys() and are given customized 
+# text to write to the error_window if an error occurs which returns 2.
+# Ofcourse because sys is called the output is sent to the verbosity box if 
+# the command succeeds.
+#
+# err_custom("command action","error text","value")  A defined third value will
+# cause a normal system("$_[0] > /dev/null 2>&1") othewise 
+# BootRoot::Yard::sys("$_[0]") Is used.
+#
+# err_custom_perl("command action", "error text")  Right now this is just for
+# the command "mkdir."  If mkdir is the command mkdir("directory",0755) is 
+# called.
+
 #-------------------------------
 # USER DIRECTORIES
 # /tmp
