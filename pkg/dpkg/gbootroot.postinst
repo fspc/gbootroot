@@ -1,6 +1,6 @@
 #!/bin/sh
 
-mknod /usr/share/gbootroot/yard/replacements/dev/ubd0 b 98 0
+mknod /usr/share/gbootroot/yard/Replacements/dev/ubd0 b 98 0
 
 
 if [ "$1" = "configure" ]; then
