@@ -107,6 +107,10 @@ $main::makefs = "mke2fs -F -m0 -i8192";
 #                  improvements.
 #                * Localized directories provided for users under 
 #                  $HOME/.gbootroot
+#                * Wrote make_debian to automate the creation of a Debian
+#                  template for the Yard Method.  This spawned the 
+#                  make-debian-x11 add-on which is simply the make_debian
+#                  script with easily made user modifications.
 #                * UML button added to ARS.  UML (user-mode-linux) Box
 #                  provides a testing bed for root filesystems.  Previous
 #                  Options are remembered to save typing, Abort button 
