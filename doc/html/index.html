@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.51 2001/12/22 18:43:16 freesource Exp $</center>
+<center>$Id: index.html,v 1.52 2001/12/22 18:45:03 freesource Exp $</center>
 
 <p>
 
@@ -286,8 +286,8 @@ through all the
 stages.&nbsp;&nbsp;Edit->Stages->'user defined' allows the user to
 choose any stages the user wants, and will then proceed through all the
 chosen 
-stages.&nbsp;&nbsp;Choosing only 'Check', 'Links & Deps', 'Create' is a good 
-example.</p>  
+stages.&nbsp;&nbsp;Choosing only 'Check', 'Links & Deps', 'Copy', and 'Create' 
+is a good example.</p>  
 
 <p><IMG ALT="" SRC="images/tests.jpg" align="center"></p>
 
@@ -601,7 +601,7 @@ stage.&nbsp;&nbsp;Adjust the Filesystem Size in the ARS to a size larger than
 the Total space shown in the verbosity box.&nbsp;&nbsp;Create your 
 root_fs, 
 and make sure there was enough room left.&nbsp;&nbsp;You may have to adjust the
-size and run Create again.</p>
+size and run Copy and Create again.</p>
 
 <p>
 
@@ -611,8 +611,9 @@ from the UML box.&nbsp;&nbsp;
 If things don't work correctly you will have to hunt down the cause,
 make the appropriate changes and proceed through the stages again.&nbsp;&nbsp
 If you only make a change to a Replacement, you only have to run
-the Create stage again.&nbsp;&nbsp;If you make a change to the template you 
-have to run at least the Check, Links & Deps, and Create stages again.</p>
+the Copy and Create stage again.&nbsp;&nbsp;If you make a change to the 
+template you have to run at least the Check, Links & Deps, Copy, and Create 
+stages again.</p>
 
 
 <center><u>Make the mini distribution you just created with a different
@@ -640,17 +641,23 @@ users to how the 8192k barrier of genext2fs can be exceeded.
 
 <p>
 
-20.&nbsp;&nbsp;Normal users should make sure the staging behavior is user 
-defined, and press on the Create check button on the Yard Box.&nbsp;&nbsp;
+20.&nbsp;&nbsp;
 Press Continue and observe what happens.&nbsp;&nbsp;Root users should have
 made the original filesystem with genext2fs, if not, they need to go
 through steps 12-16 again after entering <code>genext2fs -z -r0</code> in the 
-Filesystem Box.
+Filesystem Box.&nbsp;&nbsp;Do step 16.
 
 <P>
 
-21.&nbsp;&nbsp;Do step 16.&nbsp;&nbsp;Try steps 18-21 again, but this time
-enter <code>genromfs</code> to create a romfs filesystem.&nbsp;&nbsp;You may 
+21.&nbsp;&nbsp;Can we create a different filesystem type
+for the root filesystem we just created?&nbsp;&nbsp;
+Enter <code>genromfs</code> to create a romfs filesystem.&nbsp;&nbsp;
+Set the staging behavior to user defined, turn on the Create check button,
+and press the Continue button.&nbsp;&nbsp;Assuming you've left the
+ARS open, press the UML button so that the UML box closes and reopens, and you
+will notice that your fs has _romfs appended to it.&nbsp;&nbsp;Try it out.
+&nbsp;&nbsp;
+You may 
 notice complaints on boot-up about ioctl.save, to remove these complaints you 
 could create a replacement ioctl.save, edit the template, re-create the 
 filesystem, and test again.
