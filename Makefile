@@ -9,7 +9,7 @@ install:
 	cp -fa genext2fs/genext2fs /usr/lib/bootroot/genext2fs
 	cp -fa expect_uml /usr/lib/bootroot/expect_uml
 	install -d /usr/lib/bootroot/root_filesystem
-	chmod 06666 root_filesystem/root_fs_helper
+	chmod 0666 root_filesystem/root_fs_helper
 	cp -fa root_filesystem/root_fs_helper /usr/lib/bootroot/root_filesystem
 	cp -fa yard/scripts/make_debian /usr/bin/make_debian
 	install -d /usr/share/perl5/BootRoot
