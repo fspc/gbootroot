@@ -41,9 +41,6 @@ which_test();
 
 sub which_test {
 
-    $login_binary = "$mount_point" . find_file_in_path("login");
-    check_termcap();
-
     my $test_fstab   = $ARGV[1];
     my $test_inittab = $ARGV[2];
     my $test_scripts = $ARGV[3];

@@ -34,8 +34,7 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys 
-              text_insert logadj *LOGFILE which_tests check_termcap
-	      scan_command_file check_getty_type_call);
+              text_insert error logadj *LOGFILE which_tests); 
 
 use strict;
 use File::Basename;
