@@ -486,8 +486,13 @@ sub space_left {
 
 sub create {
 
+    $lib_bool = "" if $lib_bool eq 0;
+    $bin_bool = "" if $bin_bool eq 0;
+    $mod_bool = "" if $mod_bool eq 0;
+    $strip_bool eq "strip-all" ? ($strip_bool = 1) : ($strip_bool = 0);
     $error = create_filesystem($filename,$filesystem_size,$filesystem_type,
-			       $inode_size,$mnt);
+			       $inode_size,$mnt,$lib_bool,$bin_bool,
+			       $mod_bool,$strip_bool);
     return if $error && $error eq "ERROR";
 
 }
