@@ -52,8 +52,8 @@ my $uml_xterm = "xterm -e";
 # and to update scripts/Debian.yard if
 # make_debian has been changed,
 # and to install -s linux.
-my $version = "1.3.2";
-my $date = "01.11.2002";
+my $version = "1.3.3";
+my $date = "01.15.2002";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
@@ -2160,7 +2160,6 @@ sub entry_advanced {
 
 	$entry_advanced->signal_connect( "changed", sub {
 	    $entry_advanced[$numa] = $entry_advanced->get_text();
-	    print $entry_advanced[$numa], "  $numa\n";
 	    if ($numa == 4) {
 		$ars->{filename} = $entry_advanced[$numa];
 		ars($ars);
@@ -2826,7 +2825,8 @@ sub lilo_put_it_together {
 
   # Time to do a little calculations
   my $device_size;
-  if ( $fs_type ne "genext2fs" ) {
+##  if ( $fs_type ne "genext2fs" ) {
+  if ( $> == 0 ) {
       $device_size = (split(/\s+/,`df $mnt`))[8];
   }
   else {
@@ -2850,7 +2850,8 @@ sub lilo_put_it_together {
   # If genext2fs is being used clean $tmp/bootdisk if any garbage is found,
   # and temporarily rename $mnt to that directory.
   #my $old_mount;
-  if ( $fs_type eq "genext2fs" ) {
+##  if ( $fs_type eq "genext2fs" ) {
+  if ( $> != 0 ) {
       if (-d "$tmp/bootdisk") {
 	  sys("rm -rf $tmp/bootdisk");
       }    
@@ -2870,7 +2871,8 @@ sub lilo_put_it_together {
   pb($B,2);
 
   info(0, "Copying over kernel\n");
-  if ( $fs_type ne "genext2fs" ) {
+##  if ( $fs_type ne "genext2fs" ) {
+  if ( $> == 0 ) {
       return if
 	  err_custom("rm -rf $mnt/lost+found; cp $container[KERNEL] $mnt/kernel", "gBootRoot: ERROR: Could not copy over the kernel") == 2;
   }
@@ -2887,8 +2889,8 @@ sub lilo_put_it_together {
   # DEVICES SECTION
   my @devices;
   my $device_table  = "$tmp/boot_device_table.txt";
-  if ( $fs_type eq "genext2fs" ) {
-
+##  if ( $fs_type eq "genext2fs" ) {
+  if ( $> != 0 ) {
 	info(0, "Making $device_table for genext2fs\n");
 	my $error;
 	unlink( $device_table ) if -e $device_table;
@@ -2990,7 +2992,8 @@ sub lilo_put_it_together {
 
   # Got to umount,mount, and umount again to make sure everything is
   # copied over before doing lilo unless genext2fs in being used.
-  if ( $fs_type ne "genext2fs" ) {
+##  if ( $fs_type ne "genext2fs" ) {
+  if ( $> == 0 ) {
       return if errum(sys("umount $mnt")) == 2;
       info(0, "Umount device\n");
       info(0, "Remount device\n");
@@ -2998,8 +3001,8 @@ sub lilo_put_it_together {
   pb($B,6);
   
 
-  if ( $fs_type eq "genext2fs" ) {
-
+##  if ( $fs_type eq "genext2fs" ) {
+  if ( $> != 0 ) {
       my $error;
 
       # When creating a fs on floppy, specifying -i causes genext2fs to fail, 
@@ -3014,7 +3017,8 @@ sub lilo_put_it_together {
   }
 
 
-  if ( $fs_type eq "genext2fs" ) {
+##  if ( $fs_type eq "genext2fs" ) {
+  if ( $> != 0 ) {
       $mnt = $old_mount;
   }
 
@@ -3024,7 +3028,8 @@ sub lilo_put_it_together {
   }
   else {
       my $errm_value = errm(sys("mount $mnt"));
-      if ( $errm_value == 2 && $fs_type eq "genext2fs" ) {
+##      if ( $errm_value == 2 && $fs_type eq "genext2fs" ) {
+      if ( $errm_value == 2 && $> != 0 ) {
 	  info(0, "Ask your administrator to add this line to the" . 
 	       " fstab file:\n");
 	  info(0, "\n$entry_advanced[0]\t$mnt\tauto\tdefaults,noauto," .
@@ -3094,7 +3099,8 @@ sub lilo_put_it_together {
   pb($B,10);
 
   if ($ok == 1 || $ok == 2) {
-      if ( $fs_type ne "genext2fs" ) {
+##      if ( $fs_type ne "genext2fs" ) {
+      if ( $> == 0 ) {
 	  return if
 	      errrm(sys("rmdir $tmp/initrd_mnt")) == 2;
       }
@@ -3119,7 +3125,8 @@ sub device2 {
 
     # Time to do a little calculations
     my $device_size;
-    if ( $fs_type ne "genext2fs" ) {
+##    if ( $fs_type ne "genext2fs" ) {
+    if ( $> == 0 ) {
 	$device_size = (split(/\s+/,`df $mnt`))[8];
     }
     else {
@@ -3142,7 +3149,8 @@ sub device2 {
     }
     
     info(0, "Copy over the compressed filesystem\n");
-    if ( $fs_type ne "genext2fs" ) {
+##    if ( $fs_type ne "genext2fs" ) {
+    if ( $> == 0 ) {
 	return if errrm(sys("rmdir $mnt/lost+found")) == 2;
     }
     my $broot_image = basename($container[ROOT_FS]);
@@ -3154,7 +3162,8 @@ sub device2 {
     my $half_line_count = $line_count/2;
     my $count = 1;
 
-    if ( $fs_type ne "genext2fs" ) {
+##    if ( $fs_type ne "genext2fs" ) {
+    if ( $> == 0 ) {
 	open(CF, ">$mnt/$broot_image") or error_window(
        "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
     
@@ -3177,7 +3186,8 @@ sub device2 {
 
 	# If genext2fs is being used clean $tmp/rootdisk if any garbage is 
 	# found.
-	if ( $fs_type eq "genext2fs" ) {
+##	if ( $fs_type eq "genext2fs" ) {
+	if ( $> != 0 ) {
 	    if (-d "$tmp/rootdisk") {
 		sys("rm -rf $tmp/rootdisk");
 	    }    
@@ -3206,7 +3216,8 @@ sub device2 {
     }
     #------------------------------------------------------
 
-    if ( $fs_type ne "genext2fs" ) {
+##    if ( $fs_type ne "genext2fs" ) {
+    if ( $> == 0 ) {
 	return if
 	    err_custom("umount $mnt",
 	    "gBootRoot: ERROR: Root disk did not properly umount") == 2;
@@ -3564,7 +3575,10 @@ sub initrd_size {
 	    }
         }
     }
+    close(SL);
+    close(L);
     
+
     $initrd_size = $initrd_size + ($initrd_size * 0.02);
 
     # For perfection 1 (rounded up) is o.k., but for safety 10 would be
@@ -3614,7 +3628,8 @@ sub initrd {
 
     my $fs_type = (split(/\s/,$main::makefs))[0];
 
-    if ( $fs_type eq "genext2fs" ) {
+##    if ( $fs_type eq "genext2fs" ) {
+    if ( $> != 0 ) {
 	# Assuming busybox is being used, so bzip2 should still be standard
 	# just another link .. just for testing.
 	##if ( $compress eq "bzip2" ) {
@@ -3630,8 +3645,8 @@ sub initrd {
     unlink("$tmp/linuxrc");
 
 
-    if ( $fs_type ne "genext2fs" ) {
-
+##    if ( $fs_type ne "genext2fs" ) {
+    if ( $> == 0 ) {
 	info(0, "Using loop device to make initrd\n");
 	info(0, "Make sure you have loop device capability" . 
 	     " in your running kernel\n");
@@ -3658,7 +3673,8 @@ sub initrd {
 
    
     # Here the loop device is made on tmp, not mnt
-    if ( $fs_type eq "genext2fs" ) {
+##    if ( $fs_type eq "genext2fs" ) {
+    if ( $> != 0 ) {
 	info(0, "Using genext2fs to make initrd rather than a loop device\n");
     }
 
@@ -3673,7 +3689,8 @@ sub initrd {
     pb($I,4);
 
     info(0, "Putting everything together\n");
-    if ( $fs_type eq "genext2fs" ) {
+##    if ( $fs_type eq "genext2fs" ) {
+    if ( $> != 0 ) {
 	open(LC, ">$tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to $tmp/initrd_mnt\n";
     }
     else { 
@@ -3682,7 +3699,8 @@ sub initrd {
     print LC initrd_heredoc($broot_image,$device); close(LC);
     # I could test this but somebody's system may do permissions differently
     sys("chmod 0755 $tmp/initrd_mnt/linuxrc");
-    if ($fs_type ne "genext2fs" ) {
+##    if ($fs_type ne "genext2fs" ) {
+    if ( $> == 0 ) {
 	sys("rmdir $tmp/initrd_mnt/lost+found");
     }
     pb($I,5);
@@ -3694,7 +3712,8 @@ sub initrd {
     pb($I,6);
 
     # Hopefully, this works, but have never tested it - o.k I did
-    if ( $fs_type ne "genext2fs" ) {
+##    if ( $fs_type ne "genext2fs" ) {
+    if ( $> == 0 ) {
 	if ($container[BOOT_DEVICE] !~ m,/dev/fd\d{1}$,) {
 	    return if err(sys("cp -a $container[BOOT_DEVICE] $mnt/dev")) == 2;
 	}
@@ -3703,8 +3722,8 @@ sub initrd {
     # DEVICES SECTION
     my @devices;
     my $device_table  = "$tmp/initrd_device_table.txt";
-    if ( $fs_type eq "genext2fs" ) {
-
+##    if ( $fs_type eq "genext2fs" ) {
+    if ( $> != 0 ) {
 	info(0, "Making $device_table for genext2fs\n");
 	my $error;
 	unlink( $device_table ) if -e $device_table;
@@ -3937,7 +3956,8 @@ sub initrd {
     sys("ldconfig -v -r $tmp/initrd_mnt");
 
     
-    if ( $fs_type eq "genext2fs" ) {
+##    if ( $fs_type eq "genext2fs" ) {
+    if ( $> != 0 ) {
 	info(0, "Using genext2fs to contruct the initrd\n");
 	# The -D option is unique to the newest unreleased version of 
 	# genextfs modified by BusyBox maintainer Erick Andersen
@@ -4251,7 +4271,8 @@ sub mtab_check {
 
     # Make sure the drive and storage medium are accessible
     # Keep asking until they are.
-    if ( $error == 1 && $fs_type ne "genext2fs" ) {
+##    if ( $error == 1 && $fs_type ne "genext2fs" ) {
+    if ( $error == 1 && $> == 0 ) {
 	destroy $mtab;
 
 	# $size has to be determined by boot disk or root disk
@@ -4299,7 +4320,8 @@ sub mtab_check {
 
     } # if $error == 1
 
-    if ( $fs_type eq "genext2fs" && $error == 1 ) {
+##    if ( $fs_type eq "genext2fs" && $error == 1 ) {
+    if ( $> != 0 && $error == 1 ) {
 
 	destroy $mtab;
 	lilo_put_it_together() if $count == 0;  # mtab(1) runs from here

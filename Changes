@@ -1,6 +1,18 @@
+1.3.3 - 01/15/2002
+------------------
+
+During the boot stage the filsystem type was used to determine whether
+to use the genext2fs (non-root) method or the normal method used by root.  
+Now the user type is used, this is better because it prevents conflicts
+if a different filesystem type is chosen, or if a non-root user changes to a
+different filesystem type in the filesystem box and forgets to change back
+to genext2fs; however, it prevents root from using the genext2fs method,
+which isn't a problem.  The sudo requirement for lilo is too much of a 
+requirement, and will be changed in future versions. 
+
 Fixed another non-root boot/root bug.  The info had it correct, but the actual
 copy with genext2fs was being done from the wrong location.  This has been 
-fixed.
+fixed.  This method may be ditched for a far better one in the near future.
 
 Had some testing code which was providing the wrong value for $compress, this
 made non-root booting fail for bzip2 because bunzip2 didn't exist in the 
