@@ -1,4 +1,4 @@
-############################################################################
+#############################################################################
 ##
 ##  Yard.pm combining
 ##  MAKE_ROOT_FS, CHECK_ROOT_FS, and YARD_UTILS.PL by Tom Fawcett
@@ -199,6 +199,7 @@ sub read_contents_file {
     kernel_version_check($kernel, $kernel_version_choice);
 
     # Open DEVICE_TABLE
+
     if ( $fs_type eq "genext2fs" ) {
 
 	unlink("$mnt/device_table.txt") if -e "$mnt/device_table.txt";   
@@ -1660,7 +1661,7 @@ sub cf_die {
   info(0, "$contents_file($cf_line): $line\n");
   foreach (@msgs) { info(0, "\t$_\n"); }
   my $output = join("\n",@msgs);
-  error_window("gBootRoot: ERROR: ", $output);
+  error_window("gBootRoot: ERROR: ", $output) if !%option;
   return "ERROR";
 }
 
@@ -1837,8 +1838,8 @@ sub info {
 sub error {
 
   print LOGFILE "Error: ", @_;
-  info(0, "Error: ", @_);
-  error_window("gBootRoot: ERROR: ", @_);
+  info(0, "Error: ", @_);  
+  error_window("gBootRoot: ERROR: ", @_) if !%option;
   return "ERROR";
 
 }

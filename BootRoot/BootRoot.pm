@@ -779,7 +779,7 @@ else {
 
 # STAGE LOGIC - skip space_left and test
 # Stages  all have my $error  return if $error && $error eq "ERROR";
-# kernel_version_check() 
+# kernel_version_check() -- automatically
 #
 #  check() read_contents_file( "$template_dir$template", $tmp,
 #				    $filesystem_size, \%uml_expect );
@@ -796,27 +796,49 @@ else {
 #    return if $error && $error eq "ERROR";
 #
 #  create_uml()  create_expect_uml($filesystem_size, $tmp, $filename);
-
+########################################################
 # Let's read in the ARGV
 
+    die "specify a template found in $template_dir\nuse --template\n" 
+	if !$option{template};
 
-start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
-
-                                             # "verbosity level"
-#info(1, "hello there\n");
+    start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
+    
 
 
+#	   $kernel                    = $ars->{kernel};
+#	   $kernel_version_choice     = $ars->{kernel_version_choice};
 
-my $it = kernel_version_check();
-print $it;
+    $ars->{kernel} = $option{kernel};
+    ars2($ars);
+    $ars->{kernel_version_choice} = $option{"kernel-version"};
+    ars2($ars);
 
-#    read_contents_file( "$template_dir$template", $tmp,
-#			    $filesystem_size, \%uml_expect );
+#my $it = kernel_version_check($option{kernel},$option{"kernel-version"});
+    
+    my $template = $option{template};
+    
+    $option{"filesystem-size"}
+    ? ($filesystem_size = $option{"filesystem-size"})
+    : ($filesystem_size = 8192);
+
+my $uml_exclusively = 0;  # assume genext2fs
+if ( $option{"uml-exclusively"} ) {
+    $option{"uml-exclusively"} eq "on" 
+    ? ($uml_exclusively = 1)
+    : ($uml_exclusively = 0);
+}
+
+$ars->{uml_exclusively} = $uml_exclusively;
+ars2($ars);  #not used in function below    
+
+read_contents_file( "$template_dir$template", $tmp,
+		    $filesystem_size);
 
 
 
     #print kernel_version_check(), "Hi there!\n";
-
+######################################################
 
 }  # end if $::commandline
 
