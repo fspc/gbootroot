@@ -1,4 +1,4 @@
-# $Id: Example-EmptyFS.yard,v 1.2 2002/03/11 02:40:17 freesource Exp $
+# $Id: Example-EmptyFS.yard,v 1.3 2002/03/11 02:41:48 freesource Exp $
 # Example-EmptyFS.yard
 
 # The recommended way for creating empty filesystems is to run gbootroot as
@@ -14,7 +14,7 @@
 # Notes: jffs/jffs2, cramfs, and romfs filesystems always have the /initrd and 
 # /dev directories added since these directories need to exist in order for 
 # the MTD Emulator to work.  Genext2fs will have devices added if 
-# /tmp/gboot_non_root_`ud -u`/device_table.txt exists, and many fiLesystem
+# /tmp/gboot_non_root_`ud -u`/device_table.txt exists, and many filesystem
 # creators automatically add the lost+found directory.
 #
 # jffs/jffs2, cramfs and romfs have their respective fs type appended to
