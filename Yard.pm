@@ -43,7 +43,7 @@ use FileHandle;
 use Cwd; #  I am not even sure if this is being used here now
 use English;  # I think this can be ditched for portability
 use File::Find; # used by check_root_fs
-# use Error; # missing temporarily
+use Error; 
 
 my (%Included, %replaced_by, %links_to, %is_module, %hardlinked, 
     %strippable, %lib_needed_by, @Libs);
@@ -739,29 +739,48 @@ sub space_check {
 ########################
 #####  Create filesystem
 ########################
-#@@sync();
-#@@sys("dd if=/dev/zero of=$::device bs=1k count=$::fs_size");
-#@@sync();
+
 
 sub create_filesystem {
+
+    my ($filename,$fs_size,$fs_type, $inode_size, $mnt) = @_;
+    my $device = "$mnt/$filename";
+    my $mount_point = "$mnt/loopback";
 
     my $file;
     my $error;
 
-    ##info(0, "Creating ${::fs_size}K ext2 file system on $::device\n");
 
-    if (-f $::device) {
+    sync();
+    sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
+    sync();
+
+    info(0, "Creating $fs_size K ext2 file system on $device\n");
+
+    if (-f $device) {
 	#####  If device is a plain file, it means we're using some loopback
 	#####  device.  Use -F switch in mke2fs so it won't complain.
 	## Options here can be changed.
-	sys("mke2fs -F -m 0 -b 1024 $::device $::fs_size");
+	## Originally, this was -b 1024 switched with the inode approach.
+	    if (sys("mke2fs -F -m 0 -i $inode_size $device $fs_size") !~ 
+		/^0$/ ) {
+		$error = error("Can not make $fs_type filesystem");
+		return "ERROR" if $error && $error eq "ERROR";
+	    }
     } else {
-	sys("mke2fs -m 0 -b 1024 $::device $::fs_size");
+	    if (sys("mke2fs -F -m 0 -i $inode_size $device $fs_size") !~ 
+		/^0$/ ) {
+		$error = error("Can not make $fs_type filesystem");
+		return "ERROR" if $error && $error eq "ERROR";
+	    }
     }
 
-    &mount_device;
+    if (!-d $mount_point) {
+	return "ERROR" if errmk(sys("mkdir $mount_point")) == 2;
+    }
+    mount_device($device,$mount_point);
     ##### lost+found on a ramdisk is pointless
-    sys("rm -rf $::mount_point/lost+found");
+    sys("rm -rf $mount_point/lost+found");
 
     sync();
 
@@ -780,7 +799,7 @@ sub create_filesystem {
 	my($link_target) = $links_to{$file};
 	my($abs_file) = make_link_absolute($file, $link_target);
 	if (-d $abs_file) {
-	    my($floppy_file) = $::mount_point . $abs_file;
+	    my($floppy_file) = $mount_point . $abs_file;
 	    my($newdir);
 	    foreach $newdir (mkpath($floppy_file)) {
 		info(1, "\tCreating $newdir as a link target for $file\n");
@@ -798,7 +817,7 @@ sub create_filesystem {
 
 	my($target);
 	if (defined($target = $links_to{$file})) {
-	    my($floppy_file) = $::mount_point . $file;
+	    my($floppy_file) = $mount_point . $file;
 	    mkpath(dirname($floppy_file));
 	    info(1, "\tLink\t$floppy_file -> $target\n");
 	    symlink($target, $floppy_file) or
@@ -807,7 +826,7 @@ sub create_filesystem {
 	    delete $Included{$file}; # Get rid of it so next pass doesn't copit
 
 	} elsif (-d $file) {
-	    my($floppy_file) = $::mount_point . $file;
+	    my($floppy_file) = $mount_point . $file;
 	    my($newdir);
 	    foreach $newdir (mkpath($floppy_file)) {
 		info(1, "\tCreate\t$newdir\n");
@@ -819,12 +838,12 @@ sub create_filesystem {
 
     #####  Tricky stuff is over with, now copy the remaining files.
 
-    info(0, "\nCopying files to $::device\n");
+    info(0, "\nCopying files to $device\n");
 
     my(%copied);
 
     while (($file) = each %Included) {
-	my($floppy_file) = $::mount_point . $file;
+	my($floppy_file) = $mount_point . $file;
 
 	my($replacement);
 	if (defined($replacement = $replaced_by{$file})) {
@@ -864,7 +883,7 @@ sub create_filesystem {
 	    mkpath($floppy_file);
 
 	} elsif ($file eq '/dev/null' and
-		 $floppy_file ne "$::mount_point/dev/null") { # I hate this
+		 $floppy_file ne "$mount_point/dev/null") { # I hate this
 	    info(1, "Creating empty file $floppy_file\n");
 	    mkpath(dirname($floppy_file));
 	    sys("touch $floppy_file");
@@ -886,13 +905,13 @@ sub create_filesystem {
 	info(0, "Re-generating /etc/ld.so.cache on root fs.\n");
 	info(1, "Ignore warnings about missing directories\n");
 
-	sys("ldconfig -v -r $::mount_point");
+	sys("ldconfig -v -r $mount_point");
     }
 
-    info(0, "\nDone with $PROGRAM_NAME.  $Warnings warnings.\n",
-	 "$::device is still mounted on $::mount_point\n");
+    ## Probably will want to umount here
 
-    exit( $Warnings>0 ? -1 : 0);
+    info(0, "\nDone with $PROGRAM_NAME.  $Warnings warnings.\n",
+	 "$device is still mounted on $mount_point\n");
 
 } # end sub create_filesystem
 
@@ -958,7 +977,7 @@ sub cf_die {
   info(0, "$contents_file($cf_line): $line\n");
   foreach (@msgs) { info(0, "\t$_\n"); }
   my $output = join("\n",@msgs);
-  &::error_window("gBootRoot: ERROR: ", $output);
+  error_window("gBootRoot: ERROR: ", $output);
   return "ERROR";
 }
 
@@ -977,7 +996,9 @@ sub cf_warn {
 sub copy_strip_file {
     
     # Obviously create_filesytem's @_ will have to be modified 4 the last 4
-    # check for off or on, not undef
+    # check for off or on, not undef    
+    my () = @_;
+
     my($from, $to, $strip_objfiles, 
        $strip_lib, $strip_bin, $strip_module) = @_;
     my $error;
@@ -1053,7 +1074,7 @@ sub error {
 
   print LOGFILE "Error: ", @_;
   info(0, "Error: ", @_);
-  &::error_window("gBootRoot: ERROR: ", @_);
+  error_window("gBootRoot: ERROR: ", @_);
   return "ERROR";
 
 }
@@ -1425,19 +1446,25 @@ sub yard_glob {
 
 
 sub mount_device {
+    
+  my ($device,$mount_point) = @_;  
   my($options);
-  if (-f $::device) {
+
+  if (-f $device) {
     $options = "-o loop ";
   } else {
     $options = "";
   }
 
-  sys("mount $options -t ext2 $::device $::mount_point");
+  errmk(sys("mount $options -t ext2 $device $mount_point"));
 }
 
 
 #####  Called by make_root_fs to do basic checks on choice of $::device.
 sub check_device {
+
+    my $fs_size; # @_
+
   if (!-e $::device) {
     error("Device $::device does not exist\n");
 
@@ -1466,9 +1493,9 @@ sub check_device {
     my($max) = get_device_size_K($::device);
 
     if (defined($max)) {
-      if ($max < $::fs_size) {
+      if ($max < $fs_size) {
 	info 0, "You've declared file system size (fs_size) to be ",
-	"$::fs_size K\n",
+	"$fs_size K\n",
 	"but Linux says $::device may only hold $max K\n";
 	if ($::device =~ m|^/dev/ram|) {
 	  info 0, "(Increase ramdisk size";
@@ -1480,7 +1507,7 @@ sub check_device {
     } else {
       info 0, "Warning: Yard can't determine the real size of ",
       "$::device.\n",
-      "Assuming it's $::fs_size as declared.\n",
+      "Assuming it's $fs_size as declared.\n",
       "I hope you're not lying.\n";
     }
 
