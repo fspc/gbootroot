@@ -84,6 +84,7 @@ use BootRoot::YardBox;
 use BootRoot::Error;
 use File::Basename;
 use File::Find;
+use File::Path;
 init Gtk;
 set_locale Gtk; 
 
@@ -244,7 +245,7 @@ use constant  ABS_APPEND           => 11 ;
 use constant  MOD_STRIP            => 12 ;
 my @original_container;
 my $file_dialog;
-my ($kernel,$root_image,$device,$size);
+my ($kernel,$root_image,$device,$size,$kernel_version);
 my $mtab;
 my ($tmp,$mnt);
 my $norm_root_device;
@@ -2613,7 +2614,7 @@ sub kernel_modules {
     undef $kernel_version_choice if defined $kernel_version_choice eq "";
     undef $kernel_version_choice if !$kernel_version_choice;
 
-    my $kernel_version = kernel_version_check($container[KERNEL],
+    $kernel_version = kernel_version_check($container[KERNEL],
 					   $kernel_version_choice);
     #-----------------------------
     # METHOD -> 2 DISK COMPRESSION
@@ -2667,56 +2668,61 @@ sub kernel_modules {
 
 sub initrd_size {
 
- info(0,"Boot Method: 2 disk\n", 
-      "Type: initrd boot disk with LILO/root filesystem disk\n");
+    info(0,"Boot Method: 2 disk\n", 
+	 "Type: initrd boot disk with LILO/root filesystem disk\n");
 
-  my ($linuxrc_size) = @_;
-  my ($what,$lib);
-  my ($path,$value);
-  info(0, "Checking size needed for initrd\n");
+    my ($linuxrc_size) = @_;
+    my ($what,$lib);
+    my ($path,$value);
+    info(0, "Checking size needed for initrd\n");
 
-  # the size of the loop device should be at least 1.63% larger than what
-  # it will contain (i.e. 8192 inode), but to keep on the safe size it will
-  #  be 2.00% larger.
-  # 9 dirs  = 1024 each (increase if modified)
-  # {ash,gzip,mount,umount} (required executables)
-  # bzip2 if $compress eq bzip2 (optional)
-  # 1 for ld.so.cache
+    # the size of the loop device should be at least 1.63% larger than what
+    # it will contain (i.e. 8192 inode), but to keep on the safe size it will
+    #  be 2.00% larger.
+    # 9 dirs  = 1024 each (increase if modified)
+    # {ash,gzip,mount,umount} (required executables)
+    # bzip2 if $compress eq bzip2 (optional)
+    # 1 for ld.so.cache
 
-  # change dir size if needed
-  my $dir_size = 9 + 1;
-  my $initrd_size = $dir_size + $linuxrc_size;
+    # change dir size if needed
+    my $dir_size = 9 + 1;
+    my $initrd_size = $dir_size + $linuxrc_size;
 
+    # modules
+    my @modules = kernel_modules();
+    if (@modules) {
+	
+	my $ds = mkpath("$tmp/initrd_mnt/lib/modules/$kernel_version");
+	$initrd_size = $initrd_size + $ds;
 
-  # modules
-  my @modules = kernel_modules();
-  foreach (@modules) {
-     ($path,$value) = stripper($_,"mod");
-     $initrd_size =  $initrd_size + ((stat($path))[12]/2);
-     unlink($path) if $value == 1;
-  }
+	foreach (@modules) {
+	    ($path,$value) = stripper($_,"mod");
+	    $initrd_size =  $initrd_size + ((stat($path))[12]/2);
+	    unlink($path) if $value == 1;
+	}
+    }
 
-  # This and libs should be user accessible
-  # add other executables here
-   my @initrd_stuff = qw(ash gzip mount umount modprobe);
-   if (@modules) {
+    # This and libs should be user accessible
+    # add other executables here
+    my @initrd_stuff = qw(ash gzip mount umount modprobe);
+    if (@modules) {
 	@initrd_stuff = qw(ash gzip mount umount modprobe);
     }
     else {
 	@initrd_stuff = qw(ash gzip mount umount);
     }
 
-  foreach (@initrd_stuff) {
-     ($path,$value) = stripper(find_file_in_path($_),"bin");
-     $initrd_size =  $initrd_size + ((stat($path))[12]/2);
-     unlink($path) if $value == 1;
-  }
+    foreach (@initrd_stuff) {
+	($path,$value) = stripper(find_file_in_path($_),"bin");
+	$initrd_size =  $initrd_size + ((stat($path))[12]/2);
+	unlink($path) if $value == 1;
+    }
 
-  if ($compress eq "bzip2" && -e find_file_in_path($compress)) {
-     ($path,$value) = stripper(find_file_in_path($compress),"bin");
-     $initrd_size = $initrd_size + ((stat($path))[12]/2);
-     unlink($path) if $value == 1;
-  }
+    if ($compress eq "bzip2" && -e find_file_in_path($compress)) {
+	($path,$value) = stripper(find_file_in_path($compress),"bin");
+	$initrd_size = $initrd_size + ((stat($path))[12]/2);
+	unlink($path) if $value == 1;
+    }
 
     my $lib_tester;
     if ($bz2_toggle->active && -x find_file_in_path("bzip2") ) {
@@ -2732,42 +2738,42 @@ sub initrd_size {
 
     my $dir;
 
-  # lib sizes  This is going to be improved later with library_dependencies
-  open(L,"ldd $lib_tester|") or die "Oops, no init could be found :)\n"; # safe to use ldd
-   while (<L>) {
-       my $place;
+    # lib sizes  This is going to be improved later with library_dependencies
+    open(L,"ldd $lib_tester|") or die "Oops, no init could be found :)\n"; # safe to use ldd
+    while (<L>) {
+	my $place;
 	($lib,$place) = (split(/=>/,$_))[0,1];
 	$place = (split(" ",$place))[0];
-      $lib =~ s/\s+//;
-      $lib = basename($lib);
-      $lib =~ s/\s+$//;
+	$lib =~ s/\s+//;
+	$lib = basename($lib);
+	$lib =~ s/\s+$//;
         $dir = dirname($place);	
 
-      open (SL,"ls -l $dir/$lib|") or die "humm: $!\n";
+	open (SL,"ls -l $dir/$lib|") or die "humm: $!\n";
         while (<SL>) {
-          # symbolic link
-          if (-l "$dir/$lib") {
-            $what = (split(/\s+/,$_))[10];
-            $initrd_size = $initrd_size + 1;
-	    ($path,$value) = stripper("$dir/$lib","lib");
-            $initrd_size = $initrd_size + ((stat($path))[12]/2);
-	    unlink($path) if $value == 1;
-          }
-          # no symbolic link
-          else {
-	    ($path,$value) = stripper("$dir/$lib","lib");
-            $initrd_size = $initrd_size + ((stat($path))[12]/2);
-	    unlink($path) if $value == 1;
-          }
+	    # symbolic link
+	    if (-l "$dir/$lib") {
+		$what = (split(/\s+/,$_))[10];
+		$initrd_size = $initrd_size + 1;
+		($path,$value) = stripper("$dir/$lib","lib");
+		$initrd_size = $initrd_size + ((stat($path))[12]/2);
+		unlink($path) if $value == 1;
+	    }
+	    # no symbolic link
+	    else {
+		($path,$value) = stripper("$dir/$lib","lib");
+		$initrd_size = $initrd_size + ((stat($path))[12]/2);
+		unlink($path) if $value == 1;
+	    }
         }
-   }
-
-  $initrd_size = $initrd_size + ($initrd_size * 0.02);
-  # For perfection 1 (rounded up) is o.k., but for safety 10 would be
-  # better
-  $initrd_size = sprintf("%.f",$initrd_size) + 10;
-  return $initrd_size;
-
+    }
+    
+    $initrd_size = $initrd_size + ($initrd_size * 0.02);
+    # For perfection 1 (rounded up) is o.k., but for safety 10 would be
+    # better
+    $initrd_size = sprintf("%.f",$initrd_size) + 10;
+    return $initrd_size;
+    
 } # end sub initrd_size
 
 sub pb {
@@ -2818,11 +2824,13 @@ sub initrd {
     pb($I,3);
     info(0, "Mounting initrd in $tmp/initrd_mnt\n");
 
+    # moved this from initrd() to help with testing
     if (!-d "$tmp/initrd_mnt") {
 	return if errmk(sys("mkdir $tmp/initrd_mnt")) == 2;
     }
     return if errm(sys("mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt"))
-	== 2;
+	== 2;    
+
     pb($I,4);
 
     info(0, "Putting everything together\n");
@@ -2848,15 +2856,27 @@ sub initrd {
     info(0, ".. the modules\n");
     my @modules = kernel_modules();
 
-    foreach my $stuff (@modules) {
-	($path,$value) = stripper($stuff,"bin");
-	$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
-	if (!$path) {
-	    info(1,"gBootRoot Error: Couldn't find $stuff\n");
-	}
-	info(0,"HEREIAM $tmp/initrd_mnt$stuff\n");
-	return if errcp(sys("$tool $path $tmp/initrd_mnt")) == 2;
+
+    if (@modules) {
+
+	mkpath("$tmp/initrd_mnt/lib/modules/$kernel_version");
+
+	foreach my $stuff (@modules) {
+	    ($path,$value) = stripper($stuff,"bin");
+	    $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+	    if (!$path) {
+		info(1,"gBootRoot Error: Couldn't find $stuff\n");
+	    }	    
+	    return if 
+		errcp(sys("$tool $path $tmp/initrd_mnt/lib/modules/$kernel_version")) == 2;
+	}    
+
+	info(1, "depmod -ae -b $tmp/initrd_mnt/lib/modules/$kernel_version $kernel_version\n");
+	return if err_custom("depmod -ae -b $tmp/initrd_mnt $kernel_version",
+			     "gBootRoot: ERROR: depmod failed") == 2;
+
     }
+
 
     info(0, ".. the bins\n");
     my @initrd_stuff;
