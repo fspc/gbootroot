@@ -114,9 +114,13 @@ my $version = "1.2.2";
 my $date = "09.03.2000";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
-my $template_dir = "./";
 my $home_rootfs = "$home/root_filesystem/";
 my $home_uml_kernel = "$home/uml_kernel/";
+
+# Yard Stuff
+my $home_yard = "$home/yard";
+my $template_dir = "$home_yard/templates";
+my $home_yard_replacements = "$home_yard/replacements";
 
 my $initrd;
 my $compress;
@@ -246,11 +250,33 @@ home_builder($home_rootfs);
 
 # $HOME/.gbootroot/uml_kernel
 home_builder($home_uml_kernel);
+symlink_builder("/usr/bin/linux","$home_uml_kernel/linux");
 if (!-e "$home_uml_kernel/.options") {
     open(OPTIONS,">$home_uml_kernel/.options") 
 	or die "Couldn't write $home_uml_kernel/.options at $?\n";
     print OPTIONS "root=/dev/ubd0\n";
     close(OPTIONS);
+}
+
+# $HOME/.gbootroot/yard/templates 
+home_builder($template_dir);
+
+# $HOME/.gbootroot/yard/replacements 
+home_builder($home_yard_replacements);
+
+# Basically so different users get the same things in
+# their personal directories.
+sub symlink_builder {
+
+    my ($oldfile,$newfile) = @_;
+
+    if (!-e $newfile && !-l $newfile) {
+	my $error;
+	symlink($oldfile,$newfile) or
+	    ($error = error("Can not make symlink to $oldfile
+                         from $newfile.\n"));
+    }
+
 }
 
 sub home_builder {
