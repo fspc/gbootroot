@@ -1066,20 +1066,23 @@ sub uml_box {
 	# Submit Button
 	my $submit_b = button_advanced(0,1,3,4,"Submit",$table_uml);
 	$submit_b->signal_connect("clicked",
-				  sub {
+				  sub {  
 				      # UML kernel = $entry_advanced[5]
 				      # xterm -e linux ubd#=root_fs 
                                       # root=/dev/ubd# 
 				      my $pid; 
 				      unless ($pid = fork) {
 					  unless (fork) {
+					      if ($pid == 0) {
 					      sys("$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]");
+				      Gtk->_exit($pid);
+					  }
 
 					  }
+
 				      }
 				      waitpid($pid,0);
 
-#				      sys ("perl -e 'system \"$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]\";'");
 				  } );
 
 
@@ -1093,6 +1096,7 @@ sub uml_box {
 				     remove_matching_process($entry_advanced[10]);
 				     # Debian
 				     remove_matching_process("Virtual Console");
+				     # Again for good measure :)
 				     remove_matching_process($entry_advanced[10]);
 				     }
 				 } );
@@ -1124,12 +1128,13 @@ sub remove_matching_process {
 	    my $process = (split(/\s+/,$_,))[1];
 	    system "kill $process";
 	}
-	# no so friendly approach
+	# not so friendly approach
 	if (m,$match_word,) {
 	    my $process = (split(/\s+/,$_,))[1];
 	    system "kill -9 $process";
 	}
     }
+    close(P);
 
 } # end remove_matching_process
 
