@@ -1,27 +1,43 @@
 # A Makefile going to a new dimension - a combination of stuff borrowed from 
-# buildroot by Erik Andersen <andersen@codepoet.org>, UML, and gbootroot.
+# buildroot, UML, and gbootroot.
 
-##all: install
+VERSION=2.4.19
+PATCH_VERSION=35
+UTIL_VER=20021103
 
 BASE_DIR=${shell pwd}
-
 TARGET_DIR=$(BASE_DIR)/root
 BUILD_DIR=$(BASE_DIR)/staging_dir
 SOURCE_DIR=$(BASE_DIR)/sources
+
+KERNEL=$(BASE_DIR)/user-mode-linux/usr/bin/linuxbr
+IMAGE=$(BASE_DIR)/root_filesystem/root_fs_helper
+KERNEL_DIR=$(BASE_DIR)/linux-$(VERSION)
+KERNEL_SOURCE=linux-$(VERSION).tar.bz2
+KERNEL_SITE=http://www.uk.kernel.org/pub/linux/kernel/v2.4
+
+# Choose a site with works best
+PATCH_1_SITE=http://jdike.stearns.org/mirror
+#PATCH_1_SITE=http://uml-pub.ists.dartmouth.edu/uml
+#PATCH_1_SITE=http://ftp.nl.linux.org/pub/uml
+#PATCH_1_SITE=http://mirror.math.leidenuniv.nl/uml-pub.ists.dartmouth.edu
+
+PATCH_1=uml-patch-$(VERSION)-$(PATCH_VERSION).bz2
+PATCH_2=$(BASE_DIR)/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch
+KCONFIG=$(BASE_DIR)/user-mode-linux/usr/lib/uml/config
+
+# Genext2fs
+GENEXT2_DIR=$(BASE_DIR)/genext2fs
+
+# Utilities
+UTILITIES=uml_utilities_$(UTIL_VER).tar.bz2
+UTIL_DIR=$(BASE_DIR)/tools
+TOOLS = $(UTIL_DIR)/mconsole $(UTIL_DIR)/port-helper $(UTIL_DIR)/moo $(UTIL_DIR)/uml_net $(UTIL_DIR)/uml_router $(UTIL_DIR)/tunctl
+
 ##TARGET_CC=$(BUILD_DIR)/bin/gcc
 ##TARGET_CC1=$(BUILD_DIR)/usr/bin/$(ARCH)-uclibc-gcc
 ##TARGET_CROSS=$(BUILD_DIR)/usr/bin/$(ARCH)-uclibc-
 ##TARGET_PATH=$(BUILD_DIR)/usr/bin:$(BUILD_DIR)/bin:/bin:/sbin:/usr/bin:/usr/sbin
-KERNEL=$(BASE_DIR)/user-mode-linux/usr/bin/linuxbr
-IMAGE=$(BASE_DIR)/root_filesystem/root_fs_helper
-KERNEL_DIR=$(BASE_DIR)/linux
-KERNEL_SOURCE=linux-2.4.19.tar.bz2
-KERNEL_SITE=http://www.uk.kernel.org/pub/linux/kernel/v2.4
-
-PATCH_1=uml-patch-2.4.19-37.bz2
-PATCH_1_SITE=http://jdike.stearns.org/mirror
-PATCH_2=$(BASE_DIR)/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch
-KCONFIG=$(BASE_DIR)/user-mode-linux/usr/lib/uml/config
 ##UCLIBC_DIR=$(BASE_DIR)/uClibc
 ##UCLIBC_SOURCE=uClibc-snapshot.tar.gz
 ##UCLIBC_PATCH=$(SOURCE_DIR)/uClibc.patch
@@ -30,37 +46,77 @@ KCONFIG=$(BASE_DIR)/user-mode-linux/usr/lib/uml/config
 ##BUSYBOX_SOURCE=busybox.tar.gz
 ##BUSYBOX_PATCH=$(SOURCE_DIR)/busybox.patch
 ##BUSYBOX_SITE=http://busybox.lineo.com
-GENEXT2_DIR=$(BASE_DIR)/genext2fs
-
 
 all:   world
 world: kernel target
 
-
-kernel: $(BASE_DIR)
-	@if [ ! -d $(KERNEL_DIR) ] ; then \
+sources: $(BASE_DIR)
+	@if [ ! -e $(SOURCE_DIR)/$(KERNEL_SOURCE) ] ; then \
 		while [ ! -f $(SOURCE_DIR)/$(KERNEL_SOURCE) ] ; do \
 			wget -P $(SOURCE_DIR) --passive $(KERNEL_SITE)/$(KERNEL_SOURCE); \
 		done; \
+	fi;
+	@if [ ! -e $(SOURCE_DIR)/$(UTILITIES) ] ; then \
+		while [ ! -f $(SOURCE_DIR)/$(UTILITIES) ] ; do \
+			wget -P $(SOURCE_DIR) --passive $(PATCH_1_SITE)/$(UTILITIES); \
+		done; \
+	fi;
+	@if [ ! -d $(UTIL_DIR) ] ; then \
+		tar xvfj $(SOURCE_DIR)/$(UTILITIES); \
+	fi;
+	@if [ ! -e $(SOURCE_DIR)/$(PATCH_1) ] ; then \
 		while [ ! -f $(SOURCE_DIR)/$(PATCH_1) ] ; do \
 			wget -P $(SOURCE_DIR) --passive $(PATCH_1_SITE)/$(PATCH_1); \
 		done; \
-		bunzip2 -c $(SOURCE_DIR)/$(KERNEL_SOURCE) | tar -xv; \
+		if [ ! -d $(KERNEL_DIR) ] ; then \
+			tar xvfj $(SOURCE_DIR)/$(KERNEL_SOURCE); \
+		fi; \
 		bzcat $(SOURCE_DIR)/$(PATCH_1) | patch -d $(KERNEL_DIR) -p1; \
+		patch -d $(KERNEL_DIR) -p1 < $(PATCH_2); \
 		perl -i -p -e "s/^ARCH :=.*/ARCH=um/g" $(KERNEL_DIR)/Makefile; \
 	fi;
-#	@if [ ! -f $(KERNEL_DIR)/.config ] ; then \
-#		cp $(KCONFIG) $(KERNEL_DIR)/.config; \
-#		(cd $(KERNEL_DIR); make oldconfig; make dep); \
-#	fi;
-#	@if [ ! -f $(KERNEL_DIR)/linux ] ; then \
-#		(cd $(KERNEL_DIR); make linux); \
-#	fi;
-#	@cmp -s $(KERNEL) $(KERNEL_DIR)/linux; \
-#	if [ $$? != 0 ] ; then \
-#		cp -fa $(KERNEL_DIR)/linux $(KERNEL); \
-#	fi;
 
+
+kernel:
+	@if [ ! -f $(KERNEL_DIR)/.config ] ; then \
+		cp $(KCONFIG) $(KERNEL_DIR)/.config; \
+		(cd $(KERNEL_DIR); make oldconfig); \
+	fi;
+	@if [ ! -f $(KERNEL_DIR)/linux ] ; then \
+		(cd $(KERNEL_DIR); make linux); \
+	fi;
+	if [ -e $(KERNEL_DIR)/linux ] ; then \
+		objcopy --strip-all $(KERNEL_DIR)/linux $(KERNEL); \
+	fi;
+
+modules: 
+	cd linux-$(VERSION) ; \
+		mkdir ../modules-2.4 ; \
+		make modules ARCH=um ; \
+		make modules_install ARCH=um \
+			INSTALL_MOD_PATH=`pwd`/../modules-2.4
+	cp -al modules-2.4 modules-2.2
+
+	dir=`echo modules-2.2/lib/modules/*` ;\
+	for pair in "kernel/fs fs" "kernel/drivers/net net"; \
+	do \
+		from=`echo $$pair | awk '{print $$1}'` ; \
+		to=`echo $$pair | awk '{print $$2}'` ; \
+		echo "pair = $$pair, from = $$from, to = $$to" ; \
+		mkdir $$dir/$$to ; \
+		cp `find $$dir/$$from -name "*.o" -print` $$dir/$$to ; \
+	done ; \
+
+	cd modules-2.4 ; tar cf ../modules-2.4.tar .
+	rm -rf modules-2.4
+	cd modules-2.2 ; tar cf ../modules-2.2.tar .
+	rm -rf modules-2.2
+	mv modules*tar $(BASE_DIR)/user-mode-linux/usr/lib/uml
+	
+
+tools:
+	for d in $(TOOLS) ; do $(MAKE) -C $$d all ; done
+	for d in $(TOOLS) ; do $(MAKE) -C $$d install DESTDIR=$(BASE_DIR)/user-mode-linux; done
 
 mkfs:
 	@if [ ! -f $(GENEXT2_DIR)/genext2fs ] ; then \
@@ -125,3 +181,4 @@ remove:
 	rm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm
 	rm -rf /usr/share/doc/gbootroot
 
+.PHONY: tools sources
