@@ -33,7 +33,6 @@
 use Gtk;
 use strict;
 use Yard;
-
 init Gtk;
 
 
@@ -108,6 +107,7 @@ my $version = "1.2.2";
 my $date = "09.03.2000";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
+my $template_dir = "./";
 use File::Basename;
 
 my $initrd;
@@ -147,7 +147,8 @@ my ($bz2_toggle,$gz_toggle);
 my ($bz2_toggle_root,$gz_toggle_root);
 my ($combo);
 my ($adj2,$adj3);
-
+my @strings;
+my ($root_device,$root_filename,$method,$template);
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -298,7 +299,6 @@ $box1->show();
 # First row
 hbox();
 my $entry = entry($false,0);
-$tooltips->set_tip( $entry, "Choose the Boot method.", "" );
 
 # Menu - later this may be improved if new methods are added.
 my $opt = new Gtk::OptionMenu();
@@ -306,6 +306,7 @@ $tooltips->set_tip( $opt, "Choose the Boot method.", "" );
 my $menu = new Gtk::Menu();
 my $item = new Gtk::MenuItem("Method -> lilo" );
 $item->show();
+# Eventually get_menu, or something totally different will be used.
 $item->signal_connect( 'activate',sub { $entry->set_text("lilo");
                                         $container[0] = "lilo"});
 $menu->append( $item );
@@ -455,7 +456,7 @@ $box2->show();
 
 # Help button
 my $hbutton = new Gtk::Button("Help");
-$hbutton->signal_connect( "clicked", \&create_text);
+$hbutton->signal_connect( "clicked", sub { create_text("help") });
 $tooltips->set_tip( $hbutton, "Help about gBootRoot.", "" );
 $hbutton->show();
 $box2->pack_start( $hbutton, $true, $true, 0 );
@@ -517,7 +518,6 @@ sub objcopy_right_click_advanced {
   }
 
 }
-
 
 sub advanced_boot_section {
 
@@ -606,7 +606,6 @@ sub advanced_boot_section {
     }
 
 } # end sub advanced_boot_section
-
 
 sub advanced_root_section {
 
@@ -760,16 +759,35 @@ sub advanced_root_section {
        $tooltips->set_tip( $ear4, 
                            "Choose the Root Filesystem Generation Method.", 
                            "" );
+
        my $opt_root = new Gtk::OptionMenu();
        $tooltips->set_tip( $opt_root, 
                            "Choose the Root Filesystem Generation Method.", 
                            "" );
        my $menu_root = new Gtk::Menu();
-       my $item_root = new Gtk::MenuItem("Yard" );
-       $item_root->show();
-       $item_root->signal_connect( 'activate',sub { 
-                                    $ear4->set_text("yard"); });
-       $menu_root->append( $item_root );
+
+       my $yard = new Gtk::MenuItem("Yard" );
+
+       $menu_root->append( $yard );
+
+       $yard->signal_connect( 'activate', sub { 
+			       $ear4->set_text("yard"); 
+			       $entry_advanced[6] = $ear4->get_text();
+			       opendir(DIR,$template_dir) if -d $template_dir;
+			       @strings = grep { m,\.yard$, } readdir(DIR); 
+			       closedir(DIR);
+	                 $combo->set_popdown_strings( @strings ) if @strings; 
+			        } );
+
+       $ear4->set_text($entry_advanced[6]) if $entry_advanced[6];
+       if ($yard) {
+	   opendir(DIR,$template_dir) if -d $template_dir; 
+	   @strings = grep { m,\.yard$, } readdir(DIR) if $yard;
+	   closedir(DIR)
+       }
+
+       $yard->show();
+
        $opt_root->set_menu( $menu_root );
        $table_advanced_root->attach($opt_root,2,3,7,8, 
                               ['expand','fill'],['fill','shrink'],0,0);
@@ -779,12 +797,20 @@ sub advanced_root_section {
        # Template
        # $::contents_file
        label_advanced("Template:",0,1,8,9,$table_advanced_root);
-       my @strings = ("nothing is here now");
        $combo = new Gtk::Combo(); 
-       $combo->set_popdown_strings( @strings );
+       $combo->entry->set_text($entry_advanced[7]) if $entry_advanced[7];
+        #$button_count_root_open = 1 + $button_count_root_open;
+        #print $button_count_root_open;
+	#if ($button_count_root_open > 1) {
+        #   $combo->set_popdown_strings( @strings ) 
+        #               if $entry_advanced[7] ne ""; 
+        #}
        $tooltips->set_tip( Gtk::Combo::entry($combo), 
                            "Choose a Template for the Method.", 
                            "" );
+       $entry_advanced[7] = $combo->entry->get_text(); # nothing selected
+       $combo->entry->signal_connect("changed", sub {
+	   $entry_advanced[7] = $combo->entry->get_text(); } );
        $table_advanced_root->attach($combo,1,3,8,9, 
                                ['expand','fill'],['fill','shrink'],0,0);
        show $combo;
@@ -797,8 +823,9 @@ sub advanced_root_section {
        #  asks the user if they want to modify the template, and/or save a 
        #  new template with modifications (to be added to Template menu).
        my $generate_b = button_advanced(0,1,9,10,"Generate");
+       $generate_b->signal_connect("clicked",\&Generate);
        $tooltips->set_tip( $generate_b, "Generate Root Filesystem.", "" );
-
+       
        my $UML_b = button_advanced(1,2,9,10,"UML");
        $tooltips->set_tip( $UML_b, "Test Filesystem with User Mode Linux.", 
                             "" );
@@ -823,10 +850,66 @@ sub advanced_root_section {
 } # end sub advanced_root_section
 
 
+sub Generate {
+
+    # @entry_advanced
+    # 0 = Development Drive
+    # 1 = Optional Devices
+    # 2 = Append Options
+    #------------------
+    $root_device = $entry_advanced[3]; # 3 = Root Device
+    $root_filename = $entry_advanced[4];  # 4 = Root Filename
+    # 5 = UML Kernel
+    $method = $entry_advanced[6];         # 6 = Method
+    $template = $entry_advanced[7];       # 7 = Template
+
+    if (!$root_device || $root_device eq "") {
+	error_window("gBootRoot: ERROR: Root Device not defined");	
+	return;
+    }
+    # devfs may change this
+    if (!-b $root_device) {
+	error_window("gBootRoot: ERROR: Not a valid Block Device");	
+	return;
+    }    
+
+    if (!$root_filename || $root_filename eq "") {
+	error_window("gBootRoot: ERROR: Root Filename not given");	
+	return;
+    } 
+    if (!$method || $method eq "") {
+	error_window("gBootRoot: ERROR: Method must be supplied");	
+	return;
+    }
+    if (!$template || $template eq "") {
+	error_window("gBootRoot: ERROR: Template name not given");	
+	return;
+    }
+
+    if ($method eq "yard") {
+	create_text("yard");
+	yard();
+    }
+
+    #print "$root_selection $root_filename $method $template\n";
+
+} # end sub Generate
+
+sub yard {
+
+    #open(YARD,"$template_dir$template");
+    #my @stuff = <YARD>;
+    #print @stuff;
+   
+
+
+} # end sub yard
+
 sub button_advanced {
 
     # cretzu should like this
-    my ($left_attach,$right_attach,$top_attach,$bottom_attach,$text) = @_;
+    my ($left_attach,$right_attach,$top_attach,
+                     $bottom_attach,$text,$widget) = @_;
     my $button = new Gtk::Button($text);
     $table_advanced_root->attach($button,$left_attach,$right_attach,
                                  $top_attach,$bottom_attach, 
@@ -900,6 +983,8 @@ sub label_advanced {
 
 sub create_text {
 
+    my ($text_type) = @_;
+
       if (not defined $text_window) {
        $text_window = new Gtk::Window "toplevel";
        $text_window->signal_connect("destroy", \&destroy_window,
@@ -943,7 +1028,12 @@ sub create_text {
        $vscrollbar->show();
 
        $text->freeze();
+       if ($text_type eq "help") {
        $text->insert( undef, undef, undef, help() );
+       }
+       elsif ($text_type eq "yard") {
+       $text->insert( undef, undef, undef, "Stuff coming soon" );
+       }
        $text->thaw();
 
        my $separator = new Gtk::HSeparator();
@@ -1122,7 +1212,7 @@ sub entry {
          $todo = "the Compressed Filesystem";
      }
      else {
-         $todo = "the Device to use";
+         $todo = "the Block Device to use";
      }
      $tooltips->set_tip( $entry,
        "Type in the location of $todo.", "" );
@@ -1180,7 +1270,7 @@ sub submit {
 
 # Run some checks
 if (!defined $container[0]) {
-    error_window("gBootRoot: ERROR: No method supplied");
+    error_window("gBootRoot: ERROR: No Method supplied");
     return;
 }
 if (defined $container[1] && -e $container[1] && !-d $container[1]) {
@@ -1201,7 +1291,8 @@ if (defined $container[2] && -e $container[2] && !-d $container[2] ) {
     $root_image = $container[2];
     if ($root_image =~ m,^$mnt,) {
       # Bug revealed by Cristian Ionescu-Idbohrn <cii@axis.com>
-      error_window("gBootRoot: ERROR: Rootimage found below Device mount point: $mnt");
+      error_window(
+          "gBootRoot: ERROR: Rootimage found below Device mount point: $mnt");
       return;
     }
 }
@@ -1210,12 +1301,12 @@ elsif (defined $container[0] && defined $container[1]) {
     return;
 }
 # we need to check for this, too.
-if (defined $container[3] && -e $container[3] && !-d $container[3] ) {
+if (defined $container[3] && -b $container[3]) {
          $device = $container[3];
 }
 elsif (defined $container[0] && defined $container[1]
        && defined $container[2]) {
-    error_window("gBootRoot: ERROR: Device not found");
+    error_window("gBootRoot: ERROR: Block Device not found");
     return;
 }
 if (defined $container[4]) {
