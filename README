@@ -1,4 +1,4 @@
-$Id: README,v 1.27 2003/02/16 00:46:21 freesource Exp $
+$Id: README,v 1.28 2003/02/16 00:47:23 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -42,6 +42,11 @@ translates into readline-dev, libncurses5-dev translates into
 ncurses-devel, reiserfsprog translates into reiserfs-utils.  Mandrake
 requires glibc-static-devel along with glibc-devel, but the other
 package names are more similar to Debian.
+
+Suse users may need to edit /usr/include/asm/ptrace.h adding "#define
+FRAME_SIZE 17" after the "#define SS 16" line or else uml won't
+compile.  This was observed in Suse 7.3; why this line is missing is a
+complete mystery.
 
 
 UML KERNEL CUSTOMIZATION
