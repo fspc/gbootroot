@@ -1,7 +1,15 @@
+Setting up the root filesystem
+-----------------------------
+
+1. If you desire, edit this file to your preferences.
+2. Run setup in this directory: 
+
+. setup
+
 Setting up a Swap File
 ----------------------
 
-1. run make_swapfile in this directory:
+1. Run make_swapfile in this directory:
 
 . make_swapfile
 
