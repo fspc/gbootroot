@@ -2915,43 +2915,105 @@ else {
 
 sub device2 {
 
-  my $device_size = (split(/\s+/,`df $mnt`))[8];
-  my $root_image_size = (stat($container[ROOT_FS]))[12]/2;
-  my $remain_root = $device_size - $root_image_size;
+    my $fs_type = (split(/\s/,$main::makefs))[0];
 
-  if ($remain_root  =~ /^-+\d+$/) {
-      error_window("gBootRoot: ERROR: Not enough room: root stuff = $root_image_size k, device = $device_size k");
-  }
-  else {
-      $entry5->set_text("$remain_root k");
-  }
+    # Time to do a little calculations
+    my $device_size;
+    if ( $fs_type ne "genext2fs" ) {
+	$device_size = (split(/\s+/,`df $mnt`))[8];
+    }
+    else {
+	if ( !$root_device_size ) {
+	    $device_size = $container[SIZE];
+	}
+	else {
+	    $device_size = $root_device_size;
+	}
+    }
+    
+    my $root_image_size = (stat($container[ROOT_FS]))[12]/2;
+    my $remain_root = $device_size - $root_image_size;
 
-     info(0, "Copy over the compressed filesystem\n");
-     return if errrm(sys("rmdir $mnt/lost+found")) == 2;
-     my $broot_image = basename($container[ROOT_FS]);
+    if ($remain_root  =~ /^-+\d+$/) {
+	error_window("gBootRoot: ERROR: Not enough room: root stuff = $root_image_size k, device = $device_size k");
+    }
+    else {
+	$entry5->set_text("$remain_root k");
+    }
+    
+    info(0, "Copy over the compressed filesystem\n");
+    if ( $fs_type ne "genext2fs" ) {
+	return if errrm(sys("rmdir $mnt/lost+found")) == 2;
+    }
+    my $broot_image = basename($container[ROOT_FS]);
 
-     my $FS = "filesystem";
-     my $line_count = `wc -l < $container[ROOT_FS]`; chomp $line_count;
-     my $half_line_count = $line_count/2;
-     my $count = 1;
-     open(CF, ">$mnt/$broot_image") or error_window(
-      "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
+    # Status output, use FH, or genext2fs to create disk.
+    #----------------------------------------------------
+    my $FS = "filesystem";
+    my $line_count = `wc -l < $container[ROOT_FS]`; chomp $line_count;
+    my $half_line_count = $line_count/2;
+    my $count = 1;
 
-     open(CR, "$container[ROOT_FS]") or error_window(
-     "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
+    if ( $fs_type ne "genext2fs" ) {
+	open(CF, ">$mnt/$broot_image") or error_window(
+       "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
+    
+	open(CR, "$container[ROOT_FS]") or error_window(
+       "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
 
-     while (<CR>) {
-         print CF $_;
-         pb($FS,$count,$line_count) if $count < $half_line_count;
-         $count++;
-     }
-     close(CF); close(CR);
+	while (<CR>) {
+	    print CF $_;
+	    pb($FS,$count,$line_count) if $count < $half_line_count;
+	    $count++;
+	}
+	close(CF); 
+	close(CR);
+    }
 
-     return if
-     err_custom("umount $mnt",
-      "gBootRoot: ERROR: Root disk did not properly umount") == 2;
-     pb($FS,$count,$line_count);
-     info(0, "Finished!\n");
+    # genext2fs
+    else {
+
+	my $error;
+
+	# If genext2fs is being used clean $tmp/rootdisk if any garbage is 
+	# found.
+	if ( $fs_type eq "genext2fs" ) {
+	    if (-d "$tmp/rootdisk") {
+		sys("rm -rf $tmp/rootdisk");
+	    }    
+	    if (!-d "$tmp/rootdisk") {
+		return if errmk(sys("mkdir $tmp/rootdisk")) == 2;
+	    }
+	}
+
+	return if errcp( sys("cp -a $container[ROOT_FS] $tmp/rootdisk") ) == 2;
+	
+	for ( $count .. $half_line_count ) {
+	    pb($FS,$count,$line_count) if $count < $half_line_count;
+	    $count++;
+	}
+	
+
+	if (
+	    sys("/usr/lib/bootroot/$main::makefs -b $device_size -d $tmp/rootdisk $entry_advanced[3]") !~ 
+	    /^0$/ ) {
+	    info( 0, "/usr/lib/bootroot/$main::makefs -b $device_size -d $tmp/rootdisk $entry_advanced[3]\n");
+	    $error = error("Cannot $fs_type filesystem.\n");
+	    return "ERROR" if $error && $error eq "ERROR";
+	}
+	
+
+    }
+    #------------------------------------------------------
+
+    if ( $fs_type ne "genext2fs" ) {
+	return if
+	    err_custom("umount $mnt",
+	    "gBootRoot: ERROR: Root disk did not properly umount") == 2;
+    }
+
+    pb($FS,$count,$line_count);
+    info(0, "Finished!\n");
 
 } # end sub device 2
 
