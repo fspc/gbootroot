@@ -177,6 +177,8 @@ CONFIG_ADFS_FS=m
 # CONFIG_ADFS_FS_RW is not set
 CONFIG_AFFS_FS=m
 CONFIG_HFS_FS=m
+CONFIG_BEFS_FS=m
+# CONFIG_BEFS_DEBUG is not set
 CONFIG_BFS_FS=m
 # CONFIG_EXT3_FS is not set
 # CONFIG_JBD is not set
@@ -197,6 +199,9 @@ CONFIG_RAMFS=y
 CONFIG_ISO9660_FS=y
 # CONFIG_JOLIET is not set
 # CONFIG_ZISOFS is not set
+CONFIG_JFS_FS=m
+# CONFIG_JFS_DEBUG is not set
+CONFIG_JFS_STATISTICS=y
 CONFIG_MINIX_FS=y
 CONFIG_VXFS_FS=m
 # CONFIG_NTFS_FS is not set
@@ -227,6 +232,7 @@ CONFIG_UFS_FS=m
 # CONFIG_ROOT_NFS is not set
 # CONFIG_NFSD is not set
 # CONFIG_NFSD_V3 is not set
+# CONFIG_NFSD_TCP is not set
 # CONFIG_SUNRPC is not set
 # CONFIG_LOCKD is not set
 # CONFIG_SMB_FS is not set
@@ -240,7 +246,6 @@ CONFIG_UFS_FS=m
 # CONFIG_NCPFS_NLS is not set
 # CONFIG_NCPFS_EXTRAS is not set
 # CONFIG_ZISOFS_FS is not set
-CONFIG_ZLIB_FS_INFLATE=y
 
 #
 # Partition Types
@@ -390,6 +395,12 @@ CONFIG_MTD_BLKMTD=m
 # NAND Flash Device Drivers
 #
 # CONFIG_MTD_NAND is not set
+
+#
+# Library routines
+#
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=y
 
 #
 # Kernel hacking

@@ -1,17 +1,17 @@
---- orig/fs/Makefile	Mon Nov 12 12:34:16 2001
-+++ um/fs/Makefile	Wed Feb 13 02:22:12 2002
-@@ -30,7 +30,6 @@
+--- orig/fs/Makefile	Thu Feb 27 15:30:17 2003
++++ um/fs/Makefile	Thu Feb 27 15:27:11 2003
+@@ -29,7 +29,6 @@
+ subdir-$(CONFIG_EXT3_FS)	+= ext3    # Before ext2 so root fs can be ext3
  subdir-$(CONFIG_JBD)		+= jbd
  subdir-$(CONFIG_EXT2_FS)	+= ext2
- subdir-$(CONFIG_ZLIB_FS_INFLATE) += inflate_fs
 -subdir-$(CONFIG_CRAMFS)		+= cramfs
  subdir-$(CONFIG_RAMFS)		+= ramfs
  subdir-$(CONFIG_CODA_FS)	+= coda
  subdir-$(CONFIG_INTERMEZZO_FS)	+= intermezzo
-@@ -67,7 +66,7 @@
- subdir-$(CONFIG_REISERFS_FS)	+= reiserfs
- subdir-$(CONFIG_DEVPTS_FS)	+= devpts
+@@ -68,7 +67,7 @@
  subdir-$(CONFIG_SUN_OPENPROMFS)	+= openpromfs
+ subdir-$(CONFIG_BEFS_FS)	+= befs
+ subdir-$(CONFIG_JFS_FS)		+= jfs
 -
 +subdir-$(CONFIG_CRAMFS)         += cramfs
  
