@@ -904,14 +904,14 @@ sub create_filesystem {
 	    ## Originally, this was -b 1024 switched with the inode approach.
 	    if (sys("$main::makefs $device $fs_size") !~ 
 		/^0$/ ) {
-		$error = error("Cannot $fs_type filesystem.");
+		$error = error("Cannot $fs_type filesystem.\n");
 		return "ERROR" if $error && $error eq "ERROR";
 
 	    }
 	} else {
 	    if (sys("$main::makefs $device $fs_size") !~ 
 		/^0$/ ) {
-		$error = error("Cannot $fs_type filesystem.");
+		$error = error("Cannot $fs_type filesystem.\n");
 		return "ERROR" if $error && $error eq "ERROR";
 	    }
 	}
@@ -1079,7 +1079,7 @@ sub create_filesystem {
 	if (
 	    sys("/usr/lib/bootroot/$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
 	    /^0$/ ) {
-	    $error = error("Cannot $fs_type filesystem.");
+	    $error = error("Cannot $fs_type filesystem.\n");
 	    return "ERROR" if $error && $error eq "ERROR";
 	    }
 
