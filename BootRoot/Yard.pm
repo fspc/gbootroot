@@ -486,45 +486,55 @@ sub read_contents_file {
 # Uses include_file
 sub extra_links {
 
-    my ($contents_file) = @_;
+    my ($contents_file, $nss_pam) = @_;
     
     #info(0, "PASS 2:  Picking up extra files from links, and finding pam and nss service modules...\n");
 
     info(0, "PASS 2:  Picking up extra files from links...\n");
 
     # First we find nss and pam stuff if asked for.
+    my $find_nss   = $nss_pam->{60}{conf_nss};
+    my $find_pam   = $nss_pam->{61}{conf_pam};
 
-    for my $file (keys %Included) {
+    if ( $find_nss == 1 || $find_pam == 1 ) {
 
-	##### Use replacement file if specified
-	$file = $replaced_by{$file} if defined($replaced_by{$file});
+	for my $file (keys %Included) {
 
-	## Here's where some cool stuff happens
-	## This can be turned on/off from the YardBox
-	## pam service modules are check for dependencies,
-	## mostly this translates into libnsl.
+	    ##### Use replacement file if specified
+	    $file = $replaced_by{$file} if defined($replaced_by{$file});
 
-	## NSS  --freesource
-	if ( $file =~ m,/nsswitch.conf, ) {
+	    ## Here's where some cool stuff happens
+	    ## This can be turned on/off from the YardBox
+	    ## pam service modules are check for dependencies,
+	    ## mostly this translates into libnsl.  --freesource
 
-	    my @nss_libs = find_nss($file);
-	    foreach ( @nss_libs ) {
-		$Included{$_} = 1;  # adding on the run
+	    ## NSS 
+	    if ( $find_nss == 1 ) {
+		if ( $file =~ m,/nsswitch.conf, ) {
+
+		    my @nss_libs = find_nss($file);
+		    foreach ( @nss_libs ) {
+			$Included{$_} = 1;  # adding on the run
+		    }
+
+		}
 	    }
 
-	}
+	    ## PAM
+	    if ( $find_pam == 1 ) {
+		if ( $file =~ m,/pam\.conf|/pam\.d/, ) {
 
-	## PAM
-	if ( $file =~ m,/pam\.conf|/pam\.d/, ) {
+		    my @pam_libs = find_pam($file);
+		    foreach ( @pam_libs ) {
+			$Included{$_} = 1;  # adding on the run
+		    }
 
-	    my @pam_libs = find_pam($file);
-	    foreach ( @pam_libs ) {
-		$Included{$_} = 1;  # adding on the run
+		}
 	    }
 
-	}
+	} # for loop
 
-    }
+    }  # end for nss pam
 
     info(0,"\n");
 

@@ -143,11 +143,13 @@ my @menu_items = ( { path        => '/File',
                    { path        => '/Edit/Settings/settings_separator',
                      type        => '<Separator>' },
 		   { path        => '/Edit/Settings/NSS Config',
-		     action      => "1111",
-		     type        => '<CheckItem>' },
+		     action      => "60",
+		     type        => '<CheckItem>',
+		     callback    => \&nss_pam },
                    { path        => '/Edit/Settings/PAM Config',
-		     action      => '1112',
-                     type        => '<CheckItem>' },
+		     action      => '61',
+                     type        => '<CheckItem>',
+		     callback    => \&nss_pam },
 
 		   { path        => '/Edit/Stages/' },
 		   { path        => '/Edit/Stages/one-by-one',
@@ -602,9 +604,38 @@ sub check {
 
 }
 
+############
+# NSS PAM  #
+############
+
+my %nss_pam = (
+	    60 => {
+		conf_nss => 1,
+	    },
+	    61 => {
+		conf_pam => 1,
+	    },
+);
+
+sub nss_pam {
+
+    my ($widget,$action) = @_;
+
+    my @label = keys( % { $nss_pam{$action} } );
+    # off
+    if ($nss_pam{$action}{$label[0]} == 1) {
+	$nss_pam{$action}{$label[0]} = 0;
+    }
+    # on
+    else {
+	$nss_pam{$action}{$label[0]} = 1;
+    }
+
+}
+
 sub links_deps {
 
-    my $error = extra_links($changed_text);
+    my $error = extra_links($changed_text, \%nss_pam);
     return if $error && $error eq "ERROR";
 
     $error = hard_links();
@@ -702,6 +733,7 @@ sub test {
     my $error = which_tests(\%tests); 
     return if $error && $error eq "ERROR";
 }
+
 
 #########################
 # CHECK STAGE VARIABLES #
@@ -856,7 +888,11 @@ sub yard_box {
     # 34 test_passwd         1 (default)  0
     # 35 test_pam            1 (default)  0
     # 36 test_nss            1 (default)  0
-
+    #
+    #            NSS PAM Conf  <CheckItem> HOH = %nss_pam
+    #            -----------------------------------------
+    # 60 conf_nss            1 (default)  0
+    # 61 conf_nss            1 (default)  0
  
     # Stages
     $one_by_one =  $item_factory->get_item('/Edit/Stages/one-by-one');
@@ -991,6 +1027,12 @@ sub yard_box {
        $test_pam->active(1);
        my $test_nss = $item_factory->get_item('/Tests/nss');
        $test_nss->active(1);
+
+       # PAM NSS Conf
+       my $conf_nss = $item_factory->get_item('/Edit/Settings/NSS Config'); 
+       $conf_nss->active(1);
+       my $conf_pam = $item_factory->get_item('/Edit/Settings/PAM Config'); 
+       $conf_pam->active(1);
 
        #_______________________________________ 
        # Create the GtkText widget
@@ -1807,7 +1849,7 @@ Selection Shortcuts
 
 Searching Shortcuts
 
- Alt-S Search Template
+ Alt-S  Search Template
 
 File Shortcuts
 
