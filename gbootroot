@@ -3993,7 +3993,8 @@ sub mtab_window {
     $button->grab_default;
     $button->show;
     $button = Gtk::Button->new("Cancel");
-    $button->signal_connect("clicked", sub { destroy $mtab; $mtab = 2; } );
+    $button->signal_connect("clicked", sub { destroy $mtab; 
+					     $mtab = 2 if $count == 3; } );
     $mtab->action_area->pack_start($button, $false, $false,0);
     $button->show;
     }
