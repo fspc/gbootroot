@@ -142,10 +142,12 @@ if (-d $packaging_place) {
                  if ($real_gid != $gid) {
                     system "chgrp $real_gid $File::Find::name";
                  }  
-                 if (/CVS/) {
-                     chdir(dirname($File::Find::name));
-                     system "rm -rf CVS";
-                 }
+
+                 # Keeping versioning is a great idea for Replacements
+                 # if (/CVS/) {
+                 #    chdir(dirname($File::Find::name));
+                 #    system "rm -rf CVS";
+                 # }
                
          } , $packaging_place ;
 }
