@@ -96,11 +96,12 @@ my $stuff = << "STUFF";
 
 # This template creates a complete Debian system which is more streamlined 
 # than the base.tgz used for normal installations.  Once everything is made, 
-# you can use user-mode-linux to tweak the system, as well as apt. 
-# Make-debian generates all the information you need, you will need swim and 
+# you can use user-mode-linux and apt to tweak the system. 
+# Make-debian generates all the information you need.  You will need swim and 
 # file-rc installed, and you will have to be running a Debian system to make 
-# this template.  Make-debian ditches info, man, and doc files by default,
-# use the "doc" option to make documentation.  
+# this template.  Make_debian ditches info, man, and doc files by default
+# and timezone info not found on the host system, but gives you the choice
+# to decide otherwise.  
 
 # Characteristics:  user: root passwd: root 
 #                   user: user passwd: user
@@ -167,6 +168,9 @@ my $stuff = << "STUFF";
 /var/lib/apt/lists/lock
 /var/lib/apt/lists/partial
 /etc/apt/*
+
+# Timezone data from libc6
+/usr/share/zoneinfo/localtime
 
 # Debconf stuff
 /var/cache/debconf
@@ -249,6 +253,34 @@ return $stuff;
 #######################
 ## Template Creation ##
 #######################
+
+# Ask some questions first.
+my $doc_reply = "nothing";
+print "The default is to remove /usr/share/{doc,man,info}? [yes or no]: ";
+while (<STDIN>) {
+    $doc_reply = $_;
+    last if $doc_reply eq "yes\n";
+    last if $doc_reply eq "no\n";
+    if ($doc_reply eq "\n") { $doc_reply = "yes\n"; last; }
+    if ($doc_reply ne "yes\n" || $doc_reply  ne "no\n") { 
+	print "The default is to remove /usr/share/{doc,man,info}? [yes or no]: ";
+    }
+}
+
+print "\nThe default is to remove everything in /usr/share/zoneinfo\n" .
+    "except for your local settings found in /etc/locatime? [yes or no]: ";
+my $localtime_reply = "nothing";
+while (<STDIN>) {
+    $localtime_reply = $_;
+    last if $localtime_reply eq "yes\n";
+    last if $localtime_reply eq "no\n";
+    if ($localtime_reply eq "\n") { $localtime_reply = "yes\n"; last; }
+    if ($localtime_reply ne "yes\n" || $localtime_reply  ne "no\n") { 
+	print "The default is to remove everything in /usr/share/zoneinfo\n" .
+	    "except for your local settings found in /etc/locatime? [yes or no]: ";
+    }
+}
+
 open(DEBIAN,">$template_dir/$debian_yard") 
 	or die "Couldn't open $!\n";
 open(FILERC,"/etc/runlevel.conf") or die "No runlevel.conf: $!\n";
@@ -262,14 +294,19 @@ alternatives();
 inetd_in();
 foreach (@required_files) {
     if (-e && !-d) {
-	if ($ARGV[0] && $ARGV[0] eq "doc") {
+	if ($doc_reply eq "no\n") {
 	    if ($alternatives{$_}) {
 		push(@alternatives,$_);
 	    }
 	    if ($inetd{$_}) {
 		$inetd{$_} = 1;
 	    }
-	    print DEBIAN "$_\n";
+	    if ($localtime_reply eq "yes\n") {
+		    print DEBIAN "$_\n" if ! m,/usr/share/zoneinfo,;
+	    }
+	    else {
+		print DEBIAN "$_\n";
+	    }
 	}
 	else {
 	    if (! m,/usr/share/info|/usr/share/man|/usr/share/doc,) {
@@ -279,7 +316,12 @@ foreach (@required_files) {
 		if ($inetd{$_}) {
 		    $inetd{$_} = 1;
 		}
-		print DEBIAN "$_\n";
+		if ($localtime_reply eq "yes\n") {
+		    print DEBIAN "$_\n" if ! m,/usr/share/zoneinfo,;
+		}
+		else {
+		    print DEBIAN "$_\n";
+		}
 	    }
 	}
 	if (m,/etc/init\.d,) {
