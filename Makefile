@@ -12,7 +12,7 @@ install:
 	cp -fa BootRoot/*.pm /usr/share/perl5/BootRoot
 	install -d /usr/share/gbootroot/yard/Replacements
 	cp -fa yard/replacements/* /usr/share/gbootroot/yard/Replacements
-	install -d /usr/lib/bootroot/yard/Replacements
+	install -d /usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/modules* /usr/lib/bootroot/yard/Replacements/lib/modules
 	cp -fa user-mode-linux/usr/lib/uml/CVS /usr/lib/bootroot/yard/Replacements/lib/modules/CVS
 	install -d /usr/share/gbootroot/yard/templates
