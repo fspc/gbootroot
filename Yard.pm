@@ -491,12 +491,14 @@ sub hard_links {
 
 ##########################
 
-# REQUIRES $fs_size $strip_objfile (0|1)
-# GBteam adds stripped file size check using stripper()
+# GBteam added stripped file size check.
 sub space_check {
 
     info(0, "Checking space needed.\n");
-    my ($fs_size, $strip_objfiles) = @_;
+
+    # For libs [obj_count  1 = "all" 0 = "debug"]
+    my ($fs_size, $strip_lib, $strip_bin, 
+        $strip_module, $obj_count, $tmp) = @_;
     my($total_bytes) = 0;
     my(%counted);
 
@@ -510,12 +512,16 @@ sub space_check {
 
     my ($file);
     foreach $file (keys %Included) {
+
+	my $not_stripped = `file $file`;
+	my $filename = basename($file);
       
 	my($replacement, $devino);
 	if ($replacement = $replaced_by{$file}) { 
 	    ## strip count for replace
 	    ## Check for libraries %lib_needed_by, modules %is_module, 
 	    ## and everything else if strippable, and strip is chosen
+	    ## and for lib two states are possible
 	    #####  Use the replacement file instead of this one.  In the
 	    #####  future, improve this so that replacement is resolved WRT
 	    #####  %links_to
@@ -559,7 +565,8 @@ sub space_check {
 	    ## At this point hardlinked, dirs, replaced_by and /proc have
 	    ## been filtered out.  If strip is chosen
 	    ## check for libraries (%lib_needed_by), modules (%is_module), 
-	    ## and everything else if strippable.
+	    ## and everything else if strippable.  For lib two states are
+	    ## posible
 	    #####  Count space for plain files
 	    info(1, "$file size ", -s _, "\n");
 	    $total_bytes += bytes_allocated($file);
@@ -573,14 +580,8 @@ sub space_check {
 
     if (bytes_to_K($total_bytes) > $fs_size) {
 	info(0, "This is more than $fs_size Kbytes allowed.\n");
-	if ($strip_objfiles) {
-	    info(0, "But since object files will be stripped, more space\n",
-		 "may become available.  Continuing...\n");
-	} else {
             print "Not enough room .. but I'll take care of that later\n";
             return;
-	    ##@error("You need to trim some files out and try again.\n");
-	}
     }
 
     info(0, "\n");
@@ -653,7 +654,7 @@ sub create_filesystem {
 	    info(1, "\tLink\t$floppy_file -> $target\n");
 	    symlink($target, $floppy_file) or
 		error("symlink($target, $floppy_file): $!\n");
-	    delete $Included{$file}; # Get rid of it so next pass doesn't copy it
+	    delete $Included{$file}; # Get rid of it so next pass doesn't copit
 
 	} elsif (-d $file) {
 	    my($floppy_file) = $::mount_point . $file;
@@ -820,21 +821,25 @@ sub cf_warn {
 #  is strippable and stripping is desired by the user, and if the
 #  objcopy program exists.
 sub copy_strip_file {
-    my($from, $to) = @_;
+    
+    # Obviously create_filesytem's @_ will have to be modified 4 the last 4
+    # check for off or on, not undef
+    my($from, $to, $strip_objfiles, 
+       $strip_lib, $strip_bin, $strip_module) = @_;
 
-    if ($::strip_objfiles and defined($objcopy) and $strippable{$from}) {
+    if ($strip_objfiles and defined($objcopy) and $strippable{$from}) {
 	#  Copy it stripped
 
-	if (defined($lib_needed_by{$from})) {
+	if (defined($lib_needed_by{$from}) && $strip_lib) {
 	    #  It's a library
 	    info(1, "Copy/stripping library $from to $to\n");
 	    sys("$objcopy --strip-all $from $to");
 
-	} elsif (defined($is_module{$from})) {
+	} elsif (defined($is_module{$from}) && $strip_module) {
 	    info(1, "Copy/stripping module $from to $to\n");
 	    sys("$objcopy --strip-debug $from $to");
 
-	} else {
+	} elsif ($strip_bin) {
 	    #  It's a binary executable
 	    info(1, "Copy/stripping binary executable $from to $to\n");
 	    sys("$objcopy --strip-all $from $to");
