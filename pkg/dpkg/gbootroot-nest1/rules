@@ -32,7 +32,7 @@ clean:
 
 	# Add here commands to clean up after the build process.
 	-$(MAKE) clean
-	-$(MAKE) clean-sources
+	#-$(MAKE) clean-sources
 
 	dh_clean
 
@@ -43,7 +43,7 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/gbootroot.
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/gbootroot
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/gbootroot-nest1
 
 
 # Build architecture-independent files here.
@@ -70,7 +70,7 @@ binary-arch: build install
 	dh_installchangelogs 
 #	dh_link
 #	dh_strip
-	dh_compress
+	dh_compress --exclude=boot_root.4
 	dh_fixperms
 #	dh_makeshlibs
 	dh_installdeb

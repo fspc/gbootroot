@@ -1,0 +1,10 @@
+# gBootRoot menu
+# Jonathan Rosenbaum <freesource@users.sourceforge.net>
+
+?package(gbootroot-nest1): \
+	needs=x11 \
+	section=Apps \
+	title="gBootRoot" \
+	command="/usr/bin/gbootroot" \
+	icon=/usr/X11R6/include/X11/pixmaps/gbootroot.xpm \
+	hints="Distribution"

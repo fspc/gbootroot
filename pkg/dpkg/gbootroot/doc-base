@@ -1,0 +1,9 @@
+Document: gbootroot
+Title: gBootRoot Manual
+Author: Jonathan Rosenbaum 
+Abstract: The definitive manual about gbootroot.
+Section: Apps/Tools
+     
+Format: HTML
+Index: /usr/share/doc/gbootroot/html/index.html
+Files: /usr/share/doc/gbootroot/html/*.html

@@ -1,0 +1,30 @@
+Source: gbootroot-nest1
+Section: utils
+Priority: optional
+Maintainer: Jonathan Rosenbaum <freesource@users.sourceforge.net>
+Build-Depends: debhelper (>> 3.0.0), binutils (>= 2.13.90.0.16), fileutils (>= 4.1), gcc (>= 2:2.95.4), make, libc6-dev (>= 2.3.1), bin86, wget, mkcramfs, e2fsprogs, reiserfsprogs, genromfs, util-linux, mtd-tools, fakeroot, dpkg-dev, m4, libreadline4-dev
+Standards-Version: 3.5.2
+
+Package: gbootroot-nest1 
+Architecture: i386 
+Depends:  ${perl:Depends}, perl-modules, libgtk-perl (>= 0.7002), libc6 (>= 2.1.2), libexpect-perl, ash, file, binutils, bzip2
+Recommends: dswim, lilo
+Suggests: make-debian-x11
+Description: Boot/Root Filesystem Distribution testing and creation.
+ BootRoot makes the construction and development of distributions fun and 
+ simple with its Root Methods (Yard) and user-mode-linux test bed.  Finish 
+ the product with a Boot Method (2-disk compression supported).  Normal 
+ (non-root) users can make root filesystems and boot disks.  Includes the 
+ make_debian script to create a testable user-mode-linux base Debian system
+ and a MTD Emulator useful for running distributions made with the jffs/jffs2
+ filesystem.  Add-ons available, see "apt-cache search gbootroot-nest1."  
+ .
+ The latest and greatest gbootroot-nest1 and stuff can be found here: 
+ .	
+ http://prdownloads.sourceforge.net/gbootroot
+ http://prdownloads.sourceforge.net/avd
+ .
+ See manual in /usr/share/doc/gbootroot-nest1/html for instructions on how
+ to add the proper lines to your sources.list.  Both binary and source
+ packages are available.
+
