@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 
 #    gBootRoot Copyright (C) 2000
-#    Project Developer and Coordinator
+#    Lead Developer and Project Coordinator
 #    Jonathan Rosenbaum <mttrader@access.mountain.net>
 #
-#    Lead Programmer and Developer
+#    Developer
 #    Cristian Ionescu-Idbohrn <cii@axis.com>
 #
 #    http://the.netpedia.net/gBootRoot.html
@@ -66,7 +66,7 @@ my $lilo_conf = "/etc/lilo.conf";
 #                * Step increment changed for device size spinner button.
 #                * New documentation and grammar corrections.
 #                * Bugs closed: 111579, 112555, 112949, 111580, 11636, 12073,
-#                   12215, 13385, 13453, 13455.
+#                  12215, 13385, 13453, 13455.
 #
 #       1.0.3 - 08.09.2000
 #               * Tmp and mnt are now created on the fly,
@@ -345,8 +345,8 @@ $entry5->set_usize(15,20);
 $box2->pack_start( $entry5, $true, $true, 0 );
 $entry5->show();
 
-# The ADVANCED SECTION 
-######################
+# The ADVANCED BOOT SECTION 
+###########################
 # Separator
 $separator = new Gtk::HSeparator();
 $box1->pack_start( $separator, $false, $true, 0 );
@@ -359,12 +359,12 @@ $vbox_advanced->show();
 
 # The Advanced Section button
 hbox_advanced();
-my $button_advanced = new Gtk::Button("Advanced Section");
-$tooltips->set_tip( $button_advanced, "This is where all the advanced stuff is found.", "" );
+my $button_advanced = new Gtk::Button("Advanced Boot Section");
+$tooltips->set_tip( $button_advanced, "Change settings for the bootdisk.", "" );
 $button_advanced->signal_connect("clicked",\&advanced_section );
 $hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
 $button_advanced->show();
-######################
+###########################
 
 # Separator
 $separator = new Gtk::HSeparator();
