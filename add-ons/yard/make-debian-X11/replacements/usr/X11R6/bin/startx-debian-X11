@@ -1,0 +1,15 @@
+#!/usr/bin/perl
+
+print "Please enter your Hosts ip: ";
+my $answer = <STDIN>;
+chomp $answer;
+$ENV{DISPLAY} = "$answer:0";
+system "Xnest&";
+
+$ENV{DISPLAY} = ":0";
+system "flwm&";
+system "gbootroot&";
+
+sleep(5);
+print "That's it\n";
+system "xsetroot -display :0 -solid Orange";
