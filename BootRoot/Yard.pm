@@ -1045,10 +1045,10 @@ sub copy_strip_file {
 	my $from_base = basename($from);
 	chown($uid, $gid, $to) or ($error = 
 				   error("chown: $! \($from_base\)\n"));
-	return "ERROR"if $error && $error eq "ERROR";
+	##return "ERROR"if $error && $error eq "ERROR";
 	chmod($mode, $to)      or ($error = 
 				   error("chmod: $! \($from_base\)\n"));
-        return "ERROR"if $error && $error eq "ERROR";
+        ##return "ERROR"if $error && $error eq "ERROR";
 	}
 	elsif ($strip_module) {
 	    info(1, "Copy/stripping module $from to $to\n");
@@ -1060,7 +1060,7 @@ sub copy_strip_file {
 	    my $from_base = basename($from);
 	    chown($uid, $gid, $to) or ($error = 
 				       error("chown: $! \($from_base\)\n"));
-	    return "ERROR"if $error && $error eq "ERROR";
+	    ##return "ERROR"if $error && $error eq "ERROR";
 	    chmod($mode, $to)      or ($error = 
 				       error("chmod: $! \($from_base\)\n"));
 	    return "ERROR"if $error && $error eq "ERROR";
@@ -1075,7 +1075,7 @@ sub copy_strip_file {
 	    my $from_base = basename($from);
 	    chown($uid, $gid, $to) or ($error = 
 				       error("chown: $! \($from_base\)\n"));
-	    return "ERROR"if $error && $error eq "ERROR";
+	    ##return "ERROR"if $error && $error eq "ERROR";
 	    chmod($mode, $to)      or ($error = 
 				       error("chmod: $! \($from_base\)\n"));
 	    return "ERROR"if $error && $error eq "ERROR";
