@@ -152,7 +152,7 @@ my ($adj2,$adj3);
 my @strings;
 my ($root_device,$root_filename,$method,$template,$filesystem_size,
     $root_device_size);
-
+my $yard_window;
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -233,14 +233,17 @@ if (!-d $tmp1) {
     }
 }
 
-if (!-d "$tmp1/gbootroot_tmp$$") {
-  $tmp = "$tmp1/gbootroot_tmp$$" if err_custom_perl(
-         "mkdir $tmp1/gbootroot_tmp$$",
+my ($sec,$min,$hour,$day,$month,$year) = (localtime)[0,1,2,3,4,5];
+my $time = sprintf("%02d:%02d:%02d-%02d-%02d-%04d", 
+		   $hour, $min, $sec, $month+1, $day, $year+1900);
+if (!-d "$tmp1/gbootroot_tmp$time") {
+  $tmp = "$tmp1/gbootroot_tmp$time" if err_custom_perl(
+         "mkdir $tmp1/gbootroot_tmp$time",
          "gBootRoot: ERROR: Could not make temporary directory") != 2;
 }
-if (!-d "$tmp1/gbootroot_mnt$$") {
- $mnt = "$tmp1/gbootroot_mnt$$" if err_custom_perl(
-        "mkdir $tmp1/gbootroot_mnt$$",
+if (!-d "$tmp1/gbootroot_mnt$time") {
+ $mnt = "$tmp1/gbootroot_mnt$time" if err_custom_perl(
+        "mkdir $tmp1/gbootroot_mnt$time",
         "gBootRoot: ERROR: Could not make mount directory") != 2;
 }
 
@@ -385,7 +388,9 @@ $adj1->signal_connect( "value_changed", sub {
     verbosity($verbosity);
 
     if ($verbosity == -1) {
-	destroy $verbosity_window if visible $verbosity_window;
+	if ($verbosity_window) {
+	    destroy $verbosity_window if visible $verbosity_window;
+	}    
     }
     elsif (!$verbosity_window) {
 	close(LOGFILE);
@@ -1046,6 +1051,9 @@ sub Generate {
 
 } # end sub Generate
 
+######
+# YARD
+###### 
 sub yard {
 
     #open(YARD,"$template_dir$template");
@@ -1055,37 +1063,112 @@ sub yard {
 
     # Error handling in Yard will take some strategy
     if (!-d $container[1] && -f $container[1]) {
-	#verbosity_box();
         $error = kernel_version_check($container[1]);  
                                               # Yard: kernel,kernel version
                                               # Becomes $ENV{'RELEASE'}
 	return if $error && $error eq "ERROR";
+	open(CONTENTS, "<$template_dir$template") or 
+        ($error = error("$template_dir$template: $!"));
+	return "ERROR"if $error && $error eq "ERROR";
+	my @template = <CONTENTS>;
+	my $stuff = join("",@template);
+	yard_box($stuff);
     }
     else {
 	error_window("Kernel Selection required");
         return;
     }
 
+##    $error = read_contents_file("$template_dir$template");
+##    return if $error && $error eq "ERROR";
 
-    $error = read_contents_file("$template_dir$template");
-    return if $error && $error eq "ERROR";
+##    $error = extra_links("$template_dir$template");
+##    return if $error && $error eq "ERROR";
 
-    ##$error = extra_links("$template_dir$template");
-    return if $error && $error eq "ERROR";
+##    $error = hard_links();
+##    return if $error && $error eq "ERROR";
 
-    ##$error = library_dependencies("$template_dir$template");
-    return if $error && $error eq "ERROR";
+##    $error = library_dependencies("$template_dir$template");
+##    return if $error && $error eq "ERROR";
 
-    ##$error = hard_links();
-    return if $error && $error eq "ERROR";
-
-    ##$error = space_check($filesystem_size, $lib_strip_check_root->get_active(),
+    ##$error = space_check($filesystem_size, 
+    ##             $lib_strip_check_root->get_active(),
 ##		$bin_strip_check_root->get_active(), 
 ##		$module_strip_check_root->get_active(), 
 ##		$obj_count_root, $tmp);
-    return if $error && $error eq "ERROR";
+##    return if $error && $error eq "ERROR";
 
 } # end sub yard
+
+sub yard_box {
+    
+       $yard_window = new Gtk::Window "toplevel";
+       $yard_window->signal_connect("destroy", \&destroy_window,
+                                    \$yard_window);
+       $yard_window->signal_connect("delete_event", \&destroy_window,
+                                    \$yard_window);
+       $yard_window->set_usize( 500, 600 );
+       $yard_window->set_policy( $true, $true, $false );
+       $yard_window->set_title( "Yard Box" );
+       $yard_window->border_width(0);
+
+       my $main_vbox = new Gtk::VBox( $false, 0 );
+       $yard_window->add( $main_vbox );
+       $main_vbox->show();
+
+       my $vbox = new Gtk::VBox( $false, 10 );
+       $vbox->border_width( 10 );
+       $main_vbox->pack_start( $vbox, $true, $true, 0 );
+       $vbox->show();
+
+       my $table = new Gtk::Table( 2, 2, $false );
+       $table->set_row_spacing( 0, 2 );
+       $table->set_col_spacing( 0, 2 );
+       $vbox->pack_start( $table, $true, $true, 0 );
+       $table->show( );
+
+       # Create the GtkText widget
+       my $text = new Gtk::Text( undef, undef );
+       $text->set_editable($true);
+       $table->attach( $text, 0, 1, 0, 1,
+                       [ 'expand', 'shrink', 'fill' ],
+                       [ 'expand', 'shrink', 'fill' ],
+                       0, 0 );
+       $text->grab_focus();
+       $text->show();
+
+       $text->freeze();
+       $text->insert( undef, undef, undef, $_[0]);
+       $text->thaw();       
+
+       # Add a vertical scrollbar to the GtkText widget
+       my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
+       $table->attach( $vscrollbar, 1, 2, 0, 1, 'fill',
+                       [ 'expand', 'shrink', 'fill' ], 0, 0 );
+       ##my $logadj = $vscrollbar->get_adjustment();
+       ##logadj($logadj);
+       $vscrollbar->show();
+
+       my $separator = new Gtk::HSeparator();
+       $main_vbox->pack_start( $separator, $false, $true, 0 );
+       $separator->show();
+
+       $vbox = new Gtk::VBox( $false, 10 );
+       $vbox->border_width( 10 );
+       $main_vbox->pack_start( $vbox, $false, $true, 0 );
+       $vbox->show();
+
+       #my $button = new Gtk::Button( "Close" );
+       #$button->signal_connect( 'clicked', 
+       #				sub { destroy $yard_window; } );
+       #$vbox->pack_start( $button, $true, $true, 0 );
+       #$button->can_default( $true );
+       #$button->grab_default();
+       #$button->show();
+
+       show $yard_window;
+
+} # end sub yard_box
 
 sub button_advanced {
 
@@ -2331,6 +2414,7 @@ sub errcp {
    }
 }
 
+
 sub errum {
    error_window("gBootRoot: ERROR: Could not umount the device") if $? != 0;
    if (defined $error_window) {
@@ -2408,7 +2492,6 @@ sub verbosity_box {
                                     \$verbosity_window);
        $verbosity_window->signal_connect("delete_event", \&destroy_window,
                                     \$verbosity_window);
-       $verbosity_window->set_title("Help");
        $verbosity_window->set_usize( 500, 600 );
        $verbosity_window->set_policy( $true, $true, $false );
        $verbosity_window->set_title( "Verbosity Box" );
