@@ -116,7 +116,7 @@ my ($hbox_advanced);
 my $separator_advanced;
 my @entry_advanced;
 my $entry_advanced;
-my $ea1;
+my ($ea1,$ea2,$ea3);
 my $table_advanced;
 my $button_count = 0;
 my $obj_count = 0;
@@ -181,6 +181,8 @@ $SIG{ABRT} = \&signal;
 $SIG{TERM} = \&signal;
 $SIG{QUIT} = \&signal;
 $SIG{KILL} = \&signal;
+
+(undef,$container[1],$container[11]) = gdkbirdaao();
 
 if (!-d $tmp1) {
     if (-e $tmp1) {
@@ -264,6 +266,7 @@ $box2->show();
 # Second row
 hbox();
 my $entry2 = entry($true,1);
+$entry2->set_text($container[1]);
 button("Kernel Selection",$entry2,"Kernel Selection",1);
 
 # Third row
@@ -276,8 +279,8 @@ button("Compressed Filesystem",$entry3,"Compressed Filesystem",2);
 # Fourth row
 hbox();
 my $entry4 = entry($true,3);
-$entry4->set_text("/dev/fd0");
 $container[3] = "/dev/fd0";
+$entry4->set_text($container[3]);
 button("Device Selection",$entry4,"Device Selection",3,$true);
 
 # Fifth row
@@ -429,16 +432,16 @@ sub objcopy_right_click_advanced {
       if ( $event->{'button'} == 3 ) {
 	  if ($obj_count == 0) {
              $tooltips->set_tip( $lib_strip_check, 
-                           "This is generally a good idea.  Press right" .
-                           " mouse button to change from" .
+                           "This is generally a good idea.  Press the" .
+                           " right mouse button to change from" .
                            " [objcopy --strip-all] to" .
                            " [objcopy --strip-debug].", "" );
              $obj_count++;
           }
           else {
               $tooltips->set_tip( $lib_strip_check, 
-                           "This is generally a good idea.  Press right" .
-                           " mouse button to change from" .
+                           "This is generally a good idea.  Press the" .
+                           " right mouse button to change from" .
                            " [objcopy --strip-debug] to" . 
                            " [objcopy --strip-all].", "" );
 	      $obj_count--;
@@ -469,8 +472,8 @@ sub advanced_section {
        $lib_strip_check->signal_connect( "button_press_event", 
                                           \&objcopy_right_click_advanced); 
        $tooltips->set_tip( $lib_strip_check, 
-                           "This is generally a good idea.  Press right" .
-                           " mouse button to change from" .
+                           "This is generally a good idea.  Press the" .
+                           " right mouse button to change from" .
                            " [objcopy --strip-debug] to" . 
                            " [objcopy --strip-all].", "" );
        #$hbox_advanced->pack_start( $lib_strip_check, $false, $false, 0);
@@ -508,11 +511,19 @@ sub advanced_section {
 
        # Optional Device(s)
        label_advanced("Opt. Device(s)",0,1,2,3);
-       entry_advanced(1,2,2,3,1);
+       $ea2 = entry_advanced(1,2,2,3,1);
+       $tooltips->set_tip( $ea2, "Add devices to initrd which are" .
+                                 " necessary for the kernel to function" .
+                                 " properly.  Put a space between each" .
+                                 " device.", 
+                                    "");
+       $ea2->set_text($entry_advanced[1]) if defined $entry_advanced[1];
 
        # Append Options
        label_advanced("append =",0,1,3,4);
-       entry_advanced(1,2,3,4,2);
+       $ea3 = entry_advanced(1,2,3,4,2);
+       my $append; (undef,undef,$append) = gdkbirdaao();
+       $ea3->set_text($append) if defined $append;
 
        # Verbosity section
 
@@ -557,41 +568,9 @@ sub label_advanced {
     $label_advanced = new Gtk::Label( $text );
     $label_advanced->set_justify( "fill" );
     $table_advanced->attach($label_advanced,$_[1],$_[2],$_[3],$_[4], ['expand'],['fill','shrink'],0,0);
-    #$table_advanced->attach_defaults( $label_advanced, 0, 1, 0, 1 );
-    #$hbox_advanced->pack_start( $label_advanced, $true, $true, 0 );
     $label_advanced->show();
 
 }
-
-# Cristian's idea - bug 111579 enh for brlilo
-sub norm_root_device {
-
-  my $root_dev = 'hda1';
-
-  if (!-d $lilo_conf) {
-    if (-e $lilo_conf) {
-      open(LIL, $lilo_conf);
-      my @lilo_lines = <LIL>;
-      close(LIL);
-      chomp(@lilo_lines);
-
-      for (@lilo_lines) {
-        next if m/^\s*[#]/;
-
-        if (m#\s*root\s*=\s*/dev/(.+)\s*#) {
-          $root_dev = $1;
-          last;
-        }
-      }
-    }
-  }
-  #open(VFN, ">> $verbosefn") or die "Oops! Can't open $verbosefn,";
-  #print VFN "Root device found: $root_dev\n";
-  #close(VFN);
-
-  return $root_dev;
-
-}                               # end sub norm_root_device
 
 sub create_text {
 
@@ -776,7 +755,7 @@ sub entry {
 
     if ($num == 0) {
         $entry->signal_connect( "activate", sub {
-                $container[$num] = $entry->get_text();});            
+                $container[$num] = $entry->get_text();}); 
     }
     else {
          $entry->signal_connect( "changed", sub {
@@ -913,22 +892,78 @@ elsif (defined $container[0] && defined $container[1] &&
      !$container[6] ? ($container[6] = 2) : ($container[6] = 1);  
      !defined $bin_strip_check  ? ($container[7] = 3) 
        : ($container[7] = $bin_strip_check->get_active());
-     !$container[7] ? ($container[7] = 4) : ($container[7] = 3);  
-
+     !$container[7] ? ($container[7] = 4) : ($container[7] = 3); 
+ 
      if ($container[6] == 1) {     
         $obj_count == 0 ? ($container[8] = 5) : ($container[8] = 6);
      }
 
-     $container[9] = $entry_advanced[0] . "extra";
+     if (!defined $entry_advanced[0]) {
+        $container[9] = $device . "ea1"; 
+	$entry_advanced[0] = $device;
+     }
+     else {
+	 $container[9] = $entry_advanced[0] . "ea1";
+     }
+
+     # not quite there .. .* to "" not working yet
+     if ($entry_advanced[1]) {
+        push(@original_container,$entry_advanced[1]) if !$container[10];
+        if ($container[10]) {
+	    $container[10] = $entry_advanced[1];
+        }
+     } 
+
+     # pretty complex and works properly
+     if ($container[11] ne "") {
+         $container[11] = $entry_advanced[2] if $entry_advanced[2];
+     }
+     if (defined $entry_advanced[2] and $entry_advanced[2] eq "") {
+         $container[11] = "";
+     }
+     elsif ($container[11] eq "") {
+        push(@original_container,$entry_advanced[2]);         
+     }
 
      if (@original_container) { # defined array deprecate Perl 5.6 -  zas@metaconcept.com
          # a hash check isn't perfect for two values which are the same
          # no need to check all the values
+
          my @temp_container = @container;
+
+         # Got it!
+         if ($container[10] and $container[10] eq "") {
+	     $container[10] = $entry_advanced[1];
+         }
+         if ($container[11] eq "") {
+	     $container[11] = $entry_advanced[2]
+         }
+
+         # no sense looking at undef values
+         my (@temp_container2,@original_container2);
+	 for (@temp_container) {
+             if ($_) {
+		 push(@temp_container2,$_);
+             }       
+         }
+	 for (@original_container) {
+             if ($_) {
+		 push(@original_container2,$_);
+             }       
+         }
+
+	 @temp_container = @temp_container2;
+	 @original_container = @original_container2;
+
          splice(@temp_container,1,1);
+
+         # A test which I've had to run too often
+         # print "BEFORE @temp_container\nAFTER  @original_container\n";
+
          my %diff;
          grep($diff{$_}++,@temp_container);
          my @diff = grep(!$diff{$_},@original_container);
+
          if ($#diff >= 0) {
          # unlink initrd_image.gz, do initrd()
              $ok = 1;
@@ -942,10 +977,15 @@ elsif (defined $container[0] && defined $container[1] &&
          $ok = 2; # this is actually first (1 = diff, 0 = same)
          $initrd = "initrd_image";
      }
+
      # reset
+
+     # entry fun
+
      @original_container = ($container[0],$root_image,$device,$size,
                             $compress,$container[6],$container[7],
-                            $container[8],$container[9]);
+                            $container[8],$container[9],$container[10],
+                            $container[11]);
 
      lilo();
  }
@@ -1125,7 +1165,7 @@ sub lilo_put_it_together {
   }
 
   # This adds that next device
-  $norm_root_device = norm_root_device();
+  ($norm_root_device) = gdkbirdaao();
   if (!-e "$mnt/dev/$norm_root_device") {
     return if err(
     system "cp -a /dev/$norm_root_device $mnt/dev >> $verbosefn 2>&1") == 2;
@@ -1402,7 +1442,11 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $verbosefn 2>&1; mount -o loop 
   pb($I,6);
 
   return if errcp(system "cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev >> $verbosefn 2>&1") == 2;
-  return if errcp(system "cp -a $device $tmp/initrd_mnt/dev") == 2;
+  return if errcp(system "cp -a $device $tmp/initrd_mnt/dev >> $verbosefn 2>&1") == 2;
+  # For frame buffer devices and the like.
+  if ($entry_advanced[1]) {
+      return if errcp(system "cp -a $entry_advanced[1] $tmp/initrd_mnt/dev >> $verbosefn 2>&1") == 2;
+  }
   pb($I,7);
 
   #V#print ".. the bins\n";
@@ -1463,6 +1507,131 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $verbosefn 2>&1; mount -o loop 
 
 
 } # end sub initrd
+
+# This was submitted by Cristian "cretzu."
+sub gdkbirdaao
+{
+  # Guess Default Kernel Boot Image Root Device And Append Options (gdbirdaao)
+  #
+  # We return a list with 3 elements:
+  #
+  #   root device, kernel boot image path and append options
+  #
+  # The last list element (append options) could be returned as a list
+  # of options, but it probably might be cleaner if the caller splitted it.
+  #
+  # this should cover the following cases:
+  #
+  # 1. we have a 'root=...' somewhere above the 'image=...' block(s), and
+  #    the image block may or may not have a root specified
+  #
+  # 2. there is no default label, in which case, we take the first one
+  #
+  # 3. there is a default label, and that's what we pick up
+  #
+
+  my $ret_image_path = '';
+  my $ret_root_dev = '';
+  my $ret_append = '';
+
+  if (-e $lilo_conf and !-d $lilo_conf)
+  {
+    open(LIL, $lilo_conf) or die "*** $lilo_conf not found,";
+    my @lilo_lines = <LIL>;
+    close(LIL);
+    chomp(@lilo_lines);
+
+    my $default_label = '';
+    my %image_blocks;
+    my $image_block_name_prefix = 'ImageBlock';
+    my $image_block_no = 1;
+    my $image_block_name = '';
+    my $root_dev = '';
+
+    for (@lilo_lines)
+    {
+      # ignore comment lines
+      next if m/^\s*[#]/;
+
+      # cleanup whitespace
+      s/\s*//;
+      s/\s*$//;
+      s/\s*=\s*/=/;
+
+      # 'default=whatever' returns just a label
+      if (m/default=(.+)\s*/)
+      {
+        $default_label = $1;
+      }
+      # start of a new 'image=<kernel path>' image block or similar
+      elsif (m/(image|other)=(.+)\s*/)
+      {
+        $image_block_name = sprintf("%s%02d",
+                                    $image_block_name_prefix,
+                                    $image_block_no);
+        $image_blocks{$image_block_name}{'kernel_image_path'} = $2;
+        $image_blocks{$image_block_name}{'root_device'} = $root_dev;
+        $image_block_no += 1;
+      }
+      # image block label
+      elsif (m/label=(.+)\s*/)
+      {
+        $image_blocks{$image_block_name}{'block_label'} = $1;
+      }
+      # 'root=<root device>'
+      elsif (m#root=/dev/(.+)\s*#)
+      {
+        # inside an image block
+        if ($image_block_name and
+            defined($image_blocks{$image_block_name}{'root_device'}))
+        {
+          $image_blocks{$image_block_name}{'root_device'} = $1;
+        }
+        # loose
+        else
+        {
+          $root_dev = $1 if !$root_dev;
+        }
+      }
+      elsif (m#append=\"(.+)\"#)
+      {
+	$image_blocks{$image_block_name}{'append'} = $1;
+      }
+      else
+      {
+        # Ignore everything else
+      }
+    }
+
+    # we'll now find the kernel image and root device
+    foreach $image_block_name (sort keys %image_blocks)
+    {
+      # Assume there's no specified default label; take the first
+      $ret_root_dev = $image_blocks{$image_block_name}{'root_device'}
+        if !$ret_root_dev;
+      $ret_image_path = $image_blocks{$image_block_name}{'kernel_image_path'}
+	if !$ret_image_path;
+      $ret_append = $image_blocks{$image_block_name}{'append'}
+	if !$ret_append;
+
+      # do we have a default kernel?
+      if ($image_blocks{$image_block_name}{'block_label'} eq $default_label)
+      {
+        # Found the block match for the default label
+        $ret_root_dev = $image_blocks{$image_block_name}{'root_device'};
+        $ret_image_path = $image_blocks{$image_block_name}{'kernel_image_path'};
+	$ret_append = $image_blocks{$image_block_name}{'append'};
+        last;
+      }
+    }
+  }
+  
+  # and some a small portion of paranoia
+  $ret_root_dev = 'hda1' if !$ret_root_dev;
+
+  return ($ret_root_dev, $ret_image_path, $ret_append);
+
+} # end sub gdkbirdaao
 
 sub mtab_window {
 # Will just use a dialog box.
@@ -1614,6 +1783,8 @@ INITRD
 sub brlilo {
 
     my ($device) = @_;
+    $entry_advanced[2] ? $entry_advanced[2] = $entry_advanced[2] 
+                       : $entry_advanced[2] = $container[11];
 
 # HEREDOC
 my $brlilo = << "LILOCONF";
@@ -1636,6 +1807,7 @@ read-write
 
 # normalboot
 image = kernel
+append = "$entry_advanced[2]"
 root = /dev/$norm_root_device
 label = normalboot
 read-only
