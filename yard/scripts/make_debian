@@ -6,13 +6,20 @@ my $home_yard = "$home/yard";
 my $template_dir = "$home_yard/templates/";
 my $home_yard_replacements = "$home_yard/Replacements";
 
+# You need file-rc, and you may add other extra stuff.  These packages were
+# chosen for woody, so you may need something different.
+my @extra_packages = qw(file-rc swim nvi sysklogd netbase tcpd net-tools
+portmap netkit-ping netkit-inetd less perl perl-modules);
+
 # And tests will be ran here for file-rc and swim
 # Options: to include or remove docs /usr/share/{doc,man,info}
 
 system "swim --search \"Priority: required\" > /dev/null 2>&1";
 my $swim_packages = "swim -qS|";
 my $swim_list = "swim -qSl|";
-my $file_rc = "swim -ql file-rc|";
+$, = " ";
+my $extra_files = "swim -ql @extra_packages|";
+$, = "";
 
 open(SWIM,$swim_packages) or die "Couldn't open $?\n";
 my @required_packages = <SWIM>; chomp @required_packages;
@@ -22,13 +29,14 @@ open(SWIM,$swim_list) or die "Couldn't open $?\n";
 my @required_files = <SWIM>; chomp @required_files;
 close(SWIM);
 
-open(SWIM,$file_rc) or die "Couldn't open $?\n";
+open(SWIM,$extra_files) or die "Couldn't open $?\n";
 my @extra_files = <SWIM>; chomp @extra_files;
 close(SWIM);
 
+push(@required_packages,@extra_packages);
 push(@required_files,@extra_files);
 
-open(DEBIAN,">$template_dir/Debian-test.yard") 
+open(DEBIAN,">$template_dir/Debian.yard") 
 	or die "Couldn't open $?\n";
 open(FILERC,"/etc/runlevel.conf") or die "No runlevel.conf: $?\n";
 @filerc = <FILERC>;
@@ -80,14 +88,17 @@ $stuff = << "STUFF";
 # this template.  Make-debian ditches info, man, and doc files by default,
 # use the "doc" option to make documentation.  
 #
+# Characteristics:  Uses devfs. user: root passwd: root 
+                                user: user passwd: user
+#
 # Note:  Things slow down noticeably when the buffer gets too big in the
 # verbosity box so consider closing it with the slider for faster generation.
 
 # The STUFF NEEDED in order for init to work.
-/etc/runlevel.conf <=  Replacements/etc/runlevel.conf
+/etc/runlevel.conf <=  Replacements/etc/runlevel.conf # made by make_debian
 /etc/init.d/rc
 /etc/init.d/rcS
-/etc/inittab <= Replacements/etc/inittab.debian
+/etc/inittab <= Replacements/etc/inittab.debian # specific to devfs
 /etc/default/rcS
 
 # Stuff to save to return init to old state prior to file-rc
@@ -95,10 +106,24 @@ $stuff = << "STUFF";
 /etc/init.d/rcS.links 
 /usr/sbin/update-rc.d.links
 
-# Important stuff
-/etc/fstab	<= ./Replacements/etc/fstab.new
-/etc/passwd*
-/etc/group*
+# Login stuff 
+/etc/securetty <= Replacements/etc/securetty.debian # devfs needs this
+/root/.bashrc <= Replacements/root/.bashrc.debian
+/root/.profile <= Replacements/root/.profile.debian
+/home/user/.bashrc <= Replacements/home/user/.bashrc.debian
+/home/user/.bash_profile <= Replacements/home/user/.bash_profile.debian
+/etc/hostname <= Replacements/etc/hostname
+/etc/motd <= Replacements/etc/motd
+
+# Important stuff  .. you will need to edit this if you add packages
+# which need other users/groups
+#/etc/fstab <=  Replacements/etc/fstab.new # Made from Yard Box menu
+/etc/fstab <=  Replacements/etc/fstab.debian # devfs specific
+/etc/passwd <= Replacements/etc/passwd.debian
+/etc/passwd- <= Replacements/etc/passwd-debian
+/etc/group <= Replacements/etc/group.debian
+/etc/group- <= Replacements/etc/group-debian
+/etc/shadow <= Replacements/etc/shadow.debian
 
 # The information needed so that dpkg can work.
 /var/lib/dpkg/diversions <= Replacements/var/lib/dpkg/diversions
@@ -112,7 +137,7 @@ $stuff = << "STUFF";
 /var/lib/dpkg/updates
 /var/lib/dpkg/alternatives
 
-# Devices
+# Devices - optional stuff picked up by devfsd
 /dev/MAKEDEV # a link
 /dev/mem	
 /dev/kmem
