@@ -23,7 +23,6 @@
 ##
 ##############################################################################
 
-
 package BootRoot::BootRoot;
 use vars qw(@ISA @EXPORT %EXPORT_TAGS);
 use Exporter;
@@ -38,17 +37,12 @@ use File::Basename;
 use File::Find;
 use File::Path;
 
-
 # If you want gBootRoot to do it's stuff somewhere else, change the
 # value for $tmp1.
 my $tmp1 = "/tmp";              # tmp should be default - Cristian
 my $lilo_conf = "/etc/lilo.conf";
 my $home = "$ENV{HOME}/.gbootroot";
 my $uml_xterm = "xterm -e";
-$main::editor = "emacs --font 6x13";
-$main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
-$main::sudo = "sudo";
-
 
 # Don't edit from here, but you can if you want to change the HERE docs
 # and/or the contents of initrd (in which case you need to make sure the
@@ -64,14 +58,11 @@ my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
 my $home_uml_kernel = "$home/uml_kernel/";
 my $modules_directory = "/lib/modules";
-if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
-    $main::makefs = "genext2fs -z -r0"; # -i8192 not a good idea
-}
+
 # This is for experimental stuff .. basically so I can test
 # the boot fs as a normal user, since it's hard to create a boot disk
 # with enough room using genext2fs.
 my $busybox;
-
 
 # Yard Stuff
 my $home_yard = "$home/yard";
@@ -84,7 +75,6 @@ my $global_yard_replacements_arch_indep  =
 my $global_yard_replacements_arch_dep = "/usr/lib/bootroot/yard/Replacements";
 my $global_yard_templates = "/usr/share/gbootroot/yard/templates";
 $ENV{'PATH'} = "$home_yard:" . $ENV{'PATH'};
-
 
 my $initrd;
 my $compress;
@@ -265,6 +255,12 @@ BEGIN {
 
 sub start {
 
+
+if ( $> != 0 && -e "/usr/lib/bootroot/genext2fs" ) {
+    $main::makefs = "genext2fs -z -r0"; # -i8192 not a good idea
+}
+
+
 $SIG{INT} = \&signal;
 $SIG{ABRT} = \&signal;
 $SIG{TERM} = \&signal;
@@ -311,7 +307,7 @@ else {
     # auto   defaults,noauto,user,loop       0       0
     #
     # For the boot/root disks the administrator will have to give the user
-    # special su privileges (mknod) to make special devices.  The $main::sudo 
+    # special su privileges (mknod) to make special devices.  The $sudo 
     # variable can be set to sudo or super, fakeroot won't work.
     # These include: /dev/{console,null,ram0,ram1,tty0}
     # These two lines need to be added to create the boot_fs and the boot/root
@@ -1095,17 +1091,18 @@ sub advanced_root_section {
        $filesystem_size = 4096 if !$filesystem_size;
        $ars->{filesystem_size} = $filesystem_size;
        ars($ars);
+       filesystem_size();
        $adj3->signal_connect( "value_changed", sub {
 	       $filesystem_size = $spinner_size->get_value_as_int();
 	       $ars->{filesystem_size} = $filesystem_size;
 	       ars($ars);
+	       filesystem_size();
 	   });
        $spinner_size->set_value($filesystem_size) if $filesystem_size;
 
        #_______________________________________ 
        # Compression
        # gBootRoot methods
-
 
        my $hbox_between = Gtk::HBox->new(0,1);
        $table_advanced_root->attach($hbox_between,0,3,4,5,
