@@ -1190,33 +1190,46 @@ sub search {
 	    if ($search_backwards->active) {
 
 		if (!$offset) {
-		    $offset = rindex($changed_text_from_template, $keywords);
+		    if($case_sensitive->active) {
+			my ($tmp_ct, $tmp_k);
+			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
+			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			$offset = rindex($tmp_ct, $tmp_k);
+		    }
+		    else {
+			$offset = rindex($changed_text_from_template, 
+					 $keywords);
+		    }
 		    if ($offset != -1) {
 			my $length = length($keywords);
 			$text->set_position($offset);
 			$text->get_chars($offset, $length);
 			$length = $length + $offset;
 			$text->select_region($offset, $length);
-		#print "$offset && $length\n";
-		    }
-		    else {
-
 		    }
 		}
 		else {
 		    $offset = $offset - 1;
-		    $offset = rindex($changed_text_from_template, $keywords, 
-				    $offset);
+
+		    if($case_sensitive->active) {
+			my ($tmp_ct, $tmp_k);
+			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
+			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			$offset = rindex($tmp_ct, $tmp_k, $offset);
+		    }
+		    else {
+			$offset = rindex($changed_text_from_template, 
+					 $keywords, $offset);
+		    }
 		    if ($offset != -1) {
 			my $length = length($keywords);
 			$text->set_position($offset);
                         $text->get_chars($offset, $length);
 			$length = $length + $offset;
 			$text->select_region($offset,$length);
-		#print "$offset && $length\n";
+
 		    }
 		    else {
-
 
 		    }
 		}
@@ -1226,7 +1239,17 @@ sub search {
 	    # index
 	    else {
 		if (!$offset) {
-		    $offset = index($changed_text_from_template, $keywords);
+		    if($case_sensitive->active) {
+			my ($tmp_ct, $tmp_k);
+			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
+			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			$offset = index($tmp_ct, $tmp_k);
+		    }
+		    else {
+			$offset = index($changed_text_from_template, 
+					 $keywords);
+		    }
+
 		    if ($offset != -1) {
 			my $length = length($keywords);
 			$text->set_position($offset);
@@ -1240,8 +1263,17 @@ sub search {
 		}
 		else {
 		    $offset = $offset + 1;
-		    $offset = index($changed_text_from_template, $keywords, 
-				    $offset);
+
+		    if($case_sensitive->active) {
+			my ($tmp_ct, $tmp_k);
+			($tmp_ct = $changed_text_from_template) =~ tr/A-Z/a-z/;
+			($tmp_k = $keywords) =~ tr/A-Z/a-z/;
+			$offset = index($tmp_ct, $tmp_k, $offset);
+		    }
+		    else {
+			$offset = index($changed_text_from_template, 
+					 $keywords, $offset);
+		    }
 		    if ($offset != -1) {
 			my $length = length($keywords);
 			$text->set_position($offset);
@@ -1250,7 +1282,6 @@ sub search {
 			$text->select_region($offset,$length);
 		    }
 		    else {
-
 
 		    }
 		}
