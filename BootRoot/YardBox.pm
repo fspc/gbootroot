@@ -309,8 +309,11 @@ sub file_system {
 		# Check to see if it actually exists
 		my $executable = (split(/\s+/,$entry[2]))[0];
 		if (!find_file_in_path(basename($executable))) {
-		    error_window("gBootRoot: ERROR: Enter a valid command");
-		    return;
+		    if ( $executable ne "genext2fs" ) {
+			error_window
+			    ("gBootRoot: ERROR: Enter a valid command");
+			return;
+		    }
 		}
 		if ($executable =~ m,/,) {
 		    if (! -e $executable) {
