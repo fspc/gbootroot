@@ -181,11 +181,6 @@ telinit
 #/etc/inittab	<= Replacements/etc/inittab.example-rh
 #/etc/inittab	<= Replacements/etc/inittab.example-rh-nodevfs
 #/sbin/getty
-#
-#===== SUSE uses mingetty:
-#/etc/inittab    <= Replacements/etc/inittab.mingetty.example-suse
-#/etc/inittab    <= Replacements/etc/inittab.mingetty.example-suse-nodevfs     
-#/sbin/mingetty
 
 # Devices - If devfs isn't desired use the kernel option devfs=nomount 
 /dev/console
