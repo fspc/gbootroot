@@ -1271,6 +1271,9 @@ sub find_file_in_path {
       my($abs_file) = "$dir/$file";
       return $abs_file if -e $abs_file;
     }
+    if ( !-e "$path[$#path]/$file") {
+	info(1,"gBootRoot Error: Couldn't find $file\n");
+    }
     undef;
   }
 
