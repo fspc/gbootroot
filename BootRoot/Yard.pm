@@ -168,7 +168,9 @@ sub read_contents_file {
 
 
     # It's a good idea to clear the text buffer in the verbosity box
-    $text_insert->backward_delete($text_insert->get_length());
+    if ( $text_insert ) {
+	$text_insert->backward_delete($text_insert->get_length());
+    }
 
     # Need to know whether genext2fs is being used
     my $fs_type = (split(/\s/,$main::makefs))[0];
@@ -503,7 +505,11 @@ sub read_contents_file {
 	}
     }				# End of FILE loop
 
-      while (Gtk->events_pending) { Gtk->main_iteration; }
+
+
+	  while (Gtk->events_pending) { Gtk->main_iteration; }
+
+
 
   }				# End of LINE loop
 
@@ -1818,6 +1824,12 @@ sub info {
 	  while (Gtk->events_pending) { Gtk->main_iteration; }
       }
   }
+
+
+  if ( $::commandline ) {
+      print @msgs;
+  }
+
 
 }
 

@@ -31,6 +31,7 @@ use Exporter;
 
 use strict;
 use POSIX;
+use Getopt::Long;  # only here for convenience
 use BootRoot::Yard;
 use BootRoot::YardBox;
 use BootRoot::Error;
@@ -724,18 +725,21 @@ $window->show();
 
 # Here we put the logic if the program is going to be run from the commandline.
 # The logic is linear and the only feature planned to be included from the
-# commandline is root_fs prototyping via the yard method.
+# commandline is root_fs prototyping via the yard method.  This logic could
+# easily have been run from somewhere else, but for convenience it is here 
+# for now.
 #
 #  here we avoid Generate() -> yard() -> yard_box()  to avoid the GUI 
 else {
 
+# VARIABLES
 #     # @entry_advanced
 #  UD or Default   4 = Root Filename  
 #  UD or Default   5 = UML Kernel
 #  UD or Default   6 = Method   -> my $method = $entry_advanced[6];         
 #  UD              7 = Template
 #  UD or Default   $filesystem_size;
-#  UD or Default   fs_type & uml_exclusively & preserve_ownership
+#  UD or Default   fs_type & $uml_exclusively & preserve_ownership
 
 #    ?# 11 = Kernel Modules  .. from the Boot Method
 #  UD or Default  12 = Kernel Version  .. from the Boot Method ($RELASE)
@@ -744,11 +748,18 @@ else {
 #  Default           $ars->{mnt}            = $mnt;
 #  Default           $ars->{template_dir}   = $template_dir; #static right now.
 #                    ars($ars);
-#  UD or Default    my $template = $ars->{template};
+#  see prev.    my $template = $ars->{template};
 #    my $root_filename = $ars->{filename};
 
 #   DON'T forget variables for Filesystem Box.  fs_type & uml_exclusively &
 #   preserve_ownership
+# sub ars2 { $ars = $_[0]; 
+
+#	   $kernel                    = $ars->{kernel};
+#	   $kernel_version_choice     = $ars->{kernel_version_choice};
+#	   $uml_exclusively           = $ars->{uml_exclusively};
+#	   $preserve_ownership      = $ars->{preserve_ownership};
+# }
 
 #   Commands will either be genext2fs -z -r0 or helper_fs .. root is allowable
 #   like normal
@@ -758,6 +769,61 @@ else {
 #   then this helper fs will be used to make the one with cramfs .. although 
 #   this could have been done with cramfs itself .. this avoids root automation
 #   and is a cool demonstration and testing mechanism.
+
+# STAGE LOGIC - skip space_left and test
+# Stages  all have my $error  return if $error && $error eq "ERROR";
+# kernel_version_check() 
+#
+#  check() read_contents_file( "$template_dir$template", $tmp,
+#				    $filesystem_size, \%uml_expect );
+#
+#  links_deps() extra_links($changed_text, \%nss_pam);
+#
+#  create()  - term depends on whether root or normal user (really copy)
+#    $lib_bool = "" if $lib_bool eq 0;
+#    $bin_bool = "" if $bin_bool eq 0;
+#    $mod_bool = "" if $mod_bool eq 0;
+#
+#    my $error = create_filesystem($filename,$filesystem_size,$tmp,$lib_bool,
+#			       $bin_bool,$mod_bool,$strip_bool, \%uml_expect);
+#    return if $error && $error eq "ERROR";
+#
+#  create_uml()  create_expect_uml($filesystem_size, $tmp, $filename);
+
+# Let's read in the ARGV
+
+   my %option;
+  Getopt::Long::config("bundling","no_auto_abbrev");
+GetOptions (
+    
+    %option,
+    "root-filename=s",
+    "uml-kernel=s", 
+    "method=s",
+    "template=s",           # The only required argument
+    "filesystem-size=s",
+    "filesytem-type=s",
+    "uml-exclusively=s",
+    "preserve-ownership=s",
+    "kernel-version=s",
+
+    );
+
+
+start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
+
+
+                                             # "verbosity level"
+info(1, "hello there\n");
+
+
+
+#    read_contents_file( "$template_dir$template", $tmp,
+#			    $filesystem_size, \%uml_expect );
+
+
+
+    #print kernel_version_check(), "Hi there!\n";
 
 
 }  # end if $::commandline
