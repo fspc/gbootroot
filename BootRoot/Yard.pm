@@ -1408,12 +1408,12 @@ sub create_filesystem {
 	    my $command_line = "$expect_program $ubd0 $ubd1 $options " .
 		"$mount_point $preserve_ownership $filesystem";
 
-	    info(1,"\n$command_line\n\n");
+	    info(0,"\n$command_line\n\n");
 
 	    # add error correction
 	    open(EXPECT,"$command_line|");
 	    while (<EXPECT>) {
-		info(0,"$x_count  $_");
+		info(1,"$x_count  $_");
 		$x_count++;
 		while (Gtk->events_pending) { Gtk->main_iteration; }
 	    }
