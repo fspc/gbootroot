@@ -1069,10 +1069,18 @@ sub uml_box {
 				  sub {
 				      # UML kernel = $entry_advanced[5]
 				      # xterm -e linux ubd#=root_fs 
-				      # root=/dev/ubd# 
-				      sys("$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]");
-				  } );
+                                      # root=/dev/ubd# 
+				      my $pid; 
+				      unless ($pid = fork) {
+					  unless (fork) {
+					      sys("$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]");
 
+					  }
+				      }
+				      waitpid($pid,0);
+
+#				      sys ("perl -e 'system \"$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]\";'");
+				  } );
 
 	#_______________________________________
 	# Cancel button also kills UML kernel if still open
@@ -1082,7 +1090,7 @@ sub uml_box {
 				     # This has to be improved .. don't
 				     # want other processes killed
 				     # remove_matching_process("linux");
-				     $uml_window->destroy();
+				     $uml_window->destroy() if $uml_window;
 				 } );
 
 	$uml_window->show();
