@@ -1,0 +1,35 @@
+# /etc/securetty: list of terminals on which root is allowed to login.
+# See securetty(5) and login(1).
+#
+# $Id$
+# Used by the Example.yard template.
+
+# devfs
+ttys/0
+ttys/1
+ttys/2
+ttys/3
+ttys/4
+ttys/5
+ttys/6
+ttys/7
+ttys/8
+serial/0
+serial/1
+serial/2
+serial/3
+
+# nodevfs
+tty0
+tty1
+tty2
+tty3
+tty4
+tty5
+tty6
+tty7
+tty8
+serial0
+serial1
+serial2
+serial3
