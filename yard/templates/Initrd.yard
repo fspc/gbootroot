@@ -1,0 +1,78 @@
+# $Id$
+
+# A simple initrd to boot a filesystem of choice from a block device which appears as a MTD 
+# device.  Mtdram or Blkmtd is what is used to load this device. 
+
+# Jonathan Rosenbaum <freesource@users.sourceforge.net> - GNU GPL
+
+# Can be tested with something like this:
+
+# root=/dev/ram0 umid=ramtest initrd=/tmp/gboot_non_root_1000/Initrd
+# ubd0=/home/mttrader/.gbootroot/root_filesystem/root_fs_mtd
+
+# Notes
+# This will have to be made everytime a new kernel is used on the system becasue of the blkmtd and
+# mtdram module
+
+/linuxrc <= Replacements/etc/linuxrc
+/Initrd.yard <= templates/Initrd.yard  
+
+#  Maybe a uml bug, but this make sures linuxrc is called during the initrd stage
+/sbin/init -> /linuxrc
+
+# Shell
+bash
+
+# Script stuff
+echo
+cat
+#sleep
+sed
+#grep
+cut
+which
+#sort
+#uniq
+
+# blkmtd and mtdram module
+/blkmtd.o <=  Replacements/usr/src/linux-um/drivers/mtd/devices/blkmtd.o
+/mtdram.o <= Replacements/usr/src/linux-um/drivers/mtd/devices/mtdram.o
+dd  # The magic command
+du
+einfo
+erase
+
+# module stuff
+insmod
+modprobe
+rmmod
+
+# fs handling
+mount umount 
+mkdir
+pivot_root
+/usr/sbin/chroot 
+
+# Devices
+/dev/ram[0-9]
+##/dev/ubd[0-9] # b 98 0..9
+/dev/console
+/dev/tty[0-4]
+/dev/initrd
+##/dev/mtd[0-9]
+##/dev/mtdblock[0-9]
+
+# Directories
+/proc
+/mnt
+/etc/mtab -> /proc/mounts
+/dev
+
+# Just to look around 
+ls
+df
+#nano
+#/usr/share/terminfo/l/linux
+#vi
+#/tmp
+#/var/tmp
