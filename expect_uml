@@ -11,8 +11,27 @@ if ( !$ARGV[0] ) {
 
 my $arguments = "$ARGV[0] $ARGV[1] $ARGV[2]"; 
 my $mount_point = "$ARGV[3]";
-my $filesystem = "$ARGV[4];
 
+my $end = 5;
+my $filesystem;
+for ( 4 .. $end ) {
+    if ( $_ == 4 ) {
+	$filesystem = "$ARGV[4]";
+	# What to do with the rieserfs command
+	if ( $filesystem eq "mkreiserfs" ) {
+	    $filesystem = $filesystem . " -f -f -q";
+	}
+    }
+    else {
+	if ( $ARGV[$end] ) {
+	    $filesystem = $filesystem . " $ARGV[$end]";
+	    $end++;
+	}
+	else {
+	    last;
+	}
+    }
+}
 
 my $uml  = 
   BootRoot::UML->new( login_prompt    =>  "bootroot login: ",
