@@ -503,11 +503,9 @@ sub home_builder {
 my ($sec,$min,$hour,$day,$month,$year) = (localtime)[0,1,2,3,4,5];
 my $time = sprintf("%02d:%02d:%02d-%02d-%02d-%04d", 
 		   $hour, $min, $sec, $month+1, $day, $year+1900);
-#print "$time\n";
 
-# Here's where stuff gets weird, to provide a predicatable place for non-root
-# users to mount the loop device via fstab when making a root_fs (because
-# $tmp is used), one place has to be designated.
+# Here's where stuff gets intersting, non-root users can create root_fs,
+# which is great for UML.
 
 if ( $< == 0 ) {
 
