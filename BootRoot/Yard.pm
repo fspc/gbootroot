@@ -3,7 +3,9 @@
 ##  Yard.pm combining
 ##  MAKE_ROOT_FS, CHECK_ROOT_FS, and YARD_UTILS.PL by Tom Fawcett
 ##  Copyright (C) 1996,1997,1998  Tom Fawcett (fawcett@croftj.net)
-##  Copyright (C) 2000,2001 Modifications by the gBootRoot Team
+##  Copyright (C) 2000,2001 Modifications by Jonathan Rosenbaum 
+##                                           <freesource@users.sourceforge.net>
+
 ##
 ##  This program is free software; you may redistribute it and/or modify
 ##  it under the terms of the GNU General Public License as published by
@@ -318,7 +320,7 @@ sub extra_links {
     info(0, "PASS 2:  Picking up extra files from links...\n");
 
     for (keys %Included) {
-        # watch for "" - GBteam
+        # watch for "" - freesource
 	include_file($contents_file, $_) if $_ ne "";
     }
 
@@ -547,7 +549,7 @@ sub hard_links {
 
 ##########################
 
-# GBteam added stripped file size check.
+# freesource added stripped file size check.
 sub space_check {
 
     
