@@ -48,13 +48,13 @@ http://user-mode-linux.sourceforge.net/arch-port.html.
 
 Here the basic instructions to compile uml stuff:
 
-Get kernel sources from www.kernel.org which preferably 
-match the kernel version used by gbootroot - this can be found in the Changes 
-file - and then a matching uml-patch from 
-http://sourceforge.net/project/showfiles.php?group_id=429.  Use config as 
-your .config at the base of the sources.  There are good instructions on how 
-to compile a uml kernel at 
-http://user-mode-linux.sourceforge.net/UserModeLinux-HOWTO-2.html.  
+Get kernel sources from www.kernel.org, and then a matching uml-patch from 
+http://sourceforge.net/project/showfiles.php?group_id=429.  If you want to 
+match the kernel version used by gbootroot check Changes to find out which 
+version of uml if being used.  You may want to use config as your .config at 
+the base of the sources as a starting point, and then modify the kernel 
+configuration in whatever way required.  There are good instructions on how to
+compile a uml kernel at http://user-mode-linux.sourceforge.net/UserModeLinux-HOWTO-2.html.  
 Then put the uml kernel in the directory cited above and call it linux; you can
 put the modules in a Replacements directory later on (see FAQ).  
 
