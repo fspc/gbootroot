@@ -1073,6 +1073,15 @@ sub uml_box {
 				      my $pid; 
 				      if ($entry_advanced[8] && 
 					  $entry_advanced[10]) {
+					  # Check to see if it is an executable
+					  my $executable = (split(/\s+/,$entry_advanced[8]))[0];
+					  if (!find_file_in_path($executable)) {
+					      error_window("gBootRoot Error: " .
+					      "Enter a valid xterm, and " .
+					      "executable option.");
+					      return;
+					  }
+
 				      unless ($pid = fork) {
 					  unless (fork) {
 					      if ($pid == 0) {
@@ -1135,6 +1144,8 @@ sub uml_box {
 sub remove_matching_process {
 
     my ($match_word) = @_;
+
+    # Just an overkill
     if ($match_word =~ m,/,) {
 	$match_word =~ s,/,\\/,g;
     }
