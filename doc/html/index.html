@@ -77,7 +77,7 @@ since large quantities of output to this box may cause gbootroot to use too
 much cpu power; however, output may still be found in the text file "verbose" 
 in /tmp/gbootroot_tmp'time-date'.</p>
 
-<br><br><br><br>
+<br><br><br><br><br>
 
 <p><P align="center"><b>
 Using the Advanced Boot Section</b></p>
@@ -97,77 +97,86 @@ on the actual boot device.</p>
 
 <p>
 
-"Opt. Device"&nbsp;&nbsp;  Add devices to the boot disk which are necessary for the
-kernel to function properly.  Put a space between each device.  For instance,
-/dev/fb0 for frame buffer devices.</p>
+"Opt. Device"&nbsp;&nbsp; Add devices to the boot disk which are necessary for the
+kernel to function properly.&nbsp;&nbsp;  
+Put a space between each device.&nbsp;&nbsp;  
+For instance, /dev/fb0 for frame buffer devices.</p>
+
+<p>
+
+"Kernel Module"&nbsp;&nbsp; Add the modules found in 
+/lib/modules/kernel-version which are necessary for the Boot Method to work
+properly.&nbsp;&nbsp;
+If these modules aren't found here it is assumed that they either
+are in the kernel or they do not exist.</p>
 
 <p>
 
 "append ="&nbsp;&nbsp;  Add append options to brlilo.conf.&nbsp;&nbsp;  If you are using a frame
 buffer device you could add something like video=matrox:vesa:402,depth:16.</p>
 
-<br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br>
 
 <P align="center">
 <b>Using the Advanced Root Section</b></P>
 <p><IMG ALT="" SRC="images/ARS.jpg" align="right">
 
-"Root Device" &nbsp;&nbsp;  
+"Root Device"&nbsp;&nbsp;  
 This is the device used for the root filesystem when 
-constructing the Boot/Root set. &nbsp;&nbsp; 
+constructing the Boot/Root set.&nbsp;&nbsp; 
 You may choose a device which is different 
 than the Boot device, but presently only floppy devices are supported.</p>
 
 <p>
 
-"Root Device Size" &nbsp;&nbsp; The size of the actual media used for the Root Device.</p>
+"Root Device Size"&nbsp;&nbsp; The size of the actual media used for the Root Device.</p>
 
 <p>
 
-"Root Filename" &nbsp;&nbsp;
+"Root Filename"&nbsp;&nbsp;
  The name give to the root filesystem when initially made
-in the temporary creation location. &nbsp;&nbsp;
+in the temporary creation location.&nbsp;&nbsp;
 The save button allows the creation to
 be saved in the permanent default location when the 
 Accept button is pressed.</p>
 
 <p>
 
-"Filesystem Size" &nbsp;&nbsp;
+"Filesystem Size"&nbsp;&nbsp;
  Root Methods make the filesystem the size which is 
 specified here.</p>
 
 <p>
 
-"Compression" &nbsp;&nbsp;
-Off by default to allow user-mode-linux testing. &nbsp;&nbsp; Turn on 
+"Compression"&nbsp;&nbsp;
+Off by default to allow user-mode-linux testing.&nbsp;&nbsp; Turn on 
 compression when you are ready to use a Boot Method 
 which requires compression.</p>
 
 <p>
 
-"Method" &nbsp;&nbsp; The root filesystem creation method.</p>
+"Method"&nbsp;&nbsp; The root filesystem creation method.</p>
 
 <p>
 
-"Template" &nbsp;&nbsp; The template associated with a Root Method. &nbsp;&nbsp;
+"Template"&nbsp;&nbsp; The template associated with a Root Method.&nbsp;&nbsp;
  Not all Root Methods
 have templates.</p>
 
 <p>
 
-"Generate" &nbsp;&nbsp; This puts the chosen Root Method in action.</p>
+"Generate"&nbsp;&nbsp; This puts the chosen Root Method in action.</p>
 
 <p>
 
-"UML" &nbsp;&nbsp; Abbreviation for user-mode-linux. &nbsp;&nbsp;
+"UML"&nbsp;&nbsp; Abbreviation for user-mode-linux. &nbsp;&nbsp;
  This is a linux kernel which runs on
 top of the host system's linux kernel and allows a you run a live root 
 filesystem.</p>
 
 <p>  
 
-"Accept" &nbsp;&nbsp; 
+"Accept"&nbsp;&nbsp; 
 This accepts the created root filesystem if it is found in the 
 temporary creation directory.  &nbsp;&nbsp;
 The UML box and the main section will now 
@@ -203,25 +212,31 @@ About the Yard Box</b></p>
 <p><IMG ALT="" SRC="images/yard_box.jpg" align="center"></p>
 
 The Yard Box is a Root Method which is "Generated" from the Advanced Root
-Section after a Template is chosen.  It has several interesting features.
+Section after a Template is chosen.&nbsp;&nbsp;
+It has several interesting features.
 
 <p>
 
 The check boxes at the bottom represent the different stages involved in
-creating a root filesystem.  The behavior of these stages may be altered in
+creating a root filesystem.&nbsp;&nbsp;
+ The behavior of these stages may be altered in
 three ways: Edit->Stages->one-by-one (default) will perform each stage
 sequentially, stopping between each stage, the user may continue the process
-by pressing the Continue button.  Edit->Stages->continuous proceeds non-stop
-through all the stages.  Edit->Stages->'user defined' allows the user to
+by pressing the Continue button. &nbsp;&nbsp;
+Edit->Stages->continuous proceeds non-stop
+through all the stages.&nbsp;&nbsp;
+Edit->Stages->'user defined' allows the user to
 choose any stages the user wants, and will then proceed through all the
-chosen stages.  Choosing only 'Check', 'Links & Deps', 'Create" is a good 
+chosen stages.&nbsp;&nbsp;
+Choosing only 'Check', 'Links & Deps', 'Create" is a good 
 example.</p>  
 
 <p><IMG ALT="" SRC="images/tests.jpg" align="center"></p>
 
 <p>
 
-The behavior of some of the stages may be altered.  For instance Alt-T allows
+The behavior of some of the stages may be altered.&nbsp;&nbsp; 
+For instance Alt-T allows
 you to choose which tests to run on the newly created 
 root filesystem.</p>
 
@@ -230,7 +245,8 @@ root filesystem.</p>
 <p>
 
 Press Alt-S to enable template text searching in either
-direction.  Find exact matches or ignore case with the case sensitive check
+direction.&nbsp;&nbsp; 
+Find exact matches or ignore case with the case sensitive check
 box.</p>
 
 <p><IMG ALT="" SRC="images/file.jpg" align="center"></p>
@@ -238,10 +254,12 @@ box.</p>
 <p>
 
 Use Ctl-S to save the changes to an open template, and Alt-A to save the
-template with a new name.
+template with a new name.&nbsp;&nbsp;
 bOOTrOOT will not allow read-only templates or template links to be saved
-with their own name.  A few of these example files are included.  You may make 
-changes to them or clear their buffers.  Then you may save the template with a 
+with their own name.&nbsp;&nbsp; 
+A few of these example files are included.  &nbsp;&nbsp;
+You may make changes to them or clear their buffers.&nbsp;&nbsp;
+Then you may save the template with a 
 different name.</p>
 
 <p><IMG ALT="" SRC="images/stripping.jpg" align="center"></p>
@@ -249,7 +267,8 @@ different name.</p>
 <p>
 
 Edit->Settings->Stripping allows you to turn off/on stripping for
-Libraries, Binaries, and Modules.  --strip-all is the default stripping
+Libraries, Binaries, and Modules.&nbsp;&nbsp;
+--strip-all is the default stripping
 behavior, but Libraries may have this behavior changed to --strip-debug.</p>
 
 
@@ -266,7 +285,8 @@ environments $PATH variable.
 <p>
 
 Edit->'File System" may alter the type of filesystem used to make the root
-filesystem.  Because the filesystem is created on a loop device, some 
+filesystem.&nbsp;&nbsp;  
+Because the filesystem is created on a loop device, some 
 filesystem types may complain or not be created at all.</p>
 
 <p><IMG ALT="" SRC="images/replacements.jpg" align="center"></p>
@@ -281,7 +301,8 @@ an editor of your choice.
 
 <p>
 
-Create->Replacements creates special replacement files.  Presently it creates 
+Create->Replacements creates special replacement files.&nbsp;&nbsp; 
+Presently it creates 
 an fstab configuration file as Replacements/etc/fstab.new in 
 $HOME/.gbootroot/yard/.</p>
 
