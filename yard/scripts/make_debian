@@ -720,8 +720,8 @@ sub start_up {
 	home_builder("$home_yard_replacements/etc");
     }
 
-    print "Everything is in order, but it never hurts to rebuild swim " .
-	"with --rebuilddb\n";
+    # print "Everything is in order, but it never hurts to rebuild swim " .
+    # "with --rebuilddb\n";
 
 
 } # end start_up

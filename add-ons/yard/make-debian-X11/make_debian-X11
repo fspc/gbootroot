@@ -22,6 +22,10 @@
 
 use strict;
 use File::Basename;
+my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
+if ($sbin == 0) {
+    $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
+}
 
 # You will need to get swim at http://www.sourceforge.net/projects/avd
 my $home = "$ENV{HOME}/.gbootroot";
@@ -795,8 +799,8 @@ sub start_up {
 	home_builder("$home_yard_replacements/etc");
     }
 
-    print STDERR "Everything is in order, but it never hurts to rebuild swim "
-	. "with --rebuilddb if you haven't done it in awhile\n";
+    #print STDERR "Everything is in order, but it never hurts to rebuild swim "
+    #	. "with --rebuilddb if you haven't done it in awhile\n";
 
 
 } # end start_up
