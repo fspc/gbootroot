@@ -1806,8 +1806,9 @@ sub uml_box {
 						      $init =~ s/\'//g;
 						      $init =~ s/\///;     
 						  }
-						  elsif ( m,\s+([0-9A-CS]{1}), )  {
-						      $init  = $1;
+						  elsif ( m,\s+([0-9A-CS]{1})|\s+(single), )  {
+						      $init  = $1 if $1; 
+						      $init = $2 if $2;
 						      chomp $init;                               
 						      $init = "sbin/init " . $init;
 						  }
