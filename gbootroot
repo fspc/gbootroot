@@ -492,7 +492,11 @@ if (-d $global_yard_replacements) {
 		       #system "cp -a $File::Find::name $home_yard_replacements/$replacement > /dev/null 2>&1";
 		       system "mkdir $home_yard_replacements/$replacement > /dev/null 2>&1" if -d $File::Find::name;
 		       symlink_builder( $File::Find::name,"$home_yard_replacements/$replacement") if !-d $File::Find::name;
-
+		       # Administrator shouldn't be editing global files.
+		       if ( $> == 0 ) {
+			   system "chmod 0444 $File::Find::name" 
+			       if !-d $File::Find::name;
+		       }
 		   }
 
 	       }, $global_yard_replacements;
