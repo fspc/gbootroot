@@ -35,22 +35,24 @@ my $info = "/var/lib/dpkg/info";
 my (%alternatives, @alternatives); # for checking for alternatives
 my %inetd; # checks for inetd binaries.
 
-# You need file-rc, and you may add other extra stuff.  These packages were
-# chosen for woody, so you may need something different.  If you add stuff, 
-# check for dependencies, empty directories and special configuration files
-# created by the package scripts.
+# You need file-rc, and you may add other extra stuff (@extra_packages).  
+# These packages were chosen for woody, so you may need something different.  
+# If you add stuff, check for dependencies, empty directories and special 
+# configuration files created by the package scripts.
 #
-# You may have to edit the text below STUFF.
+# You may have to edit the text below STUFF, i.e. the template.
 #
-# Swim provides excellent information for this task.  swim -qT packagename(s) &
-# swim -ql --df packagename(s) & swim -qc packagename(s) (not all conf files 
+# Dswim provides excellent information for this task.  swim -qT packagename(s)
+# & swim -ql --df packagename(s) & swim -qc packagename(s) (not all conf files 
 # can  be found this way .. read above) so you will want to use 
 # swim -q --scripts packagename(s) or 
 # swim -q --preinst --postinst packagenames(s).
 
+# EDIT HERE
 my @extra_packages = qw(file-rc swim apt apt-utils debconf nvi sysklogd
 klogd netbase tcpd net-tools portmap netkit-ping netkit-inetd ifupdown less 
 perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils);
+# NEXT EDIT TEMPLATE 
 
 # Before starting make sure swim and file-rc are present.
 start_up();
@@ -723,6 +725,8 @@ sub start_up {
 
 
 } # end start_up
+
+
 
 
 

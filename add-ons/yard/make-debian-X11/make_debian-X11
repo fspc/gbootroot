@@ -39,10 +39,9 @@ my $version  = "1.0";
 # You need file-rc, and you may add other extra stuff (@extra_packages).  
 # These packages were chosen for woody, so you may need something different.  
 # If you add stuff, check for dependencies, empty directories and special 
-# configuration files
-# created by the package scripts.
+# configuration files created by the package scripts.
 #
-# You may have to edit the text below STUFF.
+# You may have to edit the text below STUFF, i.e. the template.
 #
 # Dswim provides excellent information for this task.  swim -qT packagename(s)
 # & swim -ql --df packagename(s) & swim -qc packagename(s) (not all conf files 
