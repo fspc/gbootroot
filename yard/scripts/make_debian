@@ -254,6 +254,10 @@ return $stuff;
  
 # Better tell the user what required and extra packages don't exist.
 
+# It is 100% unlikely that a required package is missing because
+# the information is taken directly from the system. But it is fun
+# to test for anyways, weirder things have been known to happen.
+
 my $required_packages_check = "swim -q @required_packages|";
 open (CHECK,$required_packages_check) 
     or die "Couldn't find any required packages: $?\n";
