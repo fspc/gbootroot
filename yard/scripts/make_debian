@@ -264,18 +264,14 @@ return $stuff;
 # the information is taken directly from the system. But it is fun
 # to test for anyways, weirder things have been known to happen.
 
-my $required_packages_check = "swim -q @required_packages|";
-open (CHECK,$required_packages_check) 
-    or die "Couldn't find any required packages: $?\n";
 my @rpc;
-while (<CHECK>) {
-    if (/^package/) {
-        my $rpc = (split(/\s/))[1];
-	push(@rpc,$rpc);
-
-    }
+foreach my $p (@required_packages) {
+    $p =~ s/\+/\\+/g if $p !~ /\\+/g;
+    if ( grep(/Status: deinstall|Status: purge|package $p is not installed/,
+	      `swim -qi $p`) == 1 ) {
+	push(@rpc,$p);
+    }    
 }
-close (CHECK);
 
 if (@rpc) {
     print STDERR "These are the required packages which were specified:\n\n";
@@ -286,17 +282,14 @@ if (@rpc) {
     $, = "";
 }
 
-my $extra_packages_check = "swim -q @extra_packages|";
-open (CHECK,$extra_packages_check) 
-    or die "Couldn't find any required packages: $?\n";
 my @epc;
-while (<CHECK>) {
-    if (/^package/) {
-        my $epc = (split(/\s/))[1];
-	push(@epc,$epc);
-    }
+foreach my $p (@extra_packages) {
+    $p =~ s/\+/\\+/g if $p !~ /\\+/g;
+    if ( grep(/Status: deinstall|Status: purge|package $p is not installed/,
+	      `swim -qi $p`) == 1 ) {
+	push(@epc,$p);
+    }    
 }
-close (CHECK);
 
 if (@epc) {
     print STDERR "These are the extra packages which were specified:\n\n";
