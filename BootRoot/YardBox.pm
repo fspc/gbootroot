@@ -1477,7 +1477,7 @@ Selection Shortcuts
 
 Searching Shortcuts
 
- Alt-X
+ Alt-S
 SHORTCUTS
 
 sub path {
