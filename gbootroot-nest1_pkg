@@ -31,7 +31,7 @@ use File::Find;
 # when development isn't being done with perl -I . ./gbootroot.
 # This program can be adapted for other packages.
 
-# This program uses dh-make, and copies your own defaults to 
+# This program uses dh_make, and copies your own defaults to 
 # $packaging_place/debian from your $packaging_defaults, and updates
 # to the proper date/times and data in changelog and copyright.  
 # After this debuild from devscripts (this uses lintian) runs. 
@@ -49,7 +49,7 @@ use File::Find;
 #
 # In dpkg-source I added '.*bz2$| to $diff_ignore_default_regexp because the
 # -i switch seemed to ignore anything I added to it, either failing 
-# or ignoring, though recognizing the -i switch .. so this has been altered.
+# or ignoring, though recognizing the -i switch. so this has been altered.
 # It may have been because dpkg-buildpackage expects -iregexp not -i regexp.
 
 my $user_home = "/home/mttrader";
@@ -356,6 +356,8 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
     # a source package specific to rpm is made more than once.
 
     my $source = dirname($packaging_place) . "/" . $prog . "-" . $version;
+    chdir($packaging_place);
+    system "make clean-sources";
 
     foreach my $package ( @rpm_packages ) {
 	open (RPM_PLACE, "$rpm_packaging_place/$package" ) or 
