@@ -991,12 +991,11 @@ sub advanced_root_section {
        my $accept_b = button_advanced(2,3,8,9,"Accept");
        $accept_b->signal_connect("clicked", sub { 
 	   my($tool,$value);
-	   if (-e "$mnt/$entry_advanced[4]" ) {
-	       
+	   if (-e "$tmp/$entry_advanced[4]" ) {
 	       if (!$compression_off->active) {
 		   if ($gz_toggle_root->active) {
 		       $compress = "gzip";
-		       open(F,"file $mnt/$entry_advanced[4] |"); 
+		       open(F,"file $tmp/$entry_advanced[4] |"); 
 		       while (<F>) {
 			   if (/gzip/) {
 			       info(0, "Already gzip compressed.\n");
@@ -1005,18 +1004,18 @@ sub advanced_root_section {
 			       info(0, "Already bzip2 compressed.\n");
 			   }
 			   else {
-			       system "$compress $mnt/$entry_advanced[4]";
+			       system "$compress $tmp/$entry_advanced[4]";
 			       $entry_advanced[4] = "$entry_advanced[4].gz";
-			       $entry3->set_text("$mnt/$entry_advanced[4]");
+			       $entry3->set_text("$tmp/$entry_advanced[4]");
 			   }
 		       }
 		       if ($ear2_save->active) {
-			   return if errcp(sys("cp -a $mnt/$entry_advanced[4] $home_rootfs")) == 2;
+			   return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
 		       }
 		   }
 		   elsif ($bz2_toggle_root->active) {
                        $compress = "bzip2";
-		       open(F,"file $mnt/$entry_advanced[4] |"); 
+		       open(F,"file $tmp/$entry_advanced[4] |"); 
 		       while (<F>) {
 			   if (/gzip/) {
 			       info(0, "Already gzip compressed.\n");
@@ -1025,20 +1024,20 @@ sub advanced_root_section {
 			       info(0, "Already bzip2 compressed.\n");
 			   }
 			   else {
-			       system "$compress $mnt/$entry_advanced[4]";
+			       system "$compress $tmp/$entry_advanced[4]";
 			       $entry_advanced[4] =  "$entry_advanced[4].bz2";
-			       $entry3->set_text("$mnt/$entry_advanced[4]");
+			       $entry3->set_text("$tmp/$entry_advanced[4]");
 			   }
 		       }
 		       if ($ear2_save->active) {
-			   return if errcp(sys("cp -a $mnt/$entry_advanced[4] $home_rootfs")) == 2;
+			   return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
 		       }
 		   }
 	       }
 	       else {  # off
-		   $entry3->set_text("$mnt/$entry_advanced[4]");
+		   $entry3->set_text("$tmp/$entry_advanced[4]");
 		   if ($ear2_save->active) {
-		       return if errcp(sys("cp -a $mnt/$entry_advanced[4] $home_rootfs")) == 2;
+		       return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
 		   }
 	       }
 	   }
