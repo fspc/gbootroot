@@ -3,7 +3,7 @@
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with getty.  
 #  Tested on Debian unstable/testing,  but should work on other distributions 
-#  (Mandrake,  RedHat, etc.) by using the proper inittab (edit) and getty.
+#  (Mandrake,  RedHat, etc.) by using the proper inittab and getty.
 # 
 #  Create either as a normal user or root.
 #
@@ -152,16 +152,17 @@ telinit
 #
 /etc/nsswitch.conf <=  Replacements/etc/nsswitch.conf.example
 
-
 ##### INITTAB and GETTY
 # These inittab and getty pairs are based on major distributions.
-# If your distribution isn't mentioned here, one of these inittabs may still work
-# Check your /etc/inittab to confirm, or create a new inittab replacement and
-# edit as required.  Some gettys require /etc/gettydefs.
+# If your distribution isn't mentioned here, one of these inittabs may 
+# still work.  Check your /etc/inittab to confirm, or create a new inittab 
+# replacement and edit as required.  Some gettys require /etc/gettydefs.
 #
-# Choose the *-nodevfs version if you don't want to use the device fs (devfs=nomount)
+# Choose the *-nodevfs version if you don't want to use the device fs 
+# (devfs=nomount)
 #
-#===== DEBIAN uses a program called "getty" which is actually agetty in disguise:
+#===== DEBIAN uses a program called "getty" which is actually agetty in 
+#===== disguise:
 /etc/inittab	<= Replacements/etc/inittab.example-deb
 #/etc/inittab	<= Replacements/etc/inittab.example-deb-nodevfs
 /sbin/getty
