@@ -34,7 +34,11 @@ my $yard_window;
 my $item_factory;
 my $true = 1;
 my $false = 0;
+my $error;
 my ($continue_button,$close_button,$save_button);
+my($check,$dep,$space,$create,$test);
+my($device,$device_size,$filename,$filename_size,$kernel,$template_dir,
+   $template,$tmp,$mnt);
 
 my @menu_items = ( { path        => '/File',
 		     type        => '<Branch>' },
@@ -174,18 +178,18 @@ sub yard {
     
     my ($ars) = @_;
 
-    my $error;
-    my $device           = $ars->{device};
-    my $device_size      = $ars->{device_size};
-    my $filename         = $ars->{filename};
-    my $filename_size    = $ars->{filename_size};
-    my $kernel           = $ars->{kernel};
-    my $template_dir     = $ars->{template_directory};
-    my $template         = $ars->{template};
-    my $tmp              = $ars->{tmp};
-    my $mnt              = $ars->{mnt};
-    
-    # Error handling in Yard will take some strategy
+    $device           = $ars->{device};
+    $device_size      = $ars->{device_size};
+    $filename         = $ars->{filename};
+    $filename_size    = $ars->{filename_size};
+    $kernel           = $ars->{kernel};
+    $template_dir     = $ars->{template_directory};
+    $template         = $ars->{template};
+    $tmp              = $ars->{tmp};
+    $mnt              = $ars->{mnt};
+
+
+      # Error handling in Yard will take some strategy
     if (!-d $kernel && -f $kernel) {
         $error = kernel_version_check($kernel);  
                                               # Yard: kernel,kernel version
@@ -205,24 +209,6 @@ sub yard {
         return;
     }
 
-    $error = read_contents_file("$template_dir$template");
-    return if $error && $error eq "ERROR";
-    
-##    $error = extra_links("$template_dir$template");
-##    return if $error && $error eq "ERROR";
-
-##    $error = hard_links();
-##    return if $error && $error eq "ERROR";
-
-##    $error = library_dependencies("$template_dir$template");
-##    return if $error && $error eq "ERROR";
-
-##    $error = space_check($filesystem_size, 
-##              $lib_strip_check_root->get_active(),
-##		$bin_strip_check_root->get_active(), 
-##		$module_strip_check_root->get_active(), 
-##		$obj_count_root, $tmp);
-##    return if $error && $error eq "ERROR";
 
 } # end sub yard
 
@@ -268,6 +254,7 @@ sub stages_one_by_one {
     $user_defined->active(0);
     $stages_bool = "one-by-one";
     print "$stages_bool\n";
+    
 
 }
 
@@ -286,6 +273,112 @@ sub stages_user_defined {
     $continuous->active(0);
     $stages_bool = "user-defined";
     print "$stages_bool\n";
+}
+
+
+my $continue;
+#reset_continue();
+#sub reset_continue {
+
+    $continue = {
+	     check      => 0,
+	     links_deps => 0,
+	     space_left => 0,
+	     create     => 0,
+	     test       => 0
+	     };
+#}
+
+
+# Makes main checkbuttons act like radiobuttons
+# Applies to both one_by_one & continuous
+
+my %which_stage = qw(check 1 dep 0 space 0 create 0 test 0);
+
+sub which_stage {
+
+    my($widget,$name) = @_;
+    my @check_boxes = ($check, $dep, $space, $create, $test);
+    my ($thing);
+
+    if ($stages_bool eq "one-by-one" or $stages_bool eq "continuous") {
+=pod
+	foreach $thing (@check_boxes) {
+	    if ($thing ne $widget) {
+		print "$thing $widget\n";
+		$thing->set_active($false);
+	    }
+	}   
+=cut
+    }
+}
+
+sub continue {
+
+    # This has to go sequentially, but backwards is o.k.
+    if ($stages_bool eq "one-by-one") {
+        if ( $continue->{check} == 0 ) {
+	    check();
+	    $check->set_active($false);
+	    $dep->set_active($true);
+	    $continue->{check} = 1;
+	    return;
+	}
+        if ( $continue->{links_deps} == 0 ) {
+	    links_deps();
+	    $dep->set_active($false);
+	    $space->set_active($true);
+	    $continue->{link_deps} = 1;
+	    return;
+	}
+
+    }
+
+}
+
+sub check {
+    
+    $error = read_contents_file("$template_dir$template");
+    return if $error && $error eq "ERROR";
+
+    $continue->{check} = 1;
+
+}
+
+sub links_deps {
+
+    $error = extra_links("$template_dir$template");
+    return if $error && $error eq "ERROR";
+
+    $error = hard_links();
+    return if $error && $error eq "ERROR";
+
+    $error = library_dependencies("$template_dir$template");
+    return if $error && $error eq "ERROR";
+
+    $continue->{links_deps} = 1;
+
+}
+
+sub space_left {
+
+##    $error = space_check($filesystem_size, 
+##              $lib_strip_check_root->get_active(),
+##		$bin_strip_check_root->get_active(), 
+##		$module_strip_check_root->get_active(), 
+##		$obj_count_root, $tmp);
+##    return if $error && $error eq "ERROR";
+
+}
+
+sub create {
+
+
+}
+
+sub test {
+
+
 }
 
 
@@ -387,6 +480,7 @@ my $bin_bool =            1;
 my $mod_bool =            1;
 my $replacement_bool =    1;
 my $module_bool =         1;
+my $start_length;
 sub yard_box {
     
        $yard_window = new Gtk::Window "toplevel";
@@ -599,15 +693,16 @@ sub yard_box {
 
        #_______________________________________ 
        # Create the GtkText widget
-       my $length;
        my $text = new Gtk::Text( undef, undef );
        $text->set_editable($true);
-       my $start_length = $text->get_length();
-       my $beginning_text = $text->get_chars(0,$length);
+       my $beginning_text = $text->get_chars(0,$start_length);
        $text->signal_connect("changed", sub { 
-	   $length =  $text->get_length();
-	   #my $changed_text = $text->get_chars(0,$length);
-	   print "$length\n"; } );
+	   my $new_length =  $text->get_length();
+	   my $changed_text = $text->get_chars(0,$new_length);
+	   if ( $start_length != $new_length ) {
+	       print "Text has changed $start_length $new_length\n";
+	   }    
+       } );
        $table->attach( $text, 0, 1, 0, 1,
                        [ 'expand', 'shrink', 'fill' ],
                        [ 'expand', 'shrink', 'fill' ],
@@ -618,6 +713,8 @@ sub yard_box {
        $text->freeze();
        $text->insert( undef, undef, undef, $_[0]);
        $text->thaw();
+
+       $start_length = $text->get_length();
 
        # Add a vertical scrollbar to the GtkText widget
        my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
@@ -639,24 +736,29 @@ sub yard_box {
        $main_vbox->pack_start( $vbox, $false, $true, 0 );
        $vbox->show();
 
-       my $check = new Gtk::CheckButton("Check");
-       $check->set_active($true);
+       $check = new Gtk::CheckButton("Check");
+       $check->active($true);
+       $check->signal_connect("clicked", \&which_stage, "check"); 
        $vbox->pack_start( $check, $true, $true, 10 );
        show $check;       
 
-       my $dep = new Gtk::CheckButton("Links & Deps");
+       $dep = new Gtk::CheckButton("Links & Deps");
+       $dep->signal_connect("clicked", \&which_stage, "dep"); 
        $vbox->pack_start( $dep, $true, $true, 0 );
        show $dep;       
 
-       my $space = new Gtk::CheckButton("Space Left");
+       $space = new Gtk::CheckButton("Space Left");
+       $space->signal_connect("clicked", \&which_stage, "space"); 
        $vbox->pack_start( $space, $true, $true, 0 );
        show $space;       
 
-       my $create = new Gtk::CheckButton("Create");
+       $create = new Gtk::CheckButton("Create");
+       $create->signal_connect("clicked", \&which_stage, "create"); 
        $vbox->pack_start( $create, $true, $true, 0 );
        show $create;       
 
-       my $test = new Gtk::CheckButton("Test");
+       $test = new Gtk::CheckButton("Test");
+       $test->signal_connect("clicked", \&which_stage, "test"); 
        $vbox->pack_start( $test, $true, $true, 0 );
        show $test;       
 
@@ -674,8 +776,7 @@ sub yard_box {
        $vbox->show();
 
        $continue_button = new Gtk::Button( "Continue" );
-       $continue_button->signal_connect( 'clicked', 
-       				sub { destroy $yard_window; } );
+       $continue_button->signal_connect( 'clicked', \&continue);
        $vbox->pack_start( $continue_button, $true, $true, 0 );
        $continue_button->show();
 
