@@ -1,5 +1,5 @@
-$Id$
-Linux bootroot
+$Id: motd,v 1.2 2001/11/08 05:56:42 freesource Exp $
+Linux bootroot created with make_debian
 
 Most of the programs included with the Debian GNU/Linux system are
 freely redistributable; the exact distribution terms for each program
