@@ -33,7 +33,8 @@ use Exporter;
 @ISA = qw(Exporter);
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
-              space_check create_filesystem find_file_in_path sys);
+              space_check create_filesystem find_file_in_path sys 
+              text_insert logadj);
 
 use strict;
 use File::Basename;
@@ -53,6 +54,8 @@ my $INODE_SIZE       = 1024;
 my $objcopy = "objcopy";
 my($Warnings) = 0;
 my $verbosity;
+my $text_insert; 
+my $logadj;
 
 # This solves an annoying problem with the new Perl-5.6 built in glob,
 # allowing earlier versions of Perl to run.
@@ -72,6 +75,9 @@ sub warning {
 }
 
 sub verbosity { $verbosity = $_[0]; }
+sub text_insert { $text_insert = $_[0]; }
+sub logadj { $logadj = $_[0]; }
+
 
 ## REQUIRES $kernel opt. $kernel_version
 sub kernel_version_check {
@@ -222,6 +228,8 @@ sub read_contents_file {
 
 	if ($file =~ m|^/|) {	#####  Absolute filename
 
+	    # This complains for non-existent $files for some reason.
+	    # like /dev/pilot, but can't replicate
 	    if (-l $file and readlink($file) =~ m|^/proc/|) {
 		info(1, "Recording proc link $file -> ", readlink($file), 
                      "\n");
@@ -994,8 +1002,18 @@ my($proc_dev) = (stat("/proc"))[0];
 sub info {
   my($level, @msgs) = @_;
 
-  (print @msgs) if $verbosity >= $level;
+  my $output = join("",@msgs);
+  if ($verbosity >= $level) {
+      if ($text_insert) {
+	  $text_insert->freeze();
+	  $text_insert->insert( undef, undef, undef, $output );
+	  $text_insert->thaw();
+	  $logadj->set_value($logadj->upper - $logadj->page_size);
+	  while (Gtk->events_pending) { Gtk->main_iteration; }
+      }
+  }
   print LOGFILE @msgs;
+
 }
 
 sub error {
