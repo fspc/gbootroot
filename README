@@ -1,4 +1,4 @@
-$Id: README,v 1.15 2003/01/05 02:10:41 freesource Exp $
+$Id: README,v 1.16 2003/01/05 21:07:13 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -28,11 +28,26 @@ CRUCIAL ones to get the build to work properly are mke2fs and
 mkcramfs.  Here's a list of what utilities are included: mke2fs mkcramfs
 genromfs mkfs.minix mkminix mkreiserfs mkfs.jffs mkfs.jffs2
 
-These are the build-depends from the debian source package which can
+These are the build-depends from the Debian source package which can
 be used as a guide for other distributions: binutils ((>=
 2.13.90.0.16), fileutils (>= 4.0), gcc (>= 2:2.95.4), make, libc6-dev
 (>= 2.3.1), bin86, wget, mkcramfs, e2fsprogs, reiserfsprog, genromfs,
 xutil-linux, mtd-tools, m4, libreadline4-dev
+
+
+UML KERNEL CUSTOMIZATION
+------------------------
+
+You may want to add your own customizations to the uml kernel.  To
+accomplish this you will need to understand that the Makefile runs
+oldconfig on the configuration file ".config" which is first copied
+from user-mode-linux/usr/lib/uml/config to .config in the
+linux-$VERSION directory where the kernel sources reside.  What this
+means is that after doing a make config or one of its alternatives
+from the kernel sources directory, you should copy the customized
+configuration file you made to the ../user-mode-linux/usr/lib/uml
+directory and then run gbootroot's Makefile.
+
 
 INSTALLING
 ----------
