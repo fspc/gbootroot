@@ -13,7 +13,8 @@ you can refer to this README for help.
 
 Out of the box this program works with the i386 architecture, people using
 other architectures will need to compile genext2fs and user-mode-linux if
-they want full functionality.
+they want full functionality.  Eventually, the Advanced Kernel Section in
+this program will be able to help with the uml compile.
 
 
 Perl Modules:
@@ -36,17 +37,16 @@ cd genext2fs; make  (other architectures)
 
 User-Mode-Linux
 ---------------
-user-mode-linux/usr/bin/{linux, uml_*}  (included and already compiled 
-		                                              for i386)
-user-mode-linux/usr/lib/{modules*tar}   (included and already compiled 
-                                                              for i386)
+user-mode-linux/usr/bin/linux         (included and already compiled for i386)
+user-mode-linux/usr/lib/{modules*tar} (included and already compiled for i386)
 
-If you use a different architecture you will need to get kernel source
-from www.kernel.org, and then a matching uml-patch from 
-http://sourceforge.net/project/showfiles.php?group_id=429.  There's good 
-instructions on how to do this at 
+If you use a different architecture you will need to get kernel sources
+from www.kernel.org which preferably match the kernel version used by 
+gbootroot - this can be found in the Changes file - and then a matching 
+uml-patch from http://sourceforge.net/project/showfiles.php?group_id=429.  
+There's good instructions on how to do this at 
 http://user-mode-linux.sourceforge.net/UserModeLinux-HOWTO-2.html.
-Then put the uml kernel and helpers in the appropriate directory; you can
+Then put the uml kernel in the directory cited up and call it linux; you can
 put the modules in a Replacements directory later on (see FAQ).
 
 
