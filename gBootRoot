@@ -945,6 +945,10 @@ sub advanced_kernel_section {
 
 } # end sub advanced_kernel_section
 
+# Stuff univeral for all root filesystem methods
+# Compression, UML Kernel, and Method only need to be known by the Dock.
+
+
 sub Generate {
 
     # @entry_advanced
@@ -955,23 +959,20 @@ sub Generate {
     # 3 = Root Device
     # 4 = Root Filename
     # 5 = UML Kernel
-    # 6 = Method
-    $method = $entry_advanced[6];         
+    $method = $entry_advanced[6];         # 6 = Method
     # 7 = Template
     # $root_device_size;
     # $filesystem_size;
 
-    # Stuff univeral for all root filesystem methods
-    # Compression, UML Kernel, and Method only need to be known by the Dock.
-    my $ars = { "device"             => $entry_advanced[3],
-		"device_size"        => $root_device_size,		    
-		"filename"           => $entry_advanced[4],
-		"filesystem_size"    => $filesystem_size,
-	        "kernel"             => $container[1],
-		"template_directory" => $template_dir,
-		"template"           => $entry_advanced[7],
-		"tmp"                => $tmp,
-		"mnt"                => $mnt    
+    my $ars = {     "device"             => $entry_advanced[3],
+		    "device_size"        => $root_device_size,		    
+		    "filename"           => $entry_advanced[4],
+		    "filesystem_size"    => $filesystem_size,
+		    "kernel"             => $container[1],
+		    "template_directory" => $template_dir,
+		    "template"           => $entry_advanced[7],
+		    "tmp"                => $tmp,
+		    "mnt"                => $mnt    
 	       };
 
     my $template = $ars->{template};
@@ -1938,7 +1939,7 @@ sub initrd {
     if (!-d "$tmp/initrd_mnt") {
 	return if errmk(sys("mkdir $tmp/initrd_mnt")) == 2;
     }
-  return if errmk(sys("mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt"))
+  return if errm(sys("mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt"))
           == 2;
   pb($I,4);
 
