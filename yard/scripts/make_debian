@@ -192,6 +192,7 @@ $Id
 /dev/console
 
 #  Empty directories with no stuff.
+/dev # paranoid check
 /mnt        
 /proc               
 /tmp                
@@ -242,7 +243,7 @@ return $stuff;
 use strict;
 use File::Basename;
 my $rm = "\$";
-$main::Id = "# \$Id: make_debian,v 1.58 2001/12/11 07:16:48 freesource Exp $rm"; 
+$main::Id = "# \$Id: make_debian,v 1.59 2001/12/13 04:21:32 freesource Exp $rm"; 
 my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
 if ($sbin == 0) {
     $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
