@@ -909,7 +909,6 @@ sub yard_box {
     $one_by_one =  $item_factory->get_item('/Edit/Stages/one-by-one');
     $continuous = $item_factory->get_item('/Edit/Stages/continuous');
     $user_defined = $item_factory->get_item('/Edit/Stages/user defined');
-    info(1,"STAGES $stages_bool\n");
     if ( $stages_bool eq "one-by-one" ) {
 	$continuous->active(0);
 	$user_defined->active(0);
@@ -930,7 +929,6 @@ sub yard_box {
     my $lib_strip = $item_factory->get_item
 	('/Edit/Settings/Stripping/Libraries');
     
-    $lib_strip->active($true);
     $lib_strip->signal_connect( "activate", 
 				sub {  
 				    # off   
@@ -946,13 +944,17 @@ sub yard_box {
 				    }
 				    #print "$lib_bool\n";
 				} ); 
+    $lib_bool == 1 ? $lib_strip->active($true) : $lib_strip->active($false);
+
 
     # objcopy parameters for Libraries
     $lib_strip_all = $item_factory->get_item
       ('/Edit/Settings/Stripping/settings/strip-all');
     $lib_strip_debug = $item_factory->get_item
       ('/Edit/Settings/Stripping/settings/strip-debug');
-    $lib_strip_debug->active(0);
+    $strip_bool == 1 ? $lib_strip_debug->active($false) : 
+    $lib_strip_all->active($false);
+
 
     # Binaries
     my $bin_strip = $item_factory->get_item
@@ -974,7 +976,7 @@ sub yard_box {
 					 #print "$bin_bool\n";
 				     }
 				 ); 
-
+    $bin_bool == 1 ? $bin_strip->active($true) : $bin_strip->active($false);
 
     # Modules
     my $mod_strip = $item_factory->get_item
@@ -996,6 +998,7 @@ sub yard_box {
 					 #print "$mod_bool\n";
 				     }
 				 ); 
+    $mod_bool == 1 ? $mod_strip->active($true) : $mod_strip->active($false);
 
 
       # Checking - Replacements and/or Modules?
