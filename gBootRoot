@@ -29,12 +29,6 @@ use strict;
 
 init Gtk;
 
-#my $check_version = Gtk::check_version("1","0","7");
-#print $check_version;
-
-# 1 2 7 ... 0.7002
-#Gtk->print('Gtk->major_version, "  ", Gtk->minor_version, "  ", Gtk->micro_version');
-
 
 # Perhaps you are wondering where to learn how to program with Gtk-Perl?
 # There is an excellent tutorial by Stephen Wilhelm at
@@ -95,8 +89,9 @@ my $lilo_conf = "/etc/lilo.conf";
 # right libraries are copied over to initrd and the size is checked).
 
 # I need to remember to edit this
-my $version = "version to be announced soon!";
-my $date = "08.09.2000";
+my $version = "1.2.2";
+my $date = "09.03.2000";
+my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 use File::Basename;
 
@@ -219,6 +214,21 @@ if (!-d "$tmp1/gbootroot_mnt$$") {
         "gBootRoot: ERROR: Could not make mount directory") != 2;
 }
 my $verbosefn = "$tmp/verbose";
+
+
+# Right now >= 0.7000 is o.k.
+if (Gtk::check_version("1","0","7") =~ /too old/) {
+    error_window("gBootRoot is presently being developed with gtk-perl" . 
+                 " version $gtk_perl_version.\nYou are using a" .
+                 " version of gtk-perl < 0.7000.  You may still be able\n" .
+                 " to use this program, but you may encounter problems." .
+                 " See the FAQ\nfor places to get a newer gtk-perl version." .
+                 " \n\nThe most common error reported:\n\"Can't locate" .
+                 "  object  method\""
+                 
+        ,"center");
+    print "Using a version of gtk-perl < 0.7000\n";
+}
 
 my $window = new Gtk::Window("toplevel");
 # special policy
@@ -399,7 +409,6 @@ $tooltips->set_tip( $hbutton, "Help about gBootRoot.", "" );
 $hbutton->show();
 $box2->pack_start( $hbutton, $true, $true, 0 );
 $box2->show();
-
 
 $window->show();
 main Gtk;
@@ -1048,6 +1057,7 @@ sub error_window {
     $error_window->set_title("gBootRoot ERROR");
     $error_window->border_width(15);
     my $label = new Gtk::Label($error);
+    $label->set_justify("left") if $_[1];
     $error_window->vbox->pack_start( $label, $true, $true, 15 );
     $label->show();
     my $button = new Gtk::Button("OK");
@@ -1930,11 +1940,9 @@ mini distributions simple.
 
 How to Use gBootRoot:
 
-gBootRoot is similar to BootRoot, but it is more efficient
-and powerful.  The most important button to familiarize yourself
-with is the Submit button which starts the whole process, dialogs are
-presented as the process continues asking you if you want to continue "OK" or
-stop "Cancel".
+The most important button to familiarize yourself with is the Submit button 
+which starts the whole process; dialogs are presented as the process 
+continues asking you if you want to continue "OK" or stop "Cancel".
 
 The first row has only one choice "lilo."  Clicking on the menu on the right 
 selects the boot method.
