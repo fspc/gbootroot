@@ -90,6 +90,8 @@ kernel:
 	fi;
 	cp $(KERNEL_DIR)/.config $(KCONFIG)
 
+
+
 modules: 
 	cd linux-$(VERSION) ; \
 		mkdir ../modules-2.4 ; \
@@ -112,18 +114,19 @@ modules:
 	rm -rf modules-2.4
 	cd modules-2.2 ; tar cf ../modules-2.2.tar .
 	rm -rf modules-2.2
-	mv modules*tar $(BASE_DIR)/user-mode-linux/usr/lib/uml
+	mv -f modules*tar $(BASE_DIR)/user-mode-linux/usr/lib/uml
+	cp -fa $(BASE_DIR)/linux-$(VERSION)/drivers/mtd/devices/blkmtd.o $(BASE_DIR)/yard/replacements/usr/src/linux-um/drivers/mtd/devices/blkmtd.o
+	cp -fa $(BASE_DIR)/linux-$(VERSION)/drivers/mtd/devices/mtdram.o $(BASE_DIR)/yard/replacements/usr/src/linux-um/drivers/mtd/devices/mtdram.o
 	
 
 tools:
 	for d in $(TOOLS) ; do $(MAKE) -C $$d all ; done
 	for d in $(TOOLS) ; do $(MAKE) -C $$d install DESTDIR=$(BASE_DIR)/user-mode-linux; done
 
-mkfs:
+genext2fs:
 	@if [ ! -f $(GENEXT2_DIR)/genext2fs ] ; then \
 		$(MAKE) -C $(GENEXT2_DIR); \
 	fi;
-
 
 install:
 	install -d $(DESTDIR)/usr/bin
@@ -148,7 +151,8 @@ install:
 	cp -fa user-mode-linux/usr/lib/uml/port-helper $(DESTDIR)/usr/lib/uml/port-helper
 	install -d $(DESTDIR)/usr/share/gbootroot/yard/templates	
 	cp -fa yard/templates/Example* $(DESTDIR)/usr/share/gbootroot/yard/templates	
-		cp -fa yard/templates/Helper.yard $(DESTDIR)/usr/share/gbootroot/yard/templates
+	cp -fa yard/templates/Helper.yard $(DESTDIR)/usr/share/gbootroot/yard/templates
+	cp -fa yard/templates/Initrd.yard $(DESTDIR)/usr/share/gbootroot/yard/templates
 	install -d $(DESTDIR)/usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/genext2fs.c $(DESTDIR)/usr/share/gbootroot/genext2fs
 	cp -fa genext2fs/Makefile $(DESTDIR)/usr/share/gbootroot/genext2fs
@@ -182,4 +186,4 @@ remove:
 	rm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm
 	rm -rf /usr/share/doc/gbootroot
 
-.PHONY: tools sources
+.PHONY: tools sources genext2fs

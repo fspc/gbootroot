@@ -52,12 +52,14 @@ my $urgency = "low";
 #my $group = "utils";
 #my $priority = "optional";
 my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
+my $gbootroot_cvs_rep = "$gbootroot_cvs/yard/replacements";
 my $packaging_place = "$user_home/gbootroot/PACKAGING";
 my $packaging_place_orig = $packaging_place;
 my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg";
 my $email = "freesource\@users.sourceforge.net";
 my $name = "Jonathan Rosenbaum";
 my $makefile = "Makefile.pkg";
+
 
 # RPM stuff - a filelist is used
 my $rpm_packaging_place = "$gbootroot_cvs/pkg/rpm";
@@ -89,13 +91,41 @@ close(CVS);
 
 
 $packaging_place = "$packaging_place/$prog-$version";
+my $packaging_place_rep = "$packaging_place/yard/replacements";
 
 # Do we want a deb, rpm or both
 
 if (!( $ARGV[0] eq "both" || $ARGV[0] eq "deb" || $ARGV[0] eq "rpm" || 
-       $ARGV[0] eq "src" ) ) {
+       $ARGV[0] eq "src" || $ARGV[0] eq "cvs" ) ) {
 
- die "Specify: both, deb, or rpm or src\n";
+ die "Specify: both, deb, or rpm or src or cvs\n";
+
+}
+
+
+# Here's where we get to copy over all the pristine sources from the build
+if ( -e $packaging_place) {
+
+# sources 
+system "cp -a $packaging_place/sources/* $gbootroot_cvs/sources/";
+
+# modules
+system "cp -a $packaging_place_rep/usr/src/linux-um/drivers/mtd/devices/blkmtd.o $gbootroot_cvs_rep/usr/src/linux-um/drivers/mtd/devices/blkmtd.o";
+system "cp -a $packaging_place_rep/usr/src/linux-um/drivers/mtd/devices/mtdram.o $gbootroot_cvs_rep/usr/src/linux-um/drivers/mtd/devices/mtdram.o";
+system "cp -a $packaging_place/user-mode-linux/usr/lib/uml/modules* $gbootroot_cvs/user-mode-linux/usr/lib/uml/";
+
+# tools & kernel
+system "cp -a $packaging_place/user-mode-linux/usr/lib/uml/port-helper $gbootroot_cvs/user-mode-linux/usr/lib/uml/port-helper";
+system "cp -a $packaging_place/user-mode-linux/usr/bin/* $gbootroot_cvs/user-mode-linux/usr/bin/";
+
+# kernel config
+ system "cp -a $packaging_place/user-mode-linux/usr/lib/uml/config $gbootroot_cvs/user-mode-linux/usr/lib/uml/";
+
+# genext2fs
+system "cp -a $packaging_place/genext2fs/genext2fs $gbootroot_cvs/genext2fs/genext2fs";
+
+
+exit;
 
 }
 
@@ -156,7 +186,6 @@ system "cp -fa $makefile $packaging_place/Makefile";
 system "cp -fa README $packaging_place/README";
 system "cp -fa user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch $packaging_place/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch";
 system "ln -sf $packaging_place/yard/replacements $packaging_place/yard/Replacements";
-mkdir("$packaging_place/linux");
 mkdir("$packaging_place/sources");
 
 # Now we get to clean out any CVS directories and make sure that the 
