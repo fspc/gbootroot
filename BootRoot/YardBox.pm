@@ -490,15 +490,17 @@ sub file_system {
 		# usinng uml_exlusively
 		else {
 		    my %uml_helper_fs_types = qw(mke2fs 1 mkcramfs 1 genromfs 1
-					      mkfs.minix 1 mkminix 1
-					      mkreiserfs 1);
+						 mkfs.minix 1 mkminix 1
+						 mkreiserfs 1 mkfs.jffs 1 
+						 mkfs.jffs2 1);
 
 		    if ( !$uml_helper_fs_types{$executable} ) {
 
 			error_window("ROOT_FS_HELPER ERROR: " .
 				     "These are supported " .
 				     "make fs commands:\n\nmke2fs  mkcramfs" .
-                              "  genromfs  mkfs.minix  mkminix  mkreiserfs");
+                              "  genromfs  mkfs.minix  mkminix  mkreiserfs" .
+			      "  mkfs.jffs  mkfs.jffs2");
 
 			return;
 		    }

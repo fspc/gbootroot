@@ -1489,12 +1489,28 @@ sub create_expect_uml {
 	    }
 
 
-	    if ( $fs_type eq "mkcramfs" || $fs_type eq "genromfs" ) {
+	    if ( $fs_type eq "mkcramfs" || $fs_type eq "genromfs" ||
+		 $fs_type eq "mkfs.jffs" || $fs_type eq "mkfs.jffs2") {
 		# Will just keep appending _cramfs .. leaving it to the
 		# user to realize this is happening, that way the user
 		# has control over the dd file.
-		$fs_type eq "mkcramfs" ? ($device = $device . "_cramfs") : 
-		    ($device = $device . "_romfs");
+##		$fs_type eq "mkcramfs" ? ($device = $device . "_cramfs") : 
+##		    ($device = $device . "_romfs");
+
+		if ( $fs_type eq "mkcramfs" ) {
+		    $device = $device . "_cramfs";
+		}
+		elsif ( $fs_type eq "genromfs" ) {
+		    $device = $device . "_romfs";
+		}
+		# These guys just get written over, but that is o.k.
+		elsif ( $fs_type eq "mkfs.jffs" ) {
+		    $device = $device . "_jffs";
+		}
+		elsif ( $fs_type eq "mkfs.jffs2" ) {
+		    $device = $device . "_jffs2";
+		}
+
 	        my $cramfs_name = basename($device);
 		# If somebody closes ARS, this won't get updated,
 		# but that is a minor matter.
