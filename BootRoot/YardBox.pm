@@ -723,7 +723,7 @@ sub continue {
 sub check {
 
     my $error = read_contents_file( "$template_dir$template", $tmp,
-				    $filesystem_size );
+				    $filesystem_size, \%uml_expect );
     return if $error && $error eq "ERROR";
 
 }

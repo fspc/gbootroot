@@ -160,7 +160,7 @@ sub kernel_version_check {
 sub read_contents_file {
 
 
-    my ( $contents_file, $mnt, $fs_size ) = @_;
+    my ( $contents_file, $mnt, $fs_size, $uml_expect ) = @_;
     my $error;
 
     # It's a good idea to clear the text buffer in the verbosity box
@@ -233,7 +233,8 @@ sub read_contents_file {
       # devices and process them individually, globbing if necessary,
       # and appending the changes to the device table. --freesource
 
-      if ( $fs_type eq "genext2fs" && $fs_size <= 8192 ) {
+      if ( $fs_type eq "genext2fs" && $fs_size <= 8192 && 
+	   $uml_expect->{uml_exclusively} == 0 ) {
 
 	  # If a device is found on the same line with a non-device(s)
 	  # the non-device(s) is sent on its merry way.
@@ -1352,29 +1353,56 @@ sub create_filesystem {
     }
 
 
-    if ( $fs_type ne "genext2fs" ) {
+    if ( $fs_type ne "genext2fs" && $uml_expect->{uml_exclusively} == 0 ) {
 	## Probably will want to umount here
 	return "ERROR" if errum(sys("umount $mount_point")) == 2;
     }
-
+    
     # This is fun.
     else {
+
+
 	# The -D option is unique to the newest unreleased version of 
 	# genextfs modified by BusyBox maintainer Erick Andersen
 	# August 20, 2001.
 
 	my $device_table  = "$mnt/device_table.txt";
 
-	if (
-	    sys("/usr/lib/bootroot/$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
-	    /^0$/ ) {
-	    $error = error("Cannot $fs_type filesystem.\n");
-	    return "ERROR" if $error && $error eq "ERROR";
+
+	# Just for testing purposes .. working out the logic in a little bit.
+	if ( $uml_expect->{uml_exclusively} ) {
+
+
+	    my $expect_program = "/usr/lib/bootroot/expect_uml";
+	    my $version = "2.4";
+	    my $ubd0 =
+		"ubd0=/usr/lib/bootroot/root_filesystem/root_fs_helper";
+	    my $ubd1 = "ubd1=$device";
+	    my $options = "root=/dev/ubd0";
+
+	    my $x_count = 1;
+
+	    info(1,"\n$expect_program $version $ubd0 $ubd1 $options $mount_point\n\n");
+
+	    # add error correction
+	    open(EXPECT,"$expect_program $version $ubd0 $ubd1 $options $mount_point|");
+	    while (<EXPECT>) {
+		info(0,"$x_count  $_");
+		$x_count++;
+		while (Gtk->events_pending) { Gtk->main_iteration; }
 	    }
 
+	}
+	elsif (
+	       sys("/usr/lib/bootroot/$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
+	       /^0$/ ) {
+	    $error = error("Cannot $fs_type filesystem.\n");
+	    return "ERROR" if $error && $error eq "ERROR";
+	}
     }
 
-	info(0, "\nDone making the root filesystem.  $Warnings warnings.\n",
+
+    info(0, "\nDone making the root filesystem.  $Warnings warnings.\n",
 	     "$device is now umounted from $mount_point\n\n");
 
     #info(0, "All done!\n");
