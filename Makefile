@@ -14,9 +14,13 @@ install:
 	mknod yard/replacements/dev/ubd0 b 98 0
 	cp -fa yard/replacements/* /usr/share/gbootroot/yard/Replacements
 	rm yard/replacements/dev/ubd0
-	install -d /usr/share/gbootroot/yard/templates
+	install -d /usr/share/gbootroot/yard/templatesx
 	chmod 444 yard/templates/*.yard
 	cp -fa yard/templates/Example* /usr/share/gbootroot/yard/templates
+	install -d /usr/share/gbootroot/genext2fs
+	cp -fa genext2fs/genext2fs.c /usr/share/gbootroot/genext2fs
+	cp -fa genext2fs/Makefile /usr/share/gbootroot/genext2fs
+	cp -fa genext2fs/dev* /usr/share/gbootroot/genext2fs
 	cp -fa user-mode-linux/usr/bin/uml_* /usr/bin
 	cp -fa user-mode-linux/usr/bin/linux /usr/bin/linux
 	install -d /etc/gbootroot

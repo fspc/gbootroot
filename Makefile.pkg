@@ -14,6 +14,10 @@ install:
 	cp -fa yard/replacements/* $(DESTDIR)/usr/share/gbootroot/yard/Replacements
 	install -d $(DESTDIR)/usr/share/gbootroot/yard/templates
 	cp -fa yard/templates/Example* $(DESTDIR)/usr/share/gbootroot/yard/templates	
+	install -d $(DESTDIR)/usr/share/gbootroot/genext2fs
+	cp -fa genext2fs/genext2fs.c $(DESTDIR)/usr/share/gbootroot/genext2fs
+	cp -fa genext2fs/Makefile $(DESTDIR)/usr/share/gbootroot/genext2fs
+	cp -fa genext2fs/dev* $(DESTDIR)/usr/share/gbootroot/genext2fs
 	cp -fa user-mode-linux/usr/bin/uml_*  $(DESTDIR)/usr/bin
 	cp -fa user-mode-linux/usr/bin/linux $(DESTDIR)/usr/bin/linux
 	install -d $(DESTDIR)/etc/gbootroot
