@@ -19,14 +19,14 @@ testing of distributions fun and simple.</P>
 <br>
 
 <P align="center">
-<b>Download gBootRoot<b></P>
+<b>Download gBootRoot</b></P>
 <P align="center">Stable version</P>
 <p align="center"><A href="http://prdownloads.sourceforge.net/gbootroot/">
 Old versions</A></P>
 
 
 <P align="center">
-<IMG ALT="" SRC="images/gbootroot.xpm">
+<IMG ALT="" SRC="images/gbootroot.jpg">
 </P>
 
 <P align="center">
@@ -77,7 +77,7 @@ since large quantities of output to this box may cause gbootroot to use too
 much cpu power; however, output may still be found in the text file "verbose" 
 in /tmp/gbootroot_tmp'time-date'.</p>
 
-<br><br><br><br><br>
+<br><br><br><br><br><br><br><br>
 
 <p><P align="center"><b>
 Using the Advanced Boot Section</b></p>
@@ -115,7 +115,7 @@ are in the kernel or they do not exist.</p>
 "append ="&nbsp;&nbsp;  Add append options to brlilo.conf.&nbsp;&nbsp;  If you are using a frame
 buffer device you could add something like video=matrox:vesa:402,depth:16.</p>
 
-<br><br><br><br>
+<br><br><br><br><br><br><br><br><br>
 
 <P align="center">
 <b>Using the Advanced Root Section</b></P>
@@ -184,6 +184,7 @@ reflect the path to this root filesystem. &nbsp;&nbsp;
  You can now test with the UML 
 button or a put together a complete Boot/Root set with the Submit button.</p>
 
+<br><br><br><br><br><br><br>
 
 <p><P align="center"><b>User Mode Linux Box</b></p>
 
@@ -334,10 +335,15 @@ provided the user much more versatility and power in creating distributions.
 
 <P><b>How can I test gBootRoot?</b></P>
 
-<P>Get SETUP.GZ as the filesystem from <a href="http://www.tux.org/pub/people/kent-robotti/index.html">looplinux</a> or get it from my <a href="/bootroot/setup.gz">site</a>.
-This filesystem works with 2.2 kernels.</P>
-<p>    
-  [Ctrl] ([Tab] to see available images) 
+<P>1.  Download 
+<a href="http://prdownloads.sourceforge.net/user-mode-linux/root_fs_tomrtbt_1.7.205.bz2">
+root_fs_tomrtbt_1.7.205.bz2</a> at Sourceforge.</p> 
+
+
+<p>  
+
+2.  
+[Ctrl] ([Tab] to see available images) 
 <br>  boot: bootdisk single [Enter]
 <br>  ( now filesystem is single user mode)
 <br>  exit [Enter]
@@ -345,9 +351,6 @@ This filesystem works with 2.2 kernels.</P>
 <p>
  Better yet, do [Ctrl]
 <br> boot: bootdisk 2 [Enter]
-
-<P>You can make your own compressed filesystem with 
-<a href="http://www.croftj.net/~fawcett/yard/">Yard</a>.</P>
 
 <P><b>Why doesn't looplinux work as &quot;bootdisk 1?&quot;</b></P>
 <P>There is a difference between &quot;1&quot; and &quot;single.&quot;  Looplinux was written in a 
