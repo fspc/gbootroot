@@ -15,7 +15,7 @@ Description: BootRoot add-on.
  from within its own creation.
  .
  See the script for information on how to customize it to your own 
- specifications.  This package depends on swim.  Add this line to your 
+ specifications.  This package depends on dswim.  Add this line to your 
  sources.list:
  .
  deb http://prdownloads.sourceforge.net/avd ./
