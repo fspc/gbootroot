@@ -1956,6 +1956,8 @@ sub which_tests {
     my ($chosen_tests) = @_;
     my ($action, $label);
 
+    # Need to know whether genext2fs is being used
+    my $fs_type = (split(/\s/,$main::makefs))[0];
 
     #  This is a little crude.  Technically we should read /etc/conf.getty
     #  to make sure we're not supposed to be using a different login binary.
@@ -1980,12 +1982,15 @@ sub which_tests {
     my $t_inittab  = $chosen_tests->{31}{test_inittab};
     my $t_scripts  = $chosen_tests->{32}{test_scripts};
 
-    return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
-    sys("/usr/lib/bootroot/yard_chrooted_tests $mount_point $t_fstab $t_inittab $t_scripts",
-	"TESTING"); 
-    return "ERROR" if errum(sys("umount $mount_point")) == 2;
+    if ( $fs_type ne "genext2fs" ) {
 
-    return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
+	return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
+	sys("/usr/lib/bootroot/yard_chrooted_tests $mount_point $t_fstab $t_inittab $t_scripts", "TESTING"); 
+	return "ERROR" if errum(sys("umount $mount_point")) == 2;
+
+	return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
+
+    }
 
     # Now the question is whether or not these next tests depend on
     # chroot, since they must have before.
@@ -2006,8 +2011,11 @@ sub which_tests {
 	check_nss();                     
     }
 
-    return "ERROR" if errum(sys("umount $mount_point")) == 2;
+    if ( $fs_type ne "genext2fs" ) {
+	
+	return "ERROR" if errum(sys("umount $mount_point")) == 2;
 
+    }
     
 } # end sub which_tests
 

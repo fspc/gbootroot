@@ -210,6 +210,7 @@ my @menu_items = ( { path        => '/File',
 		     action      => 36,
 		     type        => '<CheckItem>',
 		     callback    => \&tests },
+	      
 
                    { path        => '/_Help',
                      type        => '<LastBranch>' },
@@ -673,6 +674,15 @@ sub tests {
 
 sub test { 
 
+    # Need to know whether genext2fs is being used
+    my $fs_type = (split(/\s/,$main::makefs))[0];
+
+    if ( $fs_type ne "genext2fs" ) {
+	$tests{30}{test_fstab} = 0;
+	$tests{31}{test_inittab} = 0;
+	$tests{32}{test_scripts} = 0;
+    }
+
     my $error = which_tests(\%tests); 
     return if $error && $error eq "ERROR";
 }
@@ -742,139 +752,138 @@ my $start_length;
 sub yard_box {
 
 
-       $main::yard_window = new Gtk::Window "toplevel";
-       $main::yard_window->signal_connect("destroy", \&destroy_window, 
-					  \$main::yard_window);
-       $main::yard_window->signal_connect("delete_event",\&destroy_window,
-					  \$main::yard_window);
-       $main::yard_window->signal_connect("destroy", sub { 
-	   $search_window->destroy if $search_window; } );
-       $main::yard_window->signal_connect("delete_event", sub { 
-	   $search_window->destroy if $search_window; });
-       $main::yard_window->set_usize( 525, 450 );
-       $main::yard_window->set_policy( $true, $true, $false );
-       $main::yard_window->set_title( "Yard Box - $template" );
-       $main::yard_window->border_width(0);
+    $main::yard_window = new Gtk::Window "toplevel";
+    $main::yard_window->signal_connect("destroy", \&destroy_window, 
+				       \$main::yard_window);
+    $main::yard_window->signal_connect("delete_event",\&destroy_window,
+				       \$main::yard_window);
+    $main::yard_window->signal_connect("destroy", sub { 
+	$search_window->destroy if $search_window; } );
+    $main::yard_window->signal_connect("delete_event", sub { 
+	$search_window->destroy if $search_window; });
+    $main::yard_window->set_usize( 525, 450 );
+    $main::yard_window->set_policy( $true, $true, $false );
+    $main::yard_window->set_title( "Yard Box - $template" );
+    $main::yard_window->border_width(0);
 
-       my $main_vbox = new Gtk::VBox( $false, 0 );
-       $main::yard_window->add( $main_vbox );
-       $main_vbox->show();
+    my $main_vbox = new Gtk::VBox( $false, 0 );
+    $main::yard_window->add( $main_vbox );
+    $main_vbox->show();
 
-       my $vbox = new Gtk::VBox( $false, 0 );
-       $vbox->border_width( 0 );
-       $main_vbox->pack_start( $vbox, $false, $true, 0 );
-       $vbox->show();
+    my $vbox = new Gtk::VBox( $false, 0 );
+    $vbox->border_width( 0 );
+    $main_vbox->pack_start( $vbox, $false, $true, 0 );
+    $vbox->show();
 
-       #_______________________________________ 
-       # Item::Factory
-       my $menubar = yard_menu($main::yard_window);
-       $vbox->pack_start( $menubar, $false, $true, 0 );
-       $menubar->show();
-       
-       $vbox = new Gtk::VBox( $false, 10 );
-       $vbox->border_width( 10 );
-       $main_vbox->pack_start( $vbox, $true, $true, 0 );
-       $vbox->show();
+    #_______________________________________ 
+    # Item::Factory
+    my $menubar = yard_menu($main::yard_window);
+    $vbox->pack_start( $menubar, $false, $true, 0 );
+    $menubar->show();
+    
+    $vbox = new Gtk::VBox( $false, 10 );
+    $vbox->border_width( 10 );
+    $main_vbox->pack_start( $vbox, $true, $true, 0 );
+    $vbox->show();
 
-       my $table = new Gtk::Table( 2, 2, $false );
-       $table->set_row_spacing( 0, 2 );
-       $table->set_col_spacing( 0, 2 );
-       $vbox->pack_start( $table, $true, $true, 0 );
-       $table->show( );
-
-       #_______________________________________ 
-       # Manipulate Gtk::ItemFactory - 
-       # The trick here is to use the real path.
-
-       #     GUIDE TO VARIABLES AND THEIR VALUES 
-       #
-       #          objcopy <RadioItem>
-       #          -------------------
-       # $strip_bool  strip-all (default)
-       #              strip-debug
-       #
-       #          stages <RadioItem>  
-       #          ------------------
-       #               one-by-one (default)
-       # $stages_bool  continuous
-       #               user-defined
-       #
-       #          stripping <CheckItem>
-       #          ---------------------
-       #                      on           off
-       #                      --           ---
-       # $lib_bool             1 (default)  0
-       # $bin_bool             1 (default)  0
-       # $mod_bool             1 (default)  0
-       #
-       #           Checking Settings <CheckItem>
-       #           -----------------------------
-       # $replacement_bool     1 (default)  0
-       # $module_bool          1 (default)  0
-       #
-       #            Check Stage Variables HOH = %checks
-       #            -----------------------------------
-       # 16 fstab              1            0 (default)
-       ## These next two were removed, because there isn't any
-       ## script to make rc, and I can't remember what the
-       # fstab directory name entry was for. :*?
-       # 17 rc                 1            0 (default
-       # 18 'fstab directory name'  if fstab == 0
-       #
-       #            Tests  <CheckItem> HOH = %tests
-       #            --------------------------------
-       # 30 test_fstab          1 (default)  0
-       # 31 test_inittab        1 (default)  0
-       # 32 test_scripts        1 (default)  0
-       # 33 test_links          1 (default)  0
-       # 34 test_passwd         1 (default)  0
-       # 35 test_pam            1 (default)  0
-       # 36 test_nss            1 (default)  0
+    my $table = new Gtk::Table( 2, 2, $false );
+    $table->set_row_spacing( 0, 2 );
+    $table->set_col_spacing( 0, 2 );
+    $vbox->pack_start( $table, $true, $true, 0 );
+    $table->show( );
+    
+    #_______________________________________ 
+    # Manipulate Gtk::ItemFactory - 
+    # The trick here is to use the real path.
+    
+    #     GUIDE TO VARIABLES AND THEIR VALUES 
+    #
+    #          objcopy <RadioItem>
+    #          -------------------
+    # $strip_bool  strip-all (default)
+    #              strip-debug
+    #
+    #          stages <RadioItem>  
+    #          ------------------
+    #               one-by-one (default)
+    # $stages_bool  continuous
+    #               user-defined
+    #
+    #          stripping <CheckItem>
+    #          ---------------------
+    #                      on           off
+    #                      --           ---
+    # $lib_bool             1 (default)  0
+    # $bin_bool             1 (default)  0
+    # $mod_bool             1 (default)  0
+    #
+    #           Checking Settings <CheckItem>
+    #           -----------------------------
+    # $replacement_bool     1 (default)  0
+    # $module_bool          1 (default)  0
+    #
+    #            Check Stage Variables HOH = %checks
+    #            -----------------------------------
+    # 16 fstab              1            0 (default)
+    ## These next two were removed, because there isn't any
+    ## script to make rc, and I can't remember what the
+    # fstab directory name entry was for. :*?
+    # 17 rc                 1            0 (default
+    # 18 'fstab directory name'  if fstab == 0
+    #
+    #            Tests  <CheckItem> HOH = %tests
+    #            --------------------------------
+    # 30 test_fstab          1 (default)  0
+    # 31 test_inittab        1 (default)  0
+    # 32 test_scripts        1 (default)  0
+    # 33 test_links          1 (default)  0
+    # 34 test_passwd         1 (default)  0
+    # 35 test_pam            1 (default)  0
+    # 36 test_nss            1 (default)  0
 
  
-       # Stages
-       $one_by_one =  $item_factory->get_item('/Edit/Stages/one-by-one');
-       $continuous = $item_factory->get_item('/Edit/Stages/continuous');
-       $user_defined = $item_factory->get_item('/Edit/Stages/user defined');
-       $continuous->active(0);
-       $user_defined->active(0);
+    # Stages
+    $one_by_one =  $item_factory->get_item('/Edit/Stages/one-by-one');
+    $continuous = $item_factory->get_item('/Edit/Stages/continuous');
+    $user_defined = $item_factory->get_item('/Edit/Stages/user defined');
+    $continuous->active(0);
+    $user_defined->active(0);
 
-       # Stripping
+    # Stripping
 
-       # Libraries
-       my $lib_strip = $item_factory->get_item
-	   ('/Edit/Settings/Stripping/Libraries');
+    # Libraries
+    my $lib_strip = $item_factory->get_item
+	('/Edit/Settings/Stripping/Libraries');
        
-       $lib_strip->active($true);
-       $lib_strip->signal_connect( "activate", 
-				   sub {  
-				       # off   
-				        if ($lib_bool eq "") {
-					    $lib_bool = 0;
-				        }
-				        if ($lib_bool == 1) {
-					      $lib_bool--;
-				         }
-					 # on
-					 else {
-					     $lib_bool++;               
-					 }
-					 #print "$lib_bool\n";
-				     }
-                                   ); 
+    $lib_strip->active($true);
+    $lib_strip->signal_connect( "activate", 
+				sub {  
+				    # off   
+				    if ($lib_bool eq "") {
+					$lib_bool = 0;
+				    }
+				    if ($lib_bool == 1) {
+					$lib_bool--;
+				    }
+				    # on
+				    else {
+					$lib_bool++;               
+				    }
+				    #print "$lib_bool\n";
+				} ); 
 
-           # objcopy parameters for Libraries
-           $lib_strip_all = $item_factory->get_item
-               ('/Edit/Settings/Stripping/settings/strip-all');
-           $lib_strip_debug = $item_factory->get_item
-	       ('/Edit/Settings/Stripping/settings/strip-debug');
-           $lib_strip_debug->active(0);
+    # objcopy parameters for Libraries
+    $lib_strip_all = $item_factory->get_item
+    ('/Edit/Settings/Stripping/settings/strip-all');
+    $lib_strip_debug = $item_factory->get_item
+    ('/Edit/Settings/Stripping/settings/strip-debug');
+    $lib_strip_debug->active(0);
 
-       # Binaries
-       my $bin_strip = $item_factory->get_item
-	   ('/Edit/Settings/Stripping/Binaries');
-       $bin_strip->active($true);
-       $bin_strip->signal_connect( "activate", 
+    # Binaries
+    my $bin_strip = $item_factory->get_item
+    ('/Edit/Settings/Stripping/Binaries');
+    $bin_strip->active($true);
+    $bin_strip->signal_connect( "activate", 
 				   sub { 
 				         if ($bin_bool eq "") {
 					    $bin_bool = 0;
@@ -1068,8 +1077,15 @@ sub yard_box {
        $save_button->signal_connect( 'clicked', \&saved, 102);
        $vbox->pack_start( $save_button, $true, $true, 0 );
        $save_button->show();
-    
-       show $main::yard_window;
+
+       # chrooted tests not wanted for non-root user
+       if ( $> != 0 ) {
+             $item_factory->delete_item('/Tests/fstab');
+             $item_factory->delete_item('/Tests/inittab');
+             $item_factory->delete_item('/Tests/scripts');	
+       }
+
+        show $main::yard_window;
 
 } # end sub yard_box
 
@@ -1498,6 +1514,8 @@ sub yard_menu {
                                              $accel_group );
     $accel_group->attach($window);
     $item_factory->create_items(@menu_items);
+
+
     ##$item_factory->delete_item('/File/Checkbox');
     ##$item_factory->create_item(['/File/Checkbox', undef, undef, <Item>]);
 
