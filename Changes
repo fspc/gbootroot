@@ -25,21 +25,20 @@ advertising was in order so everybody knows that there are actually
 some organizations and companies paying for its development.  Wouldn't
 this be nice in a perfect world for all Free Software projects?
 
-Tested on Debian stable (2.2.5), RedHat 7.3 (2.2.5 ? and Mandrake ?,
-and known to work on Redhat 7.2 (2.2.4) and Mandrake 8.1 (2.2.4).
+Tested on Debian stable/unstable, and RedHat 7.3/8.0.
 
 Added /usr/info/dir and info to make_debian which makes things much
 nicer.
 
-Added libexpect-perl to Build-Depends for debs; in general, there were
-may fixes for both debs and rpms and their respective source packages.
+Added libexpect-perl and libgtk-perl to Build-Depends for debs; in
+general, there were many fixes for both debs and rpms and their
+respective source packages.
 
 Improved documentation.
 
 Added stop and go to the uml_mconsole interface for the UML Box.
 
-* make a new public root_fs_dev from the uml gbootroot was made on?
-	update make-debian-x11
+Made perl 5.8 compliant perl-IO-Stty and perl-IO-tty rpm packages.
 
 
 1.4.0 - 01/06/2003

@@ -1,9 +1,11 @@
-#  $Id: Example.yard,v 1.20 2003/02/07 19:12:29 freesource Exp $
+#  $Id: Example.yard,v 1.21 2003/02/08 06:29:57 freesource Exp $
 #  Example.yard
 #
-#  Creates a minimalistic multi-user runlevel root filesystem with getty.  
-#  Tested on Debian unstable/testing, Red Hat 7.2, Mandrake 8.1, but should 
-#  work on other distributions by using the proper inittab and getty.
+#  Creates a minimalistic multi-user runlevel root filesystem with
+#  getty.  Tested on Debian stable/unstable and Red Hat 7.3/8.0.
+#  Known to work with Red Hat 7.2 and Mandrake 8.1 with gbootroot
+#  1.3.6 (glibc 2.2.4).  Should work with other distributions by 
+#  using the proper inittab and getty.  Send in feedback.
 # 
 #  Create either as a normal user or root.
 #
