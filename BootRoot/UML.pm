@@ -5,8 +5,8 @@
 # Modifications by Jonathan Rosenbaum <freesource@users.sourceforge.net>
 #
 # Changes:
-#     12/15/2002     Changed UML to BootRoot::UML
-#                    Can set password to "" to allow no password.     
+#     12/15/2001     Changed UML to BootRoot::UML
+#                    Can now set password to "" to allow no password.     
 
 package BootRoot::UML;
 
@@ -135,8 +135,10 @@ sub open_log {
     }
     if(defined($fh)){
 	my $log = Expect->exp_init(\*$fh);
+	
 	push @logs, $log;
 	$me->{expect_handle}->set_group(@logs);
+
 	return $log;
     }
     return undef;

@@ -1569,7 +1569,7 @@ sub accept_button {
 			info(0,"Compressing $entry_advanced[4] with $compress\n");
 
 
-			system"$compress -c $tmp/$entry_advanced[4] > $tmp/$entry_advanced[4].bz2&";
+			system "$compress -c $tmp/$entry_advanced[4] > $tmp/$entry_advanced[4].bz2&";
 
 			$, = "";
 			my @ps_check = `ps w -C $compress 2> /dev/null`;
