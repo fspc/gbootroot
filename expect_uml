@@ -23,15 +23,6 @@
 ##
 ##############################################################################
 
-use BootRoot::UML;
-use File::Basename;
-
-if ( !$ARGV[0] ) {
-    
-    die "expect_uml ubd0 ubd1 other-options mount-point preserve_ownership filesystem_command\n";
-
-}
-
 
 BEGIN {
 
@@ -51,6 +42,16 @@ BEGIN {
     if ($sbin == 0) {
 	$ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
     }
+
+}
+
+
+use BootRoot::UML;
+use File::Basename;
+
+if ( !$ARGV[0] ) {
+    
+    die "expect_uml ubd0 ubd1 other-options mount-point preserve_ownership filesystem_command\n";
 
 }
 
