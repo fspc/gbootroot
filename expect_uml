@@ -99,12 +99,15 @@ if ( $filesystem =~ /^mkcramfs/ || $filesystem =~ /^genromfs/ ||
 else {
     $uml->command("$filesystem /dev/ubd/1");
 }
+
 $uml->command("mount /dev/ubd/1 /mnt1");
 $uml->command("mount -t hostfs none -o $mount_point /mnt2");
 $uml->command("cp -a /mnt2/* /mnt1");
+
 if ( $preserve_ownership == 0 ) {
     $uml->command("chown -R 0:0 /mnt1");
 }
+
 if ( $filesystem =~ /^mkcramfs/ ) {
     my $cram_dir = dirname($mount_point);
     my $root_fs_name = basename($ARGV[1]);
@@ -127,7 +130,13 @@ elsif ( $filesystem =~ /^mkfs\.jffs2/ ) {
     my $jffs2_name = "$root_fs_name" . "_jffs2";
     $uml->command("umount /mnt2");
     $uml->command("mount -t hostfs none -o $jffs2_dir /mnt2");
-    $uml->command("mkfs.jffs2 -r /mnt1 -o /mnt2/$jffs2_name  -e 0x20000 -p");
+    if ( $filesystem !~ /^mkfs\.jffs2$/ ) {
+	$uml->command("$filesystem -r /mnt1 -o /mnt2/$jffs2_name");
+    }
+    else {
+	$uml->command("mkfs.jffs2 -r /mnt1 -o /mnt2/$jffs2_name  -e 0x20000 -p");
+    }
+
 }
 elsif ( $filesystem =~ /^mkfs\.jffs/ ) {
     my $jffs_dir = dirname($mount_point);
@@ -135,11 +144,18 @@ elsif ( $filesystem =~ /^mkfs\.jffs/ ) {
     my $jffs_name = "$root_fs_name" . "_jffs";
     $uml->command("umount /mnt2");
     $uml->command("mount -t hostfs none -o $jffs_dir /mnt2");
-    $uml->command("mkfs.jffs -d /mnt1 -o /mnt2/$jffs_name  -e 0x20000 -p");
+    if ( $filesystem !~ /^mkfs\.jffs$/ ) {
+	$uml->command("$filesystem -d /mnt1 -o /mnt2/$jffs_name");
+    }
+    elsif {
+	$uml->command("mkfs.jffs -d /mnt1 -o /mnt2/$jffs_name  -e 0x20000 -p");
+    }
 }
 
 $uml->command("umount /mnt1; umount /mnt2");   
 $uml->halt();
+
+
 
 
 
