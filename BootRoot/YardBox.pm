@@ -40,6 +40,9 @@ my($check,$dep,$space,$create,$test);
 my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
+my $replacements_window;
+my @entry;
+my $file_dialog;
 
 my $filesystem_type = "ext2";
 my $inode_size = 8192;
@@ -138,7 +141,8 @@ my @menu_items = ( { path        => '/File',
 		     callback    => \&stages_user_defined },
 		   { path        => '/Edit/File System',
 		     callback    => \&file_system },
-		   { path        => '/Edit/Replacements' },
+		   { path        => '/Edit/Replacements',
+		     callback    => \&Replacements },
 
                    { path        => '/_Create',
                      type        => '<Branch>' },
@@ -1126,6 +1130,215 @@ sub save_as {
 
 
 }
+
+
+sub Replacements {
+    
+    if (not defined $replacements_window) {
+
+	$replacements_window = Gtk::Window->new("toplevel");
+	$replacements_window->signal_connect("destroy", \&destroy_window,
+					     \$replacements_window);
+	$replacements_window->signal_connect("delete_event", \&destroy_window,
+					     \$replacements_window);
+	$replacements_window->set_policy( $true, $true, $false );
+	$replacements_window->set_title( "Replacements Box" );
+	$replacements_window->border_width(1);    
+
+	my $main_vbox = Gtk::VBox->new( $false, 0 );
+	$replacements_window->add( $main_vbox );
+	$main_vbox->show();
+
+	my $table_replacements = Gtk::Table->new( 3, 3, $true );
+	$main_vbox->pack_start( $table_replacements, $true, $true, 0 );
+	$table_replacements->show();
+
+	#_______________________________________
+	# Editor and execute options
+	label("Editor:",0,1,0,1,$table_replacements);
+	my $repl1 = entry(1,3,0,1,0,$table_replacements);
+	$repl1->set_text($main::editor);
+
+#my $tooltips = Gtk::Tooltips->new();
+#    $tooltips->set_tip( $repl1, 
+#			"Choose an editory with " .
+#			"its executable option switch.", 
+#			"" );
+
+	#_______________________________________
+	# Replacement file
+	label("Replacement:",0,1,1,2,$table_replacements);
+	my $repl2 = entry(1,2,1,2,1,$table_replacements);
+	button_fileselect(2,3,1,2,"Selection",$repl2,"Selection",0,
+			  $table_replacements,
+			  "$main::global_yard/Replacements/");
+	$repl2->set_text("$main::global_yard/Replacements/") 
+	    if -e "$main::global_yard/Replacements/";
+
+	$table_replacements->set_row_spacing( 1, 3);       
+
+
+	#_______________________________________
+	# Submit button
+	my $submit_b = button(0,1,2,3,"Submit",$table_replacements);
+	$submit_b->signal_connect( "clicked", sub {
+	    if ($entry[0] && $entry[1]) {
+
+		# Check to see if it actually exists
+		my $executable = (split(/\s+/,$entry[0]))[0];
+		if (!find_file_in_path(basename($executable))) {
+		    error_window("gBootRoot Error: " .
+				 "Enter a valid xterm, and " .
+				 "executable option.");
+		    return;
+		}
+		if ($executable =~ m,/,) {
+		    if (! -e $executable) {
+			error_window("gBootRoot Error: " .
+				     "Enter a valid path for the xterm.");
+			return;
+		    }
+		}
+
+		my $pid; 
+		unless ($pid = fork) {
+		    unless (fork) {
+			if ($pid == 0) {
+			    sys("$entry[0] $entry[1]");
+			    Gtk->_exit($pid);
+			}
+		    }
+		}
+		waitpid($pid,0);
+	    }
+	} );
+
+	#_______________________________________
+	# Close button
+	my $close_b = button(2,3,2,3,"Close",$table_replacements);
+	$close_b->signal_connect("clicked",
+				 sub {
+				     $replacements_window->destroy() 
+					 if $replacements_window;
+				 } );
+
+   }
+   if (!visible $replacements_window) {
+       $replacements_window->show();
+   } else {
+       $replacements_window->destroy;
+   }
+
+}
+
+# Just label_advanced
+sub label {
+
+    my($text) = @_;
+
+    my $label = Gtk::Label->new( $text );
+    $label->set_justify( "fill" );
+    $_[5]->attach($label,$_[1],$_[2],$_[3],$_[4], ['expand'],['fill','shrink'],0,0);
+    $label->show();
+
+}
+
+# Just entry_advanced
+sub entry {
+
+    my $numa = $_[4];
+    my $entry = Gtk::Entry->new();
+    $entry->set_editable( $true );
+    $entry->signal_connect( "changed", sub {
+    $entry[$numa] = $entry->get_text();
+#          if ($numa == 4) {
+#	     $ars->{filename} = $entry[$numa];
+#	      ars($ars);
+#	 }
+     } );
+    $entry->set_usize(100,20);
+    $_[5]->attach($entry,$_[0],$_[1],$_[2],$_[3], 
+                            ['shrink','fill','expand'],['fill','shrink'],0,0);
+    show $entry;
+    return $entry;
+
+}
+
+sub button {
+
+    # cretzu should like this
+    my ($left_attach,$right_attach,$top_attach,
+                     $bottom_attach,$text,$widget) = @_;
+    my $button = Gtk::Button->new($text);
+    $widget->attach($button,$left_attach,$right_attach,
+                                 $top_attach,$bottom_attach, 
+                            ['shrink','fill','expand'],['fill','shrink'],2,2);
+    show $button;
+    return $button;
+
+}
+
+sub button_fileselect {
+
+    # cretzu should like this
+    # $order does matter because it fills in $container[$order].
+    my ($left_attach,$right_attach,$top_attach,$bottom_attach,$text,$ent,
+        $name,$order,$widget,$device) = @_;
+
+    my $button = Gtk::Button->new($text);
+    $widget->attach($button,$left_attach,$right_attach,
+                                 $top_attach,$bottom_attach, 
+                            ['shrink','fill','expand'],['fill','shrink'],2,2);
+
+    $button->signal_connect( "clicked",\&fileselect,$ent,$name,$order,$device);
+    $button->show();
+
+
+} # end sub button_fileselect
+
+sub fileselect {
+
+    my ($widget,$ent,$name,$order,$device) = @_;
+
+    if (not defined $file_dialog) {
+        # Create a new file selection widget
+        $file_dialog = Gtk::FileSelection->new( "$name" );
+        $file_dialog->signal_connect( "destroy",
+                                     \&destroy_window, \$file_dialog);
+        $file_dialog->signal_connect( "delete_event",
+                                     \&destroy_window, \$file_dialog);
+
+        # Connect the ok_button to file_ok_sel function
+        $file_dialog->ok_button->signal_connect( "clicked",
+                                         \&file_ok_sel,
+                                         $file_dialog,$ent,$order);
+
+        # Connect the cancel_button to destroy the widget
+        $file_dialog->cancel_button->signal_connect( "clicked",
+                                              sub { destroy $file_dialog } );
+         $file_dialog->set_filename( $device ) if defined $device;
+         $file_dialog->set_position('mouse');
+
+     }
+     if (!visible $file_dialog) {
+         show $file_dialog;
+     }
+     else {
+        destroy $file_dialog;
+     }
+
+} # end sub fileselect
+
+
+sub file_ok_sel {
+
+    my( $widget, $file_selection,$entry,$order) = @_;
+    my $file = $file_selection->get_filename();
+    $entry->set_text($file);
+    destroy $file_dialog;
+
+}
+
 
 1;
 
