@@ -135,7 +135,7 @@ my @info;
 foreach my $rp (@required_packages) {
     $rp = (split(/_/,$rp))[0];
     
-    # Figure out info/*
+    # Figure out info/*  .. this covers it for now.
     if (-f "$info/$rp.preinst") {
 	push(@info,"$info/$rp.preinst\n");
     }
@@ -147,6 +147,21 @@ foreach my $rp (@required_packages) {
     }
     if (-f "$info/$rp.postrm") {
 	push(@info,"$info/$rp.postrm\n");        
+    }
+    if (-f "$info/$rp.list") {
+	push(@info,"$info/$rp.list\n");        
+    }
+    if (-f "$info/$rp.shlibs") {
+	push(@info,"$info/$rp.shlibs\n");        
+    }
+    if (-f "$info/$rp.conffiles") {
+	push(@info,"$info/$rp.conffiles\n");        
+    }
+    if (-f "$info/$rp.md5sums") {
+	push(@info,"$info/$rp.md5sums\n");        
+    }
+    if (-f "$info/$rp.config") {
+	push(@info,"$info/$rp.config\n");        
     }
 }
 
@@ -166,8 +181,8 @@ $stuff = << "STUFF";
 # use the "doc" option to make documentation.  
 
 # Characteristics:  user: root passwd: root 
-                    user: user passwd: user
-		    Uses devfs.
+#                   user: user passwd: user
+#                   Uses devfs.
     
 # Alternatives aren't working so you will have to use the real name like
 # nvi for vi and w.procps for w.  Not all libs are associated with packages
@@ -235,8 +250,8 @@ $stuff = << "STUFF";
 /dev/ttyS[0-9]		    
 /dev/fd0*                   
 /dev/sd*                    
-/dev/cdrom 
-/dev/modem       
+#/dev/cdrom 
+#/dev/modem       
 /dev/pts*
 /dev/ptmx
 /dev/initctl
