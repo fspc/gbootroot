@@ -1,0 +1,13 @@
+# DEVICE        MOUNTPOINT      TYPE    OPTIONS DUMP    FSCKORDER
+#----------------------------------------------------------------
+## Choose an appropriate root mount.
+# /dev/ram0       /               ext2    defaults
+/dev/ubd/0       /               ext2    defaults   1    1
+# If you have this, uncomment it.
+devpts           /dev/pts        devpts  mode=0622  0    0
+/proc           /proc           proc    defaults
+# Entries adapted from existing fstab:
+#/dev/hda3      /OLDROOT        ext2    defaults,errors=remount-ro,noauto 0   1
+#/dev/hda1      none    swap    sw      0       0
+/dev/fd0        /OLDROOT/floppy auto    defaults,user,noauto    0       0
+/dev/cdrom      /OLDROOT/cdrom  iso9660 defaults,ro,user,noauto 0       0
