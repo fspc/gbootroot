@@ -54,12 +54,14 @@ my $urgency = "low";
 my $gbootroot_cvs =  "$user_home/gbootroot/gbootroot";
 my $packaging_place = "$user_home/gbootroot/PACKAGING";
 my $packaging_defaults = "$gbootroot_cvs/pkg/dpkg";
-my $rpm_packaging_place = "$gbootroot_cvs/pkg/rpm";
-my $SOURCES = "/usr/src/rpm/SOURCES";
-my $SPECS = "/usr/src/rpm/SPECS";
 my $email = "freesource\@users.sourceforge.net";
 my $name = "Jonathan Rosenbaum";
 my $makefile = "Makefile.pkg";
+
+# RPM stuff
+my $rpm_packaging_place = "$gbootroot_cvs/pkg/rpm";
+my $SOURCES = "/usr/src/rpm/SOURCES";
+my $SPECS = "/usr/src/rpm/SPECS";
 my @rpm_packages = qw(gbootroot.spec gbootroot-mdk.spec);
 
 
