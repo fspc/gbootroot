@@ -42,7 +42,11 @@
 #
 #    Liav Asseraf <liav_a@yahoo.com>
 #    - Important 1.3.1 bug report and several good questions now incorporated
-#      in the FAQ. 
+#      in the FAQ.  Noted an erroneous explanation for a FAQ question in 1.3.2.
+#
+#    Linus Gasser <ineiti@gmx.net>
+#    - Pointed out lack of mailto in email address, and strange behavior
+#      for file download links.
 #
 #    [ Supporters and Users ]
 #    Ben Carrell <ben@xmission.com>
@@ -231,6 +235,7 @@ BEGIN {
 
 }
 
+
 $main::editor = "emacs --font 6x13";
 $main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
 $main::sudo = "sudo";
@@ -240,4 +245,10 @@ start();
 
 main Gtk;
 exit( 0 );
+
+
+
+
+
+
 
