@@ -22,7 +22,7 @@ build-stamp:
 
 	# Add here commands to compile the package.
 	$(MAKE)
-	#/usr/bin/docbook-to-man debian/gbootroot.sgml > gbootroot.1
+	#/usr/bin/docbook-to-man debian/make-debian-x11.sgml > make-debian-x11.1
 
 	touch build-stamp
 
@@ -42,8 +42,8 @@ install: build
 	dh_clean -k
 	dh_installdirs
 
-	# Add here commands to install the package into debian/gbootroot.
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/gbootroot
+	# Add here commands to install the package into debian/make-debian-x11.
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/make-debian-x11
 
 
 # Build architecture-independent files here.
@@ -54,7 +54,7 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-#	dh_installdebconf	
+	dh_installdebconf	
 	dh_installdocs
 #	dh_installexamples
 #	dh_installmenu
