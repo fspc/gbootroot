@@ -34,7 +34,7 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys 
-              text_insert logadj);
+              text_insert logadj error);
 
 use strict;
 use File::Basename;
@@ -108,7 +108,9 @@ sub kernel_version_check {
 		 "Make sure this is OK\n");
 	    $ENV{'RELEASE'} = $release;
 	} else {
-	    error("And can't determine running kernel's version either!\n");
+	    my $error = error(
+            "And can't determine running kernel's version either!\n");
+	     return "ERROR" if $error && $error eq "ERROR";
 	}
     }
 
@@ -127,11 +129,14 @@ sub kernel_version_check {
 sub read_contents_file {
 
     my ($contents_file) = @_;
+    my $error;
 
     info(0, "\n\nPASS 1:  Reading $contents_file");
     info(0, "\n");
 
-    open(CONTENTS, "<$contents_file") or error("$contents_file: $!");
+    open(CONTENTS, "<$contents_file") or 
+        ($error = error("$contents_file: $!"));
+    return "ERROR"if $error && $error eq "ERROR";
 
     my($line);
 
@@ -171,9 +176,10 @@ sub read_contents_file {
 	  @files = ($abs_link);
 	  
       } elsif ($line =~ /<=/) {	#####  REPLACEMENT SPEC
-	  cf_die($contents_file, $line, 
+	  $error = cf_die($contents_file, $line, 
               "Can't use wildcard in replacement specification") if
 	       $line =~ /[\*\?\[]/;
+	  return "ERROR" if $error && $error eq "ERROR";
 
 	  my($file, $replacement) = $line =~ /^(\S+)\s*<=\s*(\S+)\s*$/;
 
@@ -264,7 +270,8 @@ sub read_contents_file {
   }				# End of LINE loop
 
     info(0, "\nDone with $contents_file\n\n");
-    close(CONTENTS) or error("close on $contents_file: $!");
+    close(CONTENTS) or ($error = error("close on $contents_file: $!"));
+    return "ERROR"if $error && $error eq "ERROR";
 
 } # end read_contents_file
 
@@ -288,6 +295,7 @@ sub extra_links {
 sub library_dependencies {
 
     my ($contents_file) = @_;
+    my $error;
 
     info(0, "PASS 3:  Checking library dependencies...\n");
     info(1, "(Ignore any 'statically linked' messages.)\n");
@@ -359,7 +367,8 @@ sub library_dependencies {
 			}
 			last unless -l $abs_lib;
 			my($link) = readlink($abs_lib) or
-			    error("readlink($abs_lib): $!");
+			    ($error = error("readlink($abs_lib): $!"));
+			return "ERROR"if $error && $error eq "ERROR";
 			$abs_lib = make_link_absolute($abs_lib, $link);
 
 		    }
@@ -390,9 +399,11 @@ sub library_dependencies {
 	    my($file_output) = `file $lib`;
 
 	    if ($file_output =~ m/symbolic link/) {
-		error("Yiiiiii, library file $lib is a symbolic link!\n",
+		$error = error(
+                      "Yiiiiii, library file $lib is a symbolic link!\n",
 		      "This shouldn't happen!\n",
 		      "Please report this error(to the Yard author\n");
+		 return "ERROR"if $error && $error eq "ERROR";
 	    }
 
 	    my($lib_type)  = $file_output =~ /:\s*(ELF|Linux)/m;
@@ -419,8 +430,10 @@ sub library_dependencies {
 		#####  Strings from /usr/lib/magic of file 3.19
 
 		if (!defined($lib_type)) {
-		    error("Didn't understand `file` output for $lib:\n",
+		    $error = error(
+                          "Didn't understand `file` output for $lib:\n",
 			  `file $lib`, "\n");
+		     return "ERROR"if $error && $error eq "ERROR";
 
 		} elsif ($lib_type eq 'ELF') {
 		    $seen_ELF_lib = 1;
@@ -729,6 +742,7 @@ sub space_check {
 sub create_filesystem {
 
     my $file;
+    my $error;
 
     ##info(0, "Creating ${::fs_size}K ext2 file system on $::device\n");
 
@@ -784,7 +798,8 @@ sub create_filesystem {
 	    mkpath(dirname($floppy_file));
 	    info(1, "\tLink\t$floppy_file -> $target\n");
 	    symlink($target, $floppy_file) or
-		error("symlink($target, $floppy_file): $!\n");
+		($error = error("symlink($target, $floppy_file): $!\n"));
+	    return "ERROR"if $error && $error eq "ERROR";
 	    delete $Included{$file}; # Get rid of it so next pass doesn't copit
 
 	} elsif (-d $file) {
@@ -886,6 +901,7 @@ sub create_filesystem {
 #####  reached.
 sub include_file {
     my($contents_file, $file) = @_;
+    my $error;
 
     must_be_abs($file);
     if (onto_proc_filesystem($file)) {
@@ -905,7 +921,8 @@ sub include_file {
 	#####  SYMBOLIC LINK on disk, not overridden by explicit link or
 	#####  replacement.  Relativize the link for use later, but also
 	#####  check and resolve the target so it gets onto the rescue disk.
-	my($link)         = readlink($file) or error("readlink($file): $!");
+	my($link)         = readlink($file) or ($error = error("readlink($file): $!"));
+	return "ERROR"if $error && $error eq "ERROR";
 	my($rel_link)     = make_link_relative($file, $link);
 	$links_to{$file}  = $rel_link;
 
@@ -936,7 +953,9 @@ sub cf_die {
   my($contents_file, $line, @msgs) = @_;
   info(0, "$contents_file($cf_line): $line\n");
   foreach (@msgs) { info(0, "\t$_\n"); }
-  exit;
+  my $output = join("\n",@msgs);
+  &::error_window("gBootRoot: ERROR: ", $output);
+  return "ERROR";
 }
 
 sub cf_warn {
@@ -957,6 +976,7 @@ sub copy_strip_file {
     # check for off or on, not undef
     my($from, $to, $strip_objfiles, 
        $strip_lib, $strip_bin, $strip_module) = @_;
+    my $error;
 
     if ($strip_objfiles and defined($objcopy) and $strippable{$from}) {
 	#  Copy it stripped
@@ -978,8 +998,10 @@ sub copy_strip_file {
 	# Copy file perms and owner
 	my($mode, $uid, $gid);
 	(undef, undef, $mode, undef, $uid, $gid) = stat $from;
-	chown($uid, $gid, $to) or error("chown: $!");
-	chmod($mode, $to)      or error("chmod: $!");
+	chown($uid, $gid, $to) or ($error = error("chown: $!"));
+	return "ERROR"if $error && $error eq "ERROR";
+	chmod($mode, $to)      or ($error = error("chmod: $!"));
+        return "ERROR"if $error && $error eq "ERROR";
 
     } else {
 	#  Normal copy, no strip
@@ -997,6 +1019,7 @@ sub copy_strip_file {
 ########################################################
 
 # Get device number of /proc filesystem
+## not a sub
 my($proc_dev) = (stat("/proc"))[0];
 
 sub info {
@@ -1016,11 +1039,14 @@ sub info {
 
 }
 
+## This will produce red.
 sub error {
-  print STDERR "Error: ", @_;
+
   print LOGFILE "Error: ", @_;
-  close(LOGFILE);
-  exit(-1);
+  info(0, "Error: ", @_);
+  &::error_window("gBootRoot: ERROR: ", @_);
+  return "ERROR";
+
 }
 
 sub start_logging_output {
@@ -1033,8 +1059,9 @@ sub start_logging_output {
     $logfile = $yard_temp;
   }
   # ERRORCHECK
+  ## If logfile doesn't open in /tmp there is some type of fatal problem.
   open(LOGFILE, ">$logfile") or die "open($logfile): $!\n";
-  print "Logging output to $logfile\n";
+  info(1, "Logging output to $logfile\n")
 }
 
 #####  Same as system() but obeys $verbosity setting for both STDOUT
@@ -1298,21 +1325,26 @@ sub warn_about_module_dependencies {
 # Returns undef if it can't determine the version (or bails out with error)
 sub kernel_version {
   my($image)  = @_;
+  my $error;
 
   # check if we have a normal file (-f dereferences symbolic links)
   if (!-f $image) {
-    error("Kernel image ($image) is not a plain file.\n");
+    $error = error("Kernel image ($image) is not a plain file.\n");
+    return "ERROR"if $error && $error eq "ERROR";
 
   } else {
     my($str)	       = "";
     my($version_start) = "";
 
-    open(DATA, $image) or error("can't open $image.\n");
+    open(DATA, $image) or ($error = error("can't open $image.\n"));
+    return "ERROR"if $error && $error eq "ERROR";
     # check signature of kernel image
     seek(DATA, 514, 0);
     read(DATA, $str, 4);
-    error("Kernel image file ($image) does not have Linux kernel signature\n")
-	unless $str =~ "HdrS";
+    $error = error(
+        "Kernel image file ($image) does not have Linux kernel signature\n")
+        unless $str =~ "HdrS";
+    return "ERROR"if $error && $error eq "ERROR";
     # setup header version should be 0x201
     read(DATA, $str, 2);
     $str = unpack("S",$str);
@@ -1320,11 +1352,14 @@ sub kernel_version {
 	sprintf("%04x",$str)." (expected 0x0201).\n" unless $str == 0x201;
     # get ofset of version string (indirect) and read version string
     seek(DATA, 526, 0);
-    read(DATA, $version_start, 2) or error("can't read from $image.\n");
+    read(DATA, $version_start, 2) or ($error = error(
+                                                "can't read from $image.\n"));
+    return "ERROR"if $error && $error eq "ERROR";
     $version_start = unpack("S",$version_start) + 512;
     seek(DATA, $version_start, 0);
     read(DATA, $str, 30) or
-      error("can't read from offset $version_start of $image.\n");
+      ($error = error("can't read from offset $version_start of $image.\n"));
+    return "ERROR"if $error && $error eq "ERROR";
     close(DATA);
     #  Extract the version number.
     #  Usually this is something like 2.2.15, but because of kernel packages
