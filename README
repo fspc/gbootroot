@@ -1,4 +1,4 @@
-$Id: README,v 1.19 2003/02/10 15:38:15 freesource Exp $
+$Id: README,v 1.20 2003/02/10 17:38:47 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -32,11 +32,12 @@ These are the build-depends from the Debian source package that can be
 used as a guide for other distributions: binutils (>= 2.12.90.0),
 fileutils (>= 4.0), gcc (>= 2:2.95.4), make, libc6-dev (>= 2.2.5),
 bin86, wget, mkcramfs, e2fsprogs, reiserfsprog, genromfs, util-linux,
-mtd-tools, m4, libreadline4-dev, libgtk-perl (>= 0.7002) (see
-gbootroot's site), libexpect-perl (required rpms can be found at
-gbootroot's site.)  For instance, in Redhat libc6-dev translates into
-glibc-devel and glibc-kernheaders, libreadline4-dev translates into
-readline-dev, reiserfsprog translates into reiserfs-utils.
+mtd-tools, m4, libreadline4-dev, libncurses5-dev, libgtk-perl (>=
+0.7002) [see gbootroot's site], libexpect-perl [required rpms can be
+found at gbootroot's site].  For instance, in Redhat libc6-dev
+translates into glibc-devel and glibc-kernheaders, libreadline4-dev
+translates into readline-dev, libncurses5-dev translates into
+ncurses-devel, reiserfsprog translates into reiserfs-utils.
 
 
 UML KERNEL CUSTOMIZATION
