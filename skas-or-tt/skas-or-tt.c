@@ -21,47 +21,84 @@ process.c.  This is a good way to learn about clone() and ptrace().
 int main(void)
 {
 
-  int n, pid, ret = 1;
-  void *stack;
+	int n, pid, ret = 1, cmdline_value;
+	void *stack;
  
-  struct ptrace_faultinfo {
-	  int is_write;
-	  unsigned long addr;
-  };
+	struct ptrace_faultinfo {
+		int is_write;
+		unsigned long addr;
+	};
   
 
-  struct ptrace_faultinfo fi;
+	struct ptrace_faultinfo fi;
 
-  printf("Checking for the skas3 patch in the host...");
-  pid = start_ptraced_child(&stack);
+	cmdline_value = host_cmdline();
 
-  n = ptrace(PTRACE_FAULTINFO, pid, 0, &fi);
-  if(n < 0){
-	  if(errno == EIO) 
-		  printf("not found\n");
-	  else printf("No (unexpected errno - %d)\n", errno);
-	  ret = 0;
+	if ( cmdline_value == 1 ) {
+		printf("Checking for the skas3 patch in the host...not found\nChecking for /proc/mm...not found\n");
+		return(0);
 	}
-  else  printf("found\n");
+	else if ( cmdline_value == 2 ) {
+		printf("Checking for the skas3 patch in the host...found\nChecking for /proc/mm...found\n");
+		return(0);
+	}
+
+	printf("Checking for the skas3 patch in the host...");
+	pid = start_ptraced_child(&stack);
+	
+	n = ptrace(PTRACE_FAULTINFO, pid, 0, &fi);
+	if(n < 0){
+		if(errno == EIO) 
+			printf("not found\n");
+		else printf("No (unexpected errno - %d)\n", errno);
+		ret = 0;
+	}
+	else  printf("found\n");
   
 
-  printf("Checking for /proc/mm...");
-  if(access("/proc/mm", W_OK)){
-	  printf("not found\n");
-	  ret = 0;
-  }
-  else printf("found\n");
-
-  kill(pid, SIGKILL);
-  return(ret);
+	printf("Checking for /proc/mm...");
+	if(access("/proc/mm", W_OK)){
+		printf("not found\n");
+		ret = 0;
+	}
+	else printf("found\n");
+	
+	kill(pid, SIGKILL);
+	return(ret);
 
 }
 
 
-int threadFunction( void* argument )
+int host_cmdline (void) 
 {
-         printf( "child thread exiting\n" );
-	 exit(0);
+
+	char s[500]; /* should be the max cmdline size */
+	FILE *f;
+	char *tt = "mode=tt";
+	char *skas = "mode=skas";
+	char *ptt, *pskas;
+
+	f = fopen("/proc/cmdline","r");
+	if ( f == NULL ) {
+	   printf("Error: unable to open /proc/cmdline for reading\n");
+	   return(0);
+   }
+   
+   if (fgets(s, sizeof s, f) != NULL) {
+
+	   ptt = strstr(s, tt);
+	   pskas = strstr(s, skas);
+    
+	   if ( ptt != NULL ) 
+		   return(1);
+	   else if ( pskas != NULL )
+		   return(2);
+	   else
+		   return(0);
+   }
+
+   return(1);  /* safety default */
+
 }
 
 
