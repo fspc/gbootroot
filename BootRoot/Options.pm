@@ -44,7 +44,7 @@ sub option {
 		"preserve-ownership=s",
 		"kernel=s",
 		"kernel-version=s",
-		"stdout"		
+		"no-stdout"		
 		
 		);
 

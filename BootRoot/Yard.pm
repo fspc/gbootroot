@@ -1830,7 +1830,7 @@ sub info {
   }
 
 
-  if ( $option{stdout} ) {
+  if ( !$option{"no-stdout"} ) {
       if ( %option ) {
 	  if ($level == 0) {
 	      print color("blue"), @msgs, color("reset");	  
@@ -2030,12 +2030,12 @@ sub make_link_absolute {
     return $target;		 # Target is absolute, just return it
   } else {                       ## and use return --freesource
 
-    $link  = cleanup_link(dirname($file) . "/$target");
+    $link  = cleanup_link(dirname($file) . "/$target") if $file;
 
   }
 
 
-  $link =~ s,^\.,,;  # When there is one file dir eq .  --freesource
+  $link =~ s,^\.,, if $link;  # When there is one file dir eq .  --freesource
 
   return $link;
 
