@@ -202,6 +202,7 @@ my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
 my $home_uml_kernel = "$home/uml_kernel/";
+my $modules_directory = "/lib/modules";
 
 # Yard Stuff
 my $home_yard = "$home/yard";
@@ -270,6 +271,7 @@ my @strings;
 my ($root_device,$root_filename,$method,$template,$filesystem_size,
     $root_device_size);
 my $ars = {}; # anonymous hash
+
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -526,8 +528,10 @@ my $menu = Gtk::Menu->new();
 my $item = Gtk::MenuItem->new("2 disk compression" );
 $item->show();
 # Eventually get_menu, or something totally different will be used.
-$item->signal_connect( 'activate',sub { $entry->set_text("2 disk compression");
-                                        $container[METHOD] = "2 disk compression"});
+$item->signal_connect( 'activate',
+    sub { $entry->set_text("2 disk compression");
+	  $container[METHOD] = "2 disk compression";
+          kernel_modules(); });
 $menu->append( $item );
 $opt->set_menu( $menu );
 $box2->pack_start( $opt, $true, $true, 0 );
@@ -881,9 +885,11 @@ sub advanced_boot_section {
        $tooltips->set_tip( $ea3, "Add the modules found in" .
                                  " /lib/modules/kernel-version which are" .
                                	 " necessary for the Boot Method to work" .
-                                 " properly.",
-                                    "");
-       $ea3->set_text($entry_advanced[11]) if defined $entry_advanced[11];
+                                 " properly.  Kmod inserts the modules," .
+                                 " and kmod needs to be built-in to the" .
+			         " kernel along with initrd and ramdisk." ,
+                                    "");	
+	$ea3->set_text($entry_advanced[11]) if defined $entry_advanced[11];
 
        #_______________________________________ 
        # Append Options
@@ -913,6 +919,8 @@ sub advanced_boot_section {
     }
 
 } # end sub advanced_boot_section
+
+
 
 sub advanced_root_section {
 
@@ -2339,6 +2347,7 @@ elsif (defined $container[METHOD] && defined $container[KERNEL] &&
 			      $container[ABS_APPEND]
 			    );
 
+     kernel_modules();
      lilo();  # This is the default now, and the value for
               # METHOD doesn't matter now.
  }
@@ -2558,6 +2567,67 @@ sub stripper {
     return ( $_[0], 0);
 
 }
+
+sub kernel_modules {
+
+    my (@modules, @modules_found);
+
+    my $module_choices = $ea3->get_text() if $ea3;
+    my $kernel_version_choice = $ea5->get_text() if $ea5;
+    undef $kernel_version_choice if defined $kernel_version_choice eq "";
+    undef $kernel_version_choice if !$kernel_version_choice;
+
+    my $kernel_version = kernel_version_check($container[KERNEL],
+					   $kernel_version_choice);
+    #-----------------------------
+    # METHOD -> 2 DISK COMPRESSION
+    #-----------------------------
+    if ( $container[METHOD] eq "2 disk compression" ) {
+
+	$entry_advanced[11] = "floppy";
+	
+	if ($ea3) {
+	    if ($module_choices eq "") {
+		$ea3->set_text("floppy");
+		$module_choices = "floppy";
+	    }
+	    else {
+		$ea3->set_text($ea3->get_text() . " floppy") 
+		    if $ea3->get_text() !~ /\s*floppy\s*/;
+		$module_choices = $ea3->get_text();
+	    }
+	}
+	else {
+	    $module_choices = "floppy";
+	}
+
+	@modules = split(/\s+/, $module_choices);
+	
+    }
+
+    info(1, "Modules:  @modules\n");
+
+    
+    # Figure out modules path.
+    if ( @modules ) {
+	foreach my $module (@modules) {
+	    finddepth sub { if ( $File::Find::name =~ m,/$module\.o$, ) {
+		push(@modules_found,$File::Find::name);
+	    } },
+	    "$modules_directory/$kernel_version";  
+
+	} 
+    }
+
+    $, = "  ";
+    info(1,"Modules found:\n@modules_found\n");
+    $, = "";
+
+    return @modules_found;
+
+
+} # end sub kernel_modules
+
 
 sub initrd_size {
 
