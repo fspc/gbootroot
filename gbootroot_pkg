@@ -206,8 +206,9 @@ foreach (@make_lines) {
         }
 }
 
-# Stuff not in the Makefile
+# Stuff not in the Makefilex
 system "cp -fa $makefile $packaging_place/Makefile";
+system "cp -fa configure $packaging_place/configure";
 
 #  Basically this is stuff we want in the source package, but not the normal
 #  package
@@ -455,6 +456,7 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
 	# For now will just use one definite place for SOURCES
 	my $filelist = "pkg/rpm";
 	system "cp $gbootroot_cvs/gbootroot.xpm $SOURCES";
+	system "cp $gbootroot_cvs/Makefile.pkg $packaging_place/Makefile
 	system "cp $rpm_packaging_place/$package $SPECS";
 	system "install -d $packaging_place/$filelist";
 	system "cp $rpm_packaging_place/filelist $packaging_place/$filelist";

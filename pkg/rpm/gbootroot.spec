@@ -105,6 +105,7 @@ fi;
 
 
 %build
+./configure
 make
 
 %install

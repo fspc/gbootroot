@@ -25,11 +25,10 @@ KCONFIG=$(BASE_DIR)/user-mode-linux/usr/lib/uml/$(KCONFIG_FILE)
 # Genext2fs
 GENEXT2_DIR=$(BASE_DIR)/genext2fs
 
-# skas-or-tt .. MODE is automatically figured out, and added as an
+# skas-or-tt .. MODE is figured out bu configure, and added as an
 #		uml-options for CLI.
 SKAS_OR_TT_DIR=$(BASE_DIR)/skas-or-tt
-# Seems some versions of bash don't like the variable changed on the fly
-#MODE=tt
+MODE=tt
 
 # Utilities
 UTILITIES=uml_utilities_$(UTIL_VER).tar.bz2
@@ -39,14 +38,6 @@ TOOLS = $(UTIL_DIR)/mconsole $(UTIL_DIR)/port-helper $(UTIL_DIR)/moo $(UTIL_DIR)
 
 all:   world
 world: sources initrd
-
-skas-or-tt:
-	@if [ ! -f $(SKAS_OR_TT_DIR)/skas-or-tt ] ; then \
-		$(MAKE) -C $(SKAS_OR_TT_DIR); \
-		strip -s $(SKAS_OR_TT_DIR)/skas-or-tt; \
-	fi;
-	perl -e 'open(IT,"skas-or-tt/skas-or-tt|") or die "Trouble opening skas-or-tt/skas-or-tt\n"; while (<IT>) { if (!m,not found$$,) { $$it = "skas"; } else { $$it = "tt"; } } system "perl -pi.bak -e \"s/=MODE/=skas/g\" Makefile" if $$it eq "skas"; system "perl -pi.bak -e \"s/=MODE/=tt/g\" Makefile" if $$it eq "tt"; ' 
-
 
 sources:
 	@if [ ! -e $(SOURCE_DIR)/$(KERNEL_SOURCE) ] ; then \
@@ -104,21 +95,21 @@ kernel:
 
 
 
-root_fs_helper: skas-or-tt genext2fs
+root_fs_helper: genext2fs
 
 	@if [ ! -f $(ROOT_FS_DIR)/root_fs_helper ] ; then \
-		perl -I . ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command "genext2fs -z -r0" --genext2fs-dir genext2fs/ --uml-options mode=MODE; \
+		perl -I . ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command "genext2fs -z -r0" --genext2fs-dir genext2fs/ --uml-options mode=$(MODE); \
 		cp -fa $(TMP)/root_fs_helper $(ROOT_FS_DIR) ; \
 	fi;
 	@if [ -f $(ROOT_FS_DIR)/root_fs_helper ] ; then \
-		perl -I. ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command mkcramfs  --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper --uml-options mode=MODE; \
+		perl -I. ./gbootroot --home . --template Helper.yard --root-filename root_fs_helper --filesystem-command mkcramfs  --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper --uml-options mode=$(MODE); \
 		cp -fa $(TMP)/root_fs_helper_cramfs $(ROOT_FS_DIR)/root_fs_helper; \
 	fi;
 
 initrd: modules root_fs_helper
 
 	@if [ ! -f $(ROOT_FS_DIR)/Initrd.gz ] ; then \
-		perl -I. ./gbootroot --home . --template Initrd.yard --root-filename Initrd --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper --filesystem-size 4096 --uml-options mode=MODE; \
+		perl -I. ./gbootroot --home . --template Initrd.yard --root-filename Initrd --uml-exclusively on  --expect-program ./expect_uml --uml-kernel user-mode-linux/usr/bin/linuxbr --root-fs-helper root_filesystem/root_fs_helper --filesystem-size 4096 --uml-options mode=$(MODE); \
 		gzip -c9 $(TMP)/Initrd > $(ROOT_FS_DIR)/Initrd.gz; \
 	fi;
 

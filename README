@@ -1,4 +1,4 @@
-$Id: README,v 1.20 2003/02/10 17:38:47 freesource Exp $
+$Id: README,v 1.21 2003/02/11 03:51:12 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -17,16 +17,18 @@ You will want wget installed because the Makefile attempts to download
 the necessary sources and then places them in the sources/ directory.
 This is what makes the unofficial Debian and RedHat source packages
 unique, because usually another package would provide the necessary
-sources since official distributions aren't always used online.  On the
-other hand, this is a FEATURE.  Anytime you want to update gbootroot
-to the current user-mode-linux patch just change the Makefile
-PATCH_VERSION, run "make clean", and then "make".
+sources since official distributions aren't always used online.  On
+the other hand, this is a FEATURE.  Anytime you want to update
+gbootroot to the current user-mode-linux patch just change the
+Makefile PATCH_VERSION, run ./configure, run "make clean", and then
+"make".  If this is your first time making gbootroot from the source
+package just run ./configure and "make".
 
 The two root_fs created are root_fs_helper and Initrd.gz.
 Root_fs_helper has lots of different filesystem utilities, but the
 CRUCIAL ones to get the build to work properly are mke2fs and
-mkcramfs.  Here's a list of what utilities are included: mke2fs mkcramfs
-genromfs mkfs.minix mkminix mkreiserfs mkfs.jffs mkfs.jffs2
+mkcramfs.  Here's a list of what utilities are included: mke2fs
+mkcramfs genromfs mkfs.minix mkminix mkreiserfs mkfs.jffs mkfs.jffs2
 
 These are the build-depends from the Debian source package that can be
 used as a guide for other distributions: binutils (>= 2.12.90.0),

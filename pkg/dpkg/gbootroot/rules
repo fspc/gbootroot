@@ -20,6 +20,7 @@ build-stamp:
 	dh_testdir
 
 	# Add here commands to compile the package.
+	./configure
 	$(MAKE)
 	#/usr/bin/docbook-to-man debian/gbootroot.sgml > gbootroot.1
 

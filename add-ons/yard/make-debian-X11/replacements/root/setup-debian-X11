@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $Id: setup-debian-X11,v 1.7 2001/12/06 18:36:05 freesource Exp $
+# $Id: setup-debian-X11,v 1.8 2001/12/16 09:57:02 freesource Exp $
 # make_debian-X11 replacement
 
 # This is usually enough for a minimalistic system
@@ -15,12 +15,7 @@ dpkg-reconfigure make-debian-x11
 
 chown -v -R user:user /home/user
 chmod 1777 /tmp
-
-# swim --initdb
-
-# Generally a good idea since user-mode-linux doesn't run within itself.
-#rm /usr/bin/uml_*
-#rm /usr/bin/linux
+chmod 1777 /var/tmp
 
 /etc/cron.daily/find
 

@@ -106,6 +106,7 @@ if [ ! -e $RPM_BUILD_DIR/%{build_dir}/sources/%{utilities} ] ; then
 fi;
 
 %build
+./configure
 make
 
 %install
