@@ -75,7 +75,8 @@ my $rpm_packaging_place = "$gbootroot_cvs/pkg/rpm";
 my $SPECS = "/usr/src/rpm/SPECS";
 my $SOURCES = "/usr/src/rpm/SOURCES";
 my $BUILD = "/usr/src/rpm/BUILD";
-my @rpm_packages = qw(gbootroot.spec gbootroot-mdk.spec);
+#my @rpm_packages = qw(gbootroot.spec gbootroot-mdk.spec);
+my @rpm_packages = qw(gbootroot-mdk.spec);
 
 
 # Other vars
@@ -101,6 +102,9 @@ close(CVS);
 
 $packaging_place = "$packaging_place/$prog-$version";
 my $packaging_place_rep = "$packaging_place/yard/replacements";
+#my $pristine_source_package = "$packaging_place_orig/$prog-$version" . 
+#".tar.gz";
+my $pristine_source_package = "$prog-$version" . ".tar.gz";
 
 # Do we want a deb, rpm or both
 
@@ -170,6 +174,9 @@ chdir($gbootroot_cvs) or die "Couldn't change to $gbootroot_cvs: $!\n";
 # Basically we are just concerned with the first part of cp and will
 # use home_builder to make sure the directory exists.
 
+system "rm -rf $packaging_place";
+system "install -d $packaging_place";
+
 foreach (@make_lines) {
 	s/\t//;
 	if (/cp|mkdir/) {
@@ -232,12 +239,11 @@ if (-d $packaging_place) {
 # however there will be sections of the Makefile set-up for my own
 # personal automation used by this program.
 
-my $pristine_source_package = "$packaging_place_orig/$prog-$version" . 
-".tar.gz";
-print "$pristine_source_package $packaging_place\n";
 exit if $ARGV[0] eq "src";
-unlink($pristine_source_package) if -e $prinstine_source_package;
-system "tar cvfz  $pristine_source_package $packaging_place";
+chdir($packaging_place_orig);
+unlink($pristine_source_package) if -e $pristine_source_package;
+system "tar cvfz  $pristine_source_package $prog-$version";
+print "$pristine_source_package $packaging_place\n";
 
 
 # Now we to the dh_make thing, and setup the time, version, and defaults. 
@@ -374,13 +380,36 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
 	
 
 	# Here we create a filelist from the debian package
+	# and get to add to the pristine sources with the updated
+	# filelist in pkg/rpm/filelist which will be used by the spec.
+	# We also make modification to things which are Debian so
+	# the filelist works.
+	# The files which don't exist in *deb are pruned out here, this
+	# could be automated, but it is better to do it manually just to
+	# to make sure no necessary files aren't being included, the output
+	# from rpm -bl specfile
+
+	my %extra_files = ( 
+
+        "/usr/share/doc-base/gbootroot\n", 1,
+        "/usr/lib/menu/gbootroot\n", 1, 
+        "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Root\n", 1, 
+        "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Repository\n", 1, 
+        "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Entries\n", 1, 
+        "/usr/share/doc/gbootroot/html/boot_root.4.gz\n", 1, 
+        "/usr/share/doc/gbootroot/Changes.gz\n", 1, 
+        "/usr/share/doc/gbootroot/copyright\n", 1, 
+        "/usr/share/doc/gbootroot/changelog.Debian.gz\n", 1
+
+			      );
+
 	my $arch = `grep Architecture $packaging_defaults/control |\
                     cut -d " " -f 2`; 
 	chomp $arch;
 	my $program = dirname($packaging_place) . "/" .$prog . "_" 
 	.  "$version-$revision" . "_" . $arch . ".deb";
 	die "Can't fine $program\n" if !-e $program;
-
+	
 	my $files = "dswim -qpl $program|";
 	open (FILELIST,">$rpm_packaging_place/filelist") or
 	die "Couldn't open $rpm_packaging_place/filelist: $!\n";
@@ -390,22 +419,33 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
 
 	    if ( m,^\./, ) {
 		s,^\.,,;
-		print FILELIST $_;
+		if ( $extra_files{"$_"} == 1 ) {
+		    if ( /Changes\.gz/ ) { 
+			s/Changes\.gz/Changes/;
+		    }
+		    else {
+			next;
+		    }
+		}
+		print FILELIST "$_";
 	    }
 
 	}
-	
+
 	# For now will just use one definite place for SOURCES
-	my $source = dirname($packaging_place) . "/" . $prog . "_" . $version;
-	system "cp $source*tar.gz $SOURCES";
+	my $filelist = "pkg/rpm";
+	my $source = dirname($packaging_place) . "/" . $prog . "-" . $version;
 	system "cp $gbootroot_cvs/gbootroot.xpm $SOURCES";
-	system "cp $rpm_packaging_place/filelist $SOURCES";
 	system "cp $rpm_packaging_place/$package $SPECS";
+	system "install -d $packaging_place/$filelist";
+	system "cp $rpm_packaging_place/filelist $packaging_place/$filelist";
+	unlink($pristine_source_package) if -e $pristine_source_package;
+	chdir($packaging_place_orig);
+	system "tar cvfz  $pristine_source_package $prog-$version";
+	system "cp $source.tar.gz $SOURCES";
 
 	# Time for the fun
 	system "rpm -ba $SPECS/$package";
-
-
     }
 
 }  # both or rpm 

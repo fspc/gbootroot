@@ -8,10 +8,21 @@
 # rpm -ba gbootroot.spec
 
 
-# Update this according to version
-%define version 1.3.6
+# Update this according to version, and if you want to copy in your own
+# sources define base_dir and put them in source_dir.  Define filelist if
+# you want it included in the sources.
+%define version 1.4.0
 %define release 1mdk
-
+%define kversion 2.4.19
+%define patch_version 40
+%define util_ver 20021103
+%define kernel_source linux-%{kversion}.tar.bz2
+%define patch_1 uml-patch-%{kversion}-%{patch_version}.bz2
+%define utilities uml_utilities_%{util_ver}.tar.bz2
+%define base_dir /home/mttrader/gbootroot/gbootroot
+%define source_dir %{base_dir}/sources
+%define build_dir /gbootroot-%{version}
+%define filelist %{base_dir}/pkg/rpm/filelist
 
 Summary:      Boot/Root Filesystem Distribution testing and creation.
 Name:         gbootroot
@@ -20,7 +31,7 @@ Release:      %{release}
 Copyright:    GPL
 #	      was Utilities/System  or Development/System
 Group:        Development/Other
-Source:       http://prdownloads.sourceforge.net/gbootroot/gbootroot_%{version}.orig.tar.gz
+Source:       http://prdownloads.sourceforge.net/gbootroot/gbootroot-%{version}.tar.gz
 URL:          http://gbootroot.sourceforge.net
 Distribution: BootRoot
 Vendor:       Free Software
@@ -63,24 +74,38 @@ as mdk.
 
 
 %prep
-%setup -n gbootroot-%{version}.orig
+%setup -n gbootroot-%{version}
 chown -R root:root .
+if [ ! -e $RPM_BUILD_DIR/%{build_dir}/sources/%{kernel_source} ] ; then  
+    if [ -e %{source_dir}/%{kernel_source} ] ; then
+	cp -fa %{source_dir}/%{kernel_source} $RPM_BUILD_DIR/%{build_dir}/sources;
+    fi;
+fi;
+if [ ! -e $RPM_BUILD_DIR/%{build_dir}/sources/%{patch_1} ] ; then  
+    if [ -e %{source_dir}/%{patch_1} ] ; then
+    cp -fa %{source_dir}/%{patch_1} $RPM_BUILD_DIR/%{build_dir}/sources;
+    fi;
+fi;
+if [ ! -e $RPM_BUILD_DIR/%{build_dir}/sources/%{utilities} ] ; then  
+    if [ -e %{source_dir}/%{patch_1} ] ; then
+    cp -fa %{source_dir}/%{utilities} $RPM_BUILD_DIR/%{build_dir}/sources;
+    fi;
+fi;
 
-# make just does an install
 %build
+make
 
 %install
-make
+make install
 
 %clean
 make clean
 make clean-sources
 
-
 # Update this as necessary
 # dswim -ql gbootroot > ~/gbootroot/gbootroot/list
 # will read this all from a files list %files -f filelist
-%files -f %{_topdir}/SOURCES/filelist
+%files -f %{_topdir}/BUILD/%{build_dir}/pkg/rpm/filelist
 %docdir /usr/share/doc/gbootroot
 %attr(4755, root, root) /usr/bin/uml_net
 %config /etc/gbootroot/gbootrootrc

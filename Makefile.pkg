@@ -143,6 +143,8 @@ clean:
 	rm -rf $(UTIL_DIR)
 	rm -f $(GENEXT2_DIR)/{genext2fs,genext2fs.o}	
 	rm -f $(ROOT_FS_DIR)/{root_fs_helper,Initrd.gz}
+	rm -f $(BASE_DIR)/user-mode-linux/usr/bin/*
+	rm -f $(BASE_DIR)/user-mode-linux/usr/lib/uml/{modules*,port-helper}
 
 clean-sources:
 	rm -f $(SOURCE_DIR)/*
