@@ -51,7 +51,7 @@ perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils
 binutils bzip2 file libbz2-1.0 libfreetype6 libglib1.2 libgtk-perl 
 libgtk1.2 make xfonts-base xfree86-common xlibmesa3 xlibs 
 xserver-common xterm xutils zlib1g libgdbmg1 libxaw7 gbootroot
-flwm libfltk1 xnest make-debian-x11 ash); 
+flwm libfltk1 xnest make-debian-x11 ash libterm-readline-gnu-perl); 
 # NEXT EDIT TEMPLATE 
 
 #################################################################
