@@ -265,13 +265,20 @@ return $stuff;
 # to test for anyways, weirder things have been known to happen.
 
 my @rpc;
-foreach my $p (@required_packages) {
+$/ = "";
+my @required_stuff = `swim -qi @required_packages`;
+$/ = "\n";
+foreach my $package_info (@required_stuff) {
+    $package_info =~ /^package[:]*\s+([-\+\d\w]+)/i;
+    my $p = $1;
     $p =~ s/\+/\\+/g if $p !~ /\\+/g;
     if ( grep(/Status: deinstall|Status: purge|package $p is not installed/,
-	      `swim -qi $p`) == 1 ) {
-	push(@rpc,$p);
+	     $package_info ) == 1 ) {
+	$p =~ s/\\//g if $p =~ /\\+/g;
+	push( @rpc, $p ); 
     }    
 }
+
 
 if (@rpc) {
     print STDERR "These are the required packages which were specified:\n\n";
@@ -282,12 +289,19 @@ if (@rpc) {
     $, = "";
 }
 
+
 my @epc;
-foreach my $p (@extra_packages) {
+$/ = "";
+my @extra_stuff = `swim -qi @extra_packages`;
+$/ = "\n";
+foreach my $package_info (@extra_stuff) {
+    $package_info =~ /^package[:]*\s+([-\+\d\w]+)/i;
+    my $p = $1;
     $p =~ s/\+/\\+/g if $p !~ /\\+/g;
     if ( grep(/Status: deinstall|Status: purge|package $p is not installed/,
-	      `swim -qi $p`) == 1 ) {
-	push(@epc,$p);
+	     $package_info ) == 1 ) {
+	$p =~ s/\\//g if $p =~ /\\+/g;
+	push( @epc, $p ); 
     }    
 }
 
