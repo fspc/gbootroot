@@ -95,8 +95,8 @@ sub boot {
 
 
     $me->{expect_handle}->expect(undef, "-re", "$me->{prompt}");
-    $me->{expect_handle}->print("echo Let's make you're root_fs!\r");
-    $me->{expect_handle}->print("\r");
+    $me->{expect_handle}->print("echo Let's make you're root_fs!\n");
+    $me->{expect_handle}->expect(undef, "-re", "root_fs");
  
     return($log);
 }
@@ -117,7 +117,7 @@ sub command {
     }
 
     # adding an \r handles some buggy expectations
-    $me->{expect_handle}->print("$cmd\r\n");
+    $me->{expect_handle}->print("$cmd\n");
     my @match = $me->{expect_handle}->expect(undef, @expects);
     defined $match[0] and $match[0]--;
     if(defined($match[1])){
