@@ -33,7 +33,7 @@ use Exporter;
 @ISA = qw(Exporter);
 @EXPORT =  qw(start_logging_output kernel_version_check 
               read_contents_file extra_links library_dependencies hard_links 
-              space_check create_filesytem);
+              space_check create_filesystem);
 
 use strict;
 use File::Basename;
@@ -207,7 +207,7 @@ sub read_contents_file {
 	    my(@globbed) = yard_glob($expr);
 	    if ($#globbed == -1) {
 		cf_warn($contents_file, $expr, 
-                        "Warning: No files matched $line");
+                        "Warning: No files matched $expr");
 	    } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
 		info(1, "Expanding $expr to @globbed\n");
 	    }
@@ -504,54 +504,64 @@ sub space_check {
     # %links_to    /path/file-symnlink   actual-file
     # %hardlinked  /path/file  dev/inode -> stat()
 
+#    open(CHECK,">check-size");
+
     my ($file);
     foreach $file (keys %Included) {
       
-	print "$file -> $Included{$file} ... $hardlinked{$file}\n";
-
 	my($replacement, $devino);
-	if ($replacement = $replaced_by{$file}) {
+	if ($replacement = $replaced_by{$file}) { 
+	    ## strip count for replace
+	    ## Check for libraries %lib_needed_by, modules %is_module, 
+	    ## and everything else if strippable, and strip is chosen
 	    #####  Use the replacement file instead of this one.  In the
 	    #####  future, improve this so that replacement is resolved WRT
 	    #####  %links_to
 	    info(1, "Counting bytes of replacement $replacement\n");
 	    $total_bytes += bytes_allocated($replacement);
+#            print CHECK "TOTAL: $total_bytes AMT: ", bytes_allocated($replacement), "\n";
 
-	} elsif (-l $file or $links_to{$file}) {
+	} elsif (-l $file or $links_to{$file}) { ## no strip
 	    #####  Implicit or explicit symbolic link.  Only count link size.
 	    #####  I don't think -l test is needed.
 	    my($size) = (-l $file) ? length(readlink($file))
 		: length($links_to{$file});
 	    info(1, "$file (link) size $size\n");
 	    $total_bytes += $size;
-
+#            print "CHECK $file "TOTAL: $total_bytes AMT: ", $size, "\n";
 	} elsif ($devino = $hardlinked{$file}) {
 	    #####  This file is hard-linked to another.  We don't necessarily
 	    #####  know that the others are going to be in the file set.  
             #####  Count the first and mark the dev/inode so we don't count 
-            #####  it again.
-	    if (!$counted{$devino}) {
+            #####  it again.  .. pretty cool
+	    if (!$counted{$devino}) {  ## 1 strip for hardlinked file
 		info(1, "Counting ", -s _, 
 		     " bytes of hard-linked file $file\n");      
 		$total_bytes += bytes_allocated($file);
+#            print CHECK "TOTAL: $total_bytes AMT: ", bytes_allocated($file), "\n";
 		$counted{$devino} = 1;
 	    } else {
 		info(1, "Not counting bytes of hard-linked file $file\n");
 	    }
 
-	} elsif (-d $file) {
+	} elsif (-d $file) { ## no strip
 	    $total_bytes += $INODE_SIZE;
 	    info(1, "Directory $file = ", $INODE_SIZE, " bytes\n");
-
-	} elsif ($file =~ m|^/proc/|) {
+#            print CHECK "TOTAL: $total_bytes AMT: ", $INODE_SIZE, "\n";
+	} elsif ($file =~ m|^/proc/|) { ## no strip
 	    #####  /proc files screw us up (eg, /proc/kcore), and there's no
 	    #####  Perl file test that will detect them otherwise.
 	    next;
 
-	} elsif (-f $file) {
+	} elsif (-f $file) { ## 
+	    ## At this point hardlinked, dirs, replaced_by and /proc have
+	    ## been filtered out.  If strip is chosen
+	    ## check for libraries (%lib_needed_by), modules (%is_module), 
+	    ## and everything else if strippable.
 	    #####  Count space for plain files
 	    info(1, "$file size ", -s _, "\n");
 	    $total_bytes += bytes_allocated($file);
+#           print CHECK "TOTAL: $total_bytes AMT: ", bytes_allocated($file), "\n";
 	}
     }
 
@@ -565,7 +575,9 @@ sub space_check {
 	    info(0, "But since object files will be stripped, more space\n",
 		 "may become available.  Continuing...\n");
 	} else {
-	    error("You need to trim some files out and try again.\n");
+            print "Not enough room .. but I'll take care of that later\n";
+            return;
+	    ##@error("You need to trim some files out and try again.\n");
 	}
     }
 
@@ -573,16 +585,13 @@ sub space_check {
 
 } # end sub space_check
 
-#######################
+########################
 #####  Create filesystem
 ########################
 #@@sync();
 #@@sys("dd if=/dev/zero of=$::device bs=1k count=$::fs_size");
 #@@sync();
 
-
-# This could be broken up into a lot of functions
-## copy_strip_file will be modified.
 sub create_filesystem {
 
     my $file;
@@ -592,6 +601,7 @@ sub create_filesystem {
     if (-f $::device) {
 	#####  If device is a plain file, it means we're using some loopback
 	#####  device.  Use -F switch in mke2fs so it won't complain.
+	## Options here can be changed.
 	sys("mke2fs -F -m 0 -b 1024 $::device $::fs_size");
     } else {
 	sys("mke2fs -m 0 -b 1024 $::device $::fs_size");
@@ -803,6 +813,7 @@ sub cf_warn {
 }
 
 
+## Modified for user chosen defaults
 #  Copy a file, possibly stripping it.  Stripping is done if the file
 #  is strippable and stripping is desired by the user, and if the
 #  objcopy program exists.
@@ -1351,10 +1362,10 @@ my($login_binary) = "$::mount_point/bin/login";
 
 STDOUT->autoflush(1);
 
-start_logging_output();
+# Won't have to do this.
+##@ start_logging_output();
 #info(0, "check_root_fs @yard_version@\n");
-
-mount_device_if_necessary();
+##@mount_device_if_necessary();
 
 #  This goes first so we define %Termcap for use in children
 check_termcap();
@@ -1909,3 +1920,8 @@ sub check_termcap {
 
 #####  END OF CHECK_ROOT_FS
 =cut
+
+
+
+
+
