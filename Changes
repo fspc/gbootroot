@@ -1,7 +1,9 @@
 Added cad "Ctrl-Alt-Del" to mconsole interface, and documented it.
 
-Now looks for mconsole at both old location /tmp/uml/$umid/mconsole and
-new location $ENV{HOME}/.uml/$umid/mconsole.
+Now looks for mconsole at both Locations /tmp/uml/$umid/mconsole and
+new location $ENV{HOME}/.uml/$umid/mconsole by not specifying a direct
+path.  Some older mconsoles seemed to require this, but 10um onwards
+respects this.
 
 Now files for uml_exclusively are made in create_expect_uml which is
 effectively known as the create stage.  This avoids the unecessary previous 

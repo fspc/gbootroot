@@ -135,7 +135,8 @@ my @entry_advanced;
 my ($ea1,$ea2,$ea3,$ea4,$ea5,$ea6); # entry advanced boot  
 my ($ear1,$ear2,$ear2_save,$ear3,$ear4); # entry advanced root
 my ($eab1,$eab2,$eab3,$eab4); # entry advanced uml
-my ($mtd_radio, $mtd_fs_type, $mtd_fs_type_combo, @fs_types); # entry advanced uml
+my ($mtd_radio, $mtd_fs_type, $mtd_fs_type_combo, @fs_types,
+    $mtd_radio_mtdram, $mtd_radio_blkmtd, $mtd_check);   # mtd uml box
 my $uml_window;
 my $table_advanced;
 my $table_advanced_root;
@@ -1576,17 +1577,36 @@ sub uml_box {
 
         # Which?
 	label_advanced("MTD:",0,1,3,4,$table_uml);
-        my $mtd_check = Gtk::CheckButton->new("On or Off");
+        my $mtd_check_on;
+        if ( $mtd_check ) {
+           if ( $mtd_check->get_active() ) {
+	        $mtd_check_on = 1;
+           }
+        }
+        $mtd_check = Gtk::CheckButton->new("On or Off");
 	$tooltips->set_tip( $mtd_check, 
                            "Turn MTD emulation on or off.",
                            "" );
-        #$mtd_check->set_active($boolean);
+        $mtd_check->set_active( $true ) if $mtd_check_on;
         $table_uml->attach($mtd_check,1,2,3,4, 
 			  ['expand','fill'],['fill','shrink'],0,0);
         $mtd_check->show();
 
+
+       my ($mtdram_on, $blkmtd_on);
+       if ( $mtd_radio_mtdram ) {
+           if ( $mtd_radio_mtdram->get_active() ) {
+	        $mtdram_on = 1;
+           } 
+           else {
+	        $blkmtd_on = 1;
+           }
+        }
+
         # mtdram
         $mtd_radio = Gtk::RadioButton->new("mtdram");
+        $mtd_radio_mtdram = $mtd_radio;
+        $mtd_radio->set_active( $true ) if $mtdram_on;
 	$tooltips->set_tip( $mtd_radio, 
                            "Use memory to emulate test mtd device.",
                            "" );
@@ -1596,12 +1616,15 @@ sub uml_box {
 
         # blkmtd
         $mtd_radio = Gtk::RadioButton->new("blkmtd", $mtd_radio);
+        $mtd_radio_blkmtd = $mtd_radio;
+        $mtd_radio->set_active( $true ) if $blkmtd_on;
 	$tooltips->set_tip( $mtd_radio, 
                            "Use block device to emulate test mtd device.",
                            "" );
         $table_uml->attach($mtd_radio,3,4,3,4, 
 			  ['shrink','expand','fill'],['fill','shrink'],0,0);   
         $mtd_radio->show();
+
 
         # fs_type - users can define their own, but this won't be remembered.
         $mtd_fs_type_combo = Gtk::Combo->new();
@@ -1611,7 +1634,7 @@ sub uml_box {
         $table_uml->attach($mtd_fs_type_combo,4,5,3,4, 
 			  ['shrink','expand','fill'],['fill','shrink'],20,0);
         if ( !$mtd_fs_type ) {
-            @fs_types = qw(jffs2 jffs ext2 ext3 minix cramfs romfs reisers);
+            @fs_types = qw(jffs2 jffs ext2 ext3 minix cramfs romfs reiserfs);
             $mtd_fs_type_combo->entry->set_text( $fs_types[0] );
             $mtd_fs_type_combo->set_popdown_strings( @fs_types );
         }
@@ -1628,6 +1651,7 @@ sub uml_box {
 		    unshift(@fs_types,$mtd_fs_type);
 	} );
         $mtd_fs_type_combo->show();
+
 
 
         $table_uml->set_row_spacing( 4, 6);       
