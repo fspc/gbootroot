@@ -1772,7 +1772,7 @@ sub uml_box {
 					      # Everything becomes an option for Initrd to parse
 					      # and is put on the options[9] line
 
-					      my ($initrd, $ram, $mem, $root, $ramdisk_size);
+					      my ($initrd, $ram, $mem, $root, $ramdisk_size, $ubd0);
 
 					      for ( $entry_advanced[10],$entry_advanced[9] ) {
 
@@ -1796,6 +1796,15 @@ sub uml_box {
 						  if ( m,initrd=, ) {
 						      m,(initrd=[/\d\w-]+),;
 						      $initrd = $1;
+						  }
+
+						  # Grab the file being used
+						  if ( m,(ubd0=[/\d\w-]+), ) {
+						      my $ubd0_replacement = $1;
+						      $ubd0  = (split(/=/,$1))[1];
+						      chomp $ubd0;
+						      $ubd0 = $ubd0 . "_dd";
+						      s/$ubd0_replacement/ubd0=$ubd0/;
 						  }
 
 						  if ( $mtd_radio_mtdram->get_active() ) {
@@ -1881,8 +1890,10 @@ sub uml_box {
 						      undef $mem;
 						  }
 
-						      $entry_advanced[9] = "$initrd $mem $ramdisk_size " .
-							  "mtd=mtdram,$fs_type,$total_size,$erasure_size " .
+						  # Order does matter because used by linuxrc
+						  $entry_advanced[9] = 
+						      "mtd=mtdram,$fs_type,$total_size,$erasure_size,, " .
+							  "$mem $ramdisk_size $initrd " .
 							      $entry_advanced[9]; 
 
 					      }
@@ -1890,8 +1901,14 @@ sub uml_box {
 					      # blkmtd
 					      else {
 
-						  $entry_advanced[9] = "$initrd " .
-						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size " .
+						  # Make backing file
+						  info(0,"Making $ubd0 backing file\n");
+						  sys("dd if=/dev/zero of=$ubd0 bs=1k count=1 seek=$total_size");
+
+						  # Order does matter because used by linuxrc
+						  $entry_advanced[9] = 
+						      "mtd=blkmtd,$fs_type,$total_size,$erasure_size, " .
+							  "$initrd " .
 							  $entry_advanced[9]; 
 
 					      }
