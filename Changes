@@ -27,9 +27,7 @@ Added New Template (Alt-N) capability to the Yard Box.
 Added several new FAQ questions,  added a lot more information on
 "How do I use gBootRoot?"  Updated the graphics for the documentation.
 
-Updated to version 2.4.14 of user-mode-linux.  Note: 2.4.15 was buggy
-in respect to rebooting, and produced an address number at login, it
-appears to be a bad compile. 
+Updated to version 2.4.16 of user-mode-linux.
 
 The Yard Box has new check buttons which allows the parsing behavior of
 the nss and pam configuration files to be turned off and on (default). 
