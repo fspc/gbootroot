@@ -2817,7 +2817,7 @@ sub stripper {
 
 sub two_disk_compression_check {
 
-    my ($ash,$lilo);
+    my ($ash,$lilo,$bzip2,$file);
 
     if ( !find_file_in_path("ash") ) {
 	$ash = "ash";	
@@ -2827,16 +2827,26 @@ sub two_disk_compression_check {
 	$lilo = "lilo";	
     }
 
+    if ( !find_file_in_path("bzip2") ) {
+	$bzip2 = "bzip2";	
+    }
+
+    if ( !find_file_in_path("file") ) {
+	$file = "file";	
+    }
+
     if ( $ash || 
 	 
 	 $lilo || 
 	 
-	 ($ash && $lilo)
+	 $bzip2 ||
+
+	 $ash
 
 	 ) {
 
 	error_window(
-		     "Program(s) required by this method:  $lilo  $ash"
+	    "Program(s) required by this method:  $lilo  $ash  $bzip2  $file"
 		     );
 	
 	return 1;
