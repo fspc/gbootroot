@@ -30,6 +30,7 @@ BEGIN {
 
     if ($fhs == 0) {
 	unshift(@INC,"/usr/share/perl5");
+	unshift(@INC,".");  # better make sure we mean . when we mean .
     }
 
 
@@ -43,8 +44,20 @@ BEGIN {
 	$ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
     }
 
-}
 
+    my $pwd = `pwd`; chomp $pwd;
+
+    my $tools = grep(/$pwd\/user-mode-linux\/usr\/bin/,$ENV{'PATH'});
+    if ($tools == 0) {
+	$ENV{'PATH'} = "$pwd/user-mode-linux/usr/bin:" . $ENV{'PATH'};
+    }
+
+    $tools = grep(/$pwd\/user-mode-linux\/usr\/lib\/uml/,$ENV{'PATH'});
+    if ($tools == 0) {
+	$ENV{'PATH'} = "$pwd/user-mode-linux/usr/lib\/uml:" . $ENV{'PATH'};
+    }
+
+}
 
 use BootRoot::UML;
 use File::Basename;
@@ -91,7 +104,7 @@ my $uml  =
 		      login           =>  "root",
 		      password_prompt =>  "Password: ",
 		      password        =>  "",
-		      prompt          =>  "init-.*# ",
+		      prompt          =>  ".*# ",
 		      halt            =>  "exit"
 		      );
 
@@ -171,7 +184,14 @@ elsif ( $filesystem =~ /^mkfs\.jffs/ ) {
 $uml->command("umount /mnt1; umount /mnt2");   
 
 # Fall through
-$uml->close_no_init();
+my $close = $uml->close_no_init();
 
 # Wait until the last line
-system "uml_mconsole $umid halt";
+if ( $close ) {
+    system "uml_mconsole $umid halt";
+}
+else {
+
+    print "ERROR: problem shutting down, contact freesource@users.sourceforge.net if problem persists\n";
+
+}
