@@ -1800,11 +1800,18 @@ sub uml_box {
 
 						  # Grab the file being used
 						  if ( m,(ubd0=[/\d\w-]+), ) {
-						      my $ubd0_replacement = $1;
-						      $ubd0  = (split(/=/,$1))[1];
-						      chomp $ubd0;
-						      $ubd0 = $ubd0 . "_dd";
-						      s/$ubd0_replacement/ubd0=$ubd0/;
+						      if (  $1 !~ /_dd/ ) {
+							  my $ubd0_replacement = $1;
+							  $ubd0  = (split(/=/,$1))[1];
+							  chomp $ubd0;
+							  $ubd0 = $ubd0 . "_dd";
+							  s/$ubd0_replacement/ubd0=$ubd0/;
+						      }
+						      else {
+							  m,(ubd0=[/\d\w-]+),;
+							  $ubd0  = (split(/=/,$1))[1];
+							  chomp $ubd0;
+						      }
 						  }
 
 						  if ( $mtd_radio_mtdram->get_active() ) {
@@ -1861,6 +1868,15 @@ sub uml_box {
 
 					      # Tell initrd whether it is mtdram or blkmtd, and 
 					      if ( $mtd_radio_mtdram->get_active() ) {
+
+						  # blkmtd uses the _dd images, mtdram uses the real image
+						  for ( $entry_advanced[10],$entry_advanced[9] ) {
+						      if ( m,(ubd0=[/\d\w-]+), ) {
+							  if (  $1 =~ /_dd/ ) {
+							      s/_dd//g;
+							  }
+						      }
+						  }
 						  
 						  # ramdisk_size
 						  if ( !$ramdisk_size ) {
@@ -1870,7 +1886,7 @@ sub uml_box {
 						      undef $ramdisk_size;
 						  }
 
-						  # Memory needs to be figure out in 8192K blocks
+						  # Memory needs to be figure out in 16384K blocks
 						  # otherwise it fails, and it needs to be at least 16384 
 						  # for uml.
 
@@ -1880,7 +1896,7 @@ sub uml_box {
 						      $mem_size = 16384;
 						  }
 						  else {
-						      $mem_size = 8192 * ceil($mtd_total_size / 8192);
+						      $mem_size = 16384 * ceil($mtd_total_size / 16384);
 						  }
 						  
 						  if ( !$mem ) {
@@ -1931,6 +1947,13 @@ sub uml_box {
 					  }
 					  waitpid($pid,0);
 					  
+					  # Reset $entry_advanced[9] && $entry_advanced[10]
+					  if ( $mtd_check->get_active() ) {					  
+					      $entry_advanced[9] = $eab2->entry->get_text();
+					      $entry_advanced[10] = $eab3->get_text();
+					  }
+
+
 				      }
 				      else {
 
