@@ -89,16 +89,16 @@ BEGIN {
 	unshift(@INC,"/usr/share/perl5");
     }
 
-    my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
-    if ($sbin == 0) {
-	$ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
-    }
 
-    $sbin = grep(/\/sbin/,$ENV{'PATH'});
+    my $sbin = grep(/\/sbin/,$ENV{'PATH'});
     if ($sbin == 0) {
 	$ENV{'PATH'} = "/sbin:" . $ENV{'PATH'};
     }
 
+    $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
+    if ($sbin == 0) {
+	$ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
+    }
 
 }
 
@@ -128,7 +128,7 @@ my $lilo_conf = "/etc/lilo.conf";
 my $home = "$ENV{HOME}/.gbootroot";
 my $uml_xterm = "xterm -e";
 $main::editor = "emacs --font 6x13";
-$main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
+$main::makefs = "/sbin/mke2fs -F -m0 -i8192"; # Root Disk
 
 # CHANGES
 #
