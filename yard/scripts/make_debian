@@ -12,9 +12,11 @@ my $info = "/var/lib/dpkg/info";
 
 # You need file-rc, and you may add other extra stuff.  These packages were
 # chosen for woody, so you may need something different.  Check dependencies,
-# ofcourse, if you add stuff.
-my @extra_packages = qw(file-rc swim nvi sysklogd klogd netbase tcpd net-tools
-portmap netkit-ping netkit-inetd ifupdown less perl perl-modules);
+# ofcourse, if you add stuff, and empty directories and special conf files.
+# Swim provides excellent information.
+my @extra_packages = qw(file-rc swim apt nvi sysklogd klogd netbase tcpd 
+net-tools portmap netkit-ping netkit-inetd ifupdown less perl perl-modules
+libwrap0 debconf ipchains);
 
 # And tests will be ran here for file-rc and swim
 #  swim has to have its databases made.
@@ -23,9 +25,9 @@ portmap netkit-ping netkit-inetd ifupdown less perl perl-modules);
 
 system "swim --search \"Priority: required\" > /dev/null 2>&1";
 my $swim_packages = "swim -qS|";
-my $swim_list = "swim -qSl|";
+my $swim_list = "swim -qSl|"; # Not using --df for empty directories.
 $, = " ";
-my $extra_files = "swim -ql @extra_packages|";
+my $extra_files = "swim -ql @extra_packages|"; # Not using --df.
 $, = "";
 
 # All the packages
@@ -238,6 +240,19 @@ $stuff = << "STUFF";
 /var/lib/dpkg/info
 /var/lib/dpkg/updates
 /var/lib/dpkg/alternatives
+
+# Stuff needed by apt.
+/var/cache/apt/archives/lock
+/var/cache/apt/archives/partial
+/var/lib/apt/lists/lock
+/var/lib/apt/lists/partial
+/etc/apt/*
+
+# Debconf stuff
+/var/cache/debconf
+
+# Ipchains stuff
+/etc/default/ipchains
 
 # Devices - optional stuff which can be picked up by devfsd.
 /dev/MAKEDEV # a link
