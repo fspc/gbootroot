@@ -262,6 +262,7 @@ if (!-d "$tmp1/gbootroot_mnt$time") {
         "gBootRoot: ERROR: Could not make mount directory") != 2;
 }
 
+
 # Verbosity is universal for all methods, and controlled by a scale slider. 
 # Yard 
 #  0 --> only the important messages.
@@ -272,6 +273,10 @@ my $verbosity = 1; # info & sys use this as Global
 ## save from the verbosity box including saving a selection.
 #my $verbosefn = "$tmp/verbose"; # All verbosity
 my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
+
+# Need this before everything.
+Gtk::Rc->parse("gbootrootrc");
+
 verbosity_box();
 start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
                                              # "verbosity level"
@@ -327,8 +332,9 @@ my ($circles,$mask) = Gtk::Gdk::Pixmap->create_from_xpm_d($window->window,
                                                         @xpm_data);
 $window->window->set_icon(undef, $circles, $mask);
 $window->window->set_icon_name("gBootRoot");
-$window->window->set_decorations(['all', 'menu']); # Zas
-$window->window->set_functions(['all', 'resize']); # Zas
+# Zas - bug in gtk-perl < .7002 
+$window->window->set_decorations(['all', 'menu']); 
+$window->window->set_functions(['all', 'resize']); 
 
 my $tooltips = Gtk::Tooltips->new();
 
@@ -557,7 +563,6 @@ $hbutton->show();
 $box2->pack_start( $hbutton, $true, $true, 0 );
 $box2->show();
 
-Gtk::Rc->parse("gbootrootrc");
 $window->show();
 main Gtk;
 exit( 0 );
@@ -1705,7 +1710,8 @@ sub lilo_put_it_together {
 
    # Better do this first
   info(0, "Copy over initrd ramdisk\n");
-  return if err_custom("cp $tmp/$initrd $mnt/$initrd","gBootRoot: ERROR: Could not copy over initrd") == 2;
+  return if err_custom("cp $tmp/$initrd $mnt/$initrd",
+		       "gBootRoot: ERROR: Could not copy over initrd") == 2;
   pb($B,2);
 
   info(0, "Copying over kernel\n");
@@ -1820,9 +1826,11 @@ sub device2 {
      my $half_line_count = $line_count/2;
      my $count = 1;
      open(CF, ">$mnt/$broot_image") or error_window(
-     "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
+      "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
+
      open(CR, "$root_image") or error_window(
      "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
+
      while (<CR>) {
          print CF $_;
          pb($FS,$count,$line_count) if $count < $half_line_count;
