@@ -53,6 +53,9 @@ my $uml_xterm = "xterm -e";
 # and to update scripts/Debian.yard if
 # make_debian has been changed,
 # and to install -s linux.
+# and to make sure modules are correct in Initrd.gz
+# apply special patches
+
 my $version = "1.3.5";
 my $date = "02.13.2002";
 my $gtk_perl_version = "0.7002";
@@ -60,6 +63,7 @@ my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
 my $home_uml_kernel = "$home/uml_kernel/";
 my $modules_directory = "/lib/modules";
+my $Initrd = "/usr/lib/bootroot/root_filesystem/Initrd.gz";
 
 # This is for experimental stuff .. basically so I can test
 # the boot fs as a normal user, since it's hard to create a boot disk
@@ -1729,7 +1733,7 @@ sub uml_box {
 
 
 	#_______________________________________
-	# Submit Button
+# Submit Button
         my $submit_b = button_advanced(0,1,7,8,"Submit",$table_uml);
 	$tooltips->set_tip( $submit_b, 
                            "Start uml kernel processes.",
@@ -1869,7 +1873,7 @@ sub uml_box {
 					      # Decide what to do with initrd
 					      if ( !$initrd ) {
 						  
-						  $initrd = "initrd=Initrd";
+						  $initrd = "initrd=" . $Initrd;
 						  
 					      }
 					      else {						  
