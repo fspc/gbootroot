@@ -1159,16 +1159,19 @@ sub create_filesystem {
     # Allow smaller than 8192 if exclusive.
     if ( $uml_exclusively == 1 ) {
 	sync();
+	info(1,"dd if=/dev/zero of=$device bs=1k count=$fs_size\n");
 	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
 	sync();
     }
     elsif ( $> != 0 && $fs_size > 8192 && $fs_type eq "genext2fs" ) {
 	sync();
+	info(1,"dd if=/dev/zero of=$device bs=1k count=$fs_size\n");
 	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
 	sync();
     }
     elsif ( $fs_type ne "genext2fs" ) {
 	sync();
+	info(1,"dd if=/dev/zero of=$device bs=1k count=$fs_size\n");
 	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
 	sync();
     }
@@ -1180,22 +1183,46 @@ sub create_filesystem {
 	 $uml_exclusively == 0 ) {
 
 	if (-f $device) {
+
 	    #####  If device is a plain file, it means we're using some 
 	    #####  loopback device.  Use -F switch in mke2fs so it 
 	    #####  won't complain.
 	    ## Options here can be changed.
 	    ## Originally, this was -b 1024 switched with the inode approach.
-	    if (sys("$main::makefs $device $fs_size") !~ 
-		/^0$/ ) {
-		$error = error("Cannot $fs_type filesystem.\n");
-		return "ERROR" if $error && $error eq "ERROR";
-
+	    # Basically this won't work because mkreiserfs demands a
+	    # special block device, but maybe this will change, that is
+	    # where root_fs_helper steps in to the rescue.
+	    if ( $fs_type eq "mkreiserfs" ) {
+		if (sys("$main::makefs $device") !~ 
+		    /^0$/ ) {
+		    $error = error("Cannot $fs_type filesystem.\n");
+		    return "ERROR" if $error && $error eq "ERROR";
+		}
 	    }
+	    else {
+
+		if (sys("$main::makefs $device $fs_size") !~ 
+		    /^0$/ ) {
+		    $error = error("Cannot $fs_type filesystem.\n");
+		    return "ERROR" if $error && $error eq "ERROR";
+
+		}
+	    }
+
 	} else {
-	    if (sys("$main::makefs $device $fs_size") !~ 
-		/^0$/ ) {
-		$error = error("Cannot $fs_type filesystem.\n");
-		return "ERROR" if $error && $error eq "ERROR";
+	    if ( $fs_type eq "mkreiserfs" ) {
+		if (sys("$main::makefs $device") !~ 
+		    /^0$/ ) {
+		    $error = error("Cannot $fs_type filesystem.\n");
+		    return "ERROR" if $error && $error eq "ERROR";
+		}
+	    }
+	    else {
+		if (sys("$main::makefs $device $fs_size") !~ 
+		    /^0$/ ) {
+		    $error = error("Cannot $fs_type filesystem.\n");
+		    return "ERROR" if $error && $error eq "ERROR";
+		}
 	    }
 	}
 	
