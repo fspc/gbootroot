@@ -10,8 +10,8 @@ several months ago for the reason just cited.  Note: check_getty_type_call
 was removed from Yard.pm, but exists in chrooted tests without the termcap
 check.  Also, added a close which was missing.
 
-Removed an unnecessary check from the fstab test, and improved a regexp which
-was failing if tabs were used in the fstab.  
+Removed an unnecessary check from the fstab test, and improved a regexp 
+which was failing if tabs were used in the fstab.  
 
 State is saved for all check buttons when the yard box is opened and
 closed.  Deciding whether to save state between invocations of gbootroot
@@ -28,8 +28,8 @@ Added several new FAQ questions,  added a lot more information on
 "How do I use gBootRoot?"  Updated the graphics for the documentation.
 
 Updated to version 2.4.14 of user-mode-linux.  Note: 2.4.15 was buggy
-in respect to rebooting, and produced an address number at login, it appears 
-to be a bad compile. 
+in respect to rebooting, and produced an address number at login, it
+appears to be a bad compile. 
 
 The Yard Box has new check buttons which allows the parsing behavior of
 the nss and pam configuration files to be turned off and on (default). 
@@ -52,10 +52,10 @@ in the template if the pam parsing option in turned on.
 $ENV{RELEASE} is now initialized every time a check is run on the template.
 Information can come from three sources, the kernel version returned from
 a selected kernel in the main section, the user defined kernel version
-in the ABS, or `uname -r`.  User defined kernel version overrides the kernel.
-The root_fs needs to be built in relation to the actual kernel modules 
-it will run on.  Previously the $RELEASE value wasn't returned properly
-because of some bugs in kernel_version_check.  This has been fixed. 
+in the ABS, or `uname -r`.  User defined kernel version overrides the
+kernel.  The root_fs needs to be built in relation to the actual kernel 
+modules it will run on.  Previously the $RELEASE value wasn't returned 
+properly because of some bugs in kernel_version_check.  This has been fixed. 
 
 The proper ldd check is now used if a dynamically linked binary is detected
 to require uClibc rather than libc6.  The ldd from the default location of 
@@ -70,7 +70,7 @@ that path will be checked, otherwise, either the pam default path of
 /usr/lib/security or the FSSTD location /lib/security will be checked 
 for a match.
 
-Fixed nss test so that it checks for the right libnss_(service).so.$version 
+Fixed nss test so that it checks for the right libnss_(service).so.$version
 if glibc 2.2 is used.  Glibc 2.0 and 2.1 used 1 and 2 respectively, but 2.2
 uses 2.
 
@@ -113,11 +113,11 @@ Chrooted tests in the Yard Box are disabled and removed when a non-root
 user runs the box. 
 
 ARS and YardBox error handling is much better because $error has been made
-private, before it was mostly global in YardBox.pm which meant an error 
-value remained ERROR even when the problem was fixed which caused the 
+private, before it was mostly global in YardBox.pm which meant an error
+value remained ERROR even when the problem was fixed which caused the
 YardBox to fail to work properly after certain errors.
 
-When the ARS hadn't been opened yet, the program reported that the root 
+When the ARS hadn't been opened yet, the program reported that the root
 device hadn't been umounted yet, this was observed with genext2fs but was
 certainly a global bug.  This has been fixed.
 
