@@ -1,3 +1,37 @@
+gbootroot (1.3.6-1) unstable; urgency=low
+
+  * Updated to 2.4.18-2um and the latest uml tools 20020212, including
+    tunctl from CVS, because it was missing from the uml_utilities
+    tar.bz2.  This is a nice patch, and an earlier compilier issue has
+    disappeared.
+  * Added the MTD Emulation section to the UML Box.  This allows
+    filesystems to be run on a simulated Memory Technology Device via
+    mtdram or blkmtd.  This is most useful for running jffs2 fs
+    (compressed journaling fs designed for flash memory).  This is handy
+    for shipping and running jffs2 images, and to test this and other fs
+    ultimately designated for a MTD device.  With a little  tweaking
+    they should run well on an x86 MTD.
+  * If a fs is being made with mkcramfs, genromfs, mkfs.jffs or
+    mkfs.jffs2 and the directories /dev or /initrd don't exist, they are
+    automatically are created during the create stage.  Initrd dir is
+    needed for mtd emulation  testing, and dev is also required.  Devfs
+    will always be used on /dev, and  won't be an option.
+  * Added cad "Ctrl-Alt-Del" to mconsole interface, and documented it.
+  * Added EmptyFS.yard template with instructions, and which does what
+    you think  it does.
+  * Now looks for mconsole at both Locations /tmp/uml/$umid/mconsole and
+    new location $ENV{HOME}/.uml/$umid/mconsole by not specifying a
+    direct path.  Some older mconsoles seemed to require this, but 10um
+    onwards respects this.
+  * Now files for uml_exclusively are made in create_expect_uml which is
+    effectively known as the create stage.  This avoids the unecessary
+    previous  requirement of having to select the copy stage again just
+    to create a file for /dev/ubd/0.  The file created is sparse, got
+    this idea from a discussion  Jeff had with a user on uml-user.
+  * Added jffs/jffs2 image construction.
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Mon, 11 Mar 2002 00:43:24 -0500
+
 gbootroot (1.3.5-1) unstable; urgency=low
 
   * Now the template called Helper.yard used to create the

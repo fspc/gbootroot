@@ -9,7 +9,7 @@
 
 
 # Update this according to version
-%define version 1.3.5
+%define version 1.3.6
 %define release 1mdk
 
 
@@ -49,6 +49,8 @@ BootRoot makes the construction and development of distributions fun and
 simple with its Root Methods such as Yard and user-mode-linux test bed.  
 Finish the product with a Boot Method (2-disk compression supported).  
 Normal (non-root) users can make root filesystems and boot disks.
+There is a MTD Emulator useful for running distributions made with the 
+jffs/jffs2 filesystem.
 
 The required perl modules perl-Expect, perl-IO-Stty, perl-IO-Tty are 
 available for download from prdownloads.sourceforge.net/gbootroot.
