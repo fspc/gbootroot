@@ -115,6 +115,7 @@ my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $template_dir = "./";
 my $home_rootfs = "$home/root_filesystem/";
+my $home_uml_kernel = "$home/uml_kernel/";
 
 my $initrd;
 my $compress;
@@ -129,6 +130,7 @@ my $order;
 my $text_window;
 my $verbosity_window;
 my @container;
+
 # Make container verbose
 use constant  METHOD               => 0  ;
 use constant  KERNEL               => 1  ;
@@ -234,40 +236,36 @@ $SIG{KILL} = \&signal;
 (undef,$container[KERNEL],$container[ABS_APPEND]) = gdkbirdaao();
 
 # /tmp
-if (!-d $tmp1) {
-    if (-e $tmp1) {
-       error_window(
-          "gBootRoot: ERROR: A file exists where $tmp1 should be");
-    }
-    else {
-        my @directory_parts = split(m,/,,$tmp1);
-        my $placement = "/";
-          for (1 .. $#directory_parts) {
-              $_ == 1 ? ($placement = "/$directory_parts[$_]")
-              : ($placement = $placement . "/" . $directory_parts[$_]);
-              -d $placement or err_custom_perl(
-              "mkdir $placement","gBootRoot: ERROR: Could not make $tmp1");
-           }
-    }
-}
+home_builder($tmp1);
 
 # $HOME/.gbootroot/root_filesystem
-if (!-d $home_rootfs) {
-    if (-e $home_rootfs) {
-       error_window(
-          "gBootRoot: ERROR: A file exists where $home_rootfs should be");
+home_builder($home_rootfs);
+
+# $HOME/.gbootroot/uml_kernel
+home_builder($home_uml_kernel);
+
+sub home_builder {
+
+    my ($home_builder) = @_; 
+
+    if (!-d $home_builder) {
+	if (-e $home_builder) {
+	    error_window(
+	    "gBootRoot: ERROR: A file exists where $home_builder should be");
+	}
+	else {
+	    my @directory_parts = split(m,/,,$home_builder);
+	    my $placement = "/";
+	    for (1 .. $#directory_parts) {
+		$_ == 1 ? ($placement = "/$directory_parts[$_]")
+		    : ($placement = $placement . "/" . $directory_parts[$_]);
+		-d $placement or err_custom_perl(
+		"mkdir $placement","gBootRoot: ERROR: Could not make $home_builder");
+	    }
+	}
     }
-    else {
-        my @directory_parts = split(m,/,,$home_rootfs);
-        my $placement = "/";
-          for (1 .. $#directory_parts) {
-              $_ == 1 ? ($placement = "/$directory_parts[$_]")
-              : ($placement = $placement . "/" . $directory_parts[$_]);
-              -d $placement or err_custom_perl(
-              "mkdir $placement","gBootRoot: ERROR: Could not make $home_rootfs");
-           }
-    }
-}
+
+} # end home_builder
 
 my ($sec,$min,$hour,$day,$month,$year) = (localtime)[0,1,2,3,4,5];
 my $time = sprintf("%02d:%02d:%02d-%02d-%02d-%04d", 
@@ -891,12 +889,13 @@ sub advanced_root_section {
                            "Turn Compression off.", "" );
        $hbox_between->pack_start( $compression_off, $true, $false, 0 );
        $compression_off->show();
-
+       
        #_______________________________________ 
        # UML Kernel 
        label_advanced("UML Kernel:",0,1,5,6,$table_advanced_root);
        # $_[4] shares with advanced_boot_sections @entry_advanced
        $ear3 = entry_advanced(1,2,5,6,5,$table_advanced_root);
+       $ear3->set_text("$home_uml_kernel" . "linux");
        $tooltips->set_tip( $ear3, 
                           "If you have a User Mode Linux Kernel, type in" .
                           " the Kernel's location," .
@@ -983,6 +982,19 @@ sub advanced_root_section {
        $tooltips->set_tip( $generate_b, "Generate Root Filesystem.", "" );
        
        my $UML_b = button_advanced(1,2,8,9,"UML");
+
+       $UML_b->signal_connect("clicked", sub { 
+	   print "$entry_advanced[5]\n"; 
+       });
+
+	# UML kernel doesn't look like a normal kernel
+	##if (!-d $entry_advanced[5] && -f $entry_advanced[5]) {
+        ##$k_error = kernel_version_check($entry_advanced[5]);  
+	##return if $k_error && $k_error eq "ERROR";}
+        ## else {
+	##error_window("Kernel Selection required");
+        ##return; }
+
        $tooltips->set_tip( $UML_b, "Test Filesystem with User Mode Linux.", 
                             "" );
 
