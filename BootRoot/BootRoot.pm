@@ -39,6 +39,8 @@ use File::Find;
 use File::Path;
 use BootRoot::Options;
 
+option();
+
 $SIG{__WARN__} = 
     sub { warn @_ unless $_[0] =~ /Subroutine [\w:]+ redefined/io 
 	      || $_[0] =~ /Use of uninitialized value in concatenation/};

@@ -50,7 +50,7 @@ my %inetd; # checks for inetd binaries.
 my @extra_packages = qw(file-rc dswim apt apt-utils debconf nvi sysklogd
 klogd netbase tcpd net-tools portmap netkit-ping netkit-inetd ifupdown less 
 perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils
-libterm-readline-gnu-perl);
+libterm-readline-gnu-perl info);
 # NEXT EDIT TEMPLATE 
 
 #################################################################
@@ -206,6 +206,10 @@ $Id
 /var/lib/locate
 /var/backups
 
+# Stuff so install-info won't complain bitterly and cause package
+# installations to fail.
+/usr/info/dir
+
 # Stuff so ldconfig creates all the proper dependencies.
 /etc/ld.so.conf <= Replacements/etc/ld.so.conf
 
@@ -246,7 +250,7 @@ return $stuff;
 use strict;
 use File::Basename;
 my $rm = "\$";
-$main::Id = "# \$Id: make_debian,v 1.62 2002/01/04 00:51:28 freesource Exp $rm"; 
+$main::Id = "# \$Id: make_debian,v 1.63 2002/12/28 04:37:58 freesource Exp $rm"; 
 my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
 if ($sbin == 0) {
     $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
