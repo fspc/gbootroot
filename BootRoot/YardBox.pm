@@ -1115,6 +1115,7 @@ sub search {
     if (not defined $search_window) {
 
 	$search_window = Gtk::Window->new("toplevel");
+	$search_window->set_transient_for($main::yard_window);
 	$search_window->signal_connect("destroy", \&destroy_window,
 					     \$search_window);
 	$search_window->signal_connect("delete_event", \&destroy_window,
