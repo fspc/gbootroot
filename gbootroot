@@ -452,10 +452,10 @@ start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name"
 # box and to the LOGFILE $tmp/verbosity.   Realative to the slider 1 == 2 and 
 # 0 == 1.
 # 
-# warning("text") produces 0=blue output with "Warning: " appended and keeps
+# warning("text") produces 0=blue output with "Warning: " prepended and keeps
 # count of warning via the $Warnings variable.
 #
-# warning_test("text") is like warning except that it doesnt append any
+# warning_test("text") is like warning except that it doesnt prepend any
 # text, and doesn't keep count of anything.
 #
 # error("text") returns ERROR, writes to verbosity box (Error: "text"), and 
