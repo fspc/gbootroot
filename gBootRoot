@@ -1197,15 +1197,6 @@ sub yard_box {
        $vbox->pack_start( $test, $true, $true, 0 );
        show $test;       
 
-##       $tooltips->set_tip( $lib_strip_check, 
-##                           "This is generally a good idea.  Press the" .
-##                           " right mouse button to change from" .
-##                           " [objcopy --strip-debug] to" . 
-##                           " [objcopy --strip-all].", "" );
-##                               ['expand'],['fill','shrink'],0,0);
-
-
-
        #_______________________________________ 
        # Separator
        $separator = new Gtk::HSeparator();
@@ -1225,7 +1216,7 @@ sub yard_box {
        $vbox->pack_start( $button, $true, $true, 0 );
        $button->show();
 
-       $button = new Gtk::Button( "Cancel" );
+       $button = new Gtk::Button( "Close" );
        $button->signal_connect( 'clicked', 
        				sub { destroy $yard_window; } );
        $vbox->pack_start( $button, $true, $true, 0 );
@@ -2563,7 +2554,7 @@ sub verbosity_box {
                                     \$verbosity_window);
        $verbosity_window->signal_connect("delete_event", \&destroy_window,
                                     \$verbosity_window);
-       $verbosity_window->set_usize( 500, 600 );
+       $verbosity_window->set_usize( 450, 175 );  # 500 600
        $verbosity_window->set_policy( $true, $true, $false );
        $verbosity_window->set_title( "Verbosity Box" );
        $verbosity_window->border_width(0);
