@@ -2,10 +2,16 @@
 # see /usr/share/doc/bash/examples/startup-files for examples.
 # the files are located in the bash-doc package.
 #
-# $Id$
+# $Id: .bash_profile.debian,v 1.2 2001/11/08 05:50:20 freesource Exp $
 # make_debian replacement
 
 umask 022
+
+export LS_OPTIONS='--color=auto' 
+eval `dircolors`
+alias ls='ls $LS_OPTIONS'
+
+export DISPLAY=:0.0
 
 # the rest of this file is commented out.
 
