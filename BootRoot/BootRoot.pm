@@ -379,7 +379,9 @@ if ( !%option || $option{gui_mode} ) {
 # /tmp
 home_builder($tmp1);
 
-if ( !( $option{help} || $option{h} ) ) {
+if ( !( $option{help} || $option{h} ) && 
+     $home_uml_kernel !~ /user-mode-linux/ &&
+     !$option{home} ) {
 
 # $HOME/.gbootroot/root_filesystem
     home_builder($home_rootfs);

@@ -1,4 +1,4 @@
-$Id: README,v 1.23 2003/02/12 17:15:25 freesource Exp $
+$Id: README,v 1.24 2003/02/12 17:18:36 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -39,7 +39,9 @@ mtd-tools, m4, libreadline4-dev, libncurses5-dev, libgtk-perl (>=
 found at gbootroot's site].  For instance, in Redhat libc6-dev
 translates into glibc-devel and glibc-kernheaders, libreadline4-dev
 translates into readline-dev, libncurses5-dev translates into
-ncurses-devel, reiserfsprog translates into reiserfs-utils.
+ncurses-devel, reiserfsprog translates into reiserfs-utils.  Mandrake
+requires glibc-static-devel along with glibc-devel, but the other
+package names are more similar to Debian.
 
 
 UML KERNEL CUSTOMIZATION
@@ -63,7 +65,9 @@ If you build the package as a non-root user, and you don't have
 permissions to write to system directories you can always run
 gbootroot from the immediate source directory "./gbootroot --home ."
 or "perl -I . ./gbootroot --home ." if there is already another
-installed version on the system.
+installed version on the system.  You will want to put the
+uml-utilities found under user-mode-linux/usr/bin and
+user-mode-linux/usr/lib/uml in your $PATH.
 
 To install on the system type "make install" and follow the
 instructions in the "Important Configurations" section near the bottom
