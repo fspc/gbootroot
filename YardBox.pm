@@ -48,7 +48,8 @@ my @menu_items = ( { path        => '/File',
 		     callback    => sub { print "hello\n"; } },
                    { path        => '/File/file_separator',
                      type        => '<Separator>' },
-		   { path        => '/File/_Close',
+		   { path        => '/File/Close',
+		     accelerator => '<alt>W',
 		     callback    => sub { destroy $yard_window; }},
 
                    { path        => '/_Edit',
@@ -132,7 +133,7 @@ sub yard_box {
 
        my $vbox = new Gtk::VBox( $false, 0 );
        $vbox->border_width( 0 );
-       $main_vbox->pack_start( $vbox, $false, $false, 0 );
+       $main_vbox->pack_start( $vbox, $false, $true, 0 );
        $vbox->show();
 
        # Item::Factory
