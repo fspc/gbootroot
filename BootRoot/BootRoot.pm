@@ -1439,7 +1439,7 @@ sub uml_box {
                            " Abort because it provides an excellent" .
                            " way to kill any ghost processes.\n" .
                            "3.  Your creation gets weird, and you need to " .
-                           "Abort its processes to shutdown it. ",
+                           "Abort its processes to shut it down. ",
                            "" );
 	$abort_b->signal_connect("clicked",
 				 sub {
