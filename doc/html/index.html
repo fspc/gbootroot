@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.44 2001/12/11 05:39:57 freesource Exp $</center>
+<center>$Id: index.html,v 1.45 2001/12/14 09:03:06 freesource Exp $</center>
 
 <p>
 
@@ -341,13 +341,42 @@ environment $PATH variable.
 
 <p>
 
-Edit->'File System" may alter the type of filesystem used to make the root
-filesystem.&nbsp;&nbsp;Because the filesystem is 
-created on a loop device, some 
-filesystem types may complain or not be created at all.&nbsp;&nbsp;If there 
-isn't any loop device support for the host system's kernel use 
-genext2fs.&nbsp;&nbsp;The filesystem type defaults to genext2fs for normal 
-users.</p>
+The Filesystem Box (Edit->'File System") is the control center for access to
+the filesystem making utilities provided by the root_fs helper.&nbsp;&nbsp;
+For normal users it defaults to genext2fs, and for root, mke2fs.&nbsp;&nbsp;
+If a normal
+user sets the filesystem size greater than 8192k before the box is opened then 
+UML Exclusively is turned on, and mke2fs is assumed, otherwise it is off
+and genext2fs is used.&nbsp;&nbsp;  
+UML Exclusively is off by
+default for root, and allows root to create filesystem on a loop device, but
+normal users don't have loop device access so genext2fs is used instead to
+create a UID/GID 0 fs.&nbsp;&nbsp;Both types of users can turn this button on
+at any time regardless of the filesystem size, and assuming they provide a 
+filesystem command suppored by the root_fs helper; however, normal users 
+should keep this on when the filesystem 
+size is greater than 8192k.&nbsp;&nbsp;Preserve Permissions are off by 
+default for normal
+users, and on by default for root, these are good defaults since a normal
+user would create a fs with thier own UID/GID if they turned this on.
+  
+<p>
+
+The root_fs helper provides support for these commands:<br>
+<code>mke2fs  mkreiserfs  mkcramfs  genromfs   mkminix</code>
+
+<p>
+
+<u>Notes</u>:
+1). All these commands may have options added, but it is uneccessary to add
+directory, device, or source options&nbsp;&nbsp;2). 
+Mkcramfs and genromfs use the filesystem given a 
+filename in the ARS as the source to produce another filesystem which is 
+named respectively with _cramfs or _romfs appended to the original name of 
+this filesystem.&nbsp;&nbsp;
+If in doubt
+what this all means, watch the verbosity box when the filesystem is created,
+and things should become more clear.  
 
 <p><IMG ALT="" SRC="images/replacements.jpg" align="center"></p>
 
