@@ -11,7 +11,7 @@ helper for allowing uml devices to be attached to a specified host port.
 
 Changed the behavior of the Accept button so that when compression is chosen
 (gzip or bz2) the Root Filename remains the same as before.  This is nice
-because the fs can be remade with the same name and recompressed, rather then
+because the fs can be remade with the same name and re-compressed, rather then
 appending gz or bz2 to the name.  Before if the user forget to 
 delete the ending this would happen: root_fs.bz2.bz2.bz2
 
