@@ -3195,7 +3195,7 @@ sub device2 {
 	
 
 	if (
-	  sys("/usr/lib/bootroot/$main::makefs -b $device_size -d $mnt $entry_advanced[3]") !~ 
+	  sys("/usr/lib/bootroot/$main::makefs -b $device_size -d $tmp/rootdisk $entry_advanced[3]") !~ 
 	    /^0$/ ) {
 	    info( 0, "/usr/lib/bootroot/$main::makefs -b $device_size -d $tmp/rootdisk $entry_advanced[3]\n");
 	    $error = error("Cannot $fs_type filesystem.\n");
@@ -3212,6 +3212,7 @@ sub device2 {
 	    "gBootRoot: ERROR: Root disk did not properly umount") == 2;
     }
 
+    $line_count = $line_count * 2;
     pb($FS,$count,$line_count);
     info(0, "Finished!\n");
 

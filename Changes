@@ -1,3 +1,7 @@
+Fixed another non-root boot/root bug.  The info had it correct, but the actual
+copy with genext2fs was being done from the wrong location.  This has been 
+fixed.
+
 Had some testing code which was providing the wrong value for $compress, this
 made non-root booting fail for bzip2 because bunzip2 didn't exist in the 
 initrd.
