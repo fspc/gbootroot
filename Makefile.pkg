@@ -1,8 +1,8 @@
 # A Makefile going to a new dimension - a combination of stuff borrowed from 
 # buildroot, UML, and gbootroot.
 
-VERSION=2.4.19
-PATCH_VERSION=51
+VERSION=2.4.20
+PATCH_VERSION=1
 UTIL_VER=20030202
 
 BASE_DIR=${shell pwd}
