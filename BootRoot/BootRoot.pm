@@ -1684,8 +1684,9 @@ sub uml_box {
         $mtd_size->set_shadow_type( 'in' );
         $mtd_size->show();
         # Watch size if an actual file on open
+        my $stat_size;
         if ( -f  "$tmp/$entry_advanced[4]" ) {
-               my $stat_size =  (stat("$tmp/$entry_advanced[4]"))[12]/2; 
+               $stat_size =  (stat("$tmp/$entry_advanced[4]"))[12]/2; 
 	       my $blocks  = ($stat_size + ( $stat_size * 0.30 ))/1024;
 	       $blocks = sprintf("%.f",ceil($blocks));
 	       $mtd_total_size = $blocks * 1024;
@@ -1693,7 +1694,7 @@ sub uml_box {
         $eab3->signal_connect( "changed", sub {
 	   my $root_fs = (split(/ubd\d{1}\w?=/,$entry_advanced[10]))[1];
 	   if ( -f  $root_fs ) {
-	       my $stat_size =  (stat("$root_fs"))[12]/2; 
+	       $stat_size =  (stat("$root_fs"))[12]/2; 
 	       my $blocks  = ($stat_size + ( $stat_size * 0.30 ))/1024;
 	       $blocks = sprintf("%.f",ceil($blocks));
 	       $mtd_total_size = $blocks * 1024;
@@ -1895,16 +1896,40 @@ sub uml_box {
 
 					      # mem
 					      my $mem_size;
-					      if ( $total_size < 16384 ) {
-						  $mem_size = 16384;
-					      }
-					      else {
-						  $mem_size = 16384 * ceil($mtd_total_size / 16384);
-						  if ( $total_size == $mem_size ) {
-						      $mem_size = $mem_size + 16384;
+					      if ( $mtd_radio_mtdram->get_active() ) {
+
+						  if ( $total_size < 16384 ) {
+						      $mem_size = 16384;
 						  }
+						  else {
+						      $mem_size = 16384 * ceil($mtd_total_size / 16384);
+						      if ( $total_size == $mem_size ) {
+							  $mem_size = $mem_size + 16384;
+						      }
+						  }						  
 					      }
-					      
+					      elsif ( $mtd_radio_blkmtd->get_active() ) {
+						  if ( $total_size < 16384 ) {
+						      $mem_size = 16384;
+						  }
+						  else {
+						      # This seems to be the way things are with blkmtd.
+						      my $stat_size2 = $stat_size * 2;
+						      my $stat_constant = 16384;
+						      while ( $stat_size2 > $stat_constant ) {
+							      $mem_size = $stat_constant * 2;
+							      $stat_constant = $stat_constant * 2;
+						      }
+
+						      if ( $total_size >= $mem_size ) {
+							  while ( $total_size >= $mem_size ) {
+							      $mem_size = $mem_size * 2;
+							  }
+						      }
+
+						  }						  			  
+					      }
+
 					      if ( !$mem ) {
 						  $mem = "mem=$mem_size" . "K";
 					      }
