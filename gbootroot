@@ -3044,7 +3044,7 @@ The slider bar on the right allows the output of the verbosity box to be
 changed from the highest (2) to the lowest setting (1) or to be turned off (0)
 or on again.  At times it may be advantageous to turn off the verbosity box 
 since large quantities of output to this box may cause gbootroot to use too 
-much cpu power, however, output may still be found in the text file "verbose" 
+much cpu power; however, output may still be found in the text file "verbose" 
 in /tmp.  
 
 Advanced Boot Section:
