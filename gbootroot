@@ -2830,14 +2830,14 @@ sub lilo_put_it_together {
   if ( $fs_type eq "genext2fs" ) {
 
       my $error;
-=pod
+#
       if (
 	  sys("/usr/lib/bootroot/$main::makefs -b $device_size -d  $mnt -D $device_table $entry_advanced[0]") !~ 
 	  /^0$/ ) {
 	  $error = error("Cannot $fs_type filesystem.\n");
 	  return "ERROR" if $error && $error eq "ERROR";
       }
-=cut
+#
   }
 
 
@@ -2870,13 +2870,13 @@ sub lilo_put_it_together {
   # otherwise the user has to do it manually.
   if ($container[BOOT_DEVICE] eq $entry_advanced[0]) {
       
-=pod
+#
       if ( err_custom("lilo -v -C brlilo.conf -r $mnt",
 		    "gBootRoot: ERROR: lilo failed") == 2 ) {
 	  chdir($pwd); 
 	  return;
       }
-=cut
+#
 
   }
 
