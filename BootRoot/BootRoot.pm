@@ -377,7 +377,7 @@ symlink_builder("/usr/bin/linux","$home_uml_kernel/linux");
 if (!-e "$home_uml_kernel/.options") {
     open(OPTIONS,">$home_uml_kernel/.options") 
 	or die "Couldn't write $home_uml_kernel/.options at $?\n";
-    print OPTIONS "root=/dev/ubd0 mem=16M\n";
+    print OPTIONS "umid=bootroot root=/dev/ubd0 mem=16M\n";
     close(OPTIONS);
 }
 
@@ -1289,7 +1289,7 @@ sub uml_box {
 	$main_vbox->show();
 
 	##my $table_uml = Gtk::Table->new( 4, 3, $true );
-	my $table_uml = Gtk::Table->new( 4, 3, $false );
+	my $table_uml = Gtk::Table->new( 4, 5, $false );
 	##$main_vbox->pack_start( $table_uml, $true, $true, 0 );
 	$main_vbox->pack_start( $table_uml, $true, $false, 0 );
 	$table_uml->show();
@@ -1297,7 +1297,7 @@ sub uml_box {
 	#_______________________________________
 	# Xterm and execute options
 	label_advanced("Xterm:",0,1,0,1,$table_uml);
-	$eab1 = entry_advanced(1,2,0,1,8,$table_uml);
+	$eab1 = entry_advanced(1,4,0,1,8,$table_uml); # 1,2
 	$eab1->set_text($uml_xterm);
        $tooltips->set_tip( $eab1, 
                            "Choose an xterm with " .
@@ -1308,8 +1308,8 @@ sub uml_box {
 	# UML options
 	label_advanced("Options:",0,1,1,2,$table_uml);
         $eab2 = Gtk::Combo->new();
-        $table_uml->attach($eab2,1,3,1,2, 
-			  ['expand','fill'],['fill','shrink'],0,0);
+        $table_uml->attach($eab2,1,5,1,2, 
+			  ['expand','fill'],['fill','shrink'],0,0); # 1,3
 	open(OPTIONS,"$home_uml_kernel/.options");
 	my @initial_options = <OPTIONS>;
 	close(OPTIONS); chomp @initial_options;
@@ -1330,7 +1330,13 @@ sub uml_box {
 	    close(OPTIONS);
 	} );
        $tooltips->set_tip( Gtk::Combo::entry($eab2), 
-                           "Enter uml command-line options.", 
+                           "Enter uml command-line options.\n" .
+			   "The umid value is used by mconsole to " .
+			   "recognize which machine is running. " .
+                           "Alter value for each Linux virtual " .
+                           "machine invocation, because this value is " .
+			   "parsed from the Options line when Reboot or " .
+			   "Halt is pressed." , 
                            "" );
 	$eab2->show();
 
@@ -1338,8 +1344,8 @@ sub uml_box {
 	#_______________________________________
 	# Root Filesystem defaults to generated one if found.
 	label_advanced("Root_Fs:",0,1,2,3,$table_uml);
-	$eab3 = entry_advanced(1,2,2,3,10,$table_uml);
-	button_fileselect_advanced(2,3,2,3,"Selection",$eab3,"Selection",14,
+	$eab3 = entry_advanced(1,4,2,3,10,$table_uml); # 1,2 & 2,3
+	button_fileselect_advanced(4,5,2,3,"Selection",$eab3,"Selection",14,
 				   $table_uml,$home_rootfs);
 	$eab3->set_text("ubd0=$tmp/$entry_advanced[4]") 
 	    if -e "$tmp/$entry_advanced[4]";
@@ -1418,8 +1424,11 @@ sub uml_box {
 
 
 	#_______________________________________
-	# Cancel button also kills UML kernel if still open
-	my $abort_b = button_advanced(1,2,3,4,"Abort",$table_uml);
+	# Abort Button
+        # This is the hard kill when all else fails, it also cleans up
+        # lingering processess, but is considered a last resort, and
+        # can be dangerous, it has even taken down a WM.
+	my $abort_b = button_advanced(3,4,3,4,"Abort",$table_uml);
 	$tooltips->set_tip( $abort_b, 
                            "Abort uml kernel processes." .
                            "This serves three purposes:\n" .
@@ -1446,9 +1455,49 @@ sub uml_box {
 				     }
 				 } );
 
+
+	#_______________________________________
+	# Reboot Button - mconsole
+        # This is the hard kill when all else fails, it also cleans up
+        # lingering processess, but is considered a last resort
+	my $reboot_b = button_advanced(1,2,3,4,"Reboot",$table_uml);
+	$tooltips->set_tip( $reboot_b, 
+                           "Passes the reboot command to mconsole.",
+                           "" );
+	$reboot_b->signal_connect("clicked",
+				 sub {
+				     # use first one found
+				     $entry_advanced[9] =~  
+					 m,\s*umid=([\w\d-]+)\s*,; 
+				     system 
+					 "uml_mconsole /tmp/uml/$1/mconsole" .
+					 " reboot&"; 
+
+				 } );
+
+
+	#_______________________________________
+	# Halt Button - mconsole
+        # This is the hard kill when all else fails, it also cleans up
+        # lingering processess, but is considered a last resort
+	my $halt_b = button_advanced(2,3,3,4,"Halt",$table_uml);
+	$tooltips->set_tip( $halt_b, 
+                           "Passes the halt command to mconsole. " .
+                           "If this fails use the Abort button.",
+                           "" );
+	$halt_b->signal_connect("clicked",
+				 sub {
+				     # use first one found
+				     $entry_advanced[9] =~  
+					 m,\s*umid=([\w\d-]+)\s*,; 
+				     system 
+					 "uml_mconsole /tmp/uml/$1/mconsole" .
+					 " halt&"; 
+				 } );
+
 	#_______________________________________
 	# Cancel button also kills UML kernel if still open
-	my $cancel_b = button_advanced(2,3,3,4,"Close",$table_uml);
+	my $cancel_b = button_advanced(4,5,3,4,"Close",$table_uml);
 	$tooltips->set_tip( $cancel_b, 
                            "Close uml box.",
                            "" );
@@ -1466,6 +1515,9 @@ sub uml_box {
 
 }
 
+# Someday .. like today .. this will be switched to using mconsole as the 
+# first means of cleaning processes:
+# uml_mconsole /tmp/uml/debian/mconsole (reboot|halt)
 sub remove_matching_process {
 
     my ($match_word) = @_;
