@@ -42,7 +42,9 @@ set_locale Gtk;
 # http://personal.riverusers.com/~swilhelm/perlgtk/.  Please
 # help support his development of this tutorial.  Another good place
 # to learn from is test.pl in the Gtk/samples directory included with
-# Gtk-Perl.
+# Gtk-Perl.   A good reference can be found at 
+# http://projects.prosa.it/gtkperl/reference.html
+
 
 # If you want gBootRoot to do it's stuff somewhere else, change the
 # value for $tmp1.
@@ -1071,8 +1073,10 @@ sub yard {
         ($error = error("$template_dir$template: $!"));
 	return "ERROR"if $error && $error eq "ERROR";
 	my @template = <CONTENTS>;
+	close(CONTENTS);
 	my $stuff = join("",@template);
 	yard_box($stuff);
+
     }
     else {
 	error_window("Kernel Selection required");
@@ -1107,7 +1111,7 @@ sub yard_box {
                                     \$yard_window);
        $yard_window->signal_connect("delete_event", \&destroy_window,
                                     \$yard_window);
-       $yard_window->set_usize( 500, 600 );
+       $yard_window->set_usize( 525, 450 );
        $yard_window->set_policy( $true, $true, $false );
        $yard_window->set_title( "Yard Box" );
        $yard_window->border_width(0);
@@ -1116,7 +1120,12 @@ sub yard_box {
        $yard_window->add( $main_vbox );
        $main_vbox->show();
 
-       my $vbox = new Gtk::VBox( $false, 10 );
+       my $vbox = new Gtk::HBox( $false, 50 );
+       $vbox->border_width( 10 );
+       $main_vbox->pack_start( $vbox, $false, $true, 0 );
+       $vbox->show();
+
+       $vbox = new Gtk::VBox( $false, 10 );
        $vbox->border_width( 10 );
        $main_vbox->pack_start( $vbox, $true, $true, 0 );
        $vbox->show();
@@ -1128,8 +1137,15 @@ sub yard_box {
        $table->show( );
 
        # Create the GtkText widget
+       my $length;
        my $text = new Gtk::Text( undef, undef );
        $text->set_editable($true);
+       my $start_length = $text->get_length();
+       my $beginning_text = $text->get_chars(0,$length);
+       $text->signal_connect("changed", sub { 
+	   $length =  $text->get_length();
+	   #my $changed_text = $text->get_chars(0,$length);
+	   print "$length\n"; } );
        $table->attach( $text, 0, 1, 0, 1,
                        [ 'expand', 'shrink', 'fill' ],
                        [ 'expand', 'shrink', 'fill' ],
@@ -1139,32 +1155,42 @@ sub yard_box {
 
        $text->freeze();
        $text->insert( undef, undef, undef, $_[0]);
-       $text->thaw();       
+       $text->thaw();
 
        # Add a vertical scrollbar to the GtkText widget
        my $vscrollbar = new Gtk::VScrollbar( $text->vadj );
        $table->attach( $vscrollbar, 1, 2, 0, 1, 'fill',
                        [ 'expand', 'shrink', 'fill' ], 0, 0 );
-       ##my $logadj = $vscrollbar->get_adjustment();
-       ##logadj($logadj);
        $vscrollbar->show();
 
        my $separator = new Gtk::HSeparator();
        $main_vbox->pack_start( $separator, $false, $true, 0 );
        $separator->show();
 
-       $vbox = new Gtk::VBox( $false, 10 );
+       $vbox = new Gtk::HBox( $false, 10 );
        $vbox->border_width( 10 );
        $main_vbox->pack_start( $vbox, $false, $true, 0 );
        $vbox->show();
 
-       #my $button = new Gtk::Button( "Close" );
-       #$button->signal_connect( 'clicked', 
-       #				sub { destroy $yard_window; } );
-       #$vbox->pack_start( $button, $true, $true, 0 );
-       #$button->can_default( $true );
-       #$button->grab_default();
-       #$button->show();
+       # Continue - Cancel - Save Buttons
+       ##################################
+       my $button = new Gtk::Button( "Continue" );
+       $button->signal_connect( 'clicked', 
+       				sub { destroy $yard_window; } );
+       $vbox->pack_start( $button, $true, $true, 0 );
+       $button->show();
+
+       $button = new Gtk::Button( "Cancel" );
+       $button->signal_connect( 'clicked', 
+       				sub { destroy $yard_window; } );
+       $vbox->pack_start( $button, $true, $true, 0 );
+       $button->show();
+
+       $button = new Gtk::Button( "Save" );
+       $button->signal_connect( 'clicked', 
+       				sub { destroy $yard_window; } );
+       $vbox->pack_start( $button, $true, $true, 0 );
+       $button->show();
 
        show $yard_window;
 
