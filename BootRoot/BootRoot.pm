@@ -60,8 +60,8 @@ my $uml_xterm = "xterm -e";
 # and to make sure modules are correct in Initrd.gz
 # apply special patches
 
-my $version = "1.3.5";
-my $date = "02.13.2002";
+my $version = "1.3.6";
+my $date = "03.10.2002";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
@@ -1807,7 +1807,7 @@ sub uml_box {
 						  }
 
 						  # Find which runlevel or whether mtd_init is being used
-						  if ( m,(mtd_init=[/\d\w\'\"-]+), ) {
+						  if ( m,(mtd_init=[/\d\w\'\"-]+\s?\d?)"?, ) {
 						      $init  = (split(/=/,$1))[1];
 						      chomp $init;
 						      $init =~ s/\"//g;
@@ -1821,23 +1821,25 @@ sub uml_box {
 						      $init = "sbin/init " . $init;
 						  }
 
+
 						  # Grab the file being used
-						  if ( m,(ubd\d{1}\w?=[/\d\w-]+), ) {
-						      if (  $1 !~ /_dd/ ) {
-							  my $ubd0_replacement = $1;
-							  $ubd0  = (split(/=/,$1))[1];
-							  chomp $ubd0;
-							  $ubd0 = $ubd0 . "_dd";
-							  #s/$ubd0_replacement/ubd0=$ubd0/;
-							  my $ubd0_replacement_dd = $ubd0_replacement . "_dd";
-							  s/$ubd0_replacement/$ubd0_replacement_dd/;
+						  if ( $mtd_radio_blkmtd->get_active() ) {
+						      if ( m,(ubd\d{1}\w?=[/\d\.\+\w-]+), ) {
+							  if (  $1 !~ /_dd/ ) {
+							      my $ubd0_replacement = $1;
+							      $ubd0  = (split(/=/,$1))[1];
+							      chomp $ubd0;
+							      $ubd0 = $ubd0 . "_dd";
+							      my $ubd0_replacement_dd = $ubd0_replacement . "_dd";
+							      s/$ubd0_replacement/$ubd0_replacement_dd/;
+							  }
+							  else {
+							      m,(ubd\d{1}\w?=[/\d\w-]+),;
+							      $ubd0  = (split(/=/,$1))[1];
+							      chomp $ubd0;
+							  }
 						      }
-						      else {
-							  m,(ubd\d{1}\w?=[/\d\w-]+),;
-							  $ubd0  = (split(/=/,$1))[1];
-							  chomp $ubd0;
-						      }
-						  }
+					          }
 
 						  if ( $mtd_radio_mtdram->get_active() ) {
 
