@@ -35,8 +35,7 @@ install:
 
 remove:
 	rm /usr/bin/gbootroot
-	rm /usr/lib/bootroot/yard_chrooted_tests
-	rm /usr/lib/bootroot/genext2fs
+	rm -rf /usr/lib/bootroot
 	rm /usr/bin/make_debian
 	rm /usr/share/perl5/BootRoot/*
 	rmdir /usr/share/perl5/BootRoot
