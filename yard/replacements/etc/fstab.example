@@ -7,7 +7,7 @@
 /dev/ram0       /               ext2    defaults
 # /dev/ubd/0	/		ext2	defaults	1	1
 # If you have this, uncomment it.
-devpts		/dev/pts	devpts	mode=0622	0	0
+# devpts		/dev/pts	devpts	mode=0622	0	0
 /proc		/proc		proc	defaults
 # swapon swapfile created by make_swapfile from make_debian-x11.
 /swapfile	none		swap	sw		0	0
