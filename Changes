@@ -1,3 +1,18 @@
+Established logic for Filesystem Box bases on ownership.  Defaults need to
+be different dependending on the user.  Normal users probably never will
+want to preserve permissions, but they may want to toggle off UML
+Exclusively to create different filesystem types when <= 8192 fs_size.
+Root users may want to turn off Preserve Permissions to create a root only
+filesystem, and the may want to toggle between creating root filesytems
+via loop devices or UML to allow different filesystem types.
+
+Added UML Exclusively and Preserve Permissions check boxes to the Filesystem
+Box.  Esc closes, changed table size, and layout, responds to return, and
+submit button defaults.
+
+Put Jeff Dikes UML.pm in BootRoot, and changed it to BootRoot::UML, added
+one change to allow no password.
+
 The auto-magic test for uClibc was only testing for busybox, this has been
 fixed.
 
