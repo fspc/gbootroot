@@ -2514,6 +2514,7 @@ elsif (defined $container[METHOD] && defined $container[KERNEL] &&
 	                : ($container[OBJCOPY_BOOL] = 6);
      }
 
+     
      if (!defined $entry_advanced[0]) {
         $container[ABS_DEVICE] = $device . "ea1"; 
 	$entry_advanced[0] = $device;
@@ -2521,6 +2522,11 @@ elsif (defined $container[METHOD] && defined $container[KERNEL] &&
      else {
 	 $container[ABS_DEVICE] = $entry_advanced[0] . "ea1";
      }
+
+     # If ARS was never opened, root device defaults to boot device.
+     # This keeps the logic in the right place.
+     $entry_advanced[3] = $container[BOOT_DEVICE] if !$entry_advanced[3];
+
 
      # Works now .. whoosh!
      if ($container[ABS_OPT_DEVICE]) {
@@ -2830,6 +2836,7 @@ sub lilo_put_it_together {
   if ( $fs_type eq "genext2fs" ) {
 
       my $error;
+=pod
 #
       if (
 	  sys("/usr/lib/bootroot/$main::makefs -b $device_size -d  $mnt -D $device_table $entry_advanced[0]") !~ 
@@ -2837,6 +2844,7 @@ sub lilo_put_it_together {
 	  $error = error("Cannot $fs_type filesystem.\n");
 	  return "ERROR" if $error && $error eq "ERROR";
       }
+=cut
 #
   }
 
@@ -2869,7 +2877,7 @@ sub lilo_put_it_together {
   # This enforces that lilo is only ran on a bootable drive,
   # otherwise the user has to do it manually.
   if ($container[BOOT_DEVICE] eq $entry_advanced[0]) {
-      
+=pod      
 #
       if ( err_custom("lilo -v -C brlilo.conf -r $mnt",
 		    "gBootRoot: ERROR: lilo failed") == 2 ) {
@@ -2877,7 +2885,7 @@ sub lilo_put_it_together {
 	  return;
       }
 #
-
+=cut
   }
 
 
@@ -2903,8 +2911,6 @@ sub lilo_put_it_together {
 # different devices to be used. -- now there is $entry_advanced[3] which
 # is the ROOT_DEVICE
 if ($um == 0 ) {
-    # ARS was never opened, so root device defaults to boot device.
-    $entry_advanced[3] = $container[BOOT_DEVICE] if !$entry_advanced[3];
     mtab(1);
 }
 else {
