@@ -9,12 +9,15 @@ my $nodename = `uname -n`; chomp $nodename;
 my $debian_yard = "Debian-$nodename.yard";
 
 # You need file-rc, and you may add other extra stuff.  These packages were
-# chosen for woody, so you may need something different.
-my @extra_packages = qw(file-rc swim nvi sysklogd netbase tcpd net-tools
-portmap netkit-ping netkit-inetd less perl perl-modules);
+# chosen for woody, so you may need something different.  Check dependencies,
+# ofcourse, if you add stuff.
+my @extra_packages = qw(file-rc swim nvi sysklogd klogd netbase tcpd net-tools
+portmap netkit-ping netkit-inetd ifupdown less perl perl-modules);
 
 # And tests will be ran here for file-rc and swim
+#  swim has to have its databases made.
 # Options: to include or remove docs /usr/share/{doc,man,info}
+# and other stuff which creates fluff.
 
 system "swim --search \"Priority: required\" > /dev/null 2>&1";
 my $swim_packages = "swim -qS|";
@@ -22,7 +25,6 @@ my $swim_list = "swim -qSl|";
 $, = " ";
 my $extra_files = "swim -ql @extra_packages|";
 $, = "";
-
 
 # All the packages
 open(SWIM,$swim_packages) or die "Couldn't open $?\n";
@@ -97,10 +99,12 @@ $stuff = << "STUFF";
 # Characteristics:  Uses devfs. user: root passwd: root 
                                 user: user passwd: user
 # Alternatives aren't working so you will have to use the real name like
-# nvi for vi and w.procps for w.
+# nvi for vi and w.procps for w.  Not all libs are associate with packages
+# but that isn't a big deal.
 
-# Note:  Things slow down noticeably when the buffer gets too big in the
-# verbosity box so consider closing it with the slider for faster generation.
+# IMPORTANT NOTE:  Things slow down noticeably when the buffer gets too big in
+# the verbosity box so consider closing it with the slider for faster 
+# generation.  Look at /tmp/verbosity instead.
 
 # The STUFF NEEDED in order for init to work.
 /etc/runlevel.conf <=  Replacements/etc/runlevel.conf # made by make_debian
