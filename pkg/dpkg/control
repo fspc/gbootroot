@@ -10,9 +10,9 @@ Architecture: all
 Depends: libgtk-perl (>= 0.7002), ash, file, binutils, bzip2
 Recommends: swim
 Description: Boot/Root Filesystem Distribution testing and creation.
- BootRoot makes the construction/development of distributions fun and simple
- with its Root Methods (Yard) and user-mode-linux test bed. Finish the product
- with a Boot Method (2-disk compression supported).  Includes the make_debian
- script to create a testable uml base Debian system.  Add-ons available,
- see apt-cache search gbootroot.
+ BootRoot makes the construction and development of distributions fun and 
+ simple with its Root Methods (Yard) and user-mode-linux test bed.  Finish 
+ the product with a Boot Method (2-disk compression supported).  Includes the 
+ make_debian script to create a testable user-mode-linux base Debian system.  
+ Add-ons available, see "apt-cache search gBootRoot."
  .
