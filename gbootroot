@@ -13,7 +13,7 @@
 #    Helper
 #    Yahshua Mashiyach
 #
-#    http://the.netpedia.net/gBootRoot.html
+#    http://gbootroot.sourceforge.net
 
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -55,6 +55,7 @@ my $tmp1 = "/tmp";              # tmp should be default - Cristian
 my $lilo_conf = "/etc/lilo.conf";
 my $home = "$ENV{HOME}/.gbootroot";
 my $uml_xterm = "xterm -e";
+$main::editor = "emacs --font 6x13";
 
 # CHANGES
 #
