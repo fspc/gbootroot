@@ -28,6 +28,7 @@ use Exporter;
 use strict;
 use Yard;
 use Error;
+use lsMode;
 
 my $yard_window;
 my $item_factory;
@@ -37,10 +38,10 @@ my $error;
 my ($continue_button,$close_button,$save_button);
 my($check,$dep,$space,$create,$test);
 my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
+my ($text, $changed_text);
 
 my $filesystem_type = "ext2";
 my $inode_size = 8192;
-my $TEXT_CHANGED = "no";
 my $lib_bool =            1;
 my $bin_bool =            1;
 my $mod_bool =            1;
@@ -56,7 +57,12 @@ $template         = $ars->{template};
 $tmp              = $ars->{tmp};
 $mnt              = $ars->{mnt};
 
+# Freshmeat comes here so the rest of the program needs
+# to be warned when the template is coming from here.
+$changed_text = "$template_dir$template";
+
 }
+
 
 my @menu_items = ( { path        => '/File',
 		     type        => '<Branch>' },
@@ -64,10 +70,12 @@ my @menu_items = ( { path        => '/File',
 		     type        => '<Tearoff>' },
                    { path        => '/File/_Save',
                      accelerator => '<control>S',
-                     callback    => sub { print "hello"; } },
+                     callback    => \&saved,
+		     action      =>  100 },
                    { path        => '/File/Save _As ...',
 		     accelerator => '<alt>S',
-		     callback    => sub { print "hello\n"; } },
+		     callback    => \&saved,
+		     action      => 101 },
                    { path        => '/File/file_separator',
                      type        => '<Separator>' },
 		   { path        => '/File/Close',
@@ -202,13 +210,13 @@ sub yard {
                                               # Yard: kernel,kernel version
                                               # Becomes $ENV{'RELEASE'}
 	return if $error && $error eq "ERROR";
-	open(CONTENTS, "<$template_dir$template") or 
-        ($error = error("$template_dir$template: $!"));
+	open(CONTENTS, "<$changed_text") or 
+        ($error = error("$changed_text: $!"));
 	return "ERROR"if $error && $error eq "ERROR";
 	my @template = <CONTENTS>;
 	close(CONTENTS);
-	my $stuff = join("",@template);
-	yard_box($stuff);
+	$changed_text = join("",@template);
+	yard_box();
 
     }
     else {
@@ -334,22 +342,10 @@ sub which_stage {
 	# 1 1 1 1 0
 	# 1 1 1 1 1
 
-	# text will have to be dealt with differently
 	# 0 everything
-	if ($name eq "check" || $TEXT_CHANGED eq "yes") {
+	if ($name eq "check") {
 	    foreach $name_cmp (%$continue) {
 		$continue->{$name_cmp} = 0;	
-	    }
-	    if ($TEXT_CHANGED eq "yes") {
-		foreach $thing (@check_boxes) {
-		    $thing->hide();
-		    $thing->active($false);
-		    $thing->show();
-		}   
-		$check->hide();
-		$check->active($true);
-		$check->show();
-		$TEXT_CHANGED = "no";
 	    }
 	}
 	# 1 0 0 0 0
@@ -501,20 +497,20 @@ sub continue {
 
 sub check {
     
-    $error = read_contents_file("$template_dir$template");
+    $error = read_contents_file($changed_text);
     return if $error && $error eq "ERROR";
 
 }
 
 sub links_deps {
 
-    $error = extra_links("$template_dir$template");
+    $error = extra_links($changed_text);
     return if $error && $error eq "ERROR";
 
     $error = hard_links();
     return if $error && $error eq "ERROR";
 
-    $error = library_dependencies("$template_dir$template");
+    $error = library_dependencies($changed_text);
     return if $error && $error eq "ERROR";
 
 }
@@ -649,7 +645,8 @@ my $replacement_bool =    1;
 my $module_bool =         1;
 my $start_length;
 sub yard_box {
-    
+
+
        $yard_window = new Gtk::Window "toplevel";
        $yard_window->signal_connect("destroy", \&destroy_window,
                                     \$yard_window);
@@ -870,15 +867,11 @@ sub yard_box {
 
        #_______________________________________ 
        # Create the GtkText widget
-       my $text = new Gtk::Text( undef, undef );
+       $text = new Gtk::Text( undef, undef );
        $text->set_editable($true);
-       $text->signal_connect("changed", sub { 
+       $text->signal_connect("activate", sub { 
 	   my $new_length =  $text->get_length();
-	   my $changed_text = $text->get_chars(0,$new_length);
-	   if ( $start_length != $new_length ) {
-	       print "Text has changed $start_length $new_length\n";
-	       $TEXT_CHANGED = "yes";
-	   }    
+	   $changed_text = $text->get_chars(0,$new_length);
        } );
        $table->attach( $text, 0, 1, 0, 1,
                        [ 'expand', 'shrink', 'fill' ],
@@ -888,7 +881,7 @@ sub yard_box {
        $text->show();
 
        $text->freeze();
-       $text->insert( undef, undef, undef, $_[0]);
+       $text->insert( undef, undef, undef, $changed_text);
        $text->thaw();
 
        $start_length = $text->get_length();
@@ -967,14 +960,49 @@ sub yard_box {
        $close_button->show();
 
        $save_button = new Gtk::Button( "Save" );
-       $save_button->signal_connect( 'clicked', 
-       				sub { destroy $yard_window; } );
+       # This sub can be used by all the saved buttons
+       $save_button->signal_connect( 'clicked', \&saved, 102);
        $vbox->pack_start( $save_button, $true, $true, 0 );
        $save_button->show();
     
        show $yard_window;
 
 } # end sub yard_box
+
+sub saved {
+
+    my ($widget,$whoami) = @_;
+    my $error;
+    
+    $text->activate();
+
+    # It's not necessary to use lsMode, but it's a cool program by MJD.
+    if  ($whoami == 100 || $whoami == 102 ) {
+	if ( file_mode("$template_dir$template") !~ /w/ ) {
+	    error_window("gBootRoot: ERROR: $template_dir$template is not " .
+			 "writable.\nUse [ File->Save As ] or " .
+			 "[Alt-S] with the yard suffix.");		     
+	}
+	else {
+	    # Here's where we get to undef Yard variable and start over at 
+	    # check
+	    my $new = "$template_dir$template" . ".new";
+	    open(NEW,">$new") or 
+		($error = error("gBootRoot: ERROR: Can't create $new"));
+		return if $error && $error eq "ERROR";    
+	        print NEW $changed_text;
+	        close(NEW);
+	    rename($new, "$template_dir$template") or
+		($error = error("gBootRoot: ERROR: Can't rename $new to " .
+				"$template_dir$template"));
+	    return if $error && $error eq "ERROR"; 
+	}
+    }
+    elsif ($whoami == 101) {
+	print "Getting there\n";
+    }
+
+}
 
 sub print_hello { 
     my ($menu_item, $action, $date) = @_;
