@@ -3609,6 +3609,11 @@
 /var/lib/dpkg/info/libreadline4.prerm
 /var/lib/dpkg/info/libreadline4.list
 /var/lib/dpkg/info/libreadline4.shlibs
+/var/lib/dpkg/info/libstdc++2.10-glibc2.2.postinst
+/var/lib/dpkg/info/libstdc++2.10-glibc2.2.prerm
+/var/lib/dpkg/info/libstdc++2.10-glibc2.2.list
+/var/lib/dpkg/info/libstdc++2.10-glibc2.2.shlibs
+/var/lib/dpkg/info/libstdc++2.10-glibc2.2.md5sums
 /var/lib/dpkg/info/login.preinst
 /var/lib/dpkg/info/login.postinst
 /var/lib/dpkg/info/login.prerm
