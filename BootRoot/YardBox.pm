@@ -1210,8 +1210,8 @@ sub save_as {
 		#save_as();
 	    }
 
-	    my $label = Gtk::Label->new("$new_template already exists, 
-	    				do you want to write over it?");
+	    my $label = Gtk::Label->new("$new_template already exists, " . 
+	    				"do\nyou want to write over it?");
 	    $label->set_justify( 'left' );
 	    $save_as->vbox->pack_start( $label, $false, $false, 2 );
 	    $label->show();
