@@ -769,6 +769,21 @@ sub library_dependencies {
 	}
     }
 
+    ## History --freesource
+    # auto_loader($contents_file, $seen_ELF_lib, $seen_AOUT_lib);
+
+    info(0, "Done\n\n");
+
+} # end sub library_dependencies
+
+## This is old code being kept around, but it really isn't necessary
+## because the ld libs are always found long before reaching this point, and
+## in cases where libc5/libc6 aren't wanted it gets in the way of creating 
+## alternative lib distributions like uClibc.
+sub auto_loader {
+
+    my ($contents_file, $seen_ELF_lib, $seen_AOUT_lib) = @_;
+
     info(1, "\n");
     if ($seen_ELF_lib) {
 	#  There's no official way to get the loader file, AFAIK.
@@ -792,9 +807,7 @@ sub library_dependencies {
 	}
     }
 
-    info(0, "Done\n\n");
-
-} # end sub library_dependencies
+} # end auto_loader
 
 sub hard_links {
 
