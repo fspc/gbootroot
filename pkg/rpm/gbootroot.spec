@@ -50,6 +50,8 @@ simple with its Root Methods such as Yard and user-mode-linux test bed.
 Finish the product with a Boot Method (2-disk compression supported).  
 Normal (non-root) users can make root filesystems and boot disks.
 
+The required perl modules perl-Expect, perl-IO-Stty, perl-IO-Tty are 
+available for download from prdownloads.sourceforge.net/gbootroot.
 
 %prep
 %setup -n gbootroot-%{version}.orig
