@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.110 2003/01/11 03:56:01 freesource Exp $</center>
+<center>$Id: index.html,v 1.111 2003/01/14 03:45:00 freesource Exp $</center>
 
 <p>
 
@@ -44,7 +44,7 @@ Download gBootRoot</h3>
 
 <ul>
 
-<li><em>1.4.0</em> available in tar.gz, deb, and rpm formats.
+<li><em>1.4.2</em> available in tar.gz, deb, and rpm formats.
 
 
 <li>Main repository:&nbsp;&nbsp;
@@ -135,7 +135,13 @@ make-debian-x11 debian package</a>
 <a href="images/screenshot2.jpg">1.3.6</a><br>
 <a href="images/screenshot.jpg">1.2.13</a>
 
-<p><a href="#FAQ">FAQ</a></P>
+<p>
+
+<a href="#FAQ">FAQ</a>
+
+<br><a href="#cli-help">CLI Help</a>
+
+<br><a href="#template-help">Yard Template Help</a>
 
 <p><a href="#links">links</a></P>
 
@@ -154,8 +160,8 @@ directory you can reference it with "gbootroot --template
 template_name" and this will create the corresponding root_fs in
 /tmp/gboot_non_root_`id -u`/.  If you want the root_fs to have a
 different name use the --root-filename option.  All these options and
-more can be found with -h or --help or see the <a
-href="#cli-help">reference</a>.
+more can be found with -h or --help or see the 
+<a href="#cli-help">reference</a>.
 
 <P align="center">
 <b>How to Use gBootRoot's GUI</b></P>
@@ -1611,7 +1617,7 @@ compression is done either in the ABS (not yet) or the ARS, the main
 section is just used to put together the parts.
 
 
-<a name="cli-help"><h2><a name="links">CLI Help</h2></a>
+<a name="cli-help"><h2>CLI Help</h2></a>
 
 <pre>
 Usage: gbootroot [OPTION]...
@@ -1641,6 +1647,152 @@ Usage: gbootroot [OPTION]...
                            (print options)
   --no-stdout               don't print to console
 </pre>
+
+
+<a name="template-help"><h2>Yard Template Help</h2></a>
+
+<h3> Format rules </h3>
+
+<ul>
+
+<li>  Lines beginning with # or % are comments.
+
+<p>
+
+<li>  Blank lines and whitespace are ignored.
+
+<p>
+
+<li>  Lines of the form "filename1 ->  filename2" will create symbolic (soft)
+    links on the root fs.  For example, if you want sh linked to ash
+    in the root fs you could specify: "/bin/sh -> /bin/ash".
+    The literal output from the last column found when using `ls -s`
+    may be used, or fictional links may be created, for instance,  
+    ashsa -> bash (In this case if /bin/bash exists on the system the link 
+    would be /bin/ashsa -> /bin/bash, otherwise /asha -> /bash)
+    (There is no way to specify hardlinks, though hard linked files
+    that exist on the hard disk will be hard linked.)
+
+<p>
+
+<li>  Lines of the form "filename1 <= Replacements/pathto_filename2"
+    will cause filename2 to be copied to filename1 on the root fs.
+    This is useful for specifying trimmed-down replacements for
+    /etc/passwd, /etc/inittab, etc.  For the above example, filename2 
+    is found in its real path below the Replacements directory which is 
+    found in the default Replacements path of $HOME/yard/Replacements.
+    Replacements may be specified in their absolute or relative paths 
+    (found using $PATH). 
+
+<p>
+
+ <li> User defined paths may be specified in the Path Box 
+    (Edit->Settings->Path).  These paths may be used to search for the 
+    relative paths for Replacements, links and files.
+
+<p>
+     
+ <li> Glob designations (?, * and []) are generally allowed, eg /dev/hd[ab]*
+    Wildcards are not allowed in link specs or replacement specs.
+
+<p>
+
+ <li> The $RELEASE variable which may be used to locate the modules directory 
+    can come from one of three sources,  the kernel version returned from a 
+    selected kernel in the main section, 
+    a user defined kernel version in the ABS, or the value of `uname -r` 
+    returned automatically when the other two sources aren't specified.
+
+<p>
+
+<li> You don't need to explicitly specify intermediate directories unless you
+    just want to make sure they exist.
+
+<p>
+
+<li> You don't need to specify shared libraries or loaders because
+    necessary libraries are detected automatically.  
+
+<p>
+
+<ul>   <h3> Control Structures </h3>
+
+<p>
+
+<li>    The if/elsif operator may be used to test for the existence of an
+    absolute or relative file condition.  If the condition is true
+    than the following statements will be parsed, otherwise additional
+    conditions are examined.  The statements can be specified by any
+    of the formats rules, but can't be on the same line as the
+    condition.  The \ deliminator is used at the beginning and ending
+    of the control structure so that the parser knows how to properly
+    treat the logic.
+
+<p>
+
+<li>    This is especially useful for creating templates that work
+    properly for different distributions allowing portability.
+    Consider these examples:
+
+</ul>
+
+<pre>
+    Example 1
+    ---------
+
+    \
+    if ( getty )
+	 /etc/inittab	<= Replacements/etc/inittab.example-deb
+	 /sbin/getty
+    elsif ( mingetty )
+	 /etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm
+	 /sbin/mingetty
+	 /etc/gettydefs
+    elsif ( agetty )
+	 /etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
+	 /sbin/agetty
+	 /etc/gettydefs
+    \ 
+
+    Example 2
+    ---------
+
+    \ if ( /etc/pam.d/system-auth )
+	 /etc/pam.d/system-auth \
+
+</pre>
+
+
+<ul>    <h3>NSS and PAM</h3>
+
+<p>               
+
+<li>    You may choose between two behaviors for the treatment of NSS and PAM 
+    libraries.  The old Yard behavior assumes that only the user knows which
+    service modules they want to include in the file set, and tests 
+    (see Tests menu) may be run on the configuration files to show what isn't
+    provided, so that the user can include the missing modules manually by 
+    editing the template, but the user still needs to figure out any 
+    dependencies since the modules are dynamically loaded.
+
+<p>
+
+<li>    The new Yard behavior (default) assumes that the user does know what they
+    want based on what the user puts in the NSS (nsswitch.conf) and PAM 
+    (pam.conf or pam.d/*) configuration files.  The configuration files are 
+    then parsed and the corresponding service modules are included in the 
+    file set if they exist on the host system, tests (see Tests menu) can be 
+    run to find out which ones don't exist.   The service modules are checked
+    for library dependencies.  What this means is that the user only needs
+    to specify the configuration files in the template, and doesn't need to 
+    be concerned with the service modules or libraries involved.  The new 
+    behavior is recommended, and won't effect the file set even if the 
+    requirements are already included in the template.  If desired, the old 
+    behavior may be regained by switching off Edit->Settings->"NSS Conf" 
+   and Edit->Settings->"PAM Conf".
+
+</ul>
+</ul>
 
 <h2><a name="links">Links</h2>
 
