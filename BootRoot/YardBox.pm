@@ -40,12 +40,12 @@ my($check,$dep,$space,$create,$test);
 my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
-my $replacements_window;
+my ($replacements_window, $filesystem_window);
 my @entry;
 my $file_dialog;
 
-my $filesystem_type = "ext2";
-my $inode_size = 8192;
+#my $filesystem_type = "ext2";
+#my $inode_size = 8192;
 my $lib_bool =            1;
 my $bin_bool =            1;
 my $mod_bool =            1;
@@ -244,10 +244,75 @@ sub yard {
 # The space_check inode percentage formula can be altered.  Default 2%.
 sub file_system {
 
-    $filesystem_type = "ext2";
-    $inode_size = 8192;
+    if (not defined $filesystem_window) {
 
-}
+	$filesystem_window = Gtk::Window->new("toplevel");
+	$filesystem_window->signal_connect("destroy", \&destroy_window,
+					     \$filesystem_window);
+	$filesystem_window->signal_connect("delete_event", \&destroy_window,
+					     \$filesystem_window);
+	$filesystem_window->set_policy( $true, $true, $false );
+	$filesystem_window->set_title( "Filesystem Box" );
+	$filesystem_window->border_width(1);    
+
+	my $main_vbox = Gtk::VBox->new( $false, 0 );
+	$filesystem_window->add( $main_vbox );
+	$main_vbox->show();
+
+	my $table_filesystem = Gtk::Table->new( 2, 3, $true );
+	$main_vbox->pack_start( $table_filesystem, $true, $true, 0 );
+	$table_filesystem->show();
+
+	#_______________________________________
+	# Editor and execute options
+	label("Filesystem Command:",0,1,0,1,$table_filesystem);
+	my $fs1 = entry(1,3,0,1,2,$table_filesystem);
+	$fs1->set_text($main::makefs);
+
+	$table_filesystem->set_row_spacing( 0, 2);       
+
+	#_______________________________________
+	# Submit button
+	my $submit_b = button(0,1,1,2,"Submit",$table_filesystem);
+	$submit_b->signal_connect( "clicked", sub {
+	    if ($entry[2]) {
+
+		# Check to see if it actually exists
+		my $executable = (split(/\s+/,$entry[2]))[0];
+		if (!find_file_in_path(basename($executable))) {
+		    error_window("gBootRoot Error: " .
+				 "Enter a valid command");
+		    return;
+		}
+		if ($executable =~ m,/,) {
+		    if (! -e $executable) {
+			error_window("gBootRoot Error: " .
+				     "Enter a valid path for the command.");
+			return;
+		    }
+		}
+		$main::makefs = $entry[2];
+	    }
+	} );
+
+	#_______________________________________
+	# Close button
+	my $close_b = button(2,3,1,2,"Close",$table_filesystem);
+	$close_b->signal_connect("clicked",
+				 sub {
+				     $filesystem_window->destroy() 
+					 if $filesystem_window;
+				 } );
+
+
+    }
+    if (!visible $filesystem_window) {
+	$filesystem_window->show();
+    } else {
+       $filesystem_window->destroy;
+    }
+
+} # end sub file_system
 
 
 ###########
@@ -544,9 +609,12 @@ sub create {
     $bin_bool = "" if $bin_bool eq 0;
     $mod_bool = "" if $mod_bool eq 0;
 
-    $error = create_filesystem($filename,$filesystem_size,$filesystem_type,
-			       $inode_size,$tmp,$lib_bool,$bin_bool,
-			       $mod_bool,$strip_bool);
+#    $error = create_filesystem($filename,$filesystem_size,$filesystem_type,
+#			       $inode_size,$tmp,$lib_bool,$bin_bool,
+#			       $mod_bool,$strip_bool);
+
+    $error = create_filesystem($filename,$filesystem_size,$tmp,$lib_bool,
+			       $bin_bool,$mod_bool,$strip_bool);
     return if $error && $error eq "ERROR";
 
 }
@@ -1188,14 +1256,13 @@ sub Replacements {
 		my $executable = (split(/\s+/,$entry[0]))[0];
 		if (!find_file_in_path(basename($executable))) {
 		    error_window("gBootRoot Error: " .
-				 "Enter a valid xterm, and " .
-				 "executable option.");
+				 "Enter a valid editor.");
 		    return;
 		}
 		if ($executable =~ m,/,) {
 		    if (! -e $executable) {
 			error_window("gBootRoot Error: " .
-				     "Enter a valid path for the xterm.");
+				     "Enter a valid path for the editor.");
 			return;
 		    }
 		}
