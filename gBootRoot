@@ -1829,7 +1829,7 @@ compact
 
 # bootdisk
 image = kernel
-append = "load_ramdisk = 1 debug"
+append = "load_ramdisk = 1 debug $entry_advanced[2]"
 initrd = $initrd
 root = $device
 label = bootdisk
