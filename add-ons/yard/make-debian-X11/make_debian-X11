@@ -465,6 +465,7 @@ foreach (@alternatives) {
 }
 
 close(DEBIAN);
+system "chmod 444 $template_dir/$debian_yard"; # A good idea
 print STDERR "\nAll finished making your $debian_yard template.\n";
 
 #########################
@@ -786,8 +787,8 @@ sub start_up {
 	home_builder("$home_yard_replacements/etc");
     }
 
-    print "Everything is in order, but it never hurts to rebuild swim " .
-	"with --rebuilddb\n";
+    print STDERR "Everything is in order, but it never hurts to rebuild swim "
+	. "with --rebuilddb if you haven't done it in awhile\n";
 
 
 } # end start_up
