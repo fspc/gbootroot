@@ -1836,8 +1836,8 @@ sub accept_button {
 
 
 			# Actually, keeping the original value is much nicer.
-                        #$entry_advanced[4] = "$entry_advanced[4].gz";
-                        $entry3->set_text("$tmp/$entry_advanced[4].gz");
+                        #$entry_advanced[4] = "$entry_advanced[4].bz2";
+                        $entry3->set_text("$tmp/$entry_advanced[4].bz2");
 
 		    }
 		}
