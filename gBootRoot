@@ -1073,14 +1073,21 @@ sub uml_box {
 				      my $pid; 
 				      if ($entry_advanced[8] && 
 					  $entry_advanced[10]) {
-					  # Check to see if it is an executable
+					  # Check to see if it actually exists
 					  my $executable = (split(/\s+/,$entry_advanced[8]))[0];
-					  if (!find_file_in_path($executable)) {
+					  if (!find_file_in_path(basename($executable))) {
 					      error_window("gBootRoot Error: " .
 					      "Enter a valid xterm, and " .
 					      "executable option.");
 					      return;
 					  }
+					  if ($executable =~ m,/,) {
+					      if (! -e $executable) {
+						  error_window("gBootRoot Error: " .
+							       "Enter a valid path for the xterm.");
+						  return;
+					      }
+				          }
 
 				      unless ($pid = fork) {
 					  unless (fork) {
