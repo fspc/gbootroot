@@ -394,8 +394,20 @@ sub read_contents_file {
                                      "left-hand side can't be directory");
 #	      my($abs_replacement) = find_file_in_path($replacement,$main::global_yard);
 	      my($abs_replacement) = find_file_in_path($replacement);
-	      if (!(defined($abs_replacement) and -e $abs_replacement)) {
-		  cf_warn($contents_file, $line, "Can't find $replacement");
+
+	      ## Absolute Replacements are all right --freesource
+	      if ( !(defined($abs_replacement) and -e $abs_replacement) ) {
+		  if  ( !-f $replacement ) {
+		      cf_warn($contents_file, $line, 
+			      "Can't find $replacement");
+		  }
+		  else {
+		      info(0, "Using Replacement $replacement because it was" .
+			   "found in an absolute location\n");
+		      $abs_replacement = $replacement;
+		      $replaced_by{$file} = $abs_replacement;
+		      $Included{$file} = 1;
+		  }
 		  
 	      } elsif ($replacement =~ m|^/dev/(?!null)|) {
 		  # Allow /dev/null but no other devices
