@@ -42,6 +42,7 @@ install:
 remove:
 	rm /usr/bin/gbootroot
 	rm -rf /usr/lib/bootroot
+	rm -rf /usr/lib/uml
 	rm /usr/bin/make_debian
 	rm /usr/share/perl5/BootRoot/*
 	rmdir /usr/share/perl5/BootRoot
