@@ -1,17 +1,16 @@
 Template: make-debian-x11/close_gbootroot_down
 Type: note
-Description: gBootRoot needs to be restarted to initiate replacements changes.
- This package adds new replacements to gBootRoot.  In order for a user's local
- replacements directory to reflect the changes, gbootroot needs to be restarted
- for each user.  If these replacement files already exist in a user's directory
- they will not be updated unless you choose to delete them first in the local
- directory, this is up to your own digression.  Here is the list of the 
- replacement files:
+Description: See gBootRoot's FAQ to learn important add-on replacements info.
+ Visit gBootRoot's FAQ in /usr/share/doc/gbootroot/html/index.html to learn
+ how add-on replacements are put into a central repository which is 
+ available to all users and has CVS versioning to protect against changes.
+ The FAQ answer to "What are all these CVS directories doing in my 
+ replacements?" explains how things are set-up.
  .
- /usr/share/gbootroot/yard/Replacements/root/make_swapfile
- /usr/share/gbootroot/yard/Replacements/root/README-debian-X11
- /usr/share/gbootroot/yard/Replacements/root/setup-debian-X11
- /usr/share/gbootroot/yard/Replacements/usr/X11R6/bin/startx-debian-X11
+ IMPORTANT: Users of versions of gbootroot prior to 1.3.0 need to heed 
+ special attention to the note explaining how the new change effects their 
+ local user replacement directories and what they need to do if they want the 
+ attain the full benefit of the new set-up.
 
 Template: make-debian-x11/make_debian_x11
 Type: boolean
