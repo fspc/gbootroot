@@ -1194,14 +1194,14 @@ sub mtab{
 
   if ($_[0] == 0) {
     my $dialog = "BOOTDISK:\n"
-             ."Press OK when the drive and its storage medium are ready.\n"
+             ."Press OK when the drive and its storage medium is ready.\n"
              ."The Boot Disk will now be made.  All data already on\n"
 		 ."the storage medium will be erased.";
     mtab_window($dialog,1,$_[0],1);
   }
   elsif ($_[0] == 1) {
     my $dialog = "ROOTDISK:\n" 
-	     ."Press OK when the drive and its storage medium are ready.\n"
+	     ."Press OK when the drive and its storage medium is ready.\n"
              ."The Root Disk will now be made.  All data already on\n"
 		 ."the storage medium will be erased.";
     mtab_window($dialog,1,$_[0],1);
