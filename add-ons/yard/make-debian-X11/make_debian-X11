@@ -27,7 +27,7 @@ if ($sbin == 0) {
     $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
 }
 
-# You will need to get swim at http://www.sourceforge.net/projects/avd
+# You will need to get dswim at http://www.sourceforge.net/projects/avd
 my $home = "$ENV{HOME}/.gbootroot";
 my $home_yard = "$home/yard";
 my $template_dir = "$home_yard/templates/";
@@ -64,7 +64,7 @@ flwm libfltk1 xnest make-debian-x11 ash);
 # NEXT EDIT TEMPLATE 
 
 
-# Before starting make sure swim and file-rc are present.
+# Before starting make sure dswim and file-rc are present.
 start_up();
 
 system "swim --search \"Priority: required\" --no";
@@ -107,7 +107,7 @@ my $stuff = << "STUFF";
 # than the base.tgz used for normal installations with the addition of X11.  
 # Once everything is made, you can use user-mode-linux and apt to tweak the 
 # system. Make-debian generates all the information you need.  You will need 
-# swim and  file-rc installed, and you will have to be running a Debian 
+# dswim and  file-rc installed, and you will have to be running a Debian 
 # system to make this template.  Make_debian ditches info, man, and doc files 
 # by default and timezone info not found on the host system, but gives you 
 # the choice to decide otherwise.  
@@ -462,12 +462,12 @@ map { [ (split(/\s/,$_))[0], $_ ] }
 print MY_FILERC @sortedrc;
 close(MY_FILERC);
 
-# This creates a status file for use by dpkg and swim.
-# Although swim could be used to do this, it is more efficient just to
+# This creates a status file for use by dpkg and dswim.
+# Although dswim could be used to do this, it is more efficient just to
 # parse the status file.  But because this is a good exercise for
 # using this script to create a status file found from packages on a system 
 # which doesn't actually have a status file .. here would be the order 
-# needed when using swim to query:
+# needed when using dswim to query:
 #
 # Package, Status, Priority, Section, Installed-Size, Maintainer, Source, 
 # Version, Replaces, Provides, Depends, Pre-Depends, Recommends, Suggests,
@@ -677,7 +677,7 @@ sub inetd_out {
 #    This catches mistakes.
 # 1. dpkg-reconfigure for xfonts-base
 # 2. make permissions correct for directory /home/user and all files * & .*.
-# 3. run swim --initdb .. this is done by make-debian-x11.
+# 3. run dswim --initdb .. this is done by make-debian-x11.
 # 4. run /etc/cron.daily/find
 # ...................................................................
 # debian_x11 sourceforge release preparation
@@ -728,11 +728,11 @@ sub start_up {
     # Swim has never been installed before?
     my $dpkg_result = system "dpkg -l swim >/dev/null 2>&1";
     if ($dpkg_result !=0) {
-	die "Swim is required:\n\n" .
+	die "Dswim is required:\n\n" .
             "Add one of these lines to your /etc/apt/sources.list:\n" .
 	    "deb http://prdownloads.sourceforge.net/avd ./  or\n" .
 	    "deb http://download.sourceforge.net/avd ./\n\n" .
-            "Then do `apt-get update` and `apt-get install swim`\n" .
+            "Then do `apt-get update` and `apt-get install dswim`\n" .
             "";
     }
 
@@ -743,11 +743,11 @@ sub start_up {
 	if (/Status:/) {
 	    if (!/\s+installed/) {
 		if (/purge|deinstall/) {
-		    die "Swim needs to be reinstalled:\n\n" .
+		    die "Dswim needs to be reinstalled:\n\n" .
 	       "Add one of these lines to your /etc/apt/sources.list:\n" .
 	       "deb http://prdownloads.sourceforge.net/avd ./  or\n" .
 	       "deb http://download.sourceforge.net/avd ./\n\n" .
-	       "Then do `apt-get update` and `apt-get install swim`\n" .
+	       "Then do `apt-get update` and `apt-get install dswim`\n" .
             "";
 		}
 	    }
@@ -757,11 +757,11 @@ sub start_up {
 
     # Swim is installed but the databases need to be initialized.
     my $swim = "swim -qf /sbin/init|";
-    open(SWIM,$swim) or die "Had trouble using swim: $!\n";
+    open(SWIM,$swim) or die "Had trouble using dswim: $!\n";
 	while (<SWIM>) {
 	    if ($_ eq "file init is not owned by any package\n") {
 		my $db_reply = "nothing";
-		print STDERR "It appears that swim has never had its database " .
+		print STDERR "It appears that dswim has never had its database " .
 		    "generated.  Would you like me to do this for you? " .
 			"[yes or no]: ";
 		while (<STDIN>) {
@@ -769,7 +769,7 @@ sub start_up {
 		    last if $db_reply eq "yes\n";
 		    last if $db_reply eq "no\n";
 		    if ($db_reply ne "yes\n" || $db_reply  ne "no\n") { 
-		print "It appears that swim has never had its database " .
+		print "It appears that dswim has never had its database " .
 		    "generated.  Would you like me to do this for you? " .
 			"[yes or no]: ";
 		    }
@@ -799,7 +799,7 @@ sub start_up {
 	home_builder("$home_yard_replacements/etc");
     }
 
-    #print STDERR "Everything is in order, but it never hurts to rebuild swim "
+    #print STDERR "Everything is in order, but it never hurts to rebuild dswim "
     #	. "with --rebuilddb if you haven't done it in awhile\n";
 
 
