@@ -1,15 +1,20 @@
 # SPEC designed for RedHat and RedHat-type rpm-based distribution which
 # just use perl, and not perl-base.
 
-# Set topdir in .rpmrcmacros .. %_topdir /usr/src/rpm
-# cd /usr/src/redhat/SPECS
-# place sources in /usr/src/redhat/SOURCES/
-# cp  gbootroot.xpm /usr/src/redhat/SOURCES/
-# rpm -ba gbootroot.spec
+# cd %{_topdir}/SPECS
+# place rpm source in %{_topdir}/SOURCES/
+# optional: place linux*bz2, uml_patch* uml_utilities* in 
+#           $HOME/gbootroot/gbootroot/sources
+# cp  gbootroot.xpm %{_topdir}/SOURCES/
+# rpm -ba %{_topdir}/SPECS/gbootroot.spec
 
 # Update this according to version, and if you want to copy in your own
-# sources define base_dir and put them in source_dir.  Define filelist if
-# you want it included in the sources.
+# sources define base_dir and put them in source_dir.  You can build this 
+# package as a normal user, just make sure to adjust _topdir so that 
+# /home/mttrader is your own echo $HOME, for instance, /home/person.
+
+%define home /home/mttrader
+%define _topdir %{home}/gbootroot
 %define version 1.4.0
 %define release 1
 %define kversion 2.4.19
@@ -18,7 +23,7 @@
 %define kernel_source linux-%{kversion}.tar.bz2
 %define patch_1 uml-patch-%{kversion}-%{patch_version}.bz2
 %define utilities uml_utilities_%{util_ver}.tar.bz2
-%define base_dir /home/mttrader/gbootroot/gbootroot
+%define base_dir %{home}/gbootroot/gbootroot
 %define source_dir %{base_dir}/sources
 %define build_dir /gbootroot-%{version}
 %define filelist %{base_dir}/pkg/rpm/filelist
@@ -41,11 +46,9 @@ Packager:     Jonathan Rosenbaum <freesource@users.sourceforge.net>
 # Place icon in rpm sources directory prior to build
 Icon:         gbootroot.xpm
 
-
 # Extras
 #Patch:       gbootroot-1.3.4-buildroot.patch
-#Buildroot:   /home/somebody
-
+Buildroot:   /tmp/gbootroot
 
 # Dependencies  .. can you have two alternative deps like with deb?
 PreReq: Gtk-Perl >= 0.7002
@@ -75,7 +78,13 @@ as mdk.
 
 %prep
 %setup -n gbootroot-%{version}
-chown -R root:root .
+#chown -R root:root .
+mkdir /tmp/gbootroot
+install -d $HOME/gbootroot/RPMS/i386
+install -d $HOME/gbootroot/BUILD
+install -d $HOME/gbootroot/SOURCES
+install -d $HOME/gbootroot/SPECS
+install -d $HOME/gbootroot/SRPMS
 if [ ! -e $RPM_BUILD_DIR/%{build_dir}/sources/%{kernel_source} ] ; then  
     if [ -e %{source_dir}/%{kernel_source} ] ; then
 	cp -fa %{source_dir}/%{kernel_source} $RPM_BUILD_DIR/%{build_dir}/sources;
@@ -97,19 +106,20 @@ fi;
 make
 
 %install
-make install
+make DESTDIR=$RPM_BUILD_ROOT install
 
 %clean
 #make clean
 #make clean-sources
+rm -rf $RPM_BUILD_ROOT
 
 # Update this as necessary
 # dswim -ql gbootroot > ~/gbootroot/gbootroot/list
 # will read this all from a files list %files -f filelist
 %files -f %{_topdir}/BUILD/%{build_dir}/pkg/rpm/filelist
-%docdir /usr/share/doc/gbootroot
+%attr(- root root) %docdir /usr/share/doc/gbootroot
 %attr(4755, root, root) /usr/bin/uml_net
-%config /etc/gbootroot/gbootrootrc
+%attr(- root root) %config /etc/gbootroot/gbootrootrc
 
 # Just include this
 ##/usr/lib/menu/gbootroot
