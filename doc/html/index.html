@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.118 2003/02/14 06:00:19 freesource Exp $</center>
+<center>$Id: index.html,v 1.119 2003/02/18 18:20:42 freesource Exp $</center>
 
 <p>
 
@@ -106,7 +106,24 @@ Red Hat and related distributions</a><br>
 <em>Instructions:</em><br>
 Mandrake-type distribution require <b><code>perl-GTK >= 0.7002</code></b><br>
 Red Hat type distributions require <b><code>Gtk-Perl >= 0.7002</code></b><br>
-All RPM based distributions require perl-Expect and friends available from the main repository:<br>
+<p>
+<tt>
+
+Please note that there are two types of rpms packaged for gbootroot.
+Distributions which require perl-GTK and require perl-base for perl
+such as Mandrake should use the mdk rpm.  Distributions which require
+Gtk-Perl and only require perl for perl such as Red Hat should use the
+rpm not marked as mdk.  Suse is a Red Hat type distribution, but has
+perl prepended to Gtk-Perl, so if perl-Gtk-Perl is installed and the
+perl* stuff mentioned below is also installed then the --nodeps
+options should be used when installing the package.
+
+</tt>
+
+</p>
+All RPM based distributions require perl-Expect and friends
+conveniently available from the main repository if your distribution
+doesn't include them:<br>
 
 <b>Perl 5.8 Series</b>
 
