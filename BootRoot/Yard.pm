@@ -799,7 +799,7 @@ sub create_filesystem {
     info(0, "Where:  $device\n");
 
     # Maybe other fs will be represented in the future, but genext2fs is all 
-    # that exists now for non-root users.
+    # that exists now for non-root users.  --freesource
     if ( $fs_type ne "genext2fs" ) {
 
 	sync();
@@ -988,7 +988,7 @@ sub create_filesystem {
 	                  # added.
 
 	if (
-	    sys("$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
+	    sys("/usr/lib/bootroot/$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
 	    /^0$/ ) {
 	    $error = error("Can not $fs_type filesystem.");
 	    return "ERROR" if $error && $error eq "ERROR";
