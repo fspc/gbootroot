@@ -1544,7 +1544,14 @@ sub find_file_in_path {
       }
       ##info(1, "Using search path:\n", join(" ", @pathlist), "\n");
     ## }
-    @path = @pathlist;
+
+  if ( @path ) {
+      push(@path,@pathlist);
+  }
+  else {
+      @path = @pathlist;
+  }
+
   ## }
 
 
