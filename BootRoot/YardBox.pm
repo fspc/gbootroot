@@ -39,7 +39,7 @@ my $true = 1;
 my $false = 0;
 #my $error;
 my ($continue_button,$close_button,$save_button);
-my($check,$dep,$space,$create,$test);
+my($check,$dep,$space,$create,$create_expect_uml,$test);
 my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
@@ -601,6 +601,7 @@ my $continue = {
     check      => 0,
     dep        => 0,
     space      => 0,
+    copy       => 0,
     create     => 0,
     test       => 0,
     };
@@ -614,7 +615,7 @@ sub which_stage {
 
     my($widget,$name) = @_;
     my ($thing,$name_cmp);
-    @check_boxes = ($check, $dep, $space, $create, $test);
+    @check_boxes = ($check, $dep, $space, $create, $create_expect_uml, $test);
 
     if ($stages_bool eq "one-by-one" or $stages_bool eq "continuous") {
 	foreach $thing (@check_boxes) {
@@ -664,10 +665,19 @@ sub which_stage {
 		}
 	    }
 	}
-	elsif ($name eq "test") {
+	elsif ($name eq "create_expect_uml") {
 	    foreach $name_cmp (%$continue) {
 		if ($name_cmp ne "check" && $name_cmp ne "dep" && 
 		    $name_cmp ne "space" && $name_cmp ne "create") {
+		    $continue->{$name_cmp} = 0;	
+		}
+	    }
+	}
+	elsif ($name eq "test") {
+	    foreach $name_cmp (%$continue) {
+		if ($name_cmp ne "check" && $name_cmp ne "dep" && 
+		    $name_cmp ne "space" && $name_cmp ne "create" &&
+		    $name_cmp ne "create_expect_uml") {
 		    $continue->{$name_cmp} = 0;	
 		}
 	    }
@@ -726,8 +736,21 @@ sub continue {
 	    $continue->{space} = 1;
 	    return if $stages_bool eq "one-by-one";
 	}
-        if ( $continue->{create} == 0 ) {
+        if ( $continue->{copy} == 0 ) {
 	    create();
+	    foreach $thing (@check_boxes) {
+		$thing->hide();
+		$thing->active($false);
+		$thing->show();
+	    }   
+	    $create_expect_uml->hide();
+	    $create_expect_uml->active($true);
+	    $create_expect_uml->show();
+	    $continue->{copy} = 1;
+	    return if $stages_bool eq "one-by-one";
+	}
+        if ( $continue->{create} == 0 ) {
+	    create_uml();
 	    foreach $thing (@check_boxes) {
 		$thing->hide();
 		$thing->active($false);
@@ -777,6 +800,12 @@ sub continue {
 	    $create->active($false);
 	    $create->show();
 	}
+	if ($create_expect_uml->get_active()) {
+	    create_uml();
+	    $create_expect_uml->hide();
+	    $create_expect_uml->active($false);
+	    $create_expect_uml->show();
+	}
 	if ($test->get_active()) {
 	    test();
 	    $test->hide();
@@ -786,7 +815,7 @@ sub continue {
 
     }
 
-}
+} # end sub continue
 
 sub check {
 
@@ -851,6 +880,7 @@ sub space_left {
 
 }
 
+# This is the copy stage
 sub create {
 
     $lib_bool = "" if $lib_bool eq 0;
@@ -864,6 +894,13 @@ sub create {
     my $error = create_filesystem($filename,$filesystem_size,$tmp,$lib_bool,
 			       $bin_bool,$mod_bool,$strip_bool, \%uml_expect);
     return if $error && $error eq "ERROR";
+
+}
+
+sub create_uml {
+
+    create_expect_uml($filesystem_size, $tmp);
+
 
 }
 
@@ -1331,10 +1368,15 @@ sub yard_box {
        $vbox->pack_start( $space, $true, $true, 0 );
        show $space;       
 
-       $create = new Gtk::CheckButton("Create");
+       $create = new Gtk::CheckButton("Copy");
        $create->signal_connect("clicked", \&which_stage, "create"); 
        $vbox->pack_start( $create, $true, $true, 0 );
        show $create;       
+
+       $create_expect_uml = new Gtk::CheckButton("Create");
+       $create_expect_uml->signal_connect("clicked", \&which_stage, "create"); 
+       $vbox->pack_start( $create_expect_uml, $true, $true, 0 );
+       show $create_expect_uml;       
 
        $test = new Gtk::CheckButton("Test");
        $test->signal_connect("clicked", \&which_stage, "test"); 

@@ -37,8 +37,8 @@ use Exporter;
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys device_table 
               text_insert error warning warning_test logadj *LOGFILE 
-	      which_tests create_fstab ars2 root_filename make_link_absolute 
-	      make_link_relative cleanup_link yard_glob); 
+	      which_tests create_fstab ars2 root_filename create_expect_uml
+	      make_link_absolute make_link_relative cleanup_link yard_glob); 
               # these last four added for tests
 
 use strict;
@@ -1209,6 +1209,11 @@ sub create_filesystem {
     if ( $fs_type ne "genext2fs" && 
 	 $uml_exclusively == 0 ) {
 
+	# If it is mounted it should just be automatically unmounted here
+	# since the create stage has been broken up into the copy and
+	# create stage.  This is cool because the loop device can be 
+	# scooped, just like the sources directory by rooot.
+
 	return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
 	##### lost+found on a ramdisk is pointless
 	sys("rm -rf $mount_point/lost+found");
@@ -1363,18 +1368,21 @@ sub create_filesystem {
 
     }
 
+    info(0,"Done with the Copy stage\n");
+
+=pod
+
+    # This could be run as another stage, its only complicated
+    # when root is using a loop device, in figuring out the verbosity.
+
 
     if (@Libs) {
 
-	info(0, "Re-generating /etc/ld.so.cache on root fs.\n");
+	info(0, "\nRe-generating /etc/ld.so.cache on root fs.\n");
 	info(1, "Ignore warnings about missing directories\n");
 
 	sys("ldconfig -v -r $mount_point");
     }
-
-
-    # This could be run as another stage, its only complicated
-    # when root is using a loop device, in figuring out the verbosity.
 
 
     if ( $uml_exclusively == 0 ) {
@@ -1463,8 +1471,120 @@ sub create_filesystem {
     #info(0, "You can run more tests with the UML kernel\n", 
     #     "or construct a distribution by using this root\n",
     #     "filesystem with a boot method.");
+
+=cut
     
 } # end sub create_filesystem
+
+
+# The real create - uml_exclusively and genext2fs
+# For root loop devices this will just ldconfig and umount.
+sub create_expect_uml {
+
+    my ($fs_size, $mnt) = @_;
+
+    my $fs_type = (split(/\s/,$main::makefs))[0];
+    my $error;
+
+
+    if (@Libs) {
+
+	info(0, "\nRe-generating /etc/ld.so.cache on root fs.\n");
+	info(1, "Ignore warnings about missing directories\n");
+
+	sys("ldconfig -v -r $mount_point");
+    }
+
+
+    if ( $uml_exclusively == 0 ) {
+	info(0, "\nFinished creating root filesystem.\n");
+    }
+
+
+    if ( $fs_type ne "genext2fs" && $uml_exclusively == 0 ) {
+	## Probably will want to umount here
+	return "ERROR" if errum(sys("umount $mount_point")) == 2;
+    }
+    
+    # This is fun.
+    else {
+
+
+	# The -D option is unique to the newest unreleased version of 
+	# genextfs modified by BusyBox maintainer Erick Andersen
+	# August 20, 2001.
+
+	my $device_table  = "$mnt/device_table.txt";
+
+
+	if ( $uml_exclusively ) {
+
+
+	    my $expect_program = "/usr/lib/bootroot/expect_uml";
+	    my $version = "2.4";
+	    my $ubd0 =
+		"ubd0=/usr/lib/bootroot/root_filesystem/root_fs_helper";
+	    my $ubd1 = "ubd1=$device";
+	    my $options = "root=/dev/ubd0"; # need to keep this 1
+	    my $filesystem;
+	    if ( $fs_type eq "genext2fs" ) {
+		$filesystem = "mke2fs -m0";
+	    }
+	    else {
+		$filesystem = $main::makefs;
+	    }
+
+	    my $x_count = 1;
+
+	    my $command_line = "$expect_program $ubd0 $ubd1 $options " .
+		"$mount_point $preserve_ownership $filesystem";
+
+	    info(0,"\nUsing helper root_fs to $fs_type the filesystem:\n\n");
+	    info(0,"$command_line\n\n");
+
+	    # add error correction
+	    # I'll allow the GUI to lock-xup for big copies and fs creation.
+	    open(EXPECT,"$command_line|");
+	    while (<EXPECT>) {
+		info(1,"$x_count  $_");
+		$x_count++;
+		while (Gtk->events_pending) { Gtk->main_iteration; }
+	    }
+
+	    if ( $fs_type eq "mkcramfs" || $fs_type eq "genromfs" ) {
+		# Will just keep appending _cramfs .. leaving it to the
+		# user to realize this is happening, that way the user
+		# has control over the dd file.
+		$fs_type eq "mkcramfs" ? ($device = $device . "_cramfs") : 
+		    ($device = $device . "_romfs");
+	        my $cramfs_name = basename($device);
+		# If somebody closes ARS, this won't get updated,
+		# but that is a minor matter.
+	        $ear2->set_text($cramfs_name) if $ear2;
+		$mount_point = dirname($device);
+	    }
+
+	    
+        }
+	elsif (
+	       sys("/usr/lib/bootroot/$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
+	       /^0$/ ) {
+	    $error = error("Cannot $fs_type filesystem.\n");
+	    return "ERROR" if $error && $error eq "ERROR";
+	}
+    }
+
+
+    info(0, "\nDone making the root filesystem.  $Warnings warnings.\n",
+	     "$device is now umounted from $mount_point\n\n");
+
+    #info(0, "All done!\n");
+    #info(0, "You can run more tests with the UML kernel\n", 
+    #     "or construct a distribution by using this root\n",
+    #     "filesystem with a boot method.");
+
+
+} # end sub create_expect_uml
 
 #######################################
 #####  Utility subs for make_root_fs.pl
