@@ -53,6 +53,7 @@ set_locale Gtk;
 my $tmp1 = "/tmp";              # tmp should be default - Cristian
 my $lilo_conf = "/etc/lilo.conf";
 my $home = "$ENV{HOME}/.gbootroot";
+my $uml_xterm = "xterm -e";
 
 # CHANGES
 #
@@ -154,8 +155,10 @@ my ($hbox_advanced);
 my $separator_advanced;
 my @entry_advanced;
 my $entry_advanced;
-my ($ea1,$ea2,$ea3);  
+my ($ea1,$ea2,$ea3); # entry advanced boot  
 my ($ear1,$ear2,$ear3,$ear4); # entry advanced root
+my ($eab1,$eab2,$eab3); # entry advanced uml
+my $uml_window;
 my $table_advanced;
 my $table_advanced_root;
 my ($spinner_advanced,$spinner_size);
@@ -764,7 +767,7 @@ sub advanced_root_section {
                           "" );
        # $order is important because it is put in $container[$order]
        button_fileselect_advanced(2,3,0,1,"Selection",$ear1,"Selection",12,
-                                  "/dev/fd0");
+                                  $table_advanced_root,"/dev/fd0");
 
        #_______________________________________ 
        # Root Device Size
@@ -888,6 +891,7 @@ sub advanced_root_section {
        $tooltips->set_tip( $compression_off, 
                            "Turn Compression off.", "" );
        $hbox_between->pack_start( $compression_off, $true, $false, 0 );
+       $compression_off->set_active($true);
        $compression_off->show();
        
        #_______________________________________ 
@@ -901,7 +905,8 @@ sub advanced_root_section {
                           " the Kernel's location," .
                           " and any Kernel options desired afterwards.",
                           "" );
-       button_fileselect_advanced(2,3,5,6,"Selection",$ear3,"Selection",13);
+       button_fileselect_advanced(2,3,5,6,"Selection",$ear3,"Selection",13,
+				  $table_advanced_root);
 
        #_______________________________________ 
        # Method
@@ -977,15 +982,15 @@ sub advanced_root_section {
        # The Generation process is determined by the method chosen.  Yard -
        #  asks the user if they want to modify the template, and/or save a 
        #  new template with modifications (to be added to Template menu).
-       my $generate_b = button_advanced(0,1,8,9,"Generate");
+       my $generate_b = button_advanced(0,1,8,9,"Generate",$table_advanced_root);
        $generate_b->signal_connect("clicked",\&Generate);
        $tooltips->set_tip( $generate_b, "Generate Root Filesystem.", "" );
        
-       my $UML_b = button_advanced(1,2,8,9,"UML");
+       my $UML_b = button_advanced(1,2,8,9,"UML",$table_advanced_root);
 
-       $UML_b->signal_connect("clicked", sub { 
-	   print "$entry_advanced[5]\n"; 
-       });
+       $UML_b->signal_connect("clicked", \&uml_box);
+       $tooltips->set_tip( $UML_b, "Test Filesystem with User Mode Linux.", 
+                            "" );
 
 	# UML kernel doesn't look like a normal kernel
 	##if (!-d $entry_advanced[5] && -f $entry_advanced[5]) {
@@ -995,68 +1000,10 @@ sub advanced_root_section {
 	##error_window("Kernel Selection required");
         ##return; }
 
-       $tooltips->set_tip( $UML_b, "Test Filesystem with User Mode Linux.", 
-                            "" );
-
        # Will check to make sure that Filesystem fits device.
        # Method determines whether or not compression is used.
-       my $accept_b = button_advanced(2,3,8,9,"Accept");
-       $accept_b->signal_connect("clicked", sub { 
-	   my($tool,$value);
-	   if (-e "$tmp/$entry_advanced[4]" ) {
-	       if (!$compression_off->active) {
-		   if ($gz_toggle_root->active) {
-		       $compress = "gzip";
-		       open(F,"file $tmp/$entry_advanced[4] |"); 
-		       while (<F>) {
-			   if (/gzip/) {
-			       info(0, "Already gzip compressed.\n");
-			   }
-			   elsif (/bzip2/) {
-			       info(0, "Already bzip2 compressed.\n");
-			   }
-			   else {
-			       system "$compress $tmp/$entry_advanced[4]";
-			       $entry_advanced[4] = "$entry_advanced[4].gz";
-			       $entry3->set_text("$tmp/$entry_advanced[4]");
-			   }
-		       }
-		       if ($ear2_save->active) {
-			   return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
-		       }
-		   }
-		   elsif ($bz2_toggle_root->active) {
-                       $compress = "bzip2";
-		       open(F,"file $tmp/$entry_advanced[4] |"); 
-		       while (<F>) {
-			   if (/gzip/) {
-			       info(0, "Already gzip compressed.\n");
-			   }
-			   elsif (/bzip2/) {
-			       info(0, "Already bzip2 compressed.\n");
-			   }
-			   else {
-			       system "$compress $tmp/$entry_advanced[4]";
-			       $entry_advanced[4] =  "$entry_advanced[4].bz2";
-			       $entry3->set_text("$tmp/$entry_advanced[4]");
-			   }
-		       }
-		       if ($ear2_save->active) {
-			   return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
-		       }
-		   }
-	       }
-	       else {  # off
-		   $entry3->set_text("$tmp/$entry_advanced[4]");
-		   if ($ear2_save->active) {
-		       return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
-		   }
-	       }
-	   }
-	   else {
-	       error("$entry_advanced[4] doesn't exist; create it first.\n");
-	   }
-       });
+       my $accept_b = button_advanced(2,3,8,9,"Accept",$table_advanced_root);
+       $accept_b->signal_connect("clicked", \&accept_button, $ear2_save); 
        $tooltips->set_tip( $accept_b, "Accept Filesystem.", "" );
 
 
@@ -1071,6 +1018,151 @@ sub advanced_root_section {
 
 
 } # end sub advanced_root_section
+
+sub uml_box {
+
+	$uml_window = Gtk::Window->new("toplevel");
+	$uml_window->signal_connect("destroy", \&destroy_window,
+	\$uml_window);
+	$uml_window->signal_connect("delete_event", \&destroy_window,
+				      \$uml_window);
+	#$uml_window->set_usize( 450, 175 );  # 500 600
+	$uml_window->set_policy( $true, $true, $false );
+	$uml_window->set_title( "Uml Box" );
+	$uml_window->border_width(1);    
+
+	my $main_vbox = Gtk::VBox->new( $false, 0 );
+	$uml_window->add( $main_vbox );
+	$main_vbox->show();
+
+	my $table_uml = Gtk::Table->new( 4, 3, $true );
+	$main_vbox->pack_start( $table_uml, $true, $true, 0 );
+	$table_uml->show();
+
+	#_______________________________________
+	# Xterm and execute options
+	label_advanced("Xterm:",0,1,0,1,$table_uml);
+	$eab1 = entry_advanced(1,2,0,1,8,$table_uml);
+	$eab1->set_text($uml_xterm);
+
+	#_______________________________________
+	# UML options
+	label_advanced("Options:",0,1,1,2,$table_uml);
+	$eab2 = entry_advanced(1,3,1,2,9,$table_uml);
+	$eab2->set_text("root=/dev/ubd0");
+
+	#_______________________________________
+	# Root Filesystem defaults to generated one if found.
+	label_advanced("Root_Fs:",0,1,2,3,$table_uml);
+	$eab3 = entry_advanced(1,2,2,3,10,$table_uml);
+	button_fileselect_advanced(2,3,2,3,"Selection",$eab3,"Selection",14,
+				   $table_uml,$home_rootfs);
+	$eab3->set_text("ubd0=$tmp/$entry_advanced[4]") 
+	    if -e "$tmp/$entry_advanced[4]";
+
+	$table_uml->set_row_spacing( 2, 4);       
+
+	#_______________________________________
+	# Submit Button
+	my $submit_b = button_advanced(0,2,3,4,"Submit",$table_uml);
+	$submit_b->signal_connect("clicked",
+				  sub {
+				      # UML kernel = $entry_advanced[5]
+				      # xterm -e linux ubd#=root_fs 
+				      # root=/dev/ubd# 
+				      sys("$entry_advanced[8] $entry_advanced[5] $entry_advanced[9] $entry_advanced[10]");
+				  } );
+
+
+	#_______________________________________
+	# Cancel button also kills UML kernel if still open
+	my $cancel_b = button_advanced(2,3,3,4,"Cancel",$table_uml);
+	$cancel_b->signal_connect("clicked",
+				 sub {
+				     # This has to be improved .. don't
+				     # want other processes killed
+				     # remove_matching_process("linux");
+				     $uml_window->destroy();
+				 } );
+
+	$uml_window->show();
+
+}
+
+sub remove_matching_process {
+
+    my ($match_word) = @_;
+    my $ps = "ps auxw|";
+    open(P,"$ps");
+    while(<P>) {
+	if (/$match_word/) {
+	    my $process = (split(/\s+/,$_,))[1];
+	    system "kill -9 $process";
+	}
+    }
+
+} # end remove_matching_process
+
+sub accept_button { 
+
+    my ($widget,$ear2_save) = @_;
+
+    my($tool,$value);
+    if (-e "$tmp/$entry_advanced[4]" ) {
+	if (!$compression_off->active) {
+	    if ($gz_toggle_root->active) {
+		$compress = "gzip";
+		open(F,"file $tmp/$entry_advanced[4] |"); 
+		while (<F>) {
+		    if (/gzip/) {
+			info(0, "Already gzip compressed.\n");
+		    }
+		    elsif (/bzip2/) {
+			info(0, "Already bzip2 compressed.\n");
+		    }
+		    else {
+			system "$compress $tmp/$entry_advanced[4]";
+			$entry_advanced[4] = "$entry_advanced[4].gz";
+			$entry3->set_text("$tmp/$entry_advanced[4]");
+		    }
+		}
+		if ($ear2_save->active) {
+		    return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
+		}
+	    }
+	    elsif ($bz2_toggle_root->active) {
+		$compress = "bzip2";
+		open(F,"file $tmp/$entry_advanced[4] |"); 
+		while (<F>) {
+		    if (/gzip/) {
+			info(0, "Already gzip compressed.\n");
+		    }
+		    elsif (/bzip2/) {
+			info(0, "Already bzip2 compressed.\n");
+		    }
+		    else {
+			system "$compress $tmp/$entry_advanced[4]";
+			$entry_advanced[4] =  "$entry_advanced[4].bz2";
+			$entry3->set_text("$tmp/$entry_advanced[4]");
+		    }
+		}
+		if ($ear2_save->active) {
+		    return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
+		}
+	    }
+	}
+	else {  # off
+	    $entry3->set_text("$tmp/$entry_advanced[4]");
+	    if ($ear2_save->active) {
+		return if errcp(sys("cp -a $tmp/$entry_advanced[4] $home_rootfs")) == 2;
+	    }
+	}
+    }
+    else {
+	error("$entry_advanced[4] doesn't exist; create it first.\n");
+    }
+
+} # end accept_button
 
 # Coming - .config storage, auto-matic kernel locus, all stages 
 # /usr/src/linux*  Possible integration with other Projects .. modules
@@ -1096,6 +1188,9 @@ sub Generate {
     # 5 = UML Kernel
     $method = $entry_advanced[6];         # 6 = Method
     # 7 = Template
+    # 8 = UML xterm
+    # 9 = UML options
+    # 10 = UML root_fs
     # $root_device_size;
     # $filesystem_size;
 
@@ -1147,7 +1242,7 @@ sub button_advanced {
     my ($left_attach,$right_attach,$top_attach,
                      $bottom_attach,$text,$widget) = @_;
     my $button = Gtk::Button->new($text);
-    $table_advanced_root->attach($button,$left_attach,$right_attach,
+    $widget->attach($button,$left_attach,$right_attach,
                                  $top_attach,$bottom_attach, 
                             ['shrink','fill','expand'],['fill','shrink'],2,2);
     show $button;
@@ -1160,10 +1255,10 @@ sub button_fileselect_advanced {
     # cretzu should like this
     # $order does matter because it fills in $container[$order].
     my ($left_attach,$right_attach,$top_attach,$bottom_attach,$text,$ent,
-        $name,$order,$device) = @_;
+        $name,$order,$widget,$device) = @_;
 
     my $button = Gtk::Button->new($text);
-    $table_advanced_root->attach($button,$left_attach,$right_attach,
+    $widget->attach($button,$left_attach,$right_attach,
                                  $top_attach,$bottom_attach, 
                             ['shrink','fill','expand'],['fill','shrink'],2,2);
 
@@ -1174,6 +1269,10 @@ sub button_fileselect_advanced {
     elsif ($order == 13) {
       $tooltips->set_tip( $button, "Select the UML Kernel.", "" );
     }
+    elsif ($order == 14) {
+      $tooltips->set_tip( $button, "Select the Root Filesystem.", "" );
+    }
+
 
     $button->signal_connect( "clicked",\&fileselect,$ent,$name,$order,$device);
     $button->show();
@@ -1409,7 +1508,12 @@ sub file_ok_sel {
 
     my( $widget, $file_selection,$entry,$order) = @_;
     my $file = $file_selection->get_filename();
-    $entry->set_text($file);
+    if ($order != 14) {
+	$entry->set_text($file);
+    }
+    else {
+	$entry->set_text("ubd0=$file");
+    }
     $container[$order] = $file;
     if ($order == 1) {
 	$ars->{kernel} = $container[$order];
