@@ -4,7 +4,7 @@ TOOLS = mconsole moo redhat uml_net uml_router
 
 modules: 
 
-	cd linux-2.4.16 ; \
+	cd linux-2.4.17 ; \
 		mkdir ../modules-2.4 ; \
 		make modules ARCH=um ; \
 		make modules_install ARCH=um \
