@@ -50,8 +50,7 @@ my %inetd; # checks for inetd binaries.
 
 my @extra_packages = qw(file-rc swim apt apt-utils debconf nvi sysklogd
 klogd netbase tcpd net-tools portmap netkit-ping netkit-inetd ifupdown less 
-perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 slang1 
-debconf-utils);
+perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils);
 
 # And tests will be ran here for file-rc and swim
 #  swim has to have its databases made.
@@ -110,6 +109,10 @@ my $stuff = << "STUFF";
 # IMPORTANT NOTE:  Things slow down noticeably when the buffer gets too big in
 # the verbosity box so consider closing it with the slider for faster 
 # generation.  Look at /tmp/verbose instead.
+#
+# The windows will appear to freeze up while using this template, this is 
+# natural, be patient, because it will complete.  If you want to create 
+# another filesystem concurrently open up another invocation of gBootRoot.
 
 # Todays Quote: Creating a root filesystem is all about stuff.
 
@@ -197,6 +200,7 @@ my $stuff = << "STUFF";
 /etc/network/if-pre-up.d    # ""
 /etc/network/if-up.d        # ""
 /etc/network/interfaces <= Replacements/etc/network/interfaces
+/etc/network/options
 /etc/network/spoof-protect
 
 # Devices - optional stuff which can be picked up by devfsd.
