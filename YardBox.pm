@@ -69,10 +69,13 @@ my @menu_items = ( { path        => '/File',
 		   { path        =>  '/Edit/Settings/Stripping/settings/' },
 		   { path        => '/Edit/Settings/Stripping/settings/strip-all',
 		     action      => "10",
-		     type        => '<RadioItem>' },
+		     type        => '<CheckItem>',
+		     callback    => \&strip_all },
                    { path        => '/Edit/Settings/Stripping/settings/strip-debug',
 		     action      => '11',
-                     type        => '<RadioItem>' },,
+                     type        => '<CheckItem>', 
+		     callback    => \&strip_debug },
+		     
 		   { path        => '/Edit/Settings/Stripping/Binaries',
 		     action      => "2",
 		     type        => '<CheckItem>' },
@@ -216,7 +219,47 @@ sub continue {
 
 } # end sub continue
 
+# There is a subtle, but important difference between set_active and
+# active which makes the next magic possible.  set_active is like actually
+# pressing the button.  It's a lot easier to work with checkbuttons than
+# with radio buttons, because there is no easy way to establish a group, and
+# radio buttons act weird otherwise.
 
+my $strip_bool = 0;
+sub strip_all {
+
+    my($lib_strip_debug);
+    $lib_strip_debug = $item_factory->get_item
+	('/Edit/Settings/Stripping/settings/strip-debug');
+
+    if ($strip_bool == 0 ) {
+        $lib_strip_debug->active(0);
+        $strip_bool++;
+    }
+    else {
+	$lib_strip_debug->active(1);
+        $strip_bool--;
+    }	
+    print $strip_bool;
+
+}
+
+sub strip_debug {
+
+    my($lib_strip_all);
+    $lib_strip_all = $item_factory->get_item
+	('/Edit/Settings/Stripping/settings/strip-all');
+
+    if ($strip_bool == 0) {
+        $lib_strip_all->active(1);
+	$strip_bool++;
+    }
+    else {
+	$lib_strip_all->active(0);
+        $strip_bool--;
+    }	
+    print $strip_bool;
+}
 
 
 # cut little booleans for Gtk::CheckMenuItem
@@ -269,14 +312,6 @@ sub yard_box {
        # Stripping
 
        # Libraries
-
-           # objcopy parameters for Libraries
-           my $lib_all_strip = $item_factory->get_item
-	       ('/Edit/Settings/Stripping/settings/strip-all');
-           
-           my $lib_debug_strip = $item_factory->get_item
-	       ('/Edit/Settings/Stripping/settings/strip-debug');
-
        my $lib_strip = $item_factory->get_item
 	   ('/Edit/Settings/Stripping/Libraries');
        
@@ -286,17 +321,21 @@ sub yard_box {
 				       # off   
 				       if ($lib_bool == 1) {
 					     $lib_bool--;
-					     $lib_strip->set_active($lib_bool);
 				         }
 					 # on
 					 else {
-					     $lib_bool++;
-					     $lib_strip->set_active($lib_bool);
+					     $lib_bool++;               
 					 }
 					 print "$lib_bool\n";
 				     }
                                    ); 
 
+
+           # objcopy parameters for Libraries
+           my($lib_strip_all,$lib_strip_debug);
+           $lib_strip_all = $item_factory->get_item
+	       ('/Edit/Settings/Stripping/settings/strip-all');
+           $lib_strip_all->set_active($true);
 
        # Binaries
        my $bin_strip = $item_factory->get_item
@@ -307,12 +346,10 @@ sub yard_box {
 					 # off
 					 if ($bin_bool == 1) {
 					     $bin_bool--;
-					     $bin_strip->set_active($bin_bool);
 				         }
 					 # on
 					 else {
 					     $bin_bool++;
-					     $bin_strip->set_active($bin_bool);
 					 }
 					 print "$bin_bool\n";
 				     }
@@ -328,12 +365,10 @@ sub yard_box {
 					 # off
 					 if ($mod_bool == 1) {
 					     $mod_bool--;
-					     $mod_strip->set_active($mod_bool);
 				         }
 					 # on
 					 else {
 					     $mod_bool++;
-					     $mod_strip->set_active($mod_bool);
 					 }
 					 print "$mod_bool\n";
 				     }
