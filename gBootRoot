@@ -1098,9 +1098,8 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $tmp/verbose 2>&1; mount -o loo
   return if errmk(system "mkdir $tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr} >> $tmp/verbose 2>&1; mkdir $tmp/initrd_mnt/usr/lib >> $tmp/verbose 2>&1") == 2; 
   pb($I,6);
 
-  return if errcp(system "cp -a /dev/{console,fd0,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev >> $tmp/verbose 2>&1") == 2;
-  # future implementation
-  #errcp(system "cp -a $device $tmp/initrd_mnt/dev");
+  return if errcp(system "cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev >> $tmp/verbose 2>&1") == 2;
+  return if errcp(system "cp -a $device $tmp/initrd_mnt/dev") == 2;
   pb($I,7);
 
   #V#print ".. the bins\n";
@@ -1270,14 +1269,14 @@ mount -t proc none /proc
 echo -n 'Please insert the root floppy, and press [Enter]: '
 read ENTER
 
-echo Mounting floppy drive readonly ...
-mount -o ro -t ext2 /dev/fd0 /mnt
+echo Mounting $device readonly ...
+mount -o ro -t ext2 $device /mnt
 
 echo -n Copying new root to ramdisk .. please wait ...
 $compress -cd /mnt/$broot_image > /dev/ram1
 echo done.
 
-echo -n Unmounting floppy ...
+echo -n Unmounting $device ...
 umount /mnt
 echo done.
 
