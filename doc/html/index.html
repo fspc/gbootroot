@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.59 2001/12/23 21:12:46 freesource Exp $</center>
+<center>$Id: index.html,v 1.60 2001/12/24 18:17:05 freesource Exp $</center>
 
 <p>
 
@@ -427,7 +427,7 @@ should keep this on when the filesystem
 size is greater than 8192k.&nbsp;&nbsp;Preserve Permissions are off by 
 default for normal
 users, and on by default for root, these are good defaults since a normal
-user would create a fs with thier own UID/GID if they turned this on.
+user would create a fs with their own UID/GID if they turned this on.
   
 <p>
 
@@ -871,7 +871,7 @@ normal users to explore things they never could before.&nbsp;&nbsp;
 User-mode-linux is used to boot up a root_fs helper, the program then
 communicates with the user linux system via expect to automatically
 create a UID/GID 0 filesystem from the files copied over from the
-/tmp/gboot_non_root_`id -u1/loopback directory.&nbsp;&nbsp;The steps will
+/tmp/gboot_non_root_`id -u`/loopback directory.&nbsp;&nbsp;The steps will
 vary slightly depending on which filesystem command is chosen, however, the 
 same
 concept is used.&nbsp;&nbsp;You may apply this to filesystems smaller than
