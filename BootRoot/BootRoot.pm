@@ -1129,7 +1129,8 @@ sub advanced_root_section {
        label_advanced("UML Kernel:",0,1,5,6,$table_advanced_root);
        # $_[4] shares with advanced_boot_sections @entry_advanced
        $ear3 = entry_advanced(1,2,5,6,5,$table_advanced_root);
-       $ear3->set_text("$home_uml_kernel" . "linux");
+       !$entry_advanced[5] ? $ear3->set_text("$home_uml_kernel" . "linux") :
+	   $ear3->set_text($entry_advanced[5]);
        $tooltips->set_tip( $ear3, 
                           "If you have a User Mode Linux Kernel, type in" .
                           " the Kernel's location," .

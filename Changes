@@ -1,3 +1,5 @@
+The UML Kernel entry box in the ARS remembers state now.
+
 Changed the behavior of save_as so that when compression is chosen, the
 entry won't be the same as that found in Root Filename, but instead reflects
 the newly compressed file.  This change was precipitated by the previous 
