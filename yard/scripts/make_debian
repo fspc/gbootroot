@@ -273,6 +273,10 @@ $stuff = << "STUFF";
 # if tap is used, you will want to do this:
 # modprobe ethertap
 # modprobe netlink_dev
+# And when you start your creation with the uml box you will want to add
+# something like this to the options where HWaddr (see ifconfig) belongs
+# to your network device:
+# eth0=ethertap,tap0,HWaddr,192.168.1.5
 /etc/resolv.conf 
 /root/umlnet <= Replacements/root/umlnet # Example network setup script
 /etc/network <= Replacements/etc/network
