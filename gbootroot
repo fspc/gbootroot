@@ -306,6 +306,32 @@ my ($filesystem_size, $root_device_size);
 # export ars and it can capture these values
 my $ars = {}; # anonymous hash
 
+# How the Boot/Root set is constructed for the 2 disk compression method:
+#
+# 1. submit() start the process.
+# 2. kernel_moudles() sets the $kernel_version.
+# 3. lilo() is called.
+# 4. $ok determines what functions should be called for creating the
+#    Boot disk.
+# 5. If initrd hasn't been created yet then initrd is called, and then
+#    mtab(0=Boot) .. otherwise only mtab is called.  If initrd is called,
+#    then it in turn calls initrd_size to check the size of everything going
+#    into the initrd, so that the initrd can be made as small as possible.
+# 6. mtab determines which dialog to present to the user and then calls 
+#    mtab_window with the numeric value determing whether to make a Boot or 
+#    Root disk.  0=Boot 1=Root
+# 7. mtab_window (prompts the user) and then calls mtab_check.
+# 8. mtab_check checks whether the device is already mounted or not, and will 
+#    keep prompting the user until either the device is umounted or a disk is 
+#    inserted.  Then it will mke2fs the block device and then it will call
+#    lilo_put_it_together if 0, or device2() if 1.
+# 9. lilo_put_it_together puts together the initrd and necessary things to get
+#    lilo to work properly, and then runs lilo if the device is bootable.
+#    If the devel device is not the same as the boot device lilo will be 
+#    skipped.  Then mtab(1) is called.
+#10. The filesystem for the Root device is made, and then device2 is called
+#    to copy over the root filesystem.
+
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
 "32 45 3 1",
@@ -3306,44 +3332,44 @@ sub mtab_check {
 
     mtab_window($dialog,$error,$count) if $error == 0;
 
-  # Make sure the drive and storage medium are accessible
-  # Keep asking until they are.
-  if ($error == 1) {
-      destroy $mtab;
+    # Make sure the drive and storage medium are accessible
+    # Keep asking until they are.
+    if ($error == 1) {
+	destroy $mtab;
 
-      # $size has to be determined by boot disk or root disk
+	# $size has to be determined by boot disk or root disk
 
-      # ROOT_DEVICE - test with a loop device
-      if ($count == 1) {
-	  sys("mke2fs -F -m0 -i8192 $entry_advanced[3] $root_device_size");
-      }
+	# ROOT_DEVICE - test with a loop device
+	if ($count == 1) {
+	    sys("mke2fs -F -m0 -i8192 $entry_advanced[3] $root_device_size");
+	}
+	
+	# BOOT_DEVICE
+	elsif ($count == 0) {
+	    sys("mke2fs -F -m0 -i8192 $entry_advanced[0] $container[SIZE]");
+	}
+	
+	if ($? != 0) {
+	    $dialog = "gBootRoot: ERROR: You need to insert a disk\n";
+	    mtab_window($dialog,$error,$count);
+	    return;
+	}
+	
+	# ROOT_DEVICE
+	if ($count == 1) {
+	    return if errm(sys("mount -t ext2  $entry_advanced[3] $mnt")) == 2;
+	}
+	
+	# BOOT_DEVICE
+	elsif ($count == 0) {
+	    return if errm(sys("mount -t ext2  $entry_advanced[0] $mnt")) == 2;
+	}
 
-      # BOOT_DEVICE
-      elsif ($count == 0) {
-	  sys("mke2fs -F -m0 -i8192 $entry_advanced[0] $container[SIZE]");
-      }
 
-      if ($? != 0) {
-	  $dialog = "gBootRoot: ERROR: You need to insert a disk\n";
-	  mtab_window($dialog,$error,$count);
-	  return;
-      }
+	lilo_put_it_together() if $count == 0;  # mtab(1) runs from here
+	device2() if $count == 1;
 
-      # ROOT_DEVICE
-      if ($count == 1) {
-	  return if errm(sys("mount -t ext2  $entry_advanced[3] $mnt")) == 2;
-      }
-
-      # BOOT_DEVICE
-      elsif ($count == 0) {
-	  return if errm(sys("mount -t ext2  $entry_advanced[0] $mnt")) == 2;
-      }
-
-
-      lilo_put_it_together() if $count == 0;  # mtab(1) runs from here
-      device2() if $count == 1;
-
-  } # if $error == 1
+    } # if $error == 1
 
 } # end sub mtab_check
 
