@@ -440,11 +440,11 @@ my $entry = entry($false,0);
 my $opt = Gtk::OptionMenu->new();
 $tooltips->set_tip( $opt, "Choose the Boot method.", "" );
 my $menu = Gtk::Menu->new();
-my $item = Gtk::MenuItem->new("Method -> lilo" );
+my $item = Gtk::MenuItem->new("2 disk compression" );
 $item->show();
 # Eventually get_menu, or something totally different will be used.
-$item->signal_connect( 'activate',sub { $entry->set_text("lilo");
-                                        $container[METHOD] = "lilo"});
+$item->signal_connect( 'activate',sub { $entry->set_text("2 disk compression");
+                                        $container[METHOD] = "2 disk compression"});
 $menu->append( $item );
 $opt->set_menu( $menu );
 $box2->pack_start( $opt, $true, $true, 0 );
@@ -1908,7 +1908,8 @@ sub entry {
     my($edit,$num) = @_;
 
     my $entry = Gtk::Entry->new();
-    $entry->set_editable( $true );
+ 
+    $entry->set_editable( $false ) if $edit == 0;
 
     if ($num == 0) {
         $entry->signal_connect( "activate", sub {
@@ -2213,7 +2214,8 @@ elsif (defined $container[METHOD] && defined $container[KERNEL] &&
 			      $container[ABS_APPEND]
 			    );
 
-     lilo();
+     lilo();  # This is the default now, and the value for
+              # METHOD doesn't matter now.
  }
 
 } # end sub submit
