@@ -1,5 +1,72 @@
+# A Makefile going to a new dimension - a combination of stuff borrowed from 
+# buildroot by Erik Andersen <andersen@codepoet.org>, UML, and gbootroot.
 
-all: install
+##all: install
+
+BASE_DIR=${shell pwd}
+
+TARGET_DIR=$(BASE_DIR)/root
+BUILD_DIR=$(BASE_DIR)/staging_dir
+SOURCE_DIR=$(BASE_DIR)/sources
+##TARGET_CC=$(BUILD_DIR)/bin/gcc
+##TARGET_CC1=$(BUILD_DIR)/usr/bin/$(ARCH)-uclibc-gcc
+##TARGET_CROSS=$(BUILD_DIR)/usr/bin/$(ARCH)-uclibc-
+##TARGET_PATH=$(BUILD_DIR)/usr/bin:$(BUILD_DIR)/bin:/bin:/sbin:/usr/bin:/usr/sbin
+KERNEL=$(BASE_DIR)/user-mode-linux/usr/bin/linuxbr
+IMAGE=$(BASE_DIR)/root_filesystem/root_fs_helper
+KERNEL_DIR=$(BASE_DIR)/linux
+KERNEL_SOURCE=linux-2.4.19.tar.bz2
+KERNEL_SITE=http://www.uk.kernel.org/pub/linux/kernel/v2.4
+
+PATCH_1=uml-patch-2.4.19-37.bz2
+PATCH_1_SITE=http://jdike.stearns.org/mirror
+PATCH_2=$(BASE_DIR)/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch
+KCONFIG=$(BASE_DIR)/user-mode-linux/usr/lib/uml/config
+##UCLIBC_DIR=$(BASE_DIR)/uClibc
+##UCLIBC_SOURCE=uClibc-snapshot.tar.gz
+##UCLIBC_PATCH=$(SOURCE_DIR)/uClibc.patch
+##UCLIBC_SITE=ftp://oss.lineo.com
+##BUSYBOX_DIR=$(BASE_DIR)/busybox
+##BUSYBOX_SOURCE=busybox.tar.gz
+##BUSYBOX_PATCH=$(SOURCE_DIR)/busybox.patch
+##BUSYBOX_SITE=http://busybox.lineo.com
+GENEXT2_DIR=$(BASE_DIR)/genext2fs
+
+
+all:   world
+world: kernel target
+
+
+kernel: $(BASE_DIR)
+	@if [ ! -d $(KERNEL_DIR) ] ; then \
+		while [ ! -f $(SOURCE_DIR)/$(KERNEL_SOURCE) ] ; do \
+			wget -P $(SOURCE_DIR) --passive $(KERNEL_SITE)/$(KERNEL_SOURCE); \
+		done; \
+		while [ ! -f $(SOURCE_DIR)/$(PATCH_1) ] ; do \
+			wget -P $(SOURCE_DIR) --passive $(PATCH_1_SITE)/$(PATCH_1); \
+		done; \
+		bunzip2 -c $(SOURCE_DIR)/$(KERNEL_SOURCE) | tar -xv; \
+		bzcat $(SOURCE_DIR)/$(PATCH_1) | patch -d $(KERNEL_DIR) -p1; \
+		perl -i -p -e "s/^ARCH :=.*/ARCH=um/g" $(KERNEL_DIR)/Makefile; \
+	fi;
+#	@if [ ! -f $(KERNEL_DIR)/.config ] ; then \
+#		cp $(KCONFIG) $(KERNEL_DIR)/.config; \
+#		(cd $(KERNEL_DIR); make oldconfig; make dep); \
+#	fi;
+#	@if [ ! -f $(KERNEL_DIR)/linux ] ; then \
+#		(cd $(KERNEL_DIR); make linux); \
+#	fi;
+#	@cmp -s $(KERNEL) $(KERNEL_DIR)/linux; \
+#	if [ $$? != 0 ] ; then \
+#		cp -fa $(KERNEL_DIR)/linux $(KERNEL); \
+#	fi;
+
+
+mkfs:
+	@if [ ! -f $(GENEXT2_DIR)/genext2fs ] ; then \
+		$(MAKE) -C $(GENEXT2_DIR); \
+	fi;
+
 
 install:
 	install -d $(DESTDIR)/usr/bin

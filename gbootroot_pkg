@@ -92,13 +92,14 @@ $packaging_place = "$packaging_place/$prog-$version";
 
 # Do we want a deb, rpm or both
 
-if (!( $ARGV[0] eq "both" || $ARGV[0] eq "deb" || $ARGV[0] eq "rpm" ) ) {
+if (!( $ARGV[0] eq "both" || $ARGV[0] eq "deb" || $ARGV[0] eq "rpm" || 
+       $ARGV[0] eq "src" ) ) {
 
- die "Specify: both, deb, or rpm\n";
+ die "Specify: both, deb, or rpm or src\n";
 
 }
 
-if ( $ARGV[0] eq "both" || $ARGV[0] eq "deb" ) { 
+if ( $ARGV[0] eq "both" || $ARGV[0] eq "deb" || $ARGV[0] eq "src") { 
 
 # Make sure the directory exists.
 
@@ -149,11 +150,14 @@ foreach (@make_lines) {
 # Stuff not in the Makefile
 system "cp -fa $makefile $packaging_place/Makefile";
 
+
 #  Basically this is stuff we want in the source package, but not the normal
 #  package
 system "cp -fa README $packaging_place/README";
 system "cp -fa user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch $packaging_place/user-mode-linux/usr/lib/uml/cramfs-vfs-order.patch";
 system "ln -sf $packaging_place/yard/replacements $packaging_place/yard/Replacements";
+mkdir("$packaging_place/linux");
+mkdir("$packaging_place/sources");
 
 # Now we get to clean out any CVS directories and make sure that the 
 # permissions are all for the user who will be creating the package.
@@ -185,8 +189,10 @@ if (-d $packaging_place) {
 my $pristine_source_package = "$packaging_place_orig/$prog-$version" . 
 ".tar.gz";
 print "$pristine_source_package $packaging_place\n";
+exit if $ARGV[0] eq "src";
+unlink($pristine_source_package) if -e $prinstine_source_package;
 system "tar cvfz  $pristine_source_package $packaging_place";
-exit;
+
 
 # Now we to the dh_make thing, and setup the time, version, and defaults. 
 
