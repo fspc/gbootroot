@@ -37,7 +37,7 @@ use Exporter;
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys device_table 
               text_insert error logadj *LOGFILE which_tests create_fstab
-	      make_link_absolute make_link_relative cleanup_link); # these last two added
+	      make_link_absolute make_link_relative cleanup_link yard_glob); # these last two added
                                                       # as a test
 
 use strict;
@@ -2224,7 +2224,7 @@ sub check_pam {
 	while (<PF>) {
 	   chomp;
 	   next if /^\#/ or /^\s*$/;           # Skip comments and empty lines
-	   my($file) = (split)[3]; # Get fourth field
+	   my($file) = (split)[2]; ## Get third field --freesource
 	   $pam_configured = 1;
 	   if (!-e "$mount_point/$file") {
 	      warning_test "$file2($.): $_\n",
@@ -2264,14 +2264,18 @@ sub check_nss {
    my($nss_conf) = "$mount_point/etc/nsswitch.conf";
    info(0, "Checking for NSS\n");
 
-   my($libc) = yard_glob("$mount_point/lib/libc-2*");
-   my($libc_version) = $libc =~ m|/lib/libc-2.(\d)|;
+   my($libc) = yard_glob("$mount_point/lib/libc-*");  ## removed 2
+   my($libc_version) = $libc =~ m|/lib/libc-\d+\.(\d)|; ## changed 2 & . 
    if (!defined($libc_version)) {
       warning_test "Can't determine your libc version\n";
    } else {
       info(0, "You're using $libc\n");
    }
-   my($X) = $libc_version + 1;
+   
+   ## Have no idea why this was being done, must have been true in
+   ## the historic past as noted above.  --freesource
+   #my($X) = $libc_version + 1;
+   my($X) = $libc_version;  # better than the return value
 
    if (-e $nss_conf) {
       open(NSS, "<$nss_conf")		or die "open($nss_conf): $!";
