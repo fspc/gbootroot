@@ -57,7 +57,7 @@ my $zoneinfo = get("make-debian-x11/make_debian_x11-zoneinfo");
 	# Not a perfect approach, but the swim package will be updated
         # eventually.
 	print STDERR "Be patient, this will take a little while.\n";
-	open (SCRIPT, "|make_debian-X11") 
+	open (SCRIPT, "|make_debian-X11 2&> /dev/null") 
 	or warn "Couldn't open make_debian-X11\n";
 	print SCRIPT $swim;
 	print SCRIPT $doc;
