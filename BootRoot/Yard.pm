@@ -147,6 +147,7 @@ sub read_contents_file {
     $text_insert->backward_delete($text_insert->get_length());
 
     # If the template changes it is time to clear all the values.
+    # Delete devices table.
     if ($contents_file_tmp && $contents_file_tmp ne $contents_file) {
 	undef %Included; 
 	undef %replaced_by;
@@ -193,19 +194,14 @@ sub read_contents_file {
 	  if ( $line =~  m,
 
 		  (?<![\w\d\+-])                    # can have \s before
-		  /dev(?![\w\d\+-]+)                # match /dev 
+		  /dev(?![\w\d\+-]+?)               # match /dev 
 		  
 		  ,x ) {
 
 	      my $expr;
 	      my @line;	      
 	      for $expr (split(' ', $line)) {
-		  if ( $expr =~  m,
-
-		       (?<![\w\d\+-])                    # can have \s before
-		       /dev(?![\w\d\+-]+)                # match /dev 
-		  
-		       ,x ) {
+		  if (  m,^/dev$|^/dev/, ) {
 		      
 		      # Do something here
 
