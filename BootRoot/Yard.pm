@@ -1660,11 +1660,12 @@ sub onto_proc_filesystem {
   my($sdev) = (stat($file))[0];
   my($ldev) = (lstat($file))[0];
 
-  if ($sdev) {
-      $sdev = $proc_dev;
+
+  if ($sdev && $sdev == $proc_dev) {
+      return $proc_dev;
   }
-  elsif ($ldev) {
-      $ldev = $proc_dev;
+  elsif ($ldev && $ldev == $proc_dev) {
+      return $proc_dev;
   }
 
 }
