@@ -1699,7 +1699,7 @@ sub Generate {
     # 8 = UML xterm
     # 9 = UML options
     # 10 = UML root_fs
-
+    #------------------
     # 11 = Kernel Modules  .. from the Boot Method
     # 12 = Kernel Version  .. from the Boot Method
     # 13 = System.map      .. from the Boot Method
@@ -2931,9 +2931,19 @@ sub initrd {
 		errcp(sys("$tool $path $tmp/initrd_mnt/lib/modules/$kernel_version")) == 2;
 	}    
 
-	info(1, "depmod -ae -b $tmp/initrd_mnt/lib/modules/$kernel_version $kernel_version\n");
-	return if err_custom("depmod -ae -b $tmp/initrd_mnt $kernel_version",
-			     "gBootRoot: ERROR: depmod failed") == 2;
+	if ($entry_advanced[13] && $entry_advanced[13] ne "") {
+
+	    info(1, "depmod -ae -F $entry_advanced[13] -b $tmp/initrd_mnt/lib/modules/$kernel_version $kernel_version\n");
+	    return if err_custom("depmod -ae -F $entry_advanced[13] -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+
+	}
+	else {
+
+	    info(1, "depmod -ae -b $tmp/initrd_mnt/lib/modules/$kernel_version $kernel_version\n");
+	    return if err_custom("depmod -ae -b $tmp/initrd_mnt $kernel_version", "gBootRoot: ERROR: depmod failed") == 2;
+
+	}
+
 
     }
 
