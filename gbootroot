@@ -3183,7 +3183,6 @@ sub initrd {
     my($lib,$what,$path,$value,$tool);
     my $I = "initrd";
 
-
     # Basically this means the ARS was never opened or edited and the
     # default behavior is to use the same device.
     if ( !$entry_advanced[3] ) {
@@ -3199,41 +3198,65 @@ sub initrd {
     pb($I,1);
     my $size_needed = initrd_size((stat("$tmp/linuxrc"))[12]/2);
     unlink("$tmp/linuxrc");
-    
-    info(0, "Using loop device to make initrd\n");
-    info(0, "Make sure you have loop device capability in your running kernel\n");
-    sys("dd if=/dev/zero of=$tmp/$initrd bs=1024 count=$size_needed");
-    pb($I,2);
-    # no need to enter y every time .. could use -F
-    my $error;
-    open(T,"|mke2fs -F -m0 -i8192 $tmp/$initrd >/dev/null 2>&1") or 
-	($error = error("Can not make ext2 filesystem on initrd.\n")); 
-    return "ERROR" if $error && $error eq "ERROR";
-    print T "y\n"; close(T);
-    pb($I,3);
-    info(0, "Mounting initrd in $tmp/initrd_mnt\n");
 
-    # moved this from initrd() to help with testing
+    my $fs_type = (split(/\s/,$main::makefs))[0];
+
+
+    if ( $fs_type ne "genext2fs" ) {
+
+	info(0, "Using loop device to make initrd\n");
+	info(0, "Make sure you have loop device capability" . 
+	     " in your running kernel\n");
+	sys("dd if=/dev/zero of=$tmp/$initrd bs=1024 count=$size_needed");
+	pb($I,2);
+	# no need to enter y every time .. could use -F
+	my $error;
+	open(T,"|mke2fs -F -m0 -i8192 $tmp/$initrd >/dev/null 2>&1") or 
+	    ($error = error("Can not make ext2 filesystem on initrd.\n")); 
+	return "ERROR" if $error && $error eq "ERROR";
+	print T "y\n"; close(T);
+	pb($I,3);
+	info(0, "Mounting initrd in $tmp/initrd_mnt\n");
+
+    }
+
+    # clean initrd_mnt if any garbage is found.
+    if (-d "$tmp/initrd_mnt") {
+	sys("rm -rf $tmp/initrd_mnt");
+    }    
     if (!-d "$tmp/initrd_mnt") {
 	return if errmk(sys("mkdir $tmp/initrd_mnt")) == 2;
     }
 
+   
     # Here the loop device is made on tmp, not mnt
-    if ( $> == 0 )  {
-	return if errm(sys("mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt"))
-	== 2;    
+    if ( $fs_type eq "genext2fs" ) {
+	info(0, "Using genext2fs to make initrd rather than a loop device\n");
     }
+
     else {
-	return if errm(sys("mount $tmp/initrd_mnt"))
+	if ( $> == 0 )  {
+	    return if errm(sys("mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt")) == 2;    
+	}
+	else {
+	    return if errm(sys("mount $tmp/initrd_mnt")) == 2;
+	}	
     }
     pb($I,4);
 
     info(0, "Putting everything together\n");
-    open(LC, ">$tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to loop device\n";
+    if ( $fs_type eq "genext2fs" ) {
+	open(LC, ">$tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to $tmp/initrd_mnt\n";
+    }
+    else { 
+	open(LC, ">$tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to loop device\n";
+    }
     print LC initrd_heredoc($broot_image,$device); close(LC);
     # I could test this but somebody's system may do permissions differently
     sys("chmod 755 $tmp/initrd_mnt/linuxrc");
-    sys("rmdir $tmp/initrd_mnt/lost+found");
+    if ($fs_type ne "genext2fs" ) {
+	sys("rmdir $tmp/initrd_mnt/lost+found");
+    }
     pb($I,5);
 
     info(0, "... the dirs\n");
@@ -3247,27 +3270,66 @@ sub initrd {
 	return if err(sys("cp -a $container[BOOT_DEVICE] $mnt/dev")) == 2;
     }
 
-    if ( $> == 0 ) {
-     return if errcp(		    
-     sys("cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev")) == 2;
-     return if errcp(sys("cp -a $container[BOOT_DEVICE] $tmp/initrd_mnt/dev"))
-	== 2;
+    # DEVICES SECTION
+    my @devices;
+    my $device_table  = "$tmp/boot_device_table.txt";
+    if ( $fs_type eq "genext2fs" ) {
+
+	info(0, "Making $device_table for genext2fs\n");
+	my $error;
+	unlink( $device_table ) if -e $device_table;
+
+	#<path> <type> <mode> <uid> <gid> <major> <minor> <start><inc><count> 
+	# /dev is always needs to be made automatically
+	open(BootRoot::Yard::DEVICE_TABLE, ">$device_table") or
+	    ($error = error("$device_table: $!"));
+	return "ERROR"if $error && $error eq "ERROR";
+	
+	print BootRoot::Yard::DEVICE_TABLE 
+	    "# <path>\t<type>\t<mode>\t<uid>\t<gid>\t<major>\t<minor>" .
+		"\t<start>\t<inc>\t<count>\n"; 
+	print BootRoot::Yard::DEVICE_TABLE "/dev\t\td\t0755\t-\t-\t-\t-\t-\t-\t-\n";
+
+	# Keep a record of the devices required
+	@devices = qw(/dev/console dev/null /dev/ram0 /dev/ram1 /dev/tty0);
+	for ( split(" ", $container[BOOT_DEVICE] ) ) {
+	    push(@devices, $_ ) if $_;
+	}
+
+	device_table( @devices );
+	close(BootRoot::Yard::DEVICE_TABLE);
+
     }
+
     else {
-	# This could be replaced by a devfs.
-	sys("$main::sudo mknod c 5 1 $tmp/initrd_mnt/dev/console");
-	sys("$main::sudo mknod c 1 3 $tmp/initrd_mnt/dev/null");
-	sys("$main::sudo mknod b 1 0 $tmp/initrd_mnt/dev/ram0");
-	sys("$main::sudo mknod b 1 1 $tmp/initrd_mnt/dev/ram1");
-	sys("$main::sudo mknod c 4 0 $tmp/initrd_mnt/dev/tty0");
-	sys("$main::sudo mknod b 2 0 $tmp/initrd_mnt/dev/fd0");
+
+
+	if ( $> == 0 ) {
+	    info(0, "Copying over devices to $tmp/initrd_mnt/dev\n");
+	    return if errcp(		    
+	    sys("cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev")
+                ) == 2;
+	   return if errcp(
+            sys("cp -a $container[BOOT_DEVICE] $tmp/initrd_mnt/dev")) == 2;
+	}
+	else {
+	    info(0, "Mknod devices at $tmp/initrd_mnt/dev\n");
+	    # This could be replaced by a devfs.
+	    sys("$main::sudo mknod c 5 1 $tmp/initrd_mnt/dev/console");
+	    sys("$main::sudo mknod c 1 3 $tmp/initrd_mnt/dev/null");
+	    sys("$main::sudo mknod b 1 0 $tmp/initrd_mnt/dev/ram0");
+	    sys("$main::sudo mknod b 1 1 $tmp/initrd_mnt/dev/ram1");
+	    sys("$main::sudo mknod c 4 0 $tmp/initrd_mnt/dev/tty0");
+	    sys("$main::sudo mknod b 2 0 $tmp/initrd_mnt/dev/fd0");
+	}
+
     }
+
     pb($I,7);
 
     # This and libs should be user accessible
     info(0, ".. the modules\n");
     my @modules = kernel_modules();
-
 
     if (@modules) {
 
@@ -3296,9 +3358,7 @@ sub initrd {
 
 	}
 
-
     }
-
 
     info(0, ".. the bins\n");
     my @initrd_stuff;
@@ -3377,15 +3437,39 @@ sub initrd {
         }
     }
 
-
     info(0, "Determine run-time link bindings\n");
     # Has a return code of 0 regardless
     # Also, produces false alarms even when it is working.  
     info(1, "Ignore warnings about missing directories\n");
     sys("ldconfig -v -r $tmp/initrd_mnt");
-    info(0, "Umounting loop device, and compressing initrd\n");
-    return if errum(sys("umount $tmp/initrd_mnt")) == 2;
+
+    
+    if ( $fs_type eq "genext2fs" ) {
+	info(0, "Using genext2fs to contruct the initrd\n");
+	# The -D option is unique to the newest unreleased version of 
+	# genextfs modified by BusyBox maintainer Erick Andersen
+	# August 20, 2001.
+
+	my $error;
+	
+	# genext2fs doesn't make accurate sized filesystems.
+	$size_needed = $size_needed + 1000;
+
+	if (
+	    sys("/usr/lib/bootroot/$main::makefs -b $size_needed -d  $tmp/initrd_mnt -D $device_table $tmp/$initrd") !~ 
+	    /^0$/ ) {
+	    $error = error("Cannot $fs_type filesystem.");
+	    return "ERROR" if $error && $error eq "ERROR";
+	}
+	
+	info(0, "Compressing initrd\n");
+    }
+    else {
+	info(0, "Umounting loop device, and compressing initrd\n");
+	return if errum(sys("umount $tmp/initrd_mnt")) == 2;    
+    }
     sys("gzip -f9 $tmp/$initrd");
+
     pb($I,10); # This takes the longest.
 
     $initrd = $initrd . ".gz";
