@@ -12,7 +12,7 @@ Recommends: dswim, lilo
 Suggests: make-debian-x11
 Description: Boot/Root Filesystem Distribution testing and creation.
  BootRoot makes the construction and development of distributions fun and 
- simple for with its Root Methods (Yard) and user-mode-linux test bed.  Finish 
+ simple with its Root Methods (Yard) and user-mode-linux test bed.  Finish 
  the product with a Boot Method (2-disk compression supported).  Normal 
  (non-root) users can make root filesystems and boot disks.  Includes the 
  make_debian script to create a testable user-mode-linux base Debian system.
