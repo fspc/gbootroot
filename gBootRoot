@@ -1088,7 +1088,7 @@ sub uml_box {
 				      else {
 					  if (!$entry_advanced[8]) {
 					      error_window("gBootRoot Error: " .
-					      "Enter a xterm, and executable " .
+					      "Enter an xterm, and executable " .
 							   "option.");
 					      return;
 					  }
@@ -1144,10 +1144,7 @@ sub remove_matching_process {
 	if (m,$match_word,) {
 	    my $process = (split(/\s+/,$_,))[1];
 	    system "kill $process";
-	}
-	# not so friendly approach
-	if (m,$match_word,) {
-	    my $process = (split(/\s+/,$_,))[1];
+	    # not so friendly approach
 	    system "kill -9 $process";
 	}
     }
