@@ -42,7 +42,8 @@ my($check,$dep,$space,$create,$test);
 my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
-my ($replacements_window, $filesystem_window, $path_window, $shortcut);
+my ($replacements_window, $filesystem_window, $path_window, $tutorial, 
+    $shortcut);
 my ($search_window, $question_window, $offset);
 my $Shortcuts;
 my @entry;
@@ -214,7 +215,8 @@ my @menu_items = ( { path        => '/File',
                      type        => '<LastBranch>' },
 		   { path        => '/Help/help_tearoff',
 		     type        => '<Tearoff>' },
-                   { path        => '/_Help/Tutorial' },
+                   { path        => '/_Help/Tutorial',
+		     callback    => \&tutorial },
                    { path        => '/_Help/Shortcuts', 
 		     callback    => \&shortcut	} );
 
@@ -231,6 +233,7 @@ sub yard {
         $error = kernel_version_check($kernel);  
                                               # Yard: kernel,kernel version
                                               # Becomes $ENV{'RELEASE'}
+
 	return if $error && $error eq "ERROR";
     }
 	open(CONTENTS, "<$changed_text") or 
@@ -1113,6 +1116,7 @@ sub saved {
 
 
 # rindex and index makes things easy
+# This can be added to other widgets.
 sub search {
 
     if (not defined $search_window) {
@@ -1661,6 +1665,44 @@ sub save_as {
 
 } # end sub save_as
 
+sub tutorial {
+
+   if (not defined $tutorial) {
+    $tutorial = Gtk::Dialog->new();
+    $tutorial->signal_connect("destroy", \&destroy_window, \$tutorial);
+    $tutorial->signal_connect("delete_event", \&destroy_window, \$tutorial);
+    $tutorial->set_title("Tutorial");
+    $tutorial->border_width(12);
+    $tutorial->set_position('center');
+
+    my $label = Gtk::Label->
+	new("Tutorial is in /usr/share/doc/gbootroot/html/index.html.");
+    $label->set_justify( 'left' );
+#    $label->set_pattern("_________");
+    $tutorial->vbox->pack_start( $label, $false, $false, 2 );
+    $label->show();
+ 
+    my $button = Gtk::Button->new("OK");
+    $button->signal_connect("clicked", sub {
+
+	    $tutorial->destroy;
+    });
+    $button->can_default(1);
+    $tutorial->action_area->pack_start($button, $false, $false,0);
+    $button->grab_default;
+    $button->show;
+
+
+    }
+     if (!visible $tutorial) {
+         $tutorial->show();
+     }
+     else {
+        $tutorial->destroy();
+     }
+
+} # end sub tutorial
+ 
 sub shortcut {
 
    if (not defined $shortcut) {
