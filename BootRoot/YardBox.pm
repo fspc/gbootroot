@@ -29,8 +29,9 @@ use strict;
 use BootRoot::Yard;
 use BootRoot::Error;
 use BootRoot::lsMode;
+use File::Basename;
 
-my $yard_window;
+#my $main::yard_window;
 my $item_factory;
 my $true = 1;
 my $false = 0;
@@ -81,7 +82,7 @@ my @menu_items = ( { path        => '/File',
                      type        => '<Separator>' },
 		   { path        => '/File/Close',
 		     accelerator => '<alt>W',
-		     callback    => sub { destroy $yard_window; }},
+		     callback    => sub { destroy $main::yard_window; }},
 		   
                    { path        => '/_Edit',
                      type        => '<Branch>' },
@@ -211,6 +212,7 @@ sub yard {
                                               # Yard: kernel,kernel version
                                               # Becomes $ENV{'RELEASE'}
 	return if $error && $error eq "ERROR";
+    }
 	open(CONTENTS, "<$changed_text") or 
         ($error = error("$changed_text: $!"));
 	return "ERROR"if $error && $error eq "ERROR";
@@ -219,11 +221,11 @@ sub yard {
 	$changed_text = join("",@template);
 	yard_box();
 
-    }
-    else {
-	error_window("Kernel Selection required");
-        return;
-    }
+    #}
+    #else {
+	##error_window("Kernel Selection required");
+        ##return;
+    #}
 
 
 } # end sub yard
@@ -648,18 +650,18 @@ my $start_length;
 sub yard_box {
 
 
-       $yard_window = new Gtk::Window "toplevel";
-       $yard_window->signal_connect("destroy", \&destroy_window,
-                                    \$yard_window);
-       $yard_window->signal_connect("delete_event", \&destroy_window,
-                                    \$yard_window);
-       $yard_window->set_usize( 525, 450 );
-       $yard_window->set_policy( $true, $true, $false );
-       $yard_window->set_title( "Yard Box" );
-       $yard_window->border_width(0);
+       $main::yard_window = new Gtk::Window "toplevel";
+       $main::yard_window->signal_connect("destroy", \&destroy_window,
+                                    \$main::yard_window);
+       $main::yard_window->signal_connect("delete_event", \&destroy_window,
+                                    \$main::yard_window);
+       $main::yard_window->set_usize( 525, 450 );
+       $main::yard_window->set_policy( $true, $true, $false );
+       $main::yard_window->set_title( "Yard Box" );
+       $main::yard_window->border_width(0);
 
        my $main_vbox = new Gtk::VBox( $false, 0 );
-       $yard_window->add( $main_vbox );
+       $main::yard_window->add( $main_vbox );
        $main_vbox->show();
 
        my $vbox = new Gtk::VBox( $false, 0 );
@@ -669,7 +671,7 @@ sub yard_box {
 
        #_______________________________________ 
        # Item::Factory
-       my $menubar = yard_menu($yard_window);
+       my $menubar = yard_menu($main::yard_window);
        $vbox->pack_start( $menubar, $false, $true, 0 );
        $menubar->show();
        
@@ -956,7 +958,7 @@ sub yard_box {
 
        $close_button = new Gtk::Button( "Close" );
        $close_button->signal_connect( 'clicked', 
-       				sub { destroy $yard_window; } );
+       				sub { destroy $main::yard_window; } );
        $vbox->pack_start( $close_button, $true, $true, 0 );
        $close_button->show();
 
@@ -966,7 +968,7 @@ sub yard_box {
        $vbox->pack_start( $save_button, $true, $true, 0 );
        $save_button->show();
     
-       show $yard_window;
+       show $main::yard_window;
 
 } # end sub yard_box
 
@@ -979,7 +981,12 @@ sub saved {
 
     # It's not necessary to use lsMode, but it's a cool program by MJD.
     if  ($whoami == 100 || $whoami == 102 ) {
-	if ( file_mode("$template_dir$template") !~ /w/ ) {
+	if ( file_mode("$template_dir$template") =~ /l/ ) {
+	    error_window("gBootRoot: ERROR: $template_dir$template is not " .
+			 "writable.\nUse [ File->Save As ] or " .
+			 "[Alt-S] with the yard suffix.");		     
+	}
+	elsif ( file_mode("$template_dir$template") !~ /w/ ) {
 	    error_window("gBootRoot: ERROR: $template_dir$template is not " .
 			 "writable.\nUse [ File->Save As ] or " .
 			 "[Alt-S] with the yard suffix.");		     
@@ -1063,14 +1070,38 @@ sub save_as {
     $button->signal_connect("clicked", sub {
 	    # Here's where we get to undef Yard variable and start over at 
 	    # check
-	    my $new = "$template_dir$new_template";
-	    open(NEW,">$new") or 
+	my $new = "$template_dir$new_template";
+	print "$new && $template_dir$template\n";
+	if (!basename($new)) {
+	    if ( file_mode("$template_dir$template") =~ /l/ ) {
+		error_window("gBootRoot: ERROR: $template_dir$template is not " .
+			     "writable.\nUse [ File->Save As ] or " .
+			     "[Alt-S] with the yard suffix.");		     
+		$save_as->destroy;
+		return;
+	    }
+	    elsif ( file_mode("$template_dir$template") !~ /w/ ) {
+		error_window("gBootRoot: ERROR: $template_dir$template is not " .
+			     "writable.\nUse [ File->Save As ] or " .
+			     "[Alt-S] with the yard suffix.");		     
+		$save_as->destroy;
+		return;
+	    }
+	}
+	open(NEW,">$new") or 
 		($error = error("gBootRoot: ERROR: Can't create $new"));
-	    return if $error && $error eq "ERROR";    
-	    print NEW $changed_text;
-	    close(NEW);
-	    $template = $new_template;
-	    $save_as->destroy
+	return if $error && $error eq "ERROR";    
+	print NEW $changed_text;
+	close(NEW);
+	$template = $new_template;
+
+	opendir(DIR,$template_dir) if -d $template_dir; 
+	my @templates = grep { m,\.yard$, } readdir(DIR) if $template_dir;
+	closedir(DIR);
+	$main::combo->set_popdown_strings( @templates ) if @templates; 
+	$main::combo->entry->set_text($new_template);
+
+	    $save_as->destroy;
     });
     $button->can_default(1);
     $save_as->action_area->pack_start($button, $false, $false,0);
