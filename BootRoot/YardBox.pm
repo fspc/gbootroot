@@ -1153,13 +1153,14 @@ sub save_as {
     $save_as->vbox->pack_start( $label, $false, $false, 2 );
     $label->show();
     my $button = Gtk::Button->new("OK");
+    my $new_template_tmp = "nothing";
+    my $event_count = 0;
     $button->signal_connect("clicked", sub {
 
 	# Here's where we get to undef Yard variable and start over at 
 	# check
 	my $new = "$template_dir$new_template" if $new_template;
 
-	#if (!basename($new)) {
 	if (!$new_template) {
 	    if ( file_mode("$template_dir$template") =~ /l/ ) {
 		error_window("gBootRoot: ERROR: " . 
@@ -1190,8 +1191,26 @@ sub save_as {
 
 	# An existing file shouldn't be written over unless the user wants
 	# this to happen.
-	if (-f $new && !$write_over) {
+	if (!-f $new) {
 
+	    open(NEW,">$new") or 
+		($error = error("Can't create $new"));
+	    return if $error && $error eq "ERROR";    
+	    print NEW $changed_text_from_template;
+	    close(NEW);
+	    $template = $new_template;
+
+	    opendir(DIR,$template_dir) if -d $template_dir; 
+	    my @templates = grep { m,\.yard$, } readdir(DIR) if $template_dir;
+	    closedir(DIR);
+	    $main::combo->set_popdown_strings( @templates ) if @templates; 
+	    $main::combo->entry->set_text($new_template);
+	    $main::yard_window->set_title( "Yard Box - $template" );
+	    $save_as->destroy;
+	}
+	else { 
+
+	    
 	    if ( file_mode("$new") =~ /l/ ) {
 		error_window("gBootRoot: ERROR: " . 
 			     "$new is not " .
@@ -1207,38 +1226,42 @@ sub save_as {
 			     "[Alt-S] with the yard suffix.");		     
 		$save_as->destroy;
 		return;
-		#save_as();
 	    }
 
-	    my $label = Gtk::Label->new("$new_template already exists, " . 
-	    				"do\nyou want to write over it?");
-	    $label->set_justify( 'left' );
-	    $save_as->vbox->pack_start( $label, $false, $false, 2 );
-	    $label->show();
-	    $write_over = 1;
+
+	    $label->set_text("$new_template already exists, " . 
+			     "do\nyou want to write over it, " .
+			     "or\nsave it with a different name?");
+
+	    $event_count++;
+	    my $event = pop(@_);
+
+	    if ($new_template eq $new_template_tmp) {
+	    if ($event_count >= 2 && $event && $event eq "clicked") {
+
+		open(NEW,">$new") or 
+		    ($error = error("Can't create $new"));
+		return if $error && $error eq "ERROR";    
+		print NEW $changed_text_from_template;
+		close(NEW);
+		$template = $new_template;
+
+		opendir(DIR,$template_dir) if -d $template_dir; 
+		my @templates = grep { m,\.yard$, } readdir(DIR) 
+		    if $template_dir;
+		closedir(DIR);
+		$main::combo->set_popdown_strings( @templates ) if @templates; 
+		$main::combo->entry->set_text($new_template);
+		$main::yard_window->set_title( "Yard Box - $template" );
+
+		$event_count = 0;
+		$save_as->destroy;
+	    }	    
+	    }
+	    $new_template_tmp = $new_template;
 	}
-	else {
-	    $write_over = "";
-	}
 
-	if (!$write_over) { 
-	open(NEW,">$new") or 
-		($error = error("Can't create $new"));
-	return if $error && $error eq "ERROR";    
-	print NEW $changed_text_from_template;
-	close(NEW);
-	$template = $new_template;
-
-	opendir(DIR,$template_dir) if -d $template_dir; 
-	my @templates = grep { m,\.yard$, } readdir(DIR) if $template_dir;
-	closedir(DIR);
-	$main::combo->set_popdown_strings( @templates ) if @templates; 
-	$main::combo->entry->set_text($new_template);
-	$main::yard_window->set_title( "Yard Box - $template" );
-	$save_as->destroy;
-        }
-
-    });
+    }, "clicked");
 
     $button->can_default(1);
     $save_as->action_area->pack_start($button, $false, $false,0);
