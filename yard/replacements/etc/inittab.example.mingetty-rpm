@@ -1,4 +1,4 @@
-# $Id$
+# $Id: inittab.example.mingetty-rpm,v 1.1 2001/12/03 20:05:49 freesource Exp $
 # Used by Example.yard
 #
 # inittab       This file describes how the INIT process should set up
@@ -20,7 +20,7 @@
 id:3:initdefault:
 
 # System initialization.
-si::sysinit:/etc/rc.d/rc.sysinit
+si::sysinit:/etc/init.d/rcS
 
 l0:0:wait:/etc/init.d/halt 0
 l1:1:wait:/etc/init.d/rc 1
