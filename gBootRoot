@@ -29,7 +29,15 @@ use strict;
 
 init Gtk;
 
-# Perhaps you are wondering where to learn  how to program with Gtk-Perl?
+#my $check_version = Gtk::check_version("1","0","7");
+#print $check_version;
+
+# 1 2 7 ... 0.7002
+#Gtk->print('Gtk->major_version, "  ", Gtk->minor_version, "  ", Gtk->micro_version');
+
+
+
+# Perhaps you are wondering where to learn how to program with Gtk-Perl?
 # There is an excellent tutorial by Stephen Wilhelm at
 # http://personal.riverusers.com/~swilhelm/perlgtk/.  Please
 # help support his development of this tutorial.  Another good place
@@ -512,10 +520,11 @@ sub advanced_section {
        # Optional Device(s)
        label_advanced("Opt. Device(s)",0,1,2,3);
        $ea2 = entry_advanced(1,2,2,3,1);
-       $tooltips->set_tip( $ea2, "Add devices to initrd which are" .
+       $tooltips->set_tip( $ea2, "Add devices to the boot disk which are" .
                                  " necessary for the kernel to function" .
                                  " properly.  Put a space between each" .
-                                 " device.", 
+                                 " device.  For instance, /dev/fb0 for" .
+                                 " frame buffer devices.", 
                                     "");
        $ea2->set_text($entry_advanced[1]) if defined $entry_advanced[1];
 
@@ -766,7 +775,7 @@ sub entry {
                  } 
                                                  });
      }
-    if (defined $num) {
+    if (defined $num and $num != 0) {
      my $todo;
      if ($num == 1) {
          $todo = "the Kernel";
@@ -1191,6 +1200,11 @@ sub lilo_put_it_together {
     system "cp -a /dev/$norm_root_device $mnt/dev >> $verbosefn 2>&1") == 2;
   }
 
+  # For frame buffer devices and the like.
+  if ($entry_advanced[1]) {
+      return if errcp(system "cp -a $entry_advanced[1] $mnt/dev >> $verbosefn 2>&1") == 2;
+  }
+
   #pb($B,3);
   #V#print "Copy over important lilo stuff\n";
   return if
@@ -1463,10 +1477,6 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $verbosefn 2>&1; mount -o loop 
 
   return if errcp(system "cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev >> $verbosefn 2>&1") == 2;
   return if errcp(system "cp -a $device $tmp/initrd_mnt/dev >> $verbosefn 2>&1") == 2;
-  # For frame buffer devices and the like.
-  if ($entry_advanced[1]) {
-      return if errcp(system "cp -a $entry_advanced[1] $tmp/initrd_mnt/dev >> $verbosefn 2>&1") == 2;
-  }
   pb($I,7);
 
   #V#print ".. the bins\n";
@@ -1842,8 +1852,8 @@ sub message {
 # HEREDOC
 my $message = << "MESSAGE";
 
-gBootRoot $version written by Jonathan Rosenbaum $date GNU GPL
-mailto:mttrader\@access.mountain.net
+gBootRoot $version $date GNU GPL
+mailto:  Jonathan Rosenbaum <mttrader\@access.mountain.net>
 
 Press [Ctrl] to see the lilo prompt.
 
@@ -1871,8 +1881,8 @@ sub help {
 
 << "HELP";
 
-gBootRoot $version written by Jonathan Rosenbaum $date GNU GPL
-email:mttrader\@access.mountain.net
+gBootRoot $version $date GNU GPL
+email:  Jonathan Rosenbaum <mttrader\@access.mountain.net>
 site -> http://the.netpedia.net/gBootRoot.html
 
 gBootRoot is a Gtk+/Perl program useful for both beginners and advanced
