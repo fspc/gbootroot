@@ -54,7 +54,7 @@ my $INODE_SIZE       = 1024;
 my $objcopy = "objcopy";
 my($Warnings) = 0;
 my $verbosity;
-my $text_insert; 
+my ($text_insert,$red,$blue); 
 my $logadj;
 
 # This solves an annoying problem with the new Perl-5.6 built in glob,
@@ -75,7 +75,7 @@ sub warning {
 }
 
 sub verbosity { $verbosity = $_[0]; }
-sub text_insert { $text_insert = $_[0]; }
+sub text_insert { $text_insert = $_[0]; $red = $_[1]; $blue = $_[2]; }
 sub logadj { $logadj = $_[0]; }
 # This is because verbosity_box is in start_logging_output
 #sub verbosity_window { $verbosity_window = $_[0]; }
@@ -1031,7 +1031,12 @@ sub info {
   if ($verbosity >= $level) {
       if ($text_insert) {
 	  $text_insert->freeze();
-	  $text_insert->insert( undef, undef, undef, $output );
+	  if ($level == 0) {
+	      $text_insert->insert( undef, $blue, undef, $output );
+	  }
+	  elsif ($level == 1) {
+	      $text_insert->insert( undef, $red, undef, $output );
+	  }    
 	  $text_insert->thaw();
 	  $logadj->set_value($logadj->upper - $logadj->page_size);
 	  while (Gtk->events_pending) { Gtk->main_iteration; }
