@@ -3777,131 +3777,155 @@ sub initrd {
 } # end sub initrd
 
 # This was submitted by Cristian "cretzu."
-sub gdkbirdaao
-{
-  # Guess Default Kernel Boot Image Root Device And Append Options (gdbirdaao)
-  #
-  # We return a list with 3 elements:
-  #
-  #   root device, kernel boot image path and append options
-  #
-  # The last list element (append options) could be returned as a list
-  # of options, but it probably might be cleaner if the caller splitted it.
-  #
-  # this should cover the following cases:
-  #
-  # 1. we have a 'root=...' somewhere above the 'image=...' block(s), and
-  #    the image block may or may not have a root specified
-  #
-  # 2. there is no default label, in which case, we take the first one
-  #
-  # 3. there is a default label, and that's what we pick up
-  #
+sub gdkbirdaao  {
 
-  my $ret_image_path = '';
-  my $ret_root_dev = '';
-  my $ret_append = '';
+    # Guess Default Kernel Boot Image Root Device And Append Options 
+    #(gdbirdaao)
+    #
+    # We return a list with 3 elements:
+    #
+    #   root device, kernel boot image path and append options
+    #
+    # The last list element (append options) could be returned as a list
+    # of options, but it probably might be cleaner if the caller splitted it.
+    #
+    # this should cover the following cases:
+    #
+    # 1. we have a 'root=...' somewhere above the 'image=...' block(s), and
+    #    the image block may or may not have a root specified
+    #
+    # 2. there is no default label, in which case, we take the first one
+    #
+    # 3. there is a default label, and that's what we pick up
+    #
 
-  if (-e $lilo_conf and !-d $lilo_conf)
-  {
+    my $ret_image_path = '';
+    my $ret_root_dev = '';
+    my $ret_append = '';
 
-      my @lilo_lines;
-    open(LIL, $lilo_conf) or warn "*** $lilo_conf not found, perhaps because you are not root?";
-    @lilo_lines = <LIL>;
-    close(LIL);
-    chomp(@lilo_lines);
 
-    my $default_label = '';
-    my %image_blocks;
-    my $image_block_name_prefix = 'ImageBlock';
-    my $image_block_no = 1;
-    my $image_block_name = '';
-    my $root_dev = '';
+    # enough of the annoying "perhaps you are not root"
+    # ofcourse this test is always ran assuming lilo is used.
+    if ( $> == 0 ) {
 
-    for (@lilo_lines)
-    {
-      # ignore comment lines
-      next if m/^\s*[#]/;
+	if ( !$container[METHOD] || 
+	     $container[METHOD] eq "2 disk compression" ) {
 
-      # cleanup whitespace
-      s/\s*//;
-      s/\s*$//;
-      s/\s*=\s*/=/;
+	    if (-e $lilo_conf and !-d $lilo_conf) {
 
-      # 'default=whatever' returns just a label
-      if (m/default=(.+)\s*/)
-      {
-        $default_label = $1;
-      }
-      # start of a new 'image=<kernel path>' image block or similar
-      elsif (m/(image|other)=(.+)\s*/)
-      {
-        $image_block_name = sprintf("%s%02d",
-                                    $image_block_name_prefix,
-                                    $image_block_no);
-        $image_blocks{$image_block_name}{'kernel_image_path'} = $2;
-        $image_blocks{$image_block_name}{'root_device'} = $root_dev;
-        $image_block_no += 1;
-      }
-      # image block label
-      elsif (m/label=(.+)\s*/)
-      {
-        $image_blocks{$image_block_name}{'block_label'} = $1;
-      }
-      # 'root=<root device>'
-      elsif (m#root=/dev/(.+)\s*#)
-      {
-        # inside an image block
-        if ($image_block_name and
-            defined($image_blocks{$image_block_name}{'root_device'}))
-        {
-          $image_blocks{$image_block_name}{'root_device'} = $1;
-        }
-        # loose
-        else
-        {
-          $root_dev = $1 if !$root_dev;
-        }
-      }
-      elsif (m#append=\"(.+)\"#)
-      {
-	$image_blocks{$image_block_name}{'append'} = $1;
-      }
-      else
-      {
-        # Ignore everything else
-      }
-    }
+		my @lilo_lines;
+		open(LIL, $lilo_conf) or 
+		    warn "*** $lilo_conf not found\n";
+		@lilo_lines = <LIL>;
+		close(LIL);
+		chomp(@lilo_lines);
 
-    # we'll now find the kernel image and root device
-    foreach $image_block_name (sort keys %image_blocks)
-    {
-      # Assume there's no specified default label; take the first
-      $ret_root_dev = $image_blocks{$image_block_name}{'root_device'}
-        if !$ret_root_dev;
-      $ret_image_path = $image_blocks{$image_block_name}{'kernel_image_path'}
-	if !$ret_image_path;
-      $ret_append = $image_blocks{$image_block_name}{'append'}
-	if !$ret_append;
+		my $default_label = '';
+		my %image_blocks;
+		my $image_block_name_prefix = 'ImageBlock';
+		my $image_block_no = 1;
+		my $image_block_name = '';
+		my $root_dev = '';
 
-      # do we have a default kernel?
-      if (defined $image_blocks{$image_block_name}{'block_label'}) {
-      if ($image_blocks{$image_block_name}{'block_label'} eq $default_label)
-      {
-        # Found the block match for the default label
-        $ret_root_dev = $image_blocks{$image_block_name}{'root_device'};
-        $ret_image_path = $image_blocks{$image_block_name}{'kernel_image_path'};
-	$ret_append = $image_blocks{$image_block_name}{'append'};
-        last;
-      }
-  }
-   }
-  }
+		for (@lilo_lines) {
+		    # ignore comment lines
+		    next if m/^\s*[#]/;
+
+				   # cleanup whitespace
+				   s/\s*//;
+				   s/\s*$//;
+				   s/\s*=\s*/=/;
+
+				   # 'default=whatever' returns just a label
+				   if (m/default=(.+)\s*/) {
+				       $default_label = $1;
+				   }
+				   # start of a new 'image=<kernel path>' 
+				   # image block or similar
+				   elsif (m/(image|other)=(.+)\s*/) {
+				       $image_block_name = 
+					   sprintf("%s%02d",
+						   $image_block_name_prefix,
+						   $image_block_no);
+				       $image_blocks{$image_block_name}
+				       {'kernel_image_path'} = $2;
+				       $image_blocks{$image_block_name}
+				       {'root_device'} = $root_dev;
+				       $image_block_no += 1;
+				   }
+				   # image block label
+				   elsif (m/label=(.+)\s*/) {
+				       $image_blocks{$image_block_name}
+				       {'block_label'} = $1;
+				   }
+				   # 'root=<root device>'
+				   elsif (m#root=/dev/(.+)\s*#) {
+					  # inside an image block
+					  if ($image_block_name and
+					      defined($image_blocks
+						      {$image_block_name}
+						      {'root_device'})) {
+					      $image_blocks{$image_block_name}
+					      {'root_device'} = $1;
+					  }
+					  # loose
+					  else {
+					      $root_dev = $1 if !$root_dev;
+					  }
+				      }
+				   elsif (m#append=\"(.+)\"#) {
+					  $image_blocks{$image_block_name}
+					  {'append'} = $1;
+				      }
+				   else {
+				       # Ignore everything else
+				   }
+			       }
+
+		    # we'll now find the kernel image and root device
+		    foreach $image_block_name (sort keys %image_blocks) {
+			# Assume there's no specified default label; 
+			# take the first
+			$ret_root_dev = 
+			    $image_blocks{$image_block_name}{'root_device'}
+			if !$ret_root_dev;
+			$ret_image_path = 
+			    $image_blocks{$image_block_name}
+			{'kernel_image_path'}
+			if !$ret_image_path;
+			$ret_append = 
+			    $image_blocks{$image_block_name}{'append'}
+			if !$ret_append;
+
+			# do we have a default kernel?
+			if (defined $image_blocks{$image_block_name}
+			    {'block_label'}) {
+			    if ($image_blocks{$image_block_name}
+				{'block_label'} eq $default_label) {
+				# Found the block match for the default label
+				$ret_root_dev = 
+				    $image_blocks{$image_block_name}
+				{'root_device'};
+				$ret_image_path = 
+				    $image_blocks{$image_block_name}
+				{'kernel_image_path'};
+				$ret_append = $image_blocks
+				{$image_block_name}{'append'};
+				last;
+			    }
+			}
+		    }
+		}
+
+
+	    }  # if METHOD eq 2 disk compression
+
+	}  # if not root
   
-  # and some a small portion of paranoia
-  $ret_root_dev = 'hda1' if !$ret_root_dev;
+	# and some a small portion of paranoia
+	$ret_root_dev = 'hda1' if !$ret_root_dev;
 
-  return ($ret_root_dev, $ret_image_path, $ret_append);
+	return ($ret_root_dev, $ret_image_path, $ret_append);
 
 } # end sub gdkbirdaao
 
