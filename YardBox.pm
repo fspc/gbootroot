@@ -91,17 +91,18 @@ my @menu_items = ( { path        => '/File',
 		     action      => "5",
 		     type        => '<CheckItem>' },
 		   { path        => '/Edit/Stages/' },
-                   { path        => '/Edit/Stages/edit_tearoff',
-                     type        => '<Tearoff>' },
 		   { path        => '/Edit/Stages/one-by-one',
 		     action      => 13,
-		     type        => '<RadioItem>' },
+		     type        => '<RadioItem>', 
+		     callback    => \&stages_one_by_one },
 		   { path        => '/Edit/Stages/continuous',
 		     action      => 14,
-		     type        => '<RadioItem>' },
+		     type        => '<RadioItem>', 
+		     callback    => \&stages_continuous },
 		   { path        => '/Edit/Stages/user defined',
 		     action      => 15,
-		     type        => '<RadioItem>' },
+		     type        => '<RadioItem>',
+		     callback    => \&stages_user_defined },
 		   { path        => '/Edit/File System' },
 		   { path        => '/Edit/Replacements' },
 
@@ -261,6 +262,37 @@ sub strip_debug {
     print $strip_bool;
 }
 
+# Stages
+
+my $stages_bool;
+my $one_by_one;
+my $continuous;
+my $user_defined;
+sub stages_one_by_one {
+
+    $continuous->active(0);
+    $user_defined->active(0);
+    $stages_bool = "one-by-one";
+    print "1\n";
+
+}
+
+sub stages_continuous {
+
+    $one_by_one->active(0);
+    $user_defined->active(0);
+    $stages_bool = "continuous";
+    print "2\n";
+
+}
+
+sub stages_user_defined {
+
+    $one_by_one->active(0);
+    $continuous->active(0);
+    $stages_bool = "user-defined";
+    print "3\n";
+}
 
 # cut little booleans for Gtk::CheckMenuItem
 my $lib_bool = 1;
@@ -307,7 +339,14 @@ sub yard_box {
        #_______________________________________ 
        # Manipulate Gtk::ItemFactory - 
        # The trick here is to use the real path.
+       
 
+       # Stages
+       $one_by_one =  $item_factory->get_item('/Edit/Stages/one-by-one');
+       $continuous = $item_factory->get_item('/Edit/Stages/continuous');
+       $user_defined = $item_factory->get_item('/Edit/Stages/user defined');
+       $continuous->active(0);
+       $user_defined->active(0);
 
        # Stripping
 
@@ -329,7 +368,6 @@ sub yard_box {
 					 print "$lib_bool\n";
 				     }
                                    ); 
-
 
            # objcopy parameters for Libraries
            my($lib_strip_all,$lib_strip_debug);
