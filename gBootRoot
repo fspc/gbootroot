@@ -1050,12 +1050,14 @@ sub uml_box {
 	label_advanced("Xterm:",0,1,0,1,$table_uml);
 	$eab1 = entry_advanced(1,2,0,1,8,$table_uml);
 	$eab1->set_text($uml_xterm);
+       $tooltips->set_tip( $eab1, 
+                           "Choose an xterm with " .
+			   "its executable option switch.", 
+                           "" );
 
 	#_______________________________________
 	# UML options
 	label_advanced("Options:",0,1,1,2,$table_uml);
-	#$eab2 = entry_advanced(1,3,1,2,9,$table_uml);
-	#$eab2->set_text("root=/dev/ubd0");
         $eab2 = Gtk::Combo->new();
         $table_uml->attach($eab2,1,3,1,2, 
 			  ['expand','fill'],['fill','shrink'],0,0);
@@ -1077,6 +1079,9 @@ sub uml_box {
 	    }
 	    close(OPTIONS);
 	} );
+       $tooltips->set_tip( Gtk::Combo::entry($eab2), 
+                           "Enter uml command-line options.", 
+                           "" );
 	$eab2->show();
 
 	#_______________________________________
@@ -1087,12 +1092,19 @@ sub uml_box {
 				   $table_uml,$home_rootfs);
 	$eab3->set_text("ubd0=$tmp/$entry_advanced[4]") 
 	    if -e "$tmp/$entry_advanced[4]";
+	$tooltips->set_tip( $eab3, 
+                           "Choose an uncompressed root filesystem." .
+			   "Append with uml?=.",
+                           "" );
 
 	$table_uml->set_row_spacing( 2, 4);       
 
 	#_______________________________________
 	# Submit Button
 	my $submit_b = button_advanced(0,1,3,4,"Submit",$table_uml);
+	$tooltips->set_tip( $submit_b, 
+                           "Start uml kernel processes.",
+                           "" );
 	$submit_b->signal_connect("clicked",
 				  sub {  
 				      # UML kernel = $entry_advanced[5]
@@ -1157,6 +1169,11 @@ sub uml_box {
 	#_______________________________________
 	# Cancel button also kills UML kernel if still open
 	my $abort_b = button_advanced(1,2,3,4,"Abort",$table_uml);
+	$tooltips->set_tip( $abort_b, 
+                           "Abort uml kernel processes." .
+			   "Use with care, `shutdown -h now` " .
+			    "is preferable.", 
+                           "" );
 	$abort_b->signal_connect("clicked",
 				 sub {
 				     if ($entry_advanced[10]) {
@@ -1173,7 +1190,10 @@ sub uml_box {
 
 	#_______________________________________
 	# Cancel button also kills UML kernel if still open
-	my $cancel_b = button_advanced(2,3,3,4,"Cancel",$table_uml);
+	my $cancel_b = button_advanced(2,3,3,4,"Close",$table_uml);
+	$tooltips->set_tip( $cancel_b, 
+                           "Close uml box.",
+                           "" );
 	$cancel_b->signal_connect("clicked",
 				 sub {
 				     $uml_window->destroy() if $uml_window;
