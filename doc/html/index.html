@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.31 2001/12/05 18:57:58 freesource Exp $</center>
+<center>$Id: index.html,v 1.32 2001/12/05 19:13:05 freesource Exp $</center>
 
 <p>
 
@@ -296,13 +296,12 @@ the case sensitive check box.</p>
 
 <p>
 
-Use Ctl-S to save the changes to an open template, and Alt-A to save the
-template with a new name.&nbsp;&nbsp;bOOTrOOT will not allow read-only 
-templates or template links to be saved
-with their own name.&nbsp;&nbsp;A few of these example files are
-included.&nbsp;&nbsp;You may make changes to them or 
-clear their buffers.&nbsp;&nbsp;Then you may save the template with a 
-different name.</p>
+Use Ctl-S to save changes to a template, Alt-A to save the
+template with a new name, or Alt-N to create a new template.&nbsp;&nbsp;
+bOOTrOOT will not allow read-only 
+templates (ex: Examples) or template links to be saved
+with their own name; after you make changes to these kind of templates, 
+save them with a new name to preserve the changes.</p>
 
 <p><IMG ALT="" SRC="images/stripping.jpg" align="center"></p>
 
@@ -355,31 +354,28 @@ $HOME/.gbootroot/yard/.</p>
 <br>
 
 <P><IMG ALT="" SRC="images/gBSicon.jpg" align="center"> <b>FAQ</b></P>
-<P><b>What does the 2 disk compression method do?</b></P>
-<P>This Boot Method creates a boot disk with lilo, a kernel and an initrd 
-image.&nbsp;&nbsp;The 
-initrd script mounts another root disk with a compressed (gzip or bzip2) 
-filesystem.</P>
 
 <P><b>What's the advantage of using this program?</b></P>
-
-<p>
-
-(Explanation from the first gbootroot.)<br>
-"You can use a bzip2 compressed filesystem, this program is easy to use, and 
-it provides a framework showing a simple initrd method which you can freely 
-modify.&nbsp;&nbsp;I wrote this program as an extension to BootRoot 
-which was written 
-as a solution to help oster at EE (www.experts-exchange.com) create separate 
-boot and root floppies for an emergency system for his customers."</P>
 
 <P><A href="./bootroot.html">BootRoot</A> 
 was the original program, but I decided that a GUI approach
 provided the user much more versatility and power in creating 
 distributions.&nbsp;&nbsp;Since the first gBootRoot,
-bOOTrOOT has become a full blown distribution creation program.</P>
-
-<P>If you make a cool change to this program, or if this program helps you I'd love to know, that's better than receiving pizza. :)</P>
+bOOTrOOT has become a full blown distribution creation program.
+It may be used for the creation of root filesystems used in every
+imaginable application from Embedded Systems to Mini Distributions to 
+Macro distributions to Full sized Distributions.&nbsp&nbsp;The root 
+and boot filesystems  may 
+be tested long before implemenation by using user-mode-linux.&nbsp;&nbsp;
+Boot Methods are provided to allow root filesystems to run from different types
+of media.&nbsp;&nbsp;
+Historically, developers have written scripts
+which have focused on providing a particular type of root 
+filesystem and booting method.  Observation, reveals that all these
+approaches share many commonalities.  gBootRoot has been designed to embrace
+all these approaches, and to allow developers to create drop-in replacements 
+via modules or easy to understand templates.&nbsp;&nbsp;
+gBootroot is the GIMP of distribution creation!</P>
 
 <P><b>How can I test gBootRoot?</b></P>
 
@@ -452,7 +448,8 @@ gbootroot's</a> Sourceforge home.</p>
 <p>
 
 8.&nbsp;&nbsp;Click on the ARS if its not already opened.&nbsp;&nbsp;
-Choose Yard from the Method pull-down menu.&nbsp;&nbsp;Choose Example-Mini.yard
+Choose Yard from the Method pull-down menu.&nbsp;&nbsp;Choose 
+<b>Example-Mini.yard</b>
 from the pull-down Template menu.&nbsp;&nbsp;Click on the Generate button.
 &nbsp;&nbsp;The Yard Box will pop up.&nbsp;&nbsp;Click on the Continue button
 until the Create check box turns off.&nbsp;&nbsp;You could continue to the
@@ -483,7 +480,7 @@ using File->New (Shortcut: Alt-N).</p>
 
 <p>
 
-12.&nbsp;&nbsp;Choose Example.yard from the Template menu in the ARS.
+12.&nbsp;&nbsp;Choose <b>Example.yard</b> from the Template menu in the ARS.
 &nbsp;&nbsp;Save it with a new name.</p>
 
 <p>
@@ -498,7 +495,7 @@ comment (#) out the corresponding stuff for Debian.</p>
 
 <p>
 
-14.&nbsp;&nbsp;The Example.yard template introduces you to Replacements like
+14.&nbsp;&nbsp;Example.yard template introduces you to Replacements like
 the inittabs described above.&nbsp;&nbsp;
 Replacements can be anywhere and are specified in the template as either 
 an absolute path or relative to $PATH
@@ -552,6 +549,28 @@ system.&nbsp;&nbsp;And that is just the beginning of the things you can do.
 <b>What are all these CVS directories doing in my replacements?</b></p>
 
 <P>
+CVS directories are deliberately put in the Replacement directories to 
+prevent users from making changes to global replacement files.&nbsp;&nbsp;
+This allows developers who create add-ons (ex: make-debian-x11) to remain 
+confident that any changes made to
+add-on replacements will remain available to all users.&nbsp;&nbsp;
+Replacements
+from add-ons are placed in the 
+/usr/share/gbootroot/yard/Replacements directory.&nbsp;&nbsp;
+When a user opens up gBootRoot, the program checks to see if there are any
+new replacements and then creates symlink from the 
+$HOME/.gbootroot/yard/Replacements directory to the 
+replacements repository.&nbsp;&nbsp;
+In general the repository for replacements is owned by root, so normal 
+users can't make changes to these files anyways; however, root should makes 
+it a policy always to make changes from her local directory by using an editor 
+which respects versioned files (i.e. Emacs).  Then she will not be able to 
+make any changes to the replacements repository because the CVS directories 
+keep date information which prevents the editing of these
+files.&nbsp;&nbsp;It is highly recommended to follow this procedure, and
+not to delete the CVS directories because /usr/share is meant to be used
+for data which shouldn't be modified 
+(see <a href="http://www.pathname.com/fhs/">FHS</a>).</p>
 
 <b>Can I use a program linked to uClibc in the template?</b></p>
 
@@ -594,6 +613,13 @@ down all the bugs.
 
 
 </P>
+
+
+<P><b>What does the 2 disk compression method do?</b></P>
+<P>This Boot Method creates a boot disk with lilo, a kernel and an initrd 
+image.&nbsp;&nbsp;The 
+initrd script mounts another root disk with a compressed (gzip or bzip2) 
+filesystem.</P>
 
 
 <p><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
