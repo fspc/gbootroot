@@ -528,13 +528,22 @@ if ( $< == 0 ) {
 }
 else {
 
-    # Hopefully only one user at a time.
-    if (!-d "$tmp1/gboot_non_root") {   
-	$tmp = "$tmp1/gboot_non_root" if err_custom_perl(
-		"mkdir $tmp1/gboot_non_root",
+    # The Administrator just needs to add a line like this to the fstab for
+    # each non-root user who wants to be able to create root_fs.
+    # Ofcourse the user is locked into the ext2 fs in this example
+    #
+    # /tmp/gboot_non_root_`id -u`/root_fs  \ 
+    # /tmp/gboot_non_root_`id -u`/loopback \
+    # ext2 defaults,noauto,user,loop       0       0
+
+    my $user = $>;
+
+    if (!-d "$tmp1/gboot_non_root_" . $user) {   
+	$tmp = "$tmp1/gboot_non_root" . $user if err_custom_perl(
+		"mkdir $tmp1/gboot_non_root" . $user,
 		 "gBootRoot: ERROR: Could not make temporary directory") != 2;
     }
-    $tmp = "$tmp1/gboot_non_root";
+    $tmp = "$tmp1/gboot_non_root" . $user;
 
     if (!-d "$tmp1/gbootroot_mnt$time") {
 	$mnt = "$tmp1/gbootroot_mnt$time" if err_custom_perl(

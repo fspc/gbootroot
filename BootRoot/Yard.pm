@@ -1097,7 +1097,7 @@ sub copy_strip_file {
 	## non-root users will experience problems here so this is
 	## skipped. --freesource
 
-	if ( $< == 0 ) {
+	if ( $> == 0 ) {
 	    my($mode, $uid, $gid);
 	    (undef, undef, $mode, undef, $uid, $gid) = stat $from;
 	    my $from_base = basename($from);
@@ -1589,7 +1589,7 @@ sub mount_device {
     $options = "";
   }
 
-  if ( $< == 0 ) {
+  if ( $> == 0 ) {
       errmk(sys("mount $options -t ext2 $device $mount_point"));
   }
   else {
