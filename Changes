@@ -12,6 +12,11 @@ Updated BEGIN statements in gbootroot, expect_uml and
 yard_chrooted_tests, and made sure "." is always specified first in
 @INC.
 
+Thanks to Stian Skjelstad <stian@nixia.no> for pointing out some bugs
+- namely the former annoying @INC bug that never should have occurred
+in the first place - after I asked him to try out gbootroot to help
+with his MTD requirements.
+
 Added a new if/elsif control structure.  \ if ( condition ) \n
 statement(s) \n elsif ( condition ) \n statements elsif .. \ Nice
 functionality to have.

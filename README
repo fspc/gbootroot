@@ -1,4 +1,4 @@
-$Id: README,v 1.28 2003/02/16 00:47:23 freesource Exp $
+$Id: README,v 1.29 2003/02/18 18:28:06 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -8,7 +8,7 @@ BUILDING
 If you can compile a kernel on your system, then you should have no
 problems getting the Makefile to work, and if you are using the
 sources for the Debian package, then you can always do an "apt-get
-build-dep gbootroot."  to automatically figure out your build
+build-dep gbootroot"  to automatically figure out your build
 requirements.  Gbootroot makes its own root_fs, when the output gets
 colorful (blue and red) you know this is happening.  If things go
 wrong at this point you will want to look at the requirements below.
