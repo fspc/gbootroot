@@ -34,7 +34,7 @@ use Exporter;
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
               space_check create_filesystem find_file_in_path sys 
-              text_insert logadj error);
+              text_insert logadj error *LOGFILE);
 
 use strict;
 use File::Basename;
@@ -77,6 +77,8 @@ sub warning {
 sub verbosity { $verbosity = $_[0]; }
 sub text_insert { $text_insert = $_[0]; }
 sub logadj { $logadj = $_[0]; }
+# This is because verbosity_box is in start_logging_output
+#sub verbosity_window { $verbosity_window = $_[0]; }
 
 
 ## REQUIRES $kernel opt. $kernel_version
@@ -1060,7 +1062,8 @@ sub start_logging_output {
   }
   # ERRORCHECK
   ## If logfile doesn't open in /tmp there is some type of fatal problem.
-  open(LOGFILE, ">$logfile") or die "open($logfile): $!\n";
+  open(LOGFILE, ">>$logfile") or die "open($logfile): $!\n";
+  # &::verbosity_box() if !visible $verbosity_window;
   info(1, "Logging output to $logfile\n")
 }
 
@@ -1069,8 +1072,10 @@ sub start_logging_output {
 sub sys {
   open(SYS, "@_ 2>&1 |") or die "open on sys(@_) failed: $!";
   while (<SYS>) {
-    print LOGFILE;
-    print if $verbosity > 0;
+    print LOGFILE unless $_ =~ m,\/.*file\n$,;
+    if ($verbosity > 0) {
+	info(1,$_) unless $_ =~ m,\/.*file\n$,;
+    }	
   }
   close(SYS) or return $?; 
   0;				# like system()

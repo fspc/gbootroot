@@ -251,9 +251,10 @@ if (!-d "$tmp1/gbootroot_mnt$$") {
 my $verbosity = 1; # info & sys use this as Global
 
 ## One hard copy log file is saved for the session, and the user can also 
-## save from the verbosity box.
+## save from the verbosity box including saving a selection.
 #my $verbosefn = "$tmp/verbose"; # All verbosity
 my $verbosefn = "/tmp/verbose";  # Yard - always logged, but 0&1 = STDOUT
+verbosity_box();
 start_logging_output($verbosefn,$verbosity); # Yard "tmp dir name" 
                                              # "verbosity level"
 
@@ -382,6 +383,16 @@ $verbosity_scale->show();
 $adj1->signal_connect( "value_changed", sub {
     $verbosity = $verbosity_scale->get_adjustment->value - 1; 
     verbosity($verbosity);
+
+    if ($verbosity == -1) {
+	destroy $verbosity_window if visible $verbosity_window;
+    }
+    elsif (!$verbosity_window) {
+	close(LOGFILE);
+	verbosity_box();
+	start_logging_output($verbosefn,$verbosity);	
+    }
+
      } );
 $box2->pack_start( $verbosity_scale, $false, $false, 0);
 
@@ -1044,7 +1055,7 @@ sub yard {
 
     # Error handling in Yard will take some strategy
     if (!-d $container[1] && -f $container[1]) {
-	verbosity_box();
+	#verbosity_box();
         $error = kernel_version_check($container[1]);  
                                               # Yard: kernel,kernel version
                                               # Becomes $ENV{'RELEASE'}
@@ -1284,9 +1295,10 @@ sub file_ok_sel {
 
     # auto-detect compression if system has file
     if ($container[2]) {
-        my $file = sys("which file");
+        my $file = sys("which file > /dev/null 2>&1");
         if ($file == 0) {
-           open(F,"file $container[2]|"); # no error check here
+           open(F,"file $container[2] > /dev/null 2>&1|"); # no error check 
+	                                                   # here
              while (<F>) {
                 if (/gzip/) {
                   $gz_toggle->set_active( $true );
@@ -1359,7 +1371,7 @@ sub entry {
                      my $file = sys("which file");
                      if ($file == 0) {
 		       if ($container[2]) {
-                       open(F,"file $container[2]|"); # no error check here 
+                       open(F,"file $container[2] > /dev/null 2>&1|"); # no error check here 
                           while (<F>) {
                              if (/gzip/) {
                                $gz_toggle->set_active( $true );
@@ -1803,7 +1815,7 @@ sub stripper {
     # stripper (program,bin|lib);
     if ((!defined $lib_strip_check && !defined $bin_strip_check) or
         ($lib_strip_check->active || $bin_strip_check->active)) {
-    my $not_stripped = `file $_[0]`;
+    my $not_stripped = `file $_[0] >/dev/null 2>&1`;
     my $filename = basename($_[0]);
    
      if ($not_stripped =~ m,not stripped,) {
@@ -1948,9 +1960,11 @@ sub initrd {
   return "ERROR" if $error && $error eq "ERROR";
   print T "y\n"; close(T);
   pb($I,3);
-  info(0, "Mounting initrd in tmp\n");
+  info(0, "Mounting initrd in $tmp/initrd_mnt\n");
 
-  return if errmk(sys("mkdir $tmp/initrd_mnt")) == 2;
+    if (!-d "$tmp/initrd_mnt") {
+	return if errmk(sys("mkdir $tmp/initrd_mnt")) == 2;
+    }
   return if errmk(sys("mount -o loop -t ext2 $tmp/$initrd $tmp/initrd_mnt"))
           == 2;
   pb($I,4);
@@ -2387,7 +2401,6 @@ sub err_custom_perl {
 # This monster needs different behavior than create_text.
 sub verbosity_box {
 
-      if (not defined $verbosity_window) {
        $verbosity_window = new Gtk::Window "toplevel";
        $verbosity_window->signal_connect("destroy", \&destroy_window,
                                     \$verbosity_window);
@@ -2442,19 +2455,15 @@ sub verbosity_box {
        $main_vbox->pack_start( $vbox, $false, $true, 0 );
        $vbox->show();
 
-       my $button = new Gtk::Button( "Close" );
-       $button->signal_connect( 'clicked', 
-				sub { destroy $verbosity_window; } );
-       $vbox->pack_start( $button, $true, $true, 0 );
-       $button->can_default( $true );
-       $button->grab_default();
-       $button->show();
-       }
-       if (!visible $verbosity_window) {
-                show $verbosity_window;
-       } else {
-                destroy $verbosity_window;
-       }
+       #my $button = new Gtk::Button( "Close" );
+       #$button->signal_connect( 'clicked', 
+       #				sub { destroy $verbosity_window; } );
+       #$vbox->pack_start( $button, $true, $true, 0 );
+       #$button->can_default( $true );
+       #$button->grab_default();
+       #$button->show();
+
+       show $verbosity_window;
 
 } # end sub verbosity_box
 
