@@ -488,13 +488,28 @@ sub extra_links {
 
     my ($contents_file, $nss_pam) = @_;
     
-    #info(0, "PASS 2:  Picking up extra files from links, and finding pam and nss service modules...\n");
-
-    info(0, "PASS 2:  Picking up extra files from links...\n");
 
     # First we find nss and pam stuff if asked for.
     my $find_nss   = $nss_pam->{60}{conf_nss};
     $find_pam   = $nss_pam->{61}{conf_pam};
+
+    # Determine how the PASS is configured by the user.
+    if ( $find_nss != 1 && $find_pam != 1 ) {
+	info(0, "PASS 2:  Picking up extra files from links...\n");
+    }
+    elsif ( $find_nss == 1 && $find_pam == 1 ) {
+	info(0, "PASS 2:  Picking up extra files from links," . 
+	     " and finding pam and nss service modules...\n");
+    }
+    elsif ( $find_nss != 1 && $find_pam == 1 ) {
+	info(0, "PASS 2:  Picking up extra files from links," . 
+	     "  and finding pam service modules...\n");
+    }
+    elsif ( $find_nss == 1 && $find_pam != 1 ) {
+	info(0, "PASS 2:  Picking up extra files from links," . 
+	     " and finding nss service modules...\n");
+    }
+
 
     if ( $find_nss == 1 || $find_pam == 1 ) {
 
