@@ -241,6 +241,7 @@ use constant  OBJCOPY_BOOL         => 8  ;
 use constant  ABS_DEVICE           => 9  ;
 use constant  ABS_OPT_DEVICE       => 10 ;
 use constant  ABS_APPEND           => 11 ;
+use constant  MOD_STRIP            => 12 ;
 my @original_container;
 my $file_dialog;
 my ($kernel,$root_image,$device,$size);
@@ -262,7 +263,7 @@ my $button_count = 0;
 my $button_count_root = 0;
 my $obj_count = 0;
 my $obj_count_root = 0;
-my ($lib_strip_check,$bin_strip_check);
+my ($lib_strip_check,$bin_strip_check,$mod_strip_check);
 my ($bz2_toggle,$gz_toggle);
 my ($bz2_toggle_root,$gz_toggle_root,$compression_off);
 #my ($main::combo); made this totally global
@@ -271,7 +272,6 @@ my @strings;
 my ($root_device,$root_filename,$method,$template,$filesystem_size,
     $root_device_size);
 my $ars = {}; # anonymous hash
-
 
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
@@ -820,8 +820,7 @@ sub advanced_boot_section {
 
        #_______________________________________        
        # lib_strip_check
-       label_advanced("Stripping:",0,1,0,1,$table_advanced);
-
+       #label_advanced("Stripping:",0,1,0,1,$table_advanced);
        !defined $lib_strip_check ? ($boolean = 1) 
          : ($boolean = $lib_strip_check->get_active());
        $lib_strip_check = Gtk::CheckButton->new("Libraries");
@@ -833,7 +832,7 @@ sub advanced_boot_section {
                            " right mouse button to change from" .
                            " [objcopy --strip-debug] to" . 
                            " [objcopy --strip-all].", "" );
-       $table_advanced->attach($lib_strip_check,1,2,0,1, 
+       $table_advanced->attach($lib_strip_check,0,1,0,1, 
                                ['expand'],['fill','shrink'],0,0);
        show $lib_strip_check;
 
@@ -845,9 +844,23 @@ sub advanced_boot_section {
        $tooltips->set_tip( $bin_strip_check, 
                            "This is generally a good idea." .
                            " [objcopy --strip-all]", "" );
-       $table_advanced->attach($bin_strip_check,2,3,0,1, 
+       $table_advanced->attach($bin_strip_check,1,2,0,1, 
                                ['expand'],['fill','shrink'],0,0);
        show $bin_strip_check;
+
+
+       # mod_strip_check
+       !defined $mod_strip_check  ? ($boolean = 1) 
+         : ($boolean = $mod_strip_check->get_active());
+       $mod_strip_check = Gtk::CheckButton->new("Modules");
+       $mod_strip_check->set_active($boolean);
+       $tooltips->set_tip( $mod_strip_check, 
+                           "This is generally a good idea." .
+                           " [objcopy --strip-debug]", "" );
+       $table_advanced->attach($mod_strip_check,2,3,0,1, 
+                               ['expand'],['fill','shrink'],0,0);
+       show $mod_strip_check;
+
 
        #_______________________________________ 
        # Development Drive
@@ -886,7 +899,7 @@ sub advanced_boot_section {
                                  " /lib/modules/kernel-version which are" .
                                	 " necessary for the Boot Method to work" .
                                  " properly.  Kmod inserts the modules," .
-                                 " and kmod needs to be built-in to the" .
+                                 " and kmod needs to be built into the" .
 			         " kernel along with initrd and ramdisk." ,
                                     "");	
 	$ea3->set_text($entry_advanced[11]) if defined $entry_advanced[11];
@@ -2218,13 +2231,21 @@ elsif (defined $container[METHOD] && defined $container[KERNEL] &&
        : ($container[LIB_STRIP] = $lib_strip_check->get_active());
      !$container[LIB_STRIP]     ? ($container[LIB_STRIP] = 2) 
 	                        : ($container[LIB_STRIP] = 1);  
+
      !defined $bin_strip_check  ? ($container[BIN_STRIP] = 3) 
 	                        : ($container[BIN_STRIP] = 
 				   $bin_strip_check->get_active());
      !$container[BIN_STRIP]     ? ($container[BIN_STRIP] = 4) 
 	                        : ($container[BIN_STRIP] = 3); 
- 
-     if ($container[LIB_STRIP] == 1) {     
+
+     !defined $mod_strip_check  ? ($container[MOD_STRIP] = 7) 
+	                        : ($container[MOD_STRIP] = 
+				   $mod_strip_check->get_active());
+     !$container[MOD_STRIP]     ? ($container[MOD_STRIP] = 8) 
+	                        : ($container[MOD_STRIP] = 7); 
+
+
+      if ($container[LIB_STRIP] == 1) {     
         $obj_count == 0 ? ($container[OBJCOPY_BOOL] = 5) 
 	                : ($container[OBJCOPY_BOOL] = 6);
      }
@@ -2321,7 +2342,7 @@ elsif (defined $container[METHOD] && defined $container[KERNEL] &&
          my @diff = grep(!$diff{$_},@original_container);
 
          if ($#diff >= 0) {
-         # unlink initrd_image.gz, do initrd()
+         # unlink initrd_image.gz, do initrd_size()
              $ok = 1;
              $initrd = "initrd_image";
          }
@@ -2339,8 +2360,10 @@ elsif (defined $container[METHOD] && defined $container[KERNEL] &&
 			      $root_image,
 			      $device,
 			      $size,
-                              $compress,$container[LIB_STRIP],
+                              $compress,
+			      $container[LIB_STRIP],
 			      $container[BIN_STRIP],
+			      $container[MOD_STRIP],
 			      $container[OBJCOPY_BOOL],
 			      $container[ABS_DEVICE],
 			      $container[ABS_OPT_DEVICE],
@@ -2535,28 +2558,41 @@ sub device2 {
 # full file path and strip result.  Right now this is specific to initrd.
 sub stripper {
     
-    # stripper (program,bin|lib);
-    if ((!defined $lib_strip_check && !defined $bin_strip_check) or
-        ($lib_strip_check->active || $bin_strip_check->active)) {
-    my $not_stripped = `file $_[0] >/dev/null 2>&1`;
+    # stripper (program,bin|lib|mod);
+    if ((!defined $lib_strip_check && !defined $bin_strip_check 
+	 && !defined $mod_strip_check) or
+        ($lib_strip_check->active || $bin_strip_check->active 
+	 || $mod_strip_check->active)) {
+
+    # DON'T DO THIS >/dev/null 2>&1`;
+    my $not_stripped = `file $_[0] 2> /dev/null`; 
     my $filename = basename($_[0]);
-   
+
      if ($not_stripped =~ m,not stripped,) {
 	 if (($_[1] eq "lib" && !defined $lib_strip_check) or
              ($_[1] eq "lib" && $lib_strip_check->active)) {
              # --strip-all works for initrd
              if ($obj_count == 0) {
 	           sys("objcopy --strip-debug $_[0] $tmp/$filename"); 
+		   info(1,"--strip-debug $filename\n");
 	           return ( "$tmp/$filename", 1 );
              }
              elsif ($obj_count == 1) {
 	           sys("objcopy --strip-all $_[0] $tmp/$filename"); 
+		   info(1,"--strip-all $filename\n");
 	           return ( "$tmp/$filename", 1 );
 	     }
          }
          elsif (($_[1] eq "bin" && !defined $bin_strip_check) or
                 ($_[1] eq "bin" && $bin_strip_check->active)) {
 	     sys("objcopy --strip-all $_[0] $tmp/$filename"); 
+	     info(1,"--strip-all $filename\n");
+	     return ( "$tmp/$filename", 1 );
+         }
+         elsif (($_[1] eq "mod" && !defined $mod_strip_check) or
+                ($_[1] eq "mod" && $mod_strip_check->active)) {
+	     sys("objcopy --strip-debug $_[0] $tmp/$filename"); 
+	     info(1,"--strip-debug $filename\n");
 	     return ( "$tmp/$filename", 1 );
          }
      }
@@ -2651,9 +2687,24 @@ sub initrd_size {
   my $dir_size = 9 + 1;
   my $initrd_size = $dir_size + $linuxrc_size;
 
+
+  # modules
+  my @modules = kernel_modules();
+  foreach (@modules) {
+     ($path,$value) = stripper($_,"mod");
+     $initrd_size =  $initrd_size + ((stat($path))[12]/2);
+     unlink($path) if $value == 1;
+  }
+
   # This and libs should be user accessible
   # add other executables here
-  my @initrd_stuff = qw(ash gzip mount umount);
+   my @initrd_stuff = qw(ash gzip mount umount modprobe);
+   if (@modules) {
+	@initrd_stuff = qw(ash gzip mount umount modprobe);
+    }
+    else {
+	@initrd_stuff = qw(ash gzip mount umount);
+    }
 
   foreach (@initrd_stuff) {
      ($path,$value) = stripper(find_file_in_path($_),"bin");
@@ -2794,8 +2845,27 @@ sub initrd {
     pb($I,7);
 
     # This and libs should be user accessible
+    info(0, ".. the modules\n");
+    my @modules = kernel_modules();
+
+    foreach my $stuff (@modules) {
+	($path,$value) = stripper($stuff,"bin");
+	$value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+	if (!$path) {
+	    info(1,"gBootRoot Error: Couldn't find $stuff\n");
+	}
+	info(0,"HEREIAM $tmp/initrd_mnt$stuff\n");
+	return if errcp(sys("$tool $path $tmp/initrd_mnt")) == 2;
+    }
+
     info(0, ".. the bins\n");
-    my @initrd_stuff = qw(ash gzip mount umount);
+    my @initrd_stuff;
+    if (@modules) {
+	@initrd_stuff = qw(ash gzip mount umount modprobe);
+    }
+    else {
+	@initrd_stuff = qw(ash gzip mount umount);
+    }
 
     foreach (@initrd_stuff) {
 	($path,$value) = stripper(find_file_in_path($_),"bin");
