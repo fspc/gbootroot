@@ -4,16 +4,16 @@ License:  GNU General Public License
 The Makefile included with this source package doesn't attempt
 to figure out whether your system has the proper requirements.
 It may seem like a great idea to have a configure script, but
-these things can fail, besides gbootroot is a program designed for people
+these things can fail, besides gbootroot is a program designed for users
 who intend to build distributions and boot disks, so understanding what
 things are required to get gbootroot to work completely can be quite 
 beneficial.  At the very least, do a "make", and try gbootroot because the 
 program will tell you what things are missing - hopefully nothing - and then 
 you can refer to this README for help.
 
-Out of the box this program works with the i386 architecture, people using
-other architectures will need to compile genext2fs and user-mode-linux if
-they want full functionality.  Eventually, the Advanced Kernel Section in
+Out of the box this program works with the i386 architecture, for other 
+architectures genext2fs and user-mode-linux will need to be compiled if
+full functionality is desired.  Eventually, the Advanced Kernel Section in
 this program will be able to help with the uml compile.
 
 
@@ -52,8 +52,8 @@ Get kernel sources from www.kernel.org which preferably
 match the kernel version used by gbootroot - this can be found in the Changes 
 file - and then a matching uml-patch from 
 http://sourceforge.net/project/showfiles.php?group_id=429.  Use config as 
-your .config at the base of the sources.  There's good instructions on how to 
-do compile a uml kernel at 
+your .config at the base of the sources.  There are good instructions on how 
+to compile a uml kernel at 
 http://user-mode-linux.sourceforge.net/UserModeLinux-HOWTO-2.html.  
 Then put the uml kernel in the directory cited above and call it linux; you can
 put the modules in a Replacements directory later on (see FAQ).  
@@ -72,9 +72,9 @@ cd ../uml_moo; make;
 Put the uml kernel in the directory cited above with the same names.  When
 you run gbootroot's Makefile everything will be put in the proper places.
 
-Note:  Please send the user-mode-linux-devel list and me your experiences if 
-you successfully get another architecture working so they can be shared with 
-the community.
+Note:  Please send the user-mode-linux-devel and gbootroot-devel lists your 
+experiences if you successfully get another architecture working so they can 
+be shared with the community.
 
 
 Boot Methods:
