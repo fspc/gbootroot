@@ -536,7 +536,7 @@ sub create {
     $mod_bool = "" if $mod_bool eq 0;
 
     $error = create_filesystem($filename,$filesystem_size,$filesystem_type,
-			       $inode_size,$mnt,$lib_bool,$bin_bool,
+			       $inode_size,$tmp,$lib_bool,$bin_bool,
 			       $mod_bool,$strip_bool);
     return if $error && $error eq "ERROR";
 
