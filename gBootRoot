@@ -7,6 +7,12 @@
 #    Developer
 #    Cristian Ionescu-Idbohrn <cii@axis.com>
 #
+#    Tester
+#    Magnus Holmberg <pucko@lysator.liu.se>
+#
+#    Helper
+#    Yahshua Mashiyach
+#
 #    http://the.netpedia.net/gBootRoot.html
 
 #    This program is free software; you can redistribute it and/or modify
@@ -126,9 +132,11 @@ my ($hbox_advanced);
 my $separator_advanced;
 my @entry_advanced;
 my $entry_advanced;
-my ($ea1,$ea2,$ea3);
+my ($ea1,$ea2,$ea3);  
+my ($ear1,$ear2,$ear3,$ear4); # entry advanced root
 my $table_advanced;
 my $table_advanced_root;
+my $spinner_advanced;
 my $button_count = 0;
 my $button_count_root = 0;
 my $obj_count = 0;
@@ -347,6 +355,7 @@ $entry5->set_usize(15,20);
 $box2->pack_start( $entry5, $true, $true, 0 );
 $entry5->show();
 
+###########################
 # The ADVANCED BOOT SECTION 
 ###########################
 # Separator
@@ -367,26 +376,18 @@ $button_advanced->signal_connect("clicked",\&advanced_boot_section );
 $hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
 $button_advanced->show();
 ###########################
-
 # The ADVANCED ROOT SECTION 
 ###########################
-# Separator
-$separator = new Gtk::HSeparator();
-$vbox_advanced->pack_start( $separator, $false, $true, 0 );
-$separator->show();
-
 my $vbox_advanced_root = new Gtk::VBox($false,0);
 $box1->add($vbox_advanced_root);
 $vbox_advanced_root->show();
 
 hbox_advanced($vbox_advanced_root);
 $button_advanced = new Gtk::Button("Advanced Root Section");
-$tooltips->set_tip( $button_advanced, "Change settings for the bootdisk.", "" );
+$tooltips->set_tip( $button_advanced, "Generate a root system and/or use a different root device.", "" );
 $button_advanced->signal_connect("clicked",\&advanced_root_section );
 $hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
 $button_advanced->show();
-
-
 ###########################
 
 # Separator
@@ -589,13 +590,37 @@ sub advanced_boot_section {
 sub advanced_root_section {
 
     if ($button_count_root == 0) {  
-	my $boolean;
+	my $boolean; 
 
-       # The strip section
-       $table_advanced_root = new Gtk::Table( 4, 3, $true );
+
+       $table_advanced_root = new Gtk::Table( 7, 3, $true );
+       # temp solution?
+       $table_advanced_root->set_row_spacings( 3 );
        $vbox_advanced_root->pack_start( $table_advanced_root, $true, $true, 0 );
+
+
+
+       # Root Device selection
+       label_advanced("Root Device:",0,1,0,1,$table_advanced_root);
+       $ear1 = entry_advanced(1,2,0,1,0,$table_advanced_root);
+       $ear1->set_text($container[3]) if defined $container[3];
+       $tooltips->set_tip( $ear1, 
+                          "Type in the location of the Root Device to use.",
+                          "" );
+       button_advanced(2,3,0,1,"Selection",$ear1,"Selection",4,"/dev/fd0");
+
+       # Root Device Size
+       label_advanced("Root Device Size:",0,1,1,2,$table_advanced_root);
+       $spinner_advanced = new Gtk::SpinButton( $adj, 0, 0 );
+       $table_advanced_root->attach($spinner_advanced,1,2,1,2,
+                            ['shrink','fill','expand'],['fill','shrink'],0,0);
+       $tooltips->set_tip( $spinner_advanced, "Choose the Root Device Size.", "" );
+       $spinner_advanced->set_wrap( $true );
+       $spinner_advanced->set_numeric( $true );
+       $spinner_advanced->set_shadow_type( 'in' );
+       $spinner_advanced->show();
+
        $table_advanced_root->show();
-       label_advanced("Hi there!",0,1,1,2,$table_advanced_root);
        $button_count_root++;
 
     }
@@ -606,6 +631,33 @@ sub advanced_root_section {
 
 
 } # end sub advanced_root_section
+
+sub button_advanced {
+
+    # cretzu should like this
+    my ($left_attach,$right_attach,$top_attach,$bottom_attach,$text,$ent,
+        $name,$order,$device) = @_;
+
+    my $button = new Gtk::Button($text);
+    $table_advanced_root->attach($button,$left_attach,$right_attach,
+                                 $top_attach,$bottom_attach, 
+                            ['shrink','fill','expand'],['fill','shrink'],0,0);
+
+    # example
+    if ($order == 1) {
+      $tooltips->set_tip( $button, "Select the Kernel.", "" );
+    }
+    elsif ($order == 2) {
+      $tooltips->set_tip( $button, "Select the Compressed Filesystem.", "" );
+    }
+    else {
+      $tooltips->set_tip( $button, "Select the Root Device.", "" );
+    }
+    $button->signal_connect( "clicked",\&fileselect,$ent,$name,$order,$device);
+    $button->show();
+
+
+}
 
 
 sub entry_advanced {
@@ -830,9 +882,13 @@ sub entry {
     else {
          $entry->signal_connect( "changed", sub {
                  $container[$num] = $entry->get_text();
+                 # here's where types in entry3, types other places
                  if (defined $ea1 and $num == 3) { 
                      $ea1->set_text($container[$num]); 
                  } 
+                 if (defined $ear1 and $num == 3) { 
+                     $ear1->set_text($container[$num]); 
+                 }                  
      
                  # auto-detect compression if system has file
                  if ($num == 2) {
