@@ -324,7 +324,6 @@ my $vbox_advanced = new Gtk::VBox($false,0);
 $box1->add($vbox_advanced);
 $vbox_advanced->show();
 
-
 # The Advanced Section button
 hbox_advanced();
 my $button_advanced = new Gtk::Button("Advanced Section");
@@ -419,37 +418,41 @@ sub advanced_section {
 
     if ($button_count == 0) {  
        #$vbox_advanced->set_usize(321,300);
-       
+	my $boolean;
        # Will use a table once things start to take shape. 
 
        # The strip section
        hbox_advanced(); $ha1 = $hbox_advanced;
        label_advanced("Stripping:");
+       !defined $lib_strip_check  ? ($boolean = 1) 
+         : ($boolean = $lib_strip_check->get_active());
        $lib_strip_check = new Gtk::CheckButton("Libraries");
-       $lib_strip_check->set_active($true);
+       $lib_strip_check->set_active($boolean);
        $tooltips->set_tip( $lib_strip_check, 
                            "This is generally a good idea. [--strip-debug]", "" );
        $hbox_advanced->pack_start( $lib_strip_check, $false, $false, 0);
        show $lib_strip_check;
+       !defined $bin_strip_check  ? ($boolean = 1) 
+         : ($boolean = $bin_strip_check->get_active());
        $bin_strip_check = new Gtk::CheckButton("Binaries");
-       $bin_strip_check->set_active($true);
+       $bin_strip_check->set_active($boolean);
        $tooltips->set_tip( $bin_strip_check, 
                            "This is generally a good idea. [--strip-all]", "" );
        $hbox_advanced->pack_start( $bin_strip_check, $true, $true, 0);
        show $bin_strip_check;
 
        # Verbosity section
-       separator_advanced();
-       hbox_advanced(); $ha2 = $hbox_advanced;
-       label_advanced("Verbosity Level: \"Coming Soon!\"");
+       #separator_advanced();
+       #hbox_advanced(); $ha2 = $hbox_advanced;
+       #label_advanced("Verbosity Level: \"Coming Soon!\"");
 
        $button_count++;
     }
     else {
        #$vbox_advanced->set_usize(321,0);
        destroy $ha1;
-       destroy $separator_advanced;
-       destroy $ha2;
+       #destroy $separator_advanced;
+       #destroy $ha2;
        $button_count--;
     }
 
@@ -807,6 +810,15 @@ elsif (defined $container[0] && defined $container[1] &&
  if (defined $kernel && defined $root_image &&
      defined $device && defined $size) {
      $container[5] = $compress;
+ 
+     # 1 .. 4 - its a hash .. not too simple     
+     !defined $lib_strip_check  ? ($container[6] = 1) 
+       : ($container[6] = $lib_strip_check->get_active());
+     !$container[6] ? ($container[6] = 2) : ($container[6] = 1);  
+     !defined $bin_strip_check  ? ($container[7] = 3) 
+       : ($container[7] = $bin_strip_check->get_active());
+     !$container[7] ? ($container[7] = 4) : ($container[7] = 3);  
+
      if (@original_container) { # defined array deprecate Perl 5.6 -  zas@metaconcept.com
          # a hash check isn't perfect for two values which are the same
          # no need to check all the values
@@ -829,7 +841,8 @@ elsif (defined $container[0] && defined $container[1] &&
          $initrd = "initrd_image";
      }
      # reset
-     @original_container = ($container[0],$root_image,$device,$size,$compress);
+     @original_container = ($container[0],$root_image,$device,$size,
+                            $compress,$container[6],$container[7]);
 
      lilo();
  }
@@ -1117,10 +1130,41 @@ sub device2 {
 
 } # end sub device 2
 
+# Checks if lib or bin is stripped, if not proceeds to strip.  Returns
+# full file path and strip result.  Right now this is specific to initrd.
+sub stripper {
+    
+    # stripper (program,bin|lib);
+    if ((!defined $lib_strip_check && !defined $bin_strip_check) or
+        ($lib_strip_check->active || $bin_strip_check->active)) {
+    my $not_stripped = `file $_[0]`;
+    my $filename = basename($_[0]);
+   
+     if ($not_stripped =~ m,not stripped,) {
+	 if (($_[1] eq "lib" && !defined $lib_strip_check) or
+             ($_[1] eq "lib" && $lib_strip_check->active)) {
+	     system "objcopy --strip-debug $_[0] $tmp/$filename"; 
+	     return ( "$tmp/$filename", 1 );
+         }
+         elsif (($_[1] eq "bin" && !defined $bin_strip_check) or
+                ($_[1] eq "bin" && $bin_strip_check->active)) {
+	     system "objcopy --strip-all $_[0] $tmp/$filename"; 
+	     return ( "$tmp/$filename", 1 );
+         }
+     }
+     else {
+	 return ( $_[0], 0 );
+     }
+    }
+    return ( $_[0], 0);
+
+}
+
 sub initrd_size {
 
   my ($linuxrc_size) = @_;
   my ($what,$lib);
+  my ($path,$value);
   #V#print "Checking size needed for initrd\n";
 
   # the size of the loop device should be at least 1.63% larger than what
@@ -1138,11 +1182,16 @@ sub initrd_size {
   # add other executables here
   my @initrd_stuff = qw(ash gzip mount umount);
   foreach (@initrd_stuff) {
-     $initrd_size =  $initrd_size + ((stat("/bin/$_"))[12]/2);
+     ($path,$value) = stripper("/bin/$_","bin");
+     $initrd_size =  $initrd_size + ((stat($path))[12]/2);
+     unlink($path) if $value == 1;
   }
 
+  # path for bzip2 assumes too much
   if ($compress eq "bzip2" && -e "/usr/bin/$compress") {
-     $initrd_size = $initrd_size + ((stat("/usr/bin/$compress"))[12]/2);
+     ($path,$value) = stripper("/usr/bin/$compress","bin");
+     $initrd_size = $initrd_size + ((stat($path))[12]/2);
+     unlink($path) if $value == 1;
   }
 
   # lib sizes
@@ -1159,18 +1208,15 @@ sub initrd_size {
           if (-l "/lib/$lib") {
             $what = (split(/\s+/,$_))[10];
             $initrd_size = $initrd_size + 1;
-            $initrd_size = $initrd_size + ((stat("/lib/$what"))[12]/2);
+	    ($path,$value) = stripper("/lib/$lib","lib");
+            $initrd_size = $initrd_size + ((stat($path))[12]/2);
+	    unlink($path) if $value == 1;
           }
           # no symbolic link
           else {
-              # This is a test right now
-	      #if ($strip == 1) {
-	      #	  system "objcopy /lib/$lib /tmp/$lib";
-              #    $initrd_size = $initrd_size + ((stat("/tmp/$lib"))[12]/2);
-              #}
-              #else {
-                   $initrd_size = $initrd_size + ((stat("/lib/$lib"))[12]/2);
-	      #}
+	    ($path,$value) = stripper("/lib/$lib","lib");
+            $initrd_size = $initrd_size + ((stat($path))[12]/2);
+	    unlink($path) if $value == 1;
           }
         }
    }
@@ -1208,7 +1254,7 @@ sub pb {
 sub initrd {
 
     my($kernel,$root_image,$device,$size) = @_;
-    my($lib,$what);
+    my($lib,$what,$path,$value,$tool);
     my $I = "initrd";
 
   my $broot_image = basename($root_image);
@@ -1247,11 +1293,18 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $verbosefn 2>&1; mount -o loop 
   pb($I,7);
 
   #V#print ".. the bins\n";
-  return if errcp(system "cp -a /bin/{ash,gzip,mount,umount} $tmp/initrd_mnt/bin >> $verbosefn 2>&1") == 2;
-  if ($compress eq "bzip2") {
-      if (-e "/usr/bin/$compress") {
-    return if errcp(system "cp -a /usr/bin/$compress $tmp/initrd_mnt/bin >> $verbosefn 2>&1") == 2;
-      }
+  my @initrd_stuff = qw(ash gzip mount umount);
+  foreach (@initrd_stuff) {
+     ($path,$value) = stripper("/bin/$_","bin");
+     $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+     return if errcp(system "$tool $path $tmp/initrd_mnt/bin >> $verbosefn 2>&1") == 2;
+  }
+
+  # path for bzip2 assumes too much
+  if ($compress eq "bzip2" && -e "/usr/bin/$compress") {
+     ($path,$value) = stripper("/usr/bin/$compress","bin");
+     $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+     return if errcp(system "$tool $path $tmp/initrd_mnt/bin >> $verbosefn 2>&1") == 2;
   }
 
   # Testing init is sufficient for grabbing the correct libraries for the
@@ -1269,17 +1322,22 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $verbosefn 2>&1; mount -o loop 
           # symbolic link
           if (-l "/lib/$lib") {
             $what = (split(/\s+/,$_))[10];
-            return if errcp(system "cp -a /lib/$lib $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
-            return if errcp(system "cp -a /lib/$what $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
+            ($path,$value) = stripper("/lib/$lib","lib");
+            $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+            return if errcp(system "$tool $path $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
+	    ($path,$value) = stripper("/lib/$what","lib");
+	    $value == 0 ? ($tool = "cp -a") : ($tool = "mv"); 
+            return if errcp(system "$tool $path $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
           }
           # no symbolic link
           else {
-            return if errcp(system "cp -a /lib/$lib $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
+	    ($path,$value) = stripper("/lib/$lib","lib");
+            return if errcp(system "cp -a $path $tmp/initrd_mnt/lib >> $verbosefn 2>&1") == 2;
           }
         }
    }
 
-  
+
   #V#print "Determine run-time link bindings\n";
   # Has a return code of 0 regardless
   system "ldconfig -r $tmp/initrd_mnt";
