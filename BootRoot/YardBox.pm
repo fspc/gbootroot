@@ -1181,7 +1181,7 @@ sub search {
 	#_______________________________________
 	# Search button
 
-	my ($keywords, $old_keywords);
+	my ($keywords, $old_keywords, $before_offset);
 	my ($tmp_ct, $tmp_k);
 
 	my $submit_b = button(0,1,3,4,"Search",$table_search);
@@ -1196,6 +1196,10 @@ sub search {
 	$submit_b->grab_default;
 	$submit_b->signal_connect( "clicked", sub {
 	    my $keywords = $search1->get_text();
+	    $before_offset = $offset if $offset != -1;
+	    if ($old_keywords ne $keywords) {
+		undef $before_offset;
+	    }
 
       	    # rindex
 	    if ($search_backwards->active) {
@@ -1229,6 +1233,15 @@ sub search {
 			$length = $length + $offset;
 			$text->select_region($offset, $length);
 		    }
+
+		    # Here is an initial search and nothing is found
+		    if (!$before_offset && $offset == -1) {
+			error_window("Search string \'$keywords\' not found.");
+			undef $offset;
+			undef $before_offset;
+			return;
+		    }
+
 		}
 		else {
 		    $offset = $offset - 1;
@@ -1312,6 +1325,14 @@ sub search {
 			$length = $length + $offset;
 			$text->select_region($offset, $length);
 		    }
+
+		    # Here is an initial search and nothing is found
+		    if (!$before_offset && $offset == -1) {
+			error_window("Search string \'$keywords\' not found.");
+			undef $offset;
+			undef $before_offset;
+			return;
+		    }
 		}
 		else {
 		    $offset = $offset + 1;
@@ -1343,7 +1364,26 @@ sub search {
 			$length = $length + $offset;
 			$text->select_region($offset,$length);
 		    }
+		    elsif (!$before_offset && $offset == -1) {
+			# Here is a continued search and nothing is found
+			# We want the question_window to come up first
+			# Then pop this error box.
+			question_window("End of document reached;"
+					. " continue from beginning?", 
+					$search_window,$submit_b,
+					length($changed_text_from_template));
+			$before_offset = -100;
+		    }
+		    # The previous elsif continues.
+		    elsif ($before_offset && $before_offset == -100) {
+			    error_window("Search string \'$keywords\' not" .
+					 " found.");
+			    undef $offset;
+			    undef $before_offset;
+			    return;		   
+		    }
 		    else {
+
 			question_window("End of document reached;"
 					. " continue from beginning?", 
 					$search_window,$submit_b,
@@ -1353,7 +1393,6 @@ sub search {
 
 	    }
 	    $old_keywords = $keywords;	    
-	    print "$offset\n";
 
 	} );
 
