@@ -3,7 +3,7 @@
 ##  Yard.pm combining
 ##  MAKE_ROOT_FS, CHECK_ROOT_FS, and YARD_UTILS.PL by Tom Fawcett
 ##  Copyright (C) 1996,1997,1998  Tom Fawcett (fawcett@croftj.net)
-##  Copyright (C) 2000,2001 Modifications by Jonathan Rosenbaum 
+##  Copyright (C) 2000,2001,2002 Modifications by Jonathan Rosenbaum 
 ##                                           <freesource@users.sourceforge.net>
 
 ##
@@ -1484,6 +1484,7 @@ sub create_expect_uml {
 		$x_count++;
 		while (Gtk->events_pending) { Gtk->main_iteration; }
 	    }
+
 
 	    if ( $fs_type eq "mkcramfs" || $fs_type eq "genromfs" ) {
 		# Will just keep appending _cramfs .. leaving it to the

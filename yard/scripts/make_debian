@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#    make_debian Copyright (C) 2001 from gBootRoot
+#    make_debian Copyright (C) 2001, 2002 from gBootRoot
 #    Lead Developer and Project Coordinator
 #    Jonathan Rosenbaum <freesource@users.sourceforge.net>
 #
@@ -246,7 +246,7 @@ return $stuff;
 use strict;
 use File::Basename;
 my $rm = "\$";
-$main::Id = "# \$Id: make_debian,v 1.60 2001/12/13 05:43:27 freesource Exp $rm"; 
+$main::Id = "# \$Id: make_debian,v 1.61 2001/12/14 04:37:29 freesource Exp $rm"; 
 my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
 if ($sbin == 0) {
     $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};
