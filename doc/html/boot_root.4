@@ -1,0 +1,546 @@
+#!/usr/bin/perl -w
+
+#    BootRoot 0.4 by freesource 4.14.2000 Copyright (C) 2000 
+#    Jonathan Rosenbaum - mttrader@access.mountain.net
+#    http://the.netpedia.net/bootroot.html
+
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+
+#  CHANGES 
+#
+#           0.4 - 4.14.2000
+#                  * copy over bzip2 only if specified in configuration
+#                  * check and adjust the size of the initrd image, thanks 
+#                    to Magnus Holmberg for reporting the bug when stuff 
+#                    didn't fit the old default size for his setup, also 
+#                    will make a leaner boot if the reverse is true.
+#                  * add a new question by Magnus to the FAQ
+#
+#           0.3 - 3.17.2000
+#                  * added more error checking                   
+#
+#           0.2 -  3.16.2000
+#                  * beta .. works nicely
+#                  * automatic y when mke2fs on loop device
+#                  * extra cleanup for aborted attempt
+#                  * removed init from boot    
+#                  * size check - will abort if cp or mkdir fail and
+#                    output to find out how much space is left.
+#                  * added normalboot to lilo for booting from normal disk -
+#                    requires root=device otherwise will default to /dev/hda1
+#                  * added a message with lilo
+
+#           0.1 - 3.12.2000
+#                  * initial alpha release, will implement size test
+#                    in next version.
+#            
+
+#  What are the REQUIREMENTS?
+#
+#  Check to make sure you have thes things, in these directories or the
+#  program won't work correctly:
+#  /bin/{ash,gzip,mount,umount} 
+#  /sbin/init  (you better have this! .. only used for a test.)
+#  /usr/bin/bzip2  (optional)
+
+#  What does this program do?  
+#
+#  BootRoot creates a boot disk with lilo, a kernel and an initrd image.
+#  The initrd script mounts another root disk with a compressed (gzip or 
+#  bzip2) filesystem.
+#
+#  The root filesystem isn't made by this program.  This program is 
+#  patterned after mkrboot, but unlike mkrboot it creates an unique bootdisk
+#  and a separate root disk.
+
+#  What's the advantage of using this program?
+#
+#  You can use a bzip2 compressed filesystem, this program is
+#  easy to use, and it provides a framework showing a simple initrd method 
+#  which you can freely modify.  Run a search for HEREDOC.  I wrote this 
+#  program as a solution to help oster at EE (www.experts-exchange.com) 
+#  create separate boot and root floppies for an emergency system for his 
+#  customers.
+#
+#  If you make a cool change to this program, or if this program helps you 
+#  I'd love to know, that's better than receiving pizza :)
+
+#  How can I test BootRoot? 
+#
+#  Get SETUP.GZ as the filesystem from looplinux at 
+#  http://www.tux.org/pub/people/kent-robotti/index.htm.
+#  This filesystem works with 2.2 kernels.
+#    
+#  [Ctrl] ([Tab] to see available images) 
+#  boot: bootdisk single [Enter]
+#  ( now filesystem is single user mode)
+#  exit [Enter]
+#  (now you are in multi user mode)
+#
+#  Better yet, do [Ctrl]
+#  boot: bootdisk 2 [Enter]
+#
+#  This works nicely with a compressed root filesystems made with yard
+#  without "single" .. but looplinux comes with mc (mcedit)
+
+#  Why doesn't looplinux work as "bootdisk 1?"
+#
+#  There is a difference between "1" and "single."  Looplinux was written
+#  in a way that runlevel 1 doesn't work properly in relation to BootRoot
+#  unless single is used.  And you thought they were the same thing. 
+#  BootRoot proves otherwise.
+
+#  What sort of configuration can I do?
+#
+#  Edit the variable $compress to either gzip (default) or bzip2. 
+
+#  How do I use the program?
+#
+#  program_name lilo linux-kernel compressed-filesystem
+#
+#  "lilo" is the only method supported at the present.
+#
+#  For instance .. "linux-kernel" could be:  /boot/vmlinuz-2.2.14  
+#                  "compressed-filesystem":  /home/createit/my_creation.gz
+#  (if found in same directory when running the program)
+#                  "linux-kernel could be":  vmlinuz-2.2.14
+#                  "compressed-filesystem":  my_creation.gz
+#        
+#  "device" could be /dev/fd0 (default) or /dev/fd1 .. etc.
+#  "size" is usually 1440 (default)
+
+# Edit to "gzip" or "bzip2"
+$compress = "gzip";
+
+#######################################################################
+# Don't edit from here, but you can if you want to change the here docs
+# and/or the contents of initrd (in which case you need to make sure the
+# right libraries are copied over to initrd).
+
+# I need to remember to edit this
+$version = "v0.4";
+$date = "4.14.2000";
+
+$device = "/dev/fd0";
+$size = 1440;
+$initrd =  "initrd_image";
+$pwd = `pwd`; chomp $pwd;
+use File::Basename;
+$compress eq "gzip" ? ($compress = "gzip") : ($compress = "bzip2");
+
+if ($#ARGV == -1) { 
+    print "boot_root - Make a separate boot and root disk\n";
+    print "-----------------------------------------------\n";
+    print "boot_root <method> [ <linux-kernel > [ <root-image> [ <device> [ <size> ]]]]\n";
+    print "\nMethods available:\n\nlilo    -> Generates a separate boot and root disk for lilo\n\n";
+    exit;
+}
+if ($ARGV[0] ne "lilo") {
+    die "Please supply a method\n";
+}
+$method = $ARGV[0];
+if (defined $ARGV[1] && -e $ARGV[1] && !-d $ARGV[1]) {
+    $kernel = $ARGV[1];
+}
+else {
+    die "boot_root: ERROR: Kernel not found\n";
+}
+if (defined $ARGV[2] && -e $ARGV[1] && !-d $ARGV[1] ) {
+    $root_image = $ARGV[2];
+}
+else {
+    die "boot_root: ERROR: Rootimage not found\n";
+}
+$device = $ARGV[3] if defined $ARGV[3];
+$size = $ARGV[4] if defined $ARGV[4]; 
+
+# lilo method
+if ($method eq "lilo") {
+
+
+  # Do a little cleanup just in case
+  system "rm /tmp/initrd_image.gz 2> /dev/null; rmdir /tmp/initrd_mnt 2> /dev/null"; 
+
+    initrd();
+    mtab();
+
+
+  print "Making ext2 filesystem\n";
+  system "mke2fs -m0 -i8192 $device $size";
+  die "boot_root: ERROR: You need to insert a disk\n" if $? != 0;
+  print "Mounting the device\n";
+  errm(system "mount -t ext2  $device /mnt");
+
+  # Time to do a little calculations 
+  $device_size = (split(/\s+/,`df /mnt`))[8]; 
+  $boot_size = (stat($kernel))[12]/2 + (stat("/tmp/$initrd"))[12]/2; 
+  $root_image_size = (stat($root_image))[12]/2;
+  $enough_boot = $device_size - $boot_size;
+  $enough_root = $device_size - $root_image_size;
+  $remain_boot = $device_size - $boot_size;
+  $remain_root = $device_size - $root_image_size;
+
+  # A little output
+  $enough_boot  =~ /^-+\d+$/ ? 
+  die "boot_root: ERROR: Not enough room: boot stuff = $boot_size k, device = $device_size\n" :
+  print "boot_root: Looks good so far:  boot stuff = $boot_size k, device = $device_size k, remaining = $remain_boot k\n";
+
+   # Better do this first
+  print "Copy over initrd ramdisk\n";
+  system "cp /tmp/$initrd /mnt/$initrd";
+  die "boot_root: ERROR: Could not copy over initrd\n" if $? != 0;
+ 
+  print "Copying over kernel\n";
+  system "rm -rf /mnt/lost+found; cp $kernel /mnt/kernel";
+  die "boot_root: ERROR: Could not copy over the kernel\n" if $? != 0;
+  print "Making stuff for lilo\n";
+  err(system "mkdir /mnt/{boot,dev}; cp -a /dev/{null,fd?,hda1} /mnt/dev");
+  print "Copy over important lilo stuff\n";
+  err(system "cp /boot/boot.b /mnt/boot");
+
+# HEREDOC
+$brlilo = << "LILOCONF";
+boot = $device
+message = message
+delay = 50
+vga = normal
+install = /boot/boot.b
+map = /boot/map
+backup = /dev/null
+compact
+
+# bootdisk
+image = kernel 
+append = "load_ramdisk = 1 debug"
+initrd = $initrd
+root = $device
+label = bootdisk
+read-write
+
+# normalboot
+image = kernel 
+root = /dev/hda1
+label = normalboot
+read-only
+LILOCONF
+    open(LC, ">/mnt/brlilo.conf") or die "Couldn't write /mnt/brlilo.conf\n";
+    print LC $brlilo; close(LC);
+
+
+# HEREDOC
+$message = << "MESSAGE";
+
+BootRoot $version written by Jonathan Rosenbaum $date GPL 
+mailto:mttrader\@access.mountain.net
+
+Press [Ctrl] to see the lilo prompt.
+
+Press [Tab] to see a list of boot options.
+
+bootdisk   = This will boot a compressed root filesystem
+             on another floppy.
+normalboot = This will boot up a specified filesystem. 
+             default: /dev/hda1  a = 1st drive 
+                                 1 = 1st partition
+             Use root=/dev/(h or s)dXX
+                                 h = IDE Drive
+                                 s = SCSI Drive
+
+Trouble:  Do not forget boot: option single
+Fix a filesystem:  e2fsck /dev/(h or s)dXX  
+Bad superblock:    e2fsck -b 8192 /dev/(h or s)dXX
+
+MESSAGE
+    open(M, ">/mnt/message") or die "Couldn't write /mnt/message\n";
+    print M $message; close(M);
+
+  # Got to umount,mount, and umount again to make sure everything is
+  # copied over before doing lilo
+  errum(system "umount /mnt");
+  print "Umount device\n";
+  print "Remount device\n";
+  errm(system "mount -t ext2 $device /mnt");  
+  print "Configuring lilo\n";
+  chdir("/mnt") or die "boot_root: ERROR: Could not change directories\n";
+  system "lilo -v -C brlilo.conf -r /mnt"; 
+  die "boot_root: ERROR: lilo failed\n" if $? != 0; # code 0 regardless
+  chdir($pwd) or die "boot_root: ERROR: Could not change directories\n";
+  print "Umounting /mnt\n";
+  # y I know
+  $um = system "umount /mnt";
+
+  print "Doing a little cleanup\n";
+  system "rm /tmp/$initrd; rmdir /tmp/initrd_mnt"; 
+
+  # This could be put on the top, but all that needs to be done now is
+  # to mke2fs & cp over /compressed_filesystem
+  $enough_root  =~ /^-+\d+$/ ? 
+  die "boot_root: ERROR: Not enough room: root stuff = $root_image_size k, device = $device_size\n" :
+  print "boot_root: Looks good:  boot stuff = $boot_size k, device = $device_size k, remaining = $remain_root k\n";
+
+
+# Here's where we copy over that compressed filesystem
+# We could separate $device = boot,root allowing two 
+# different devices to be used.
+if ($um == 0) {
+    mtab(); 
+    print "Making ext2 filesystem\n";
+    system "mke2fs -m0 -i8192 $device $size";
+    die "boot_root: ERROR: You need to insert a disk\n" if $? != 0;
+    errm(system "mount -t ext2 /dev/fd0 /mnt");
+    print "Copy over the compressed filesystem\n"; 
+    system "rmdir /mnt/lost+found";
+    $broot_image = basename($root_image);
+    system "cp $root_image /mnt/$broot_image"; 
+    die "boot_root: ERROR: Could not copy over the root filesystem\n" if $? != 0; 
+    errum(system "umount /mnt"); 
+    print "Root disk did not properly umount\n" if $? != 0;   
+    print "Finished!\n";
+}
+else {
+    die "boot_root: ERROR: Boot disk was never umounted\n";
+}  # copy over the compressed
+
+  
+} # lilo method
+
+
+# Some functions
+
+sub errmk {
+  die "boot_root: ERROR: Could not make important directories\n" if $? != 0; 
+}
+
+sub errcp {
+  die "boot_root: ERROR: Could not copy over important stuff\n" if $? != 0; 
+}
+
+sub errum {
+  die "boot_root: ERROR: Could not umount the device\n" if $? != 0; 
+}
+
+sub errm {
+ die "boot_root: ERROR: Could not mount device\n" if $? != 0;
+}
+
+sub err { 
+ die "boot_root: ERROR: Not enough space after all\n" if ($? > 0); 
+}
+
+sub mtab {
+
+# /proc/mount could be used, but maybe there is no /proc
+
+# \n from initrd()
+print "\nPlease insert a floppy and then press [Enter]: ";
+<STDIN>;
+# Check to see if $device is mounted
+open (MTAB, "/etc/mtab") or die "no mtab!\n";
+while (<MTAB>) {
+    if (m,$device,) {
+	print "DANGER!\n";
+	print "This next step will create a new filesystem on the floppy removing all data\n";
+	print "Please umount the device first, and put in a new floppy.\n";
+	exit;
+    }
+}
+close(MTAB);
+} # end sub mtab
+
+
+sub initrd_size {
+
+  ($linuxrc_size) = @_;
+  print "Checking size needed for initrd\n";
+
+  # the size of the loop device should be at least 1.63% larger than what
+  # it will contain (i.e. 8192 inode), but to keep on the safe size it will
+  #  be 2.00% larger.
+  # 9 dirs  = 1024 each (increase if modified)
+  # {ash,gzip,mount,umount} (required executables)
+  # bzip2 if $compress eq bzip2 (optional)
+  # 1 for ld.so.cache
+
+  # change dir size if needed
+  $dir_size = 9 + 1;
+  $initrd_size = $dir_size + $linuxrc_size;
+
+  # add other executables here
+  @initrd_stuff = qw(ash gzip mount umount);
+  foreach (@initrd_stuff) {
+     $initrd_size =  $initrd_size + ((stat("/bin/$_"))[12]/2);
+  }
+
+  if ($compress eq "bzip2" && -e "/usr/bin/$compress") {
+     print "hi\n";
+     $initrd_size = $initrd_size + ((stat("/usr/bin/$compress"))[12]/2); 
+  }
+
+  # lib sizes
+  open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd
+   while (<L>) { 
+      $lib = (split(/=>/,$_))[0]; 
+      $lib =~ s/\s+//;  
+      $lib = basename($lib); 
+      $lib =~ s/\s+$//; 
+      open (SL,"ls -l /lib/$lib|") or die "humm: $!\n"; 
+        while (<SL>) { 
+          # symbolic link
+          if (-l "/lib/$lib") {
+            $what = (split(/\s+/,$_))[10]; 
+            $initrd_size = $initrd_size + 1;
+            $initrd_size = $initrd_size + ((stat("/lib/$what"))[12]/2);
+          } 
+          # no symbolic link
+          else { 
+           $initrd_size = $initrd_size + ((stat("/lib/$lib"))[12]/2);
+          } 
+        }
+   }
+
+  $initrd_size = $initrd_size + ($initrd_size * 0.02);
+  # For perfection 1 (rounded up) is o.k., but for safety 10 would be 
+  # better  
+  $initrd_size = sprintf("%.f",$initrd_size) + 10;
+  return $initrd_size;
+
+} # end sub initrd_size
+
+
+sub initrd {
+
+$broot_image = basename($root_image);
+
+# Here's where the initrd is put together using a loop device
+# HEREDOC
+$initrd_exec = << "INITRD";
+#!/bin/ash
+
+export PATH=/bin:/sbin:/usr/bin:
+
+echo Preparing to setup ramdisk.
+
+mount -o remount,rw / 2>/dev/null
+
+echo Mounting proc...
+mount -t proc none /proc
+
+echo -n 'Please insert the root floppy, and press [Enter]: '
+read ENTER
+
+echo Mounting floppy drive readonly ...
+mount -o ro -t ext2 /dev/fd0 /mnt
+
+echo -n Copying new root to ramdisk .. please wait ...
+$compress -cd /mnt/$broot_image > /dev/ram1
+echo done.
+
+echo -n Unmounting floppy ...
+umount /mnt
+echo done.
+
+echo Changing to the new root.
+echo 257 >/proc/sys/kernel/real-root-dev
+
+echo -n Unmounting proc ...
+umount /proc
+echo done.
+
+echo Continuing normal boot procedure from ramdisk.
+INITRD
+
+  open(LC, ">/tmp/linuxrc") or die "Couldn't write linuxrc to loop device\n";
+  print LC $initrd_exec; close(LC); 
+  $size_needed = initrd_size((stat("/tmp/linuxrc"))[12]/2);
+  unlink("/tmp/linuxrc");
+
+  print "Using loop device to make initrd\n";
+  print "Make sure you have loop device capability in your running kernel\n";
+  system "dd if=/dev/zero of=/tmp/$initrd bs=1024 count=$size_needed";
+  # no need to enter y every time
+  open(T,"|mke2fs -m0 -i8192 /tmp/$initrd") or die "Problem here: $!\n";  print T "y\n"; close(T);
+  print "Mounting initrd in tmp\n";
+  errmk(system "mkdir /tmp/initrd_mnt; mount -o loop -t ext2 /tmp/$initrd /tmp/initrd_mnt");
+  print "Putting everything together\n";
+  open(LC, ">/tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to loop device\n";
+  print LC $initrd_exec; close(LC); 
+  # I could test this but somebody's system may do permissions differently
+  system "chmod 755 /tmp/initrd_mnt/linuxrc";
+  system "rmdir /tmp/initrd_mnt/lost+found";
+
+  print "... the dirs\n";
+  errmk(system "mkdir /tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr}; mkdir /tmp/initrd_mnt/usr/lib");
+  errcp(system "cp -a /dev/{console,fd0,null,ram0,ram1,tty0} /tmp/initrd_mnt/dev");
+  # future implementation
+  #errcp(system "cp -a $device /tmp/initrd_mnt/dev");
+
+  print ".. the bins\n";
+  errcp(system "cp -a /bin/{ash,gzip,mount,umount} /tmp/initrd_mnt/bin");
+  if ($compress eq "bzip2") {
+    errcp(system "cp -a /usr/bin/$compress /tmp/initrd_mnt/bin") if -e "/usr/bin/$compress";
+  }
+
+  # Testing init is sufficient for grabbing the correct libraries for the
+  # executables immediately above.  This could be modified to test a
+  # list of executables.  
+  print ".. the libs\n";
+  open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd
+   while (<L>) { 
+      $lib = (split(/=>/,$_))[0]; 
+      $lib =~ s/\s+//;  
+      $lib = basename($lib); 
+      $lib =~ s/\s+$//; 
+      open (SL,"ls -l /lib/$lib|") or die "humm: $!\n"; 
+        while (<SL>) { 
+          # symbolic link
+          if (-l "/lib/$lib") {
+            $what = (split(/\s+/,$_))[10]; 
+            errcp(system "cp -a /lib/$lib /tmp/initrd_mnt/lib");
+            errcp(system "cp -a /lib/$what /tmp/initrd_mnt/lib");
+          } 
+          # no symbolic link
+          else { 
+            errcp(system "cp -a /lib/$lib /tmp/initrd_mnt/lib");
+          } 
+        }
+   }
+
+  print "Determine run-time link bindings\n";
+  # Has a return code of 0 regardless
+  system "ldconfig -r /tmp/initrd_mnt";
+  print "Umounting loop device, and compressing initrd";
+  errum(system "umount /tmp/initrd_mnt; gzip -9 /tmp/$initrd");  
+  $initrd = $initrd . ".gz";
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

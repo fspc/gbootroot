@@ -1,0 +1,115 @@
+<html>
+<head><title>BootRoot</title></head>
+<body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
+alink="#FF0000">
+
+<p>
+You found it&nbsp;..&nbsp; the BootRoot page.&nbsp;&nbsp;Check out the <a href="/">gBootRoot</a> page, I no longer actively maintain BootRoot because the graphical version is much more powerful!
+<p>
+<p>
+<h3>The four steps to making a Boot Root set.</h3>
+1).&nbsp;&nbsp;Grab the Perl Script right here&nbsp;..&nbsp;<a href="http://gbootroot.sourceforge.net/boot_root.4">boot_root</a>
+&nbsp;&nbsp;give it a name .. umm .. boot_root.
+<br><br>
+2).&nbsp;&nbsp;Make sure the bang line points to the right place. 
+<pre>
+      $ which perl
+      /usr/bin/perl
+      $ grep "perl -w" boot_root
+      #!/usr/bin/perl -w 
+</pre>
+<br>
+3).&nbsp;&nbsp;Make it executable.
+<pre>
+      $ chmod 755 boot_root
+</pre>
+<br>
+4).&nbsp;&nbsp;Put it in one of your LIB PATHS.
+<pre>
+      $ echo $PATH
+      /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:.:
+      $ mv boot_root /usr/bin
+</pre>
+<br>
+5).&nbsp;&nbsp;Run it, and have lots of fun!&nbsp;&nbsp;More directions can be found at the beginning of the script.
+<br><p>
+<h3>BootRoot FAQ </h3>
+<p> <b> What does this program do?</b>  
+<p>
+  BootRoot creates a boot disk with lilo, a kernel and an initrd image.
+  &nbsp;&nbsp;The initrd script mounts another root disk with a compressed (gzip or 
+  bzip2) filesystem.
+<p>
+  The root filesystem isn't made by this program, but there lots of compressed filesytems out there to use (see rest of FAQ).&nbsp;&nbsp;  This program is 
+  patterned after mkrboot, but unlike <a href="http://www.debian.org/Packages/unstable/admin/mkrboot">mkrboot</a> it creates an unique bootdisk
+  and a separate root disk.
+<p>
+  <b>What's the advantage of using this program?</b>
+<p>
+  You can use a bzip2 compressed filesystem, this program is
+  easy to use, and it provides a framework showing a simple initrd method 
+  which you can freely modify.  &nbsp;&nbsp;I wrote this 
+  program as a solution to help oster at EE (www.experts-exchange.com) 
+  create separate boot and root floppies for an emergency system for his 
+  customers.
+<p>
+  If you make a cool change to this program, or if this program helps you 
+  I'd love to know, that's better than receiving pizza :)
+<p>
+  <b>How can I test BootRoot?</b> 
+<p>
+  Get SETUP.GZ as the filesystem from looplinux at 
+  <a href="http://www.tux.org/pub/people/kent-robotti/index.html">looplinux</a> or get it <a href="/bootroot/setup.gz">here</a>.
+  &nbsp;&nbsp;This filesystem works with 2.2 kernels.
+<p>    
+  [Ctrl] ([Tab] to see available images) 
+<br>  boot: bootdisk single [Enter]
+<br>  ( now filesystem is single user mode)
+<br>  exit [Enter]
+<br>  (now you are in multi user mode)
+<p>
+ Better yet, do [Ctrl]
+<br> boot: bootdisk 2 [Enter]
+<p>
+ This works nicely with a compressed root filesystems made with <a href="http://www.croftj.net/~fawcett/yard/">yard</a> without "single" .. but looplinux 
+comes with <a href="http://www.tw.gnome.org/mc/announce.html">mc (mcedit)</a>.
+
+<p>
+<b>Why doesn't looplinux work as "bootdisk 1?"</b>
+<p>
+  There is a difference between "1" and "single."&nbsp;&nbsp;Looplinux was written
+  in a way that runlevel 1 doesn't work properly in relation to BootRoot
+  unless single is used.  &nbsp;&nbsp;And you thought they were the same thing.&nbsp;&nbsp; 
+  BootRoot proves otherwise.
+
+<p>
+  <b>What sort of configuration can I do?</b>
+<p>
+  Edit the variable $compress to either gzip (default) or bzip2. 
+<p>
+  <b>How do I use the program?</b>
+<p>
+
+
+  program_name&nbsp;&nbsp; lilo&nbsp;&nbsp; linux-kernel&nbsp;&nbsp; compressed-filesystem
+<p>
+  "lilo" is the only method supported at the present.
+<p>
+Example:
+<br>
+  "linux-kernel" could be:  /boot/vmlinuz-2.2.14  
+<br>                  "compressed-filesystem" could be:  /home/createit/my_creation.gz
+<br>  (if found in same directory when running the program)
+<br>                  "linux-kernel could be":  vmlinuz-2.2.14
+<br>                  "compressed-filesystem" could be:  my_creation.gz
+<h3>Old versions of BootRoot.</h3>
+None available.
+<br><br><br>
+Contact me:&nbsp;&nbsp;<a href="mailto:freesource@users.sourceforge.net">freesource@users.sourceforge.net</a>
+
+
+</body>
+</html>
+
+
+

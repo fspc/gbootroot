@@ -1,0 +1,417 @@
+<html>
+<head><title>gBootRoot</title></head>
+<body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
+alink="#FF0000">
+
+
+<H1 align="center">gBootRoot</h1> 
+<H3 align="center">at</h3> 
+
+<p align="center"><A href="http://sourceforge.net/projects/gbootroot"> 
+<IMG src="http://sourceforge.net/sflogo.php?group_id=9513&type=1" 
+width="88" height="31" border="0"
+alt="SourceForge Logo"> </A></p> 
+<p></p>
+<P align="center">
+<b>bOOTrOOT</b> makes the development, construction, and
+testing of distributions fun and simple.</P>
+
+<br>
+
+<P align="center">
+<b>Download gBootRoot<b></P>
+<P align="center">Stable version</P>
+<p align="center"><A href="http://prdownloads.sourceforge.net/gbootroot/">
+Old versions</A></P>
+
+
+<P align="center">
+<IMG ALT="" SRC="images/gbootroot.xpm">
+</P>
+
+<P align="center">
+<b>How to Use gBootRoot</b></P>
+<P><IMG ALT="" SRC="images/gBS.jpg" align="right">The most important button to 
+familiarize yourself with is the Submit button which starts the whole process;
+dialogs are presented as the process continues asking you if you want to 
+continue &quot;OK&quot; or stop &quot;Cancel&quot;.</P>
+
+<p>
+The <u>first row</u> presently has only one Boot Method choice:
+"2 disk compression."&nbsp;&nbsp
+Clicking on the menu on the right selects the Boot Method.</p>
+
+
+<P>The <u>second row</u> allows you to select the kernel for the Boot/Root set.&nbsp;&nbsp;  You 
+may either use the file selector button on the right hand side, or you may 
+type in the location on the left hand side.</P>
+
+<P>
+The <u>third row</u> allows you to select the compressed filesystem you are
+providing, using either of the two ways mentioned before. &nbsp;&nbsp;  You may use a
+pre-made root filesystem or you may create one using one of the Methods 
+provided in the Advanced Root Section.
+</P>
+
+
+<P>The <u>fourth row</u> allows you to select the device you want to use.&nbsp;&nbsp;  The default
+device is the first floppy disk - /dev/fd0.</P>
+
+<p>
+The <u>fifth row</u> allows you to choose the size of the device being used. &nbsp;&nbsp;
+The default size of 1440 assumes you are using a floppy drive (Note: You may 
+want to experiment with 1722 which works fine with many floppy drives.), but
+can be used with other sized devices like tape drives.  &nbsp;&nbsp; Click on the 
+appropriate radio button to choose either gzip or bzip2 compression if the 
+program doesn't automatically detect it.</p>
+
+<P align="center"><b>Verbosity Box</b></p>
+<IMG ALT="" SRC="images/verbosity_box.jpg" align="right">
+
+The <u>slider bar</u> on the right allows the output of the verbosity box 
+to be 
+changed from the highest (2) to the lowest setting (1) or to be turned off (0)
+or on again.&nbsp;&nbsp;
+At times it may be advantageous to turn off the verbosity box 
+since large quantities of output to this box may cause gbootroot to use too 
+much cpu power; however, output may still be found in the text file "verbose" 
+in /tmp/gbootroot_tmp'time-date'.</p>
+
+
+<p><P align="center"><b>
+Using the Advanced Boot Section</b></p>
+
+<p><IMG ALT="" SRC="images/ABS.jpg" align="right">
+
+"Stripping"&nbsp;&nbsp;  On by default for libraries and binaries.&nbsp;&nbsp;  The stripping 
+behavior for libraries may be changed by clicking on the right mouse button 
+to change from --strip-debug to --strip-all.</p>
+
+<p>
+
+"Devel Device"&nbsp;&nbsp; If the device used for development is different than the 
+actual boot device, use this field to indicate that device.&nbsp;&nbsp; You will have to 
+run lilo -v -C brlilo.conf -r "device mount point" manually at a later time 
+on the actual boot device.</p>
+
+<p>
+
+"Opt. Device"&nbsp;&nbsp;  Add devices to the boot disk which are necessary for the
+kernel to function properly.  Put a space between each device.  For instance,
+/dev/fb0 for frame buffer devices.</p>
+
+<p>
+
+"append ="&nbsp;&nbsp;  Add append options to brlilo.conf.&nbsp;&nbsp;  If you are using a frame
+buffer device you could add something like video=matrox:vesa:402,depth:16.</p>
+
+<br><br><br><br><br><br><br><br><br>
+
+<P align="center">
+<b>Using the Advanced Root Section</b></P>
+<p><IMG ALT="" SRC="images/ARS.jpg" align="right">
+
+"Root Device" &nbsp;&nbsp;  
+This is the device used for the root filesystem when 
+constructing the Boot/Root set. &nbsp;&nbsp; 
+You may choose a device which is different 
+than the Boot device, but presently only floppy devices are supported.</p>
+
+<p>
+
+"Root Device Size" &nbsp;&nbsp; The size of the actual media used for the Root Device.</p>
+
+<p>
+
+"Root Filename" &nbsp;&nbsp;
+ The name give to the root filesystem when initially made
+in the temporary creation location. &nbsp;&nbsp;
+The save button allows the creation to
+be saved in the permanent default location when the 
+Accept button is pressed.</p>
+
+<p>
+
+"Filesystem Size" &nbsp;&nbsp;
+ Root Methods make the filesystem the size which is 
+specified here.</p>
+
+<p>
+
+"Compression" &nbsp;&nbsp;
+Off by default to allow user-mode-linux testing. &nbsp;&nbsp; Turn on 
+compression when you are ready to use a Boot Method 
+which requires compression.</p>
+
+<p>
+
+"Method" &nbsp;&nbsp; The root filesystem creation method.</p>
+
+<p>
+
+"Template" &nbsp;&nbsp; The template associated with a Root Method. &nbsp;&nbsp;
+ Not all Root Methods
+have templates.</p>
+
+<p>
+
+"Generate" &nbsp;&nbsp; This puts the chosen Root Method in action.</p>
+
+<p>
+
+"UML" &nbsp;&nbsp; Abbreviation for user-mode-linux. &nbsp;&nbsp;
+ This is a linux kernel which runs on
+top of the host system's linux kernel and allows a you run a live root 
+filesystem.</p>
+
+<p>  
+
+"Accept" &nbsp;&nbsp; 
+This accepts the created root filesystem if it is found in the 
+temporary creation directory.  &nbsp;&nbsp;
+The UML box and the main section will now 
+reflect the path to this root filesystem. &nbsp;&nbsp;
+ You can now test with the UML 
+button or a put together a complete Boot/Root set with the Submit button.</p>
+
+
+<p><P align="center"><b>User Mode Linux Box</b></p>
+
+<p><IMG ALT="" SRC="images/uml_box.jpg" align="right">
+
+"Xterm"&nbsp;&nbsp; Choose an xterm with its executable options switch.</p>
+
+<p>
+
+"Options"&nbsp;&nbsp;Enter uml command-line options like: mem=64, 
+devfs=nomount.</p>
+
+<p>
+
+"Root_Fs"&nbsp;&nbsp;Choose an uncompressed root filesystem.&nbsp;&nbsp;
+Append with ubd?=.</p>
+
+<p>
+
+"Abort"&nbsp;&nbsp; Abort user-mode-linux kernel processes.&nbsp;&nbsp;</p>
+
+
+<p><P align="center"><b>
+About the Yard Box</b></p>
+
+<p><IMG ALT="" SRC="images/yard_box.jpg" align="center"></p>
+
+The Yard Box is a Root Method which is "Generated" from the Advanced Root
+Section after a Template is chosen.  It has several interesting features.
+
+<p>
+
+The check boxes at the bottom represent the different stages involved in
+creating a root filesystem.  The behavior of these stages may be altered in
+three ways: Edit->Stages->one-by-one (default) will perform each stage
+sequentially, stopping between each stage, the user may continue the process
+by pressing the Continue button.  Edit->Stages->continuous proceeds non-stop
+through all the stages.  Edit->Stages->'user defined' allows the user to
+choose any stages the user wants, and will then proceed through all the
+chosen stages.  Choosing only 'Check', 'Links & Deps', 'Create" is a good 
+example.</p>  
+
+<p><IMG ALT="" SRC="images/tests.jpg" align="center"></p>
+
+<p>
+
+The behavior of some of the stages may be altered.  For instance Alt-T allows
+you to choose which tests to run on the newly created 
+root filesystem.</p>
+
+<p><IMG ALT="" SRC="images/template_search.jpg" align="center"></p>
+
+<p>
+
+Press Alt-S to enable template text searching in either
+direction.  Find exact matches or ignore case with the case sensitive check
+box.</p>
+
+<p><IMG ALT="" SRC="images/file.jpg" align="center"></p>
+
+<p>
+
+Use Ctl-S to save the changes to an open template, and Alt-A to save the
+template with a new name.
+bOOTrOOT will not allow readonly templates or template links to be saved
+with their own name.  A few of these example files are included.  You may make 
+changes to them or clear their buffers.  Then you may save the template with a 
+different name.</p>
+
+<p><IMG ALT="" SRC="images/stripping.jpg" align="center"></p>
+
+<p>
+
+Edit->Settings->Stripping allows you to turn off/on stripping for
+Libraries, Binaries, and Modules.  --strip-all is the default stripping
+behavior, but Libraries may have this behavior changed to --strip-debug.</p>
+
+
+<p><IMG ALT="" SRC="images/paths.jpg" align="center"></p>
+
+<p>
+
+Edit->Setting->Paths allows you to prepend a new search path to your 
+environments $PATH variable.
+</p>
+
+<p><IMG ALT="" SRC="images/filesystem.jpg" align="center"></p>
+
+<p>
+
+Edit->'File System" may alter the type of filesystem used to make the root
+filesystem.  Because the filesystem is created on a loop device, some 
+filesystem types may complain or not be created at all.</p>
+
+<p><IMG ALT="" SRC="images/replacements.jpg" align="center"></p>
+
+<p>
+
+Edit->Replacements in your $HOME/.gbootroot/Replacements directory using
+an editor of your choice.
+</p>
+
+<p><IMG ALT="" SRC="images/create.jpg" align="center"></p>
+
+<p>
+
+Create->Replacements creates special replacement files.  Presently it creates 
+an fstab configuration file as Replacements/etc/fstab.new in 
+$HOME/.gbootroot/yard/.</p>
+
+<br><br>
+<P>Little things you may want to know:</P>
+
+<P>* gBootRoot requires ash for initrd.&nbsp;&nbsp;  Ash is a feather weight version of Bash.</P>
+<br>
+
+<P><IMG ALT="" SRC="images/gBSicon.jpg" align="center"> <b>FAQ</b></P>
+<P><b>What does this program do?</b></P>
+<P>gBootRoot creates a boot disk with lilo, a kernel and an initrd image.&nbsp;&nbsp;   The 
+initrd script mounts another root disk with a compressed (gzip or bzip2) 
+filesystem.</P>
+
+<P>The root filesystem isn't made by this program, but there lots of compressed 
+filesytems out there to use (see rest of FAQ).&nbsp;&nbsp;   This program is patterned 
+after mkrboot, but unlike mkrboot it creates an unique bootdisk and a 
+separate root disk.</P>
+
+<P><b>What's the advantage of using this program?</b></P>
+
+<P>You can use a bzip2 compressed filesystem, this program is easy to use, and it provides a framework showing a simple initrd method which you can freely 
+modify.&nbsp;&nbsp;   I wrote this program as an extension to BootRoot which was written 
+as a solution to help oster at EE (www.experts-exchange.com) create separate 
+boot and root floppies for an emergency system for his customers.</P>
+
+<P>If you make a cool change to this program, or if this program helps you I'd love to know, that's better than receiving pizza. :)</P>
+
+<P><b>How can I test gBootRoot?</b></P>
+
+<P>Get SETUP.GZ as the filesystem from <a href="http://www.tux.org/pub/people/kent-robotti/index.html">looplinux</a> or get it from my <a href="/bootroot/setup.gz">site</a>.
+This filesystem works with 2.2 kernels.</P>
+<p>    
+  [Ctrl] ([Tab] to see available images) 
+<br>  boot: bootdisk single [Enter]
+<br>  ( now filesystem is single user mode)
+<br>  exit [Enter]
+<br>  (now you are in multi user mode)
+<p>
+ Better yet, do [Ctrl]
+<br> boot: bootdisk 2 [Enter]
+
+<P>You can make your own compressed filesystem with 
+<a href="http://www.croftj.net/~fawcett/yard/">Yard</a>.</P>
+
+<P><b>Why doesn't looplinux work as &quot;bootdisk 1?&quot;</b></P>
+<P>There is a difference between &quot;1&quot; and &quot;single.&quot;  Looplinux was written in a 
+way that runlevel 1 doesn't work properly in relation to gBootRoot unless 
+single is used.&nbsp;&nbsp;   And you thought they were the same thing?&nbsp;&nbsp;   gBootRoot 
+proves otherwise. </P>
+
+<P><b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></P>
+<p>This program requires Gtk-Perl available from <a href="http://www.perl.com/CPAN">CPAN</a>, <a href="http://freshmeat.net/projects/gtk-perl">Freshmeat</a> or most GNU/Linux distributions.</p>
+
+<p><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
+disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing 
+the size of the kernel?</b></p>
+
+<p>
+Move the device size to 1722.  This is a trick that <a href="http://www.toms.net/rb/">tomsrtbt</a> uses on his famous rescue disk.</p>
+
+<p><b>If you roll the floppy density counter down to 0 and then try go back 
+up towards 1440 and 1722, you get very funny figures.</b></p>
+
+<p>
+This is because of the way Gtk works.&nbsp;&nbsp; There are two adjustments, 
+step and page increments.&nbsp;&nbsp;When you press your first mouse button the step 
+has been set to 282 so that a person can easily switch between 1440 and 1722.  
+&nbsp;&nbsp;When you use your second mouse button the page is set at 360.  You can go 
+down to zero by pressing your third mouse button on the down arrow.&nbsp;&nbsp;  Now 
+page up with the second button to 1440 and step with the first button to 
+1722.&nbsp;&nbsp;  Pretty cool, eh?</p>
+
+<p>Why we are on this subject please check out these keyboard shortcuts for Gtk.</p>
+
+    <P>Motion Shortcuts
+    
+    <UL>
+      <LI> Ctrl-A   Beginning of line </LI>
+      <LI> Ctrl-E   End of line </LI>
+      <LI> Ctrl-N   Next Line </LI>
+      <LI> Ctrl-P   Previous Line </LI>
+      <LI> Ctrl-B   Backward one character </LI>
+      <LI> Ctrl-F   Forward one character </LI>
+      <LI> Alt-B    Backward one word </LI>
+      <LI> Alt-F    Forward one word </LI>
+    </UL>
+    
+    <P>  Editing Shortcuts
+    
+    <UL>
+      <LI> Ctrl-H   Delete Backward Character (Backspace) </LI>
+      <LI> Ctrl-D   Delete Forward Character (Delete) </LI>
+      <LI> Ctrl-W   Delete Backward Word </LI>
+      <LI> Alt-D    Delete Forward Word </LI>
+      <LI> Ctrl-K   Delete to end of line </LI>
+      <LI> Ctrl-U   Delete line </LI>
+    </UL>
+    
+    <P>Selection Shortcuts
+    
+    <UL>
+      <LI> Ctrl-X   Cut to clipboard </LI>
+      <LI> Ctrl-C   Copy to clipboard </LI>
+      <LI> Ctrl-V   Paste from clipboard </LI>
+    </UL>
+
+<IMG ALT="Larry Ewing's Penguin celebrates in gBootRoot." SRC="images/peng-movie.4.gif">
+
+<br><br><br>
+Contact me:&nbsp;&nbsp;Jonathan Rosenbaum&nbsp;&nbsp;<<a href="freesource@users.sourceforge.net">freesource@users.sourceforge.net</a>>
+<br>
+Submit a Bug:&nbsp;&nbsp; <a href="http://sourceforge.net/bugs/?group_id=9513">gBootRoot Bug System</a>
+<br>
+Ask a question:&nbsp;&nbsp; <a href="http://sourceforge.net/forum/forum.php?forum_id=29639">Help Forum</a>
+<br>
+Start a discussion:&nbsp;&nbsp; <a href="http://sourceforge.net/forum/forum.php?forum_id=29638">Open Discussion Forum</a>
+<br>
+Join the mailing list:&nbsp;&nbsp; <a href="http://sourceforge.net/mail/?group_id=9513">gbootroot-dev mailing list</a><p>
+</body></html>
+
+
+
+
+
+
+
+
+
+
+
+
+
