@@ -36,8 +36,10 @@ my $false = 0;
 my $error;
 my ($continue_button,$close_button,$save_button);
 my($check,$dep,$space,$create,$test);
-my($device,$device_size,$filename,$filesystem_size,$kernel,$template_dir,
-   $template,$tmp,$mnt);
+my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
+
+my $filesystem_type = "ext2";
+my $inode_size = 8192;
 my $TEXT_CHANGED = "no";
 my $lib_bool =            1;
 my $bin_bool =            1;
@@ -110,7 +112,8 @@ my @menu_items = ( { path        => '/File',
 		     action      => 15,
 		     type        => '<RadioItem>',
 		     callback    => \&stages_user_defined },
-		   { path        => '/Edit/File System' },
+		   { path        => '/Edit/File System',
+		     callback    => \&file_system },
 		   { path        => '/Edit/Replacements' },
 
                    { path        => '/_Create',
@@ -181,8 +184,6 @@ sub yard {
     
     my ($ars) = @_;
 
-    $device           = $ars->{device};
-    $device_size      = $ars->{device_size};
     $filename         = $ars->{filename};
     $filesystem_size  = $ars->{filesystem_size};
     $kernel           = $ars->{kernel};
@@ -214,6 +215,18 @@ sub yard {
 
 
 } # end sub yard
+
+###############
+# File System #
+###############
+# This allows the user to choose a different filesystem besides ext2.
+# The space_check inode percentage formula can be altered.  Default 2%.
+sub file_system {
+
+    $filesystem_type = "ext2";
+    $inode_size = 8192;
+
+}
 
 
 ###########
@@ -419,6 +432,19 @@ sub continue {
 	    $continue->{space} = 1;
 	    return;
 	}
+        if ( $continue->{create} == 0 ) {
+	    create();
+	    foreach $thing (@check_boxes) {
+		$thing->hide();
+		$thing->active($false);
+		$thing->show();
+	    }   
+	    $test->hide();
+	    $test->active($true);
+	    $test->show();
+	    $continue->{create} = 1;
+	    return;
+	}
 
     }
 
@@ -428,8 +454,6 @@ sub check {
     
     $error = read_contents_file("$template_dir$template");
     return if $error && $error eq "ERROR";
-
-    $continue->{check} = 1;
 
 }
 
@@ -443,8 +467,6 @@ sub links_deps {
 
     $error = library_dependencies("$template_dir$template");
     return if $error && $error eq "ERROR";
-
-    $continue->{links_deps} = 1;
 
 }
 
@@ -464,6 +486,9 @@ sub space_left {
 
 sub create {
 
+    $error = create_filesystem($filename,$filesystem_size,$filesystem_type,
+			       $inode_size,$mnt);
+    return if $error && $error eq "ERROR";
 
 }
 
@@ -827,7 +852,6 @@ sub yard_box {
        $vbox->show();
 
        $check = new Gtk::CheckButton("Check");
-       $check->active($true);
        $check->signal_connect("clicked", \&which_stage, "check"); 
        $vbox->pack_start( $check, $true, $true, 10 );
        show $check;       
@@ -851,6 +875,10 @@ sub yard_box {
        $test->signal_connect("clicked", \&which_stage, "test"); 
        $vbox->pack_start( $test, $true, $true, 0 );
        show $test;       
+
+       # sets up default radiobutton behavior
+       which_stage("check","check");
+       $check->active($true);
 
        #_______________________________________ 
        # Separator
