@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+# $Id: rcS.example,v 1.4 2001/12/18 19:58:41 freesource Exp $
+# Used by the Example.yard template.
+# /etc/rcS:  System initialization script.
+#
+
+# Check the filesystem.  Genext2fs eq ext2
+
+echo "Checking root file system..."
+
+mount -n /proc
+cramfsck /dev/ubd/0
+
+# fsck -C /dev/ubd/0
+
+#if [ $? -gt 1 ]
+#    then
+#	fsck.cramfs /dev/ubd/0
+#fi
+
+# e2fsck -y /dev/ubd/0
+
+#  Mount everything mentioned in fstab
+#  .. but proc was mounted previous to prevent
+# fsck.ext2 from complaining, anyways.
+mount -o remount /
+mount -a
+
+#  Compute module dependencies
+#  /sbin/depmod -a
+
+#  Set host name
+/bin/hostname bootroot

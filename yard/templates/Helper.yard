@@ -1,0 +1,265 @@
+#  Helper.yard
+#
+#############################################################################
+#  UML buddy - needs cutomized kernel to allow creation of all filesystem types.
+##############################################################################
+
+
+# Include me in me
+/Helper.yard <= yard/templates/Helper.yard
+
+# For future boot stuff.
+lilo
+lilo.real
+dd
+
+# init - parent of all processes
+# Choose an inittab to compliment the traditional init in the page below.
+/sbin/init 		   	
+telinit
+/sbin/shutdown
+/sbin/halt
+/etc/init.d/halt   <=   Replacements/etc/init.d/halt.example
+/sbin/reboot   
+/etc/init.d/reboot   <=   Replacements/etc/init.d/reboot.example
+/etc/init.d/rc   <=   Replacements/etc/init.d/rc.example
+/etc/init.d/rcS   <=  Replacements/etc/init.d/rcS.helper
+##/sbin/swapon 
+
+# Login stuff
+/bin/login 
+/sbin/sulogin # used by inittab.debian-min
+/etc/securetty <= Replacements/etc/securetty.example
+/root/.bashrc <= Replacements/root/.bashrc.debian
+/root/.profile <= Replacements/root/.profile.debian
+/home/user/.bashrc <= Replacements/home/user/.bashrc.debian
+/home/user/.bash_profile <= Replacements/home/user/.bash_profile.debian
+/etc/hostname <= Replacements/etc/hostname
+/etc/motd <= Replacements/etc/motd
+
+# login and mount stuff
+#
+/etc/fstab	<=  Replacements/etc/fstab.example
+#
+/etc/issue # nice to have
+#
+# No password for root or user.
+/etc/group <= Replacements/etc/group.example	
+/etc/passwd <= Replacements/etc/passwd.example
+#
+# Shadow password  root=root user=user
+#/etc/group <= Replacements/etc/group.debian	
+#/etc/passwd <= Replacements/etc/passwd.debian
+#/etc/shadow <= Replacements/etc/shadow.debian
+/etc/login.defs
+
+#  Specify these binaries absolutely because boot scripts need them to be here.
+/bin/echo # for inittab.debian.sample
+/bin/mount 
+/bin/umount
+/bin/cat
+/bin/hostname		   	
+/bin/ln			   	
+/bin/ls			   	
+/bin/more
+/bin/mv			   	
+/usr/bin/find
+
+#####  SHELLS
+#    Bash is huge and requires libncurses.so.
+#    Many people use a smaller lightweight shell, like ash or kiss,
+#    and use that instead.
+/bin/sh -> bash 
+##/bin/sash 
+#
+/etc/profile		    
+/etc/shells # Make sure all included shells are listed.
+
+#   PROVISIONS FOR PAM: 
+/etc/pam.d/other
+/etc/pam.d/login
+# /etc/pam.conf
+
+#   PROVISIONS FOR NSS
+#   If you use the old libc5, or uClibc you don't need this.  
+#   Comment out this line.
+#
+/etc/nsswitch.conf <=  Replacements/etc/nsswitch.conf.example
+
+##### INITTAB and GETTY
+# These inittab and getty pairs are based on major distributions.
+# If your distribution isn't mentioned here, one of these inittabs may 
+# still work.  Check your /etc/inittab to confirm, or create a new inittab 
+# replacement and edit as required.  Some gettys require /etc/gettydefs.
+#
+# Choose the *-nodevfs version if you don't want to use the device fs 
+# (devfs=nomount)
+#
+#===== DEBIAN uses a program called "getty" which is actually agetty in 
+#===== disguise:
+
+## The only difference here is that there is only one getty.
+/etc/inittab	<= Replacements/etc/inittab.example-helper
+/sbin/getty
+
+#####  utmp and wtmp.  
+# Made by rcS if they don't exist.
+##w
+##last
+
+#####  terminfo entries for programs which need terminal capabilities like 
+#####  vi and nano.
+/usr/share/terminfo/v/vt100    
+/usr/share/terminfo/l/linux  
+# The old way
+#/etc/termcap <= Replacements/etc/termcap
+reset
+
+# Designate a keyboard map of choice if you want to load one for 
+# the text console.  Edit rcS to point to it.
+# /usr/share/keymaps/i386/qwerty/defkeymap.kmap.gz
+# /usr/lib/kbd/keymaps/i386/qwerty/defkeymap.kmap.gz
+
+#####  Empty directories
+/dev
+/proc               
+/tmp                
+/var/tmp
+/var/log
+/var/run
+/mnt1 <= Replacements/mnt1
+/mnt2 <= Replacements/mnt2
+
+##### Special links
+## ext2fs_check_if_mount: No such file or directory while 
+## determining whether /dev/ubd/0 is mounted.
+# because the mtab isn't a real file, and doesn't point to anything until
+# proc is mounted.
+/etc/mtab -> /proc/mounts
+
+#####  MODULES and support programs for them.
+insmod
+rmmod
+lsmod
+depmod
+modprobe
+##/etc/modules.conf
+#
+#  User-Mode-Linux modules
+#
+#  These are modules compiled for the uml kernel version
+#  included with gbootroot.  Choose 2.2 or 2.4 depending on
+#  which kernel series your are using with your live host system.
+#  You may either include the modules archive with the root 
+#  filesystem as a replacement and "tar xvf", or untar the
+#  modules archive from the host system by mounting it 
+#  with "mount -t hostfs none -o \ 
+#  /usr/lib/bootroot/yard/Replacements/lib/modules /mnt" 
+#  and then "tar xvf /mnt/modules-2.4.tar -C /".
+#
+#  Then "depmod -ae -F /proc/ksyms" from the running uml kernel.
+#
+#
+## There needs to be a helper root_fs for both 2.2 and 2.4!
+#
+#/modules-2.2.tar  <=  Replacements/lib/modules/modules-2.2.tar  
+##/modules-2.4.tar  <=  Replacements/lib/modules/modules-2.4.tar
+
+#####  ESSENTIAL SYSTEM UTILITIES
+# (your rescue disk may not boot if these are not present.)
+chmod		   	
+chown
+chroot
+cp			   	
+df			   	
+id
+mkdir		   	
+pwd
+rm
+stty		   	
+sync          
+uname
+
+#####  NON-ESSENTIAL BUT USEFUL UTILITIES
+##which
+##ldd
+du			   	
+rmdir
+less
+dircolors
+grep         
+tail       
+mknod		   	
+##ps			   	
+touch		   	
+##whoami
+diff
+wc
+date
+dmesg
+tar
+	   	
+# Editors
+##vi
+# Small, free, pico replacement.
+nano
+
+#####  DISK AND FILE SYSTEM UTILITIES
+fdisk
+#
+# ext2 stuff
+# ----------
+fsck # just using for ext2
+fsck.ext2
+##e2fsck
+mke2fs
+tune2fs
+##dumpe2fs
+##debugfs
+##e2image
+badblocks
+#
+# cramfs stuff
+#-------------
+mkcramfs
+cramfsck
+fsck.cramfs
+/etc/ioctl.save <= Replacements/etc/ioctl.save
+# jffs stuff
+#--------------
+/usr/bin/doc_loadbios
+/usr/bin/einfo
+/usr/bin/erase
+/usr/bin/eraseall
+/usr/bin/ftl_check
+/usr/bin/ftl_format
+/usr/bin/lock
+/usr/bin/mkfs.jffs
+/usr/bin/nanddump
+/usr/bin/nandtest
+/usr/bin/nandwrite
+/usr/bin/nftl_format
+/usr/bin/nftldump
+/usr/bin/unlock
+#
+# jffs2 stuff
+#--------------
+/usr/bin/mkfs.jffs2
+#
+# romfs stuff
+#-------------
+genromfs
+#
+# minix stuff
+#-------------
+fsck.minix
+mkfs.minix
+mkminix -> mkfs.minix
+#
+# reiserfs stuff
+# -------------
+mkreiserfs
+reiserfsck
+debugreiserfs
+unpack
+resize_reiserfs
