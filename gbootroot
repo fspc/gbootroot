@@ -103,8 +103,8 @@ $main::makefs = "mke2fs -F -m0 -i8192";
 #                * Several bug fixes and enhancements to the original Yard 
 #                  scripts, including a choice of stripping features for
 #                  libraries, binaries, modules with corresponding sizing
-#                  checks, link -> file is  now literal, and testing
-#                  improvements.
+#                  checks, link -> file is now literal, unneccessary situations
+#                  for ../ x path_length removed, testing improvements.
 #                * Localized directories provided for users under 
 #                  $HOME/.gbootroot
 #                * Wrote make_debian to automate the creation of a Debian
