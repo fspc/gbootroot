@@ -1,4 +1,4 @@
-#  $Id$
+#  $Id: Example-Mini.yard,v 1.2 2001/12/04 05:24:58 freesource Exp $
 #  Example-Mini.yard
 #
 #  Creates a minimalistic S runlevel root filesystem with not much more than 
@@ -88,7 +88,7 @@
 
 bash
 /dev/console
-
+chroot
 
 
 
