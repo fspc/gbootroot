@@ -1,4 +1,4 @@
-#############################################################################
+############################################################################
 ##
 ##  Yard.pm combining
 ##  MAKE_ROOT_FS, CHECK_ROOT_FS, and YARD_UTILS.PL by Tom Fawcett
@@ -59,6 +59,7 @@ my ($text_insert,$red,$blue);
 my $logadj;
 my ($device, $mount_point);
 my $contents_file_tmp; # Checks for template name change
+my @pathlist;
 
 # This solves an annoying problem with the new Perl-5.6 built in glob,
 # allowing earlier versions of Perl to run.
@@ -1260,7 +1261,7 @@ sub sync {
 #  find_file_in_path(file, path)
 #  Finds filename in path.  Path defaults to @pathlist if not provided.
 #  If file is relative, file is resolved relative to config_dest and lib_dest.
-my(@pathlist);
+
 sub find_file_in_path {
 
   my($file, @path) = @_;
@@ -1296,7 +1297,8 @@ sub find_file_in_path {
     undef;
   }
 
-}
+} # end find_file_in_path
+
 
 #  Note that this does not verify existence of the returned file.
 sub make_link_absolute {
