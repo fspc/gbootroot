@@ -1,4 +1,4 @@
-############################################################################
+###########################################################################
 ##
 ##  YardBox.pm 
 ##  Copyright (C) 2000 by Jonathan Rosenbaum
@@ -312,9 +312,7 @@ sub file_system {
     }
     if (!visible $filesystem_window) {
 	$filesystem_window->show();
-    } else {
-       $filesystem_window->destroy;
-    }
+    } 
 
 } # end sub file_system
 
@@ -1321,10 +1319,7 @@ sub search {
    }
    if (!visible $search_window) {
        $search_window->show();
-   } else {
-       $search_window->destroy;
-   }
-
+   } 
 
 } # end sub search
 
@@ -1739,8 +1734,6 @@ sub Replacements {
    }
    if (!visible $replacements_window) {
        $replacements_window->show();
-   } else {
-       $replacements_window->destroy;
    }
 
 }
