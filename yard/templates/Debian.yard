@@ -10,10 +10,6 @@
 #                   user: user passwd: user
 #                   Uses devfs.
     
-# Alternatives aren't working so you will have to use the real name like
-# nvi for vi and w.procps for w.  Not all libs are associated with packages
-# but that isn't a big deal.
-
 # IMPORTANT NOTE:  Things slow down noticeably when the buffer gets too big in
 # the verbosity box so consider closing it with the slider for faster 
 # generation.  Look at /tmp/verbose instead.
@@ -79,8 +75,24 @@
 /etc/default/ipchains
 
 # Network stuff
+# You will want to edit the interfaces file.
+# Remember to load any needed modules on the host system, for instance
+# if tap is used, you will want to do this:
+# modprobe ethertap
+# modprobe netlink_dev
+# And when you start your creation with the uml box you will want to add
+# something like this to the options where HWaddr (see ifconfig) belongs
+# to your network device:
+# eth0=ethertap,tap0,HWaddr,192.168.1.5
 /etc/resolv.conf 
 /root/umlnet <= Replacements/root/umlnet # Example network setup script
+/etc/network <= Replacements/etc/network
+/etc/network/if-down.d      # empty
+/etc/network/if-post-down.d # ""
+/etc/network/if-pre-up.d    # ""
+/etc/network/if-up.d        # ""
+/etc/network/interfaces <= Replacements/etc/network/interfaces
+/etc/network/spoof-protect
 
 # Devices - optional stuff which can be picked up by devfsd.
 /dev/MAKEDEV # a link
@@ -4028,3 +4040,19 @@
 /var/lib/dpkg/info/debconf-utils.prerm
 /var/lib/dpkg/info/debconf-utils.list
 /var/lib/dpkg/info/debconf-utils.md5sums
+
+# Alternative stuff.
+/etc/alternatives/nawk
+/var/lib/dpkg/alternatives/nawk
+/etc/alternatives/w
+/var/lib/dpkg/alternatives/w
+/etc/alternatives/vi
+/var/lib/dpkg/alternatives/vi
+/etc/alternatives/ex
+/var/lib/dpkg/alternatives/ex
+/etc/alternatives/view
+/var/lib/dpkg/alternatives/view
+/etc/alternatives/pager
+/var/lib/dpkg/alternatives/pager
+/etc/alternatives/ipfwadm
+/var/lib/dpkg/alternatives/ipfwadm
