@@ -1163,7 +1163,7 @@ sub uml_box {
 	    if -e "$tmp/$entry_advanced[4]";
 	$tooltips->set_tip( $eab3, 
                            "Choose an uncompressed root filesystem." .
-			   "Append with uml?=.",
+			   "Append with ubd?=.",
                            "" );
 
 	$table_uml->set_row_spacing( 2, 4);       
