@@ -1321,7 +1321,7 @@ sub file_ok_sel {
     if ($container[ROOT_DEVICE]) {
         my $file = sys("which file > /dev/null 2>&1");
         if ($file == 0) {
-           open(F,"file $container[ROOT_DEVICE] > /dev/null 2>&1|"); # no error check 
+           open(F,"file $container[ROOT_DEVICE] |"); # no error check 
 	                                                   # here
              while (<F>) {
                 if (/gzip/) {
@@ -1330,6 +1330,9 @@ sub file_ok_sel {
                 elsif (/bzip2/) {
                   $bz2_toggle->set_active( $true );
                 }
+		else {
+		    info(0, "Neither gz or bz2 compression found\n");
+		}
              }
         }
     }
@@ -1390,7 +1393,7 @@ sub entry {
                      my $file = sys("which file");
                      if ($file == 0) {
 		       if ($container[ROOT_DEVICE]) {
-                       open(F,"file $container[ROOT_DEVICE] > /dev/null 2>&1|"); # no error check here 
+                       open(F,"file $container[ROOT_DEVICE] |"); # no error check here 
                           while (<F>) {
                              if (/gzip/) {
                                $gz_toggle->set_active( $true );
@@ -1398,6 +1401,10 @@ sub entry {
                              elsif (/bzip2/) {
                                $bz2_toggle->set_active( $true );
                              }
+			     else {
+				 info(0, 
+				      "Neither gz or bz2 compression found\n");
+			     }
                           }
                        }  
                      }
