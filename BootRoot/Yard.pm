@@ -582,7 +582,12 @@ sub library_dependencies {
 	    push(@{$lib_needed_by{$file}}, "INCLUDED BY USER");
 	}
 
-	if (-f $file and -B _ and -x _ and $file_line =~ /executable/) {
+
+	## We make one exception here for pam service modules  --freesource
+	## This can be turned off and on.
+	if ( ( -f $file and -B _ and -x _ and $file_line =~ /executable/ ) ||
+	     ( $file =~ m,/security/pam_\w+\.so, )
+	     ) {
 
 	    #####  EXECUTABLE LOADABLE BINARY
 	    #####  Run ldd to get library dependencies.
