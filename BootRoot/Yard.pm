@@ -1389,7 +1389,6 @@ sub create_expect_uml {
 
 	return "ERROR" if errm(mount_device($device,$mount_point)) == 2;
 	##### lost+found on a ramdisk is pointless
-	sys("rm -rf $mount_point/lost+found");
 
 	sync();
 
