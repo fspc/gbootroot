@@ -1,4 +1,4 @@
-#############################################################################
+############################################################################
 ##
 ##  Error.pm 
 ##  Copyright (C) 2000 Modifications by the gBootRoot Project
@@ -137,7 +137,9 @@ sub err_custom {
          system("$_[0] > /dev/null 2>&1");
     }
     else {
-     sys("$_[0]");
+	# Yard::sys .. this seems to be necessary for my flakey floppy drive
+	# which doesn't even support 1722.
+      Yard::sys("$_[0]");
     }
     error_window($_[1]) if ($? != 0);
     if (defined $error_window) {
