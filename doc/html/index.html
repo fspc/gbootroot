@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.76 2002/01/11 04:51:36 freesource Exp $</center>
+<center>$Id: index.html,v 1.78 2002/01/11 13:51:56 freesource Exp $</center>
 
 <p>
 
@@ -490,23 +490,25 @@ and things should become more clear.
 <br>
 14.&nbsp;&nbsp;<a href="#14">If libc is included in the boot disk, why is it needed in the root disk as well?</a>
 <br>
-15.&nbsp;&nbsp;<a href="#15">There isn't enough room left on my 1440 floppy to make a Boot or Root disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing the size of the kernel?</a>
+15.&nbsp;&nbsp;<a href="#15">So if I understand correctly, it is not possible to copy libc from dev/ram0 to /dev/ram1 before mounting /dev/ram1 as / ?</a>
 <br>
-16.&nbsp;&nbsp;<a href="#16">Last, but not least...the boot disk boots, waits for the root disk, and now fails. "Can't open console"??? or sth like this (I'm pretty tired right now, recheck later), which appears after "VFS:ext2fs was found..."</a>
+16.&nbsp;&nbsp;<a href="#16">There isn't enough room left on my 1440 floppy to make a Boot or Root disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing the size of the kernel?</a>
 <br>
-17.&nbsp;&nbsp;<a href="#17">What are the kernel's drivers/fs that must be directly compiled, not as modules, except ext2, floppy?  Could you attach your kernel's .config?</a>
+17.&nbsp;&nbsp;<a href="#17">Last, but not least...the boot disk boots, waits for the root disk, and now fails. "Can't open console"??? or sth like this (I'm pretty tired right now, recheck later), which appears after "VFS:ext2fs was found..."</a>
 <br>
-18.&nbsp;&nbsp;<a href="#18">What is the root_fs_helper 2Mb file in the grootboot package?</a>
+18.&nbsp;&nbsp;<a href="#18">What are the kernel's drivers/fs that must be directly compiled, not as modules, except ext2, floppy?  Could you attach your kernel's .config?</a>
 <br>
-19.&nbsp;&nbsp;<a href="#19">
+19.&nbsp;&nbsp;<a href="#19">What is the root_fs_helper 2Mb file in the grootboot package?</a>
+<br>
+20.&nbsp;&nbsp;<a href="#20">
 Now the creation works, but actually the whole image is less than 1440k... Still, unclear to me is the purpose of the device/size in the main widget - is it only for the boot or also for the root disk?   After all, the root fs image size has been already entered in the ARS.</a>
 <br>
-20.&nbsp;&nbsp;<a href="#20">gBootRoot doesn't start because it can't locate Gtk.pm?</a>
+21.&nbsp;&nbsp;<a href="#21">gBootRoot doesn't start because it can't locate Gtk.pm?</a>
 <br>
-21.&nbsp;&nbsp;<a href="#21">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
+22.&nbsp;&nbsp;<a href="#22">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
 </a>
 <br>
-22.&nbsp;&nbsp;<a href="#22">Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</a>
+23.&nbsp;&nbsp;<a href="#23">Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</a>
 <br>
 
 <P><a name="1"><b>What's the advantage of using this program?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
@@ -1126,20 +1128,20 @@ filesystem.</P>
 <p>
 
 If you are creating a boot disk in which the kernel knows where to
-find the root filesystem and the root filesystem is not compressed with
-gzip or bzip2 (i.e. a cramfs could be used), then nothing
-else but a kernel is required
+find the root filesystem and the root filesystem is 
+either compressed with gzip or not compressed (i.e. a cramfs could be used), 
+then nothing else but a kernel is required
 assuming it is copied in a way that is starts at block 0 on the device
 media, and then rdeved in such a way that it knows that the ramdisk and the 
 prompt
 flag are on, i.e., rdev -r /dev/fd0 49152, and that the root filesystem starts
 at block
 0 on the other floppy.&nbsp;&nbsp;
-However, the 2 disk compression method copies over a compressed (gz or bz2) 
-root filesystem
+However, the 2 disk compression method was designed to uncompress bzip2 
+root filesystems as well as gzipped root filesystems from
 to the second disk.&nbsp&nbsp;In order to boot /dev/fd0 from /dev/fd0 when 
 the root 
-filesystem is compressed with gzip or bzip2 the kernel has to
+filesystem is compressed with bzip2 the kernel has to
 mount the initial boot disk, and then after the new root disk is inserted it
 uncompresses the root filesystem and then changes over to the real root 
 device, 
@@ -1207,7 +1209,35 @@ root.&nbsp;&nbsp; You can experiment with this by removing libc-*.so and
 ld-*.so from a root filesystem which previously worked, first test it with 
 UML,  and then try to boot it; in both cases it won't work.
 
-<p><a name="15"><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
+
+<p><a name="15"><b>So if I understand correctly, it is not possible to copy libc from /dev/ram0 to /dev/ram1 before mounting /dev/ram1 as / ? </b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+
+<p>
+
+Actually, this could be accomplished before the change_root or pivot_root
+call, however, there is a much easier solution.&nbsp;&nbsp;
+Make a working root
+filesystem, edit it either on a loop device as root, or on a different
+ubd?=root_fs as any user from a Linux virtual machine.&nbsp;&nbsp;
+Add an initrd
+device to the mounted filesystem with <code>mknod initrd b 1 250</code> 
+in the /dev
+directory.&nbsp;&nbsp;
+Make a directory called /initrd.&nbsp;&nbsp;
+Delete libc*so and then 
+<code>ln -sf /initrd/lib/libc(real numbers)so libc*so</code>.&nbsp;&nbsp;
+Umount, compress, and copy
+over to your root disk (2 disk compression method - make sure compression
+and filesystem name match).&nbsp;&nbsp;
+The reason why this works is that the initrd
+remains mounted if /dev/initrd and the directory /initrd exist on the root
+filesystem after the root change.&nbsp;&nbsp;
+Ofcourse, you won't be able to run the
+filesystem without the initrd, but this is another great way to save
+space. 
+
+
+<p><a name="16"><b>There isn't enough room left on my 1440 floppy to make a Boot or Root
 disk.&nbsp;&nbsp;Is there any way to free up more space apart from reducing 
 the size of the kernel?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
@@ -1244,7 +1274,7 @@ to add your comments to the Feature Request.&nbsp;&nbsp;Thanks.</p>
 
 <p>
 
-<a name="16"><b>Last, but not least...the boot disk boots, waits for the root disk, and
+<a name="17"><b>Last, but not least...the boot disk boots, waits for the root disk, and
 now fails. "Can't open console"??? or sth like this (I'm pretty tired
 right now, recheck later), which appears after "VFS:ext2fs was found..."</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
@@ -1267,7 +1297,7 @@ to make sure your filesystem is running properly.
 
 <p>
 
-<a name="17"><b>What are the kernel's drivers/fs that must be directly compiled, not as
+<a name="18"><b>What are the kernel's drivers/fs that must be directly compiled, not as
 modules, except ext2, floppy?&nbsp;&nbsp;Could you attach your 
 kernel's .config?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
@@ -1289,7 +1319,7 @@ here.
 
 <p>
 
-<a name="18"><b>What is the root_fs_helper 2Mb file in the grootboot package?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+<a name="19"><b>What is the root_fs_helper 2Mb file in the grootboot package?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
 <p>
 
@@ -1311,7 +1341,7 @@ to unless Preserve Ownership is off.
 
 <p>
 
-<a name="19"><b>Now the creation works, but actually the whole image is less than
+<a name="20"><b>Now the creation works, but actually the whole image is less than
 1440k... Still, unclear to me is the purpose of the device/size in the
 main widget - is it only for the boot or also for the root disk?&nbsp;&nbsp;
 After all, the root fs image size has been already entered in the ARS.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
@@ -1339,11 +1369,11 @@ represents the mounted device provided in the main section.
 
 <p>
 
-<a name="20"><b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
+<a name="21"><b>gBootRoot doesn't start because it can't locate Gtk.pm?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
 <p>This program requires Gtk-Perl available from <a href="http://www.perl.com/CPAN">CPAN</a>, <a href="http://freshmeat.net/projects/gtk-perl">Freshmeat</a> or most GNU/Linux distributions.</p>
 
-<p><a name="21"><b>If you roll the floppy density counter down to 0 and then try go back 
+<p><a name="22"><b>If you roll the floppy density counter down to 0 and then try go back 
 up towards 1440 and 1722, you get very funny figures.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
@@ -1390,7 +1420,7 @@ page up with the second button to 1440 and step with the first button to
       <LI> Ctrl-V   Paste from clipboard </LI>
     </UL>
 
-<p><a name="22"><b>Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+<p><a name="23"><b>Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
 <p>
 

@@ -1,3 +1,14 @@
+
+Added another technique in the FAQ to show how space can be saved on the 
+root_fs by using the libraries from the initrd.  Liav instigated this by
+asking a question related to FAQ question 16, "So if I understand correctly, 
+it is not possible to copy libc from /dev/ram0 to /dev/ram1 before mounting 
+/dev/ram1 as / ?
+
+Liav pointed out how Yard can make boot/root floppies with a compressed root 
+filesystem.  Edited FAQ question 16 to correctly reflect how gz compressed 
+root filesystems may be booted without an initrd.
+
 State is saved for the Compression off check box and the Root Filename save 
 check box.
 
