@@ -3,18 +3,18 @@
 #    gBootRoot Copyright (C) 2000
 #    Jonathan Rosenbaum - mttrader@access.mountain.net
 #    http://the.netpedia.net/gBootRoot.html
-                                                                                
+
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation; either version 2 of the License, or
 #    (at your option) any later version.
-                                                                                
+
 #    This program is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
-                                                                                
-#    You should have received a copy of the GNU General Public License 
+
+#    You should have received a copy of the GNU General Public License
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
@@ -28,37 +28,46 @@ init Gtk;
 # There is an excellent tutorial by Stephen Wilhelm at
 # http://personal.riverusers.com/~swilhelm/perlgtk/.  Please
 # help support his development of this tutorial.  Another good place
-# to learn from is test.pl in the Gtk/samples directory included with 
+# to learn from is test.pl in the Gtk/samples directory included with
 # Gtk-Perl.
 
-# If you want gBootRoot to do it's stuff somewhere else, change the 
+# If you want gBootRoot to do it's stuff somewhere else, change the
 # value for $tmp1.
-my $tmp1 = "/tmp"; # tmp should be default - Cristian
+my $tmp1 = "/tmp";              # tmp should be default - Cristian
 my $lilo_conf = "/etc/lilo.conf";
 
 # CHANGES
-#           1.0.3 - 08.09.2000
-#                     * Tmp and mnt are now created on the fly,
-#                       along with a new error function for mkdir(),
-#                       Gtk clean-up for this, and clean-up by signal handler 
-#                       which should please Perlish and helpful Cristian.  
-#            
-#           1.0.2 - 08.06.2000
-#                     * Changed logic slightly in submit() with returns rather
-#                       than a scalar to resolve a minor bug caused by some
-#                       changes in the previous version.
+#       1.0.3a - 08.23.2000
+#               * corrected bugs in norm_root_device (returned always 'hda1')
+#                 a) now closes LIL
+#                 b) chomps all lines in one go
+#                 c) the 'default' value is just a label, not a dev
+#                 d) sane regexp magic
+#                 e) "there's one more bug(tm)": does not cope with multiple
+#                    root device occurences (which might be present in each
+#                    'image=' block
+#       1.0.3 - 08.09.2000
+#               * Tmp and mnt are now created on the fly,
+#                 along with a new error function for mkdir(),
+#                 Gtk clean-up for this, and clean-up by signal handler
+#                 which should please Perlish and helpful Cristian.
 #
-#           1.0.1 - 08.05.2000
-#                     * Zas provided a correction for a Perl 5.6 error complaint.
-#                     * Zas found some unecessary GDK lines causing some Gtk 
-#                       warnings; these were commented out.
-#                     * Cristian Ionescu-Idbohrn found a bug caused by putting
-#                       the Kernel or RootImage below the mount point.  An error
-#                       check and error dialog were added. 
+#       1.0.2 - 08.06.2000
+#               * Changed logic slightly in submit() with returns rather
+#                 than a scalar to resolve a minor bug caused by some
+#                 changes in the previous version.
 #
-#           1.0.0 - 08.02.2000
-#                     * First public release
-#        
+#       1.0.1 - 08.05.2000
+#               * Zas provided a correction for a Perl 5.6 error complaint.
+#               * Zas found some unecessary GDK lines causing some Gtk
+#                 warnings; these were commented out.
+#               * Cristian Ionescu-Idbohrn found a bug caused by putting
+#                 the Kernel or RootImage below the mount point.  An error
+#                 check and error dialog were added.
+#
+#       1.0.0 - 08.02.2000
+#               * First public release
+#
 
 #######################################################################
 # Don't edit from here, but you can if you want to change the HERE docs
@@ -92,9 +101,9 @@ my $norm_root_device;
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
 "32 45 3 1",
-" 	c None",
-".	c SaddleBrown",
-"X	c black",
+"       c None",
+".      c SaddleBrown",
+"X      c black",
 "   ...    ...                   ",
 "   ...    ...                   ",
 "   ...    ...                   ",
@@ -157,12 +166,12 @@ if (!-d $tmp1) {
     else {
         my @directory_parts = split(m,/,,$tmp1);
         my $placement = "/";
-          for (1 .. $#directory_parts) { 
+          for (1 .. $#directory_parts) {
               $_ == 1 ? ($placement = "/$directory_parts[$_]")
-              : ($placement = $placement . "/" . $directory_parts[$_]);  
+              : ($placement = $placement . "/" . $directory_parts[$_]);
               -d $placement or err_custom_perl(
               "mkdir $placement","gBootRoot: ERROR: Could not make $tmp1");
-           } 
+           }
     }
 }
 
@@ -182,18 +191,18 @@ $window->set_title("gBootRoot");
 $window->set_position('center');
 $window->signal_connect( "destroy", sub {
                  unlink "$tmp/verbose", "$tmp/initrd_image.gz";
-                 rmdir "$tmp/initrd_mnt"; rmdir "$tmp", rmdir "$mnt"; 
+                 rmdir "$tmp/initrd_mnt"; rmdir "$tmp", rmdir "$mnt";
                  Gtk->exit(0); } );
 $window->border_width(1);
 $window->realize;
 
 # Do the iconizing thing
 # "xpm/circles.xpm" can be @pixmap within file if not create_from_xpm.
-my ($circles,$mask) = Gtk::Gdk::Pixmap->create_from_xpm_d($window->window, 
+my ($circles,$mask) = Gtk::Gdk::Pixmap->create_from_xpm_d($window->window,
                                                         $window->style->white,
                                                         @xpm_data);
-$window->window->set_icon(undef, $circles, $mask);      
-$window->window->set_icon_name("gBootRoot");    
+$window->window->set_icon(undef, $circles, $mask);
+$window->window->set_icon_name("gBootRoot");
 #$window->window->set_decorations(['all', 'menu']); # Zas
 #$window->window->set_functions(['all', 'resize']); # Zas
 
@@ -231,7 +240,7 @@ hbox();
 my $entry3 = entry($true,2);
 button("Compressed Filesystem",$entry3,"Compressed Filesystem",2);
 
-# In the future, if experimenters send in data, there will be two 
+# In the future, if experimenters send in data, there will be two
 # different devices.
 # Fourth row
 hbox();
@@ -269,7 +278,7 @@ my $bz2_toggle = $rbutton;
 $box2->pack_start( $rbutton, $true, $true, 0);
 $rbutton->show();
 
-# Size status entry 
+# Size status entry
 my $entry5 = new Gtk::Entry();
 $entry5->set_editable( $false );
 $tooltips->set_tip( $entry5, "This shows room remaining on the Device.", "" );
@@ -287,7 +296,7 @@ my $align = new Gtk::Alignment( 0.5, 0.5, 0, 0 );
 $box1->pack_start( $align, $false, $false, 5);
 $align->show();
 my $pbar = new Gtk::ProgressBar();
-$pbar->set_usize(321,10); # 321 10 
+$pbar->set_usize(321,10); # 321 10
 $align->add($pbar);
 $pbar->show();
 
@@ -296,8 +305,8 @@ $separator = new Gtk::HSeparator();
 $box1->pack_start( $separator, $false, $true, 0 );
 $separator->show();
 
-# Submit button 
-hbox(); 
+# Submit button
+hbox();
 my $sbutton = new Gtk::Button("Submit");
 $sbutton->signal_connect( "clicked", \&submit);
 $tooltips->set_tip( $sbutton, "Generate the Boot/Root set.", "" );
@@ -307,9 +316,9 @@ $box2->show();
 
 # Close button
 my $cbutton = new Gtk::Button("Close");
-$cbutton->signal_connect( "clicked", sub { 
+$cbutton->signal_connect( "clicked", sub {
                  unlink "$tmp/verbose", "$tmp/initrd_image.gz";
-                 rmdir "$tmp/initrd_mnt"; rmdir "$tmp", rmdir "$mnt"; 
+                 rmdir "$tmp/initrd_mnt"; rmdir "$tmp", rmdir "$mnt";
                  Gtk->exit(0); });
 
 $tooltips->set_tip( $cbutton, "Exit gBootRoot.", "" );
@@ -333,13 +342,13 @@ exit( 0 );
 
 # This works on GNU/Linux
 sub signal {
-   $SIG{INT} = \&signal; 
+   $SIG{INT} = \&signal;
    $SIG{ABRT} = \&signal;
    $SIG{TERM} = \&signal;
    $SIG{QUIT} = \&signal;
    $SIG{KILL} = \&signal;
    unlink "$tmp/verbose", "$tmp/initrd_image.gz";
-   rmdir "$tmp/initrd_mnt"; rmdir "$tmp", rmdir "$mnt"; 
+   rmdir "$tmp/initrd_mnt"; rmdir "$tmp", rmdir "$mnt";
    Gtk->exit(0);
 }
 
@@ -347,27 +356,32 @@ sub signal {
 # Cristian's idea - bug 111579 enh for brlilo
 sub norm_root_device {
 
- if (!-d $lilo_conf) {
-   if (-e $lilo_conf) { 
-      open(LIL, $lilo_conf); 
+  my $root_dev = 'hda1';
+
+  if (!-d $lilo_conf) {
+    if (-e $lilo_conf) {
+      open(LIL, $lilo_conf);
       my @lilo_lines = <LIL>;
-        for (@lilo_lines) {
-          if ( m<^\s*[^#]+\s*default\s*=\s*/dev/([\w\d]+)\s*.*$> ) {  
-	        chomp, return $1;
-	  }
-	}
-        for (@lilo_lines) {
-          if ( m<^\s*[^#]+\s*root\s*=\s*/dev/([\w\d]+)\s*.*$> ) {
-	        chomp, return $1;
-	  }
+      close(LIL);
+      chomp(@lilo_lines);
 
-        } 
-   } 
- }
+      for (@lilo_lines) {
+        next if m/^\s*[#]/;
 
- return "hda1";
+        if (m#\s*root\s*=\s*/dev/(.+)\s*#) {
+          $root_dev = $1;
+          last;
+        }
+      }
+    }
+  }
+  open(VFN, ">> $verbosefn") or die "Oops! Can't open $verbosefn,";
+  print VFN "Root device found: $root_dev\n";
+  close(VFN);
 
-}
+  return $root_dev;
+
+}                               # end sub norm_root_device
 
 sub create_text {
 
@@ -434,20 +448,20 @@ sub create_text {
        $button->show();
        }
        if (!visible $text_window) {
-		show $text_window;
+                show $text_window;
        } else {
-		destroy $text_window;
+                destroy $text_window;
        }
 } # end sub create_text
 
 sub make_menu_item {
     my( $name, $callback, $data ) = @_;
     my $item;
-           
+
     $item = new Gtk::MenuItem( $name );
     $item->signal_connect( "activate", $callback, $data );
     $item->show();
-           
+
     return $item;
 }
 
@@ -457,21 +471,21 @@ sub fileselect {
 
     if (not defined $file_dialog) {
         # Create a new file selection widget
-	$file_dialog = new Gtk::FileSelection( "$name" );
-	$file_dialog->signal_connect( "destroy", 
+        $file_dialog = new Gtk::FileSelection( "$name" );
+        $file_dialog->signal_connect( "destroy",
                                      \&destroy_window, \$file_dialog);
-	$file_dialog->signal_connect( "delete_event", 
+        $file_dialog->signal_connect( "delete_event",
                                      \&destroy_window, \$file_dialog);
 
         # Connect the ok_button to file_ok_sel function
-	$file_dialog->ok_button->signal_connect( "clicked",
-					 \&file_ok_sel,
-					 $file_dialog,$ent,$order);
+        $file_dialog->ok_button->signal_connect( "clicked",
+                                         \&file_ok_sel,
+                                         $file_dialog,$ent,$order);
 
         # Connect the cancel_button to destroy the widget
-        $file_dialog->cancel_button->signal_connect( "clicked", 
+        $file_dialog->cancel_button->signal_connect( "clicked",
                                               sub { destroy $file_dialog } );
-         $file_dialog->set_filename( "/dev/fd0" ) if defined $device; 
+         $file_dialog->set_filename( "/dev/fd0" ) if defined $device;
          $file_dialog->set_position('mouse');
 
      }
@@ -481,23 +495,23 @@ sub fileselect {
      else {
         destroy $file_dialog;
      }
-    
+
 } # end sub fileselect
 
 
 # Get the selected filename and print it to the text widget
 sub file_ok_sel {
-  
+
     my( $widget, $file_selection,$entry,$order) = @_;
     my $file = $file_selection->get_filename();
-    $entry->set_text($file); 
+    $entry->set_text($file);
     $container[$order] = $file;
 
     # auto-detect compression if system has file
     if ($container[2]) {
         my $file = system "which file > /dev/null 2>&1";
-	if ($file == 0) {
-	   open(F,"file $container[2]|"); # no error check here
+        if ($file == 0) {
+           open(F,"file $container[2]|"); # no error check here
              while (<F>) {
                 if (/gzip/) {
                   $gz_toggle->set_active( $true );
@@ -510,15 +524,15 @@ sub file_ok_sel {
     }
 
     destroy $file_dialog;
-   
+
 }
 
 # pulled from test.pl
-sub destroy_window {                                                        
-        my($widget, $windowref, $w2) = @_;   
-        $$windowref = undef;   
+sub destroy_window {
+        my($widget, $windowref, $w2) = @_;
+        $$windowref = undef;
         $w2 = undef if defined $w2;
-        0;                  
+        0;
 }
 
 
@@ -533,9 +547,9 @@ sub hbox {
 }
 
 sub label {
- 
+
     my($text) = @_;
-    
+
     $label = new Gtk::Label( $text );
     $label->set_justify( "fill" );
     $box2->pack_start( $label, $false, $false, 5 );
@@ -550,12 +564,12 @@ sub entry {
     my $entry = new Gtk::Entry();
     $entry->set_editable( $edit );
     # enter will have to be pressed, tried other solutions with a mess
-    $entry->signal_connect( "activate", sub { 
+    $entry->signal_connect( "activate", sub {
             $container[$num] = $entry->get_text();});
     if (defined $num) {
-     my $todo; 
-     if ($num == 1) { 
-	 $todo = "the Kernel";
+     my $todo;
+     if ($num == 1) {
+         $todo = "the Kernel";
      }
      elsif ($num == 2) {
          $todo = "the Compressed Filesystem";
@@ -563,12 +577,12 @@ sub entry {
      else {
          $todo = "the Device to use";
      }
-     $tooltips->set_tip( $entry, 
+     $tooltips->set_tip( $entry,
        "Type in the location of $todo and press [Enter].", "" );
-    } 
+    }
     $box2->pack_start( $entry, $true, $true, 0 );
     $entry->show();
-    
+
     return $entry;
 
 }
@@ -586,7 +600,7 @@ sub button {
     }
     else {
       $tooltips->set_tip( $button, "Select the Device.", "" );
-    } 
+    }
     $button->signal_connect( "clicked",\&fileselect,$ent,$name,$order,$device);
     $button->show();
     $box2->pack_start( $button, $true, $true, 0 );
@@ -596,13 +610,13 @@ sub button {
 
 sub submit {
 
-      my($kernel,$root_image);    
+      my($kernel,$root_image);
       # comment this out for testing
       unlink("$tmp/verbose");
       open (MTAB, "/etc/mtab") or die "no mtab!\n";
       while (<MTAB>) {
          if (m,$mnt,) {
-           system "umount $mnt >> $tmp/verbose 2>&1"; 
+           system "umount $mnt >> $tmp/verbose 2>&1";
          }
       }
       close(MTAB);
@@ -650,13 +664,13 @@ elsif (defined $container[0] && defined $container[1]) {
 if (defined $container[3] && -e $container[3] && !-d $container[3] ) {
          $device = $container[3];
 }
-elsif (defined $container[0] && defined $container[1] 
+elsif (defined $container[0] && defined $container[1]
        && defined $container[2]) {
     error_window("gBootRoot: ERROR: Device not found");
     return;
 }
 if (defined $container[4]) {
-	  $size = $container[4];
+          $size = $container[4];
 }
 
 # pretty unlikely
@@ -668,7 +682,7 @@ elsif (defined $container[0] && defined $container[1] &&
 
  # kernel value can change without effecting initrd
  # no sense doing this until important stuff is filled in
- if (defined $kernel && defined $root_image && 
+ if (defined $kernel && defined $root_image &&
      defined $device && defined $size) {
      $container[5] = $compress;
      if (@original_container) { # defined array deprecate Perl 5.6 -  zas@metaconcept.com
@@ -677,20 +691,20 @@ elsif (defined $container[0] && defined $container[1] &&
          my @temp_container = @container;
          splice(@temp_container,1,1);
          my %diff;
-         grep($diff{$_}++,@temp_container);         
-	 my @diff = grep(!$diff{$_},@original_container);
+         grep($diff{$_}++,@temp_container);
+         my @diff = grep(!$diff{$_},@original_container);
          if ($#diff >= 0) {
          # unlink initrd_image.gz, do initrd()
-	     $ok = 1;
-	     $initrd = "initrd_image";
+             $ok = 1;
+             $initrd = "initrd_image";
          }
          else {
-             $ok = 0; 
-         }         
+             $ok = 0;
+         }
      }
      else {
-	 $ok = 2; # this is actually first (1 = diff, 0 = same)
-	 $initrd = "initrd_image";
+         $ok = 2; # this is actually first (1 = diff, 0 = same)
+         $initrd = "initrd_image";
      }
      # reset
      @original_container = ($container[0],$root_image,$device,$size,$compress);
@@ -704,11 +718,11 @@ sub error_window {
     my ($error) = @_;
 
     if (not defined $error_window) {
-    $error_window = new Gtk::Dialog;                
+    $error_window = new Gtk::Dialog;
     $error_window->signal_connect("destroy", \&destroy_window, \$error_window);
-    $error_window->signal_connect("delete_event", \&destroy_window, \$error_window);                                                           
+    $error_window->signal_connect("delete_event", \&destroy_window, \$error_window);
     $error_window->set_title("gBootRoot ERROR");
-    $error_window->border_width(15);                                
+    $error_window->border_width(15);
     my $label = new Gtk::Label($error);
     $error_window->vbox->pack_start( $label, $true, $true, 15 );
     $label->show();
@@ -738,7 +752,7 @@ sub errmk {
 }
 
 sub errcp {
-   error_window("gBootRoot: ERROR: Could not copy over important stuff") if $? != 0; 
+   error_window("gBootRoot: ERROR: Could not copy over important stuff") if $? != 0;
    if (defined $error_window) {
        if ($error_window->visible) {
           return 2;
@@ -747,7 +761,7 @@ sub errcp {
 }
 
 sub errum {
-   error_window("gBootRoot: ERROR: Could not umount the device") if $? != 0; 
+   error_window("gBootRoot: ERROR: Could not umount the device") if $? != 0;
    if (defined $error_window) {
        if ($error_window->visible) {
           return 2;
@@ -765,7 +779,7 @@ sub errm {
 }
 
 sub errrm {
-   error_window("gBootRoot: ERROR: Could not remove a directory or file") 
+   error_window("gBootRoot: ERROR: Could not remove a directory or file")
                 if $? != 0;
    if (defined $error_window) {
        if ($error_window->visible) {
@@ -774,8 +788,8 @@ sub errrm {
    }
 }
 
-sub err { 
-   error_window("gBootRoot: ERROR: Not enough space after all") if ($? > 0); 
+sub err {
+   error_window("gBootRoot: ERROR: Not enough space after all") if ($? > 0);
    if (defined $error_window) {
        if ($error_window->visible) {
           return 2;
@@ -783,15 +797,15 @@ sub err {
    }
 }
 
-sub err_custom { 
- 
+sub err_custom {
+
     if (defined $_[2]) {
          system("$_[0] > /dev/null 2>&1");
     }
     else {
      system("$_[0] >> $tmp/verbose 2>&1");
     }
-    error_window($_[1]) if ($? != 0); 
+    error_window($_[1]) if ($? != 0);
     if (defined $error_window) {
         if ($error_window->visible) {
            return 2;
@@ -799,13 +813,13 @@ sub err_custom {
     }
 }
 
-sub err_custom_perl { 
+sub err_custom_perl {
 
    if ((split(/ /, $_[0]))[0] eq "mkdir") {
       my $two = (split(/ /, $_[0]))[1];
       mkdir($two,0755); # Anyone allowed in
     }
-    error_window($_[1]) if ($? != 0); 
+    error_window($_[1]) if ($? != 0);
     if (defined $error_window) {
         if ($error_window->visible) {
            return 2;
@@ -816,8 +830,8 @@ sub err_custom_perl {
 sub lilo {
 
   # Do a little cleanup just in case
-  system "rm $tmp/initrd_image.gz 2> /dev/null" if $ok == 1; 
-  system "umount $tmp/initrd_mnt 2> /dev/null"; 
+  system "rm $tmp/initrd_image.gz 2> /dev/null" if $ok == 1;
+  system "umount $tmp/initrd_mnt 2> /dev/null";
 
   $kernel = $container[1];
   $root_image = $container[2];
@@ -833,18 +847,18 @@ sub lilo {
   }
 
 } # end sub lilo
-  
+
 sub lilo_put_it_together {
 
   my $B = "boot";
-  # Time to do a little calculations 
-  my $device_size = (split(/\s+/,`df $mnt`))[8]; 
-  my $boot_size = (stat($kernel))[12]/2 + (stat("$tmp/$initrd"))[12]/2; 
+  # Time to do a little calculations
+  my $device_size = (split(/\s+/,`df $mnt`))[8];
+  my $boot_size = (stat($kernel))[12]/2 + (stat("$tmp/$initrd"))[12]/2;
   my $remain_boot = $device_size - $boot_size;
   pb($B,1);
 
   # A little output
-  if ($remain_boot  =~ /^-+\d+$/) { 
+  if ($remain_boot  =~ /^-+\d+$/) {
       error_window("gBootRoot: ERROR: Not enough room: boot stuff = $boot_size k, device = $device_size k");
       return;
   }
@@ -878,10 +892,10 @@ sub lilo_put_it_together {
     return if err(
     system "cp -a /dev/$norm_root_device $mnt/dev >> $tmp/verbose 2>&1") == 2;
   }
-  
+
   #pb($B,3);
   #V#print "Copy over important lilo stuff\n";
-  return if 
+  return if
   err_custom("cp /boot/boot.b $mnt/boot",
   "gBootRoot: ERROR: Not enough space or can't find /boot/boot.b") == 2;
   pb($B,4);
@@ -895,7 +909,7 @@ sub lilo_put_it_together {
     open(M, ">$mnt/message") or die "Couldn't write $mnt/message\n";
     print M message(); close(M);
     pb($B,5);
-    $remain_boot = $remain_boot - ( (stat("$mnt/brlilo.conf"))[12]/2 + 
+    $remain_boot = $remain_boot - ( (stat("$mnt/brlilo.conf"))[12]/2 +
                 (stat("$mnt/message"))[12]/2 );
     $entry5->set_text("$remain_boot k");
 
@@ -905,13 +919,13 @@ sub lilo_put_it_together {
   #V#print "Umount device\n";
   #V#print "Remount device\n";
   pb($B,6);
-  return if errm(system "mount -t ext2 $device $mnt >> $tmp/verbose 2>&1") == 2;  
+  return if errm(system "mount -t ext2 $device $mnt >> $tmp/verbose 2>&1") == 2;
   #V#print "Configuring lilo\n";
   pb($B,7);
   chdir("$mnt"); #"boot_root: ERROR: Could not change directories\n";
-  if (err_custom("lilo -v -C brlilo.conf -r $mnt", 
-		 "gBootRoot: ERROR: lilo failed") == 2) {
-      chdir($pwd); return; 
+  if (err_custom("lilo -v -C brlilo.conf -r $mnt",
+                 "gBootRoot: ERROR: lilo failed") == 2) {
+      chdir($pwd); return;
   }
   $remain_boot = $remain_boot - (stat("$mnt/boot/map"))[12]/2;
   $entry5->set_text("$remain_boot k");
@@ -925,28 +939,28 @@ sub lilo_put_it_together {
 
   if ($ok == 1 || $ok == 2) {
    return if
-   errrm(system "rmdir $tmp/initrd_mnt >> $tmp/verbose 2>&1") == 2; 
+   errrm(system "rmdir $tmp/initrd_mnt >> $tmp/verbose 2>&1") == 2;
   }
 
 # Here's where we copy over that compressed filesystem
-# We could separate $device = boot,root allowing two 
+# We could separate $device = boot,root allowing two
 # different devices to be used.
 if ($um == 0 ) {
-    mtab(1); 
+    mtab(1);
 }
 else {
     error_window("gBootRoot: ERROR: Boot disk was never umounted");
 }  # copy over the compressed
 
-} # end sub lilo_put_it_together 
+} # end sub lilo_put_it_together
 
 sub device2 {
- 
-  my $device_size = (split(/\s+/,`df $mnt`))[8]; 
+
+  my $device_size = (split(/\s+/,`df $mnt`))[8];
   my $root_image_size = (stat($root_image))[12]/2;
   my $remain_root = $device_size - $root_image_size;
 
-  if ($remain_root  =~ /^-+\d+$/) { 
+  if ($remain_root  =~ /^-+\d+$/) {
       error_window("gBootRoot: ERROR: Not enough room: root stuff = $root_image_size k, device = $device_size k");
   }
   else {
@@ -954,7 +968,7 @@ sub device2 {
   }
 
 
-     #V#print "Copy over the compressed filesystem\n"; 
+     #V#print "Copy over the compressed filesystem\n";
      return if errrm(system "rmdir $mnt/lost+found >> $tmp/verbose 2>&1") == 2;
      my $broot_image = basename($root_image);
 
@@ -965,17 +979,17 @@ sub device2 {
      open(CF, ">$mnt/$broot_image") or error_window(
      "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
      open(CR, "$root_image") or error_window(
-     "gBootRoot: ERROR: Could not copy over the root filesystem") and return; 
+     "gBootRoot: ERROR: Could not copy over the root filesystem") and return;
      while (<CR>) {
-	 print CF $_;
+         print CF $_;
          pb($FS,$count,$line_count) if $count < $half_line_count;
          $count++;
      }
      close(CF); close(CR);
 
-     return if 
-     err_custom("umount $mnt", 
-      "gBootRoot: ERROR: Root disk did not properly umount") == 2;   
+     return if
+     err_custom("umount $mnt",
+      "gBootRoot: ERROR: Root disk did not properly umount") == 2;
      pb($FS,$count,$line_count);
      #V#print "Finished!\n";
 
@@ -1006,34 +1020,34 @@ sub initrd_size {
   }
 
   if ($compress eq "bzip2" && -e "/usr/bin/$compress") {
-     $initrd_size = $initrd_size + ((stat("/usr/bin/$compress"))[12]/2); 
+     $initrd_size = $initrd_size + ((stat("/usr/bin/$compress"))[12]/2);
   }
 
   # lib sizes
   open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd
-   while (<L>) { 
-      $lib = (split(/=>/,$_))[0]; 
-      $lib =~ s/\s+//;  
-      $lib = basename($lib); 
-      $lib =~ s/\s+$//; 
-      open (SL,"ls -l /lib/$lib|") or die "humm: $!\n"; 
-        while (<SL>) { 
+   while (<L>) {
+      $lib = (split(/=>/,$_))[0];
+      $lib =~ s/\s+//;
+      $lib = basename($lib);
+      $lib =~ s/\s+$//;
+      open (SL,"ls -l /lib/$lib|") or die "humm: $!\n";
+        while (<SL>) {
           # symbolic link
           if (-l "/lib/$lib") {
-            $what = (split(/\s+/,$_))[10]; 
+            $what = (split(/\s+/,$_))[10];
             $initrd_size = $initrd_size + 1;
             $initrd_size = $initrd_size + ((stat("/lib/$what"))[12]/2);
-          } 
+          }
           # no symbolic link
-          else { 
+          else {
            $initrd_size = $initrd_size + ((stat("/lib/$lib"))[12]/2);
-          } 
+          }
         }
    }
 
   $initrd_size = $initrd_size + ($initrd_size * 0.02);
-  # For perfection 1 (rounded up) is o.k., but for safety 10 would be 
-  # better  
+  # For perfection 1 (rounded up) is o.k., but for safety 10 would be
+  # better
   $initrd_size = sprintf("%.f",$initrd_size) + 10;
   return $initrd_size;
 
@@ -1043,21 +1057,21 @@ sub pb {
 
     # Will have to count by hand
     if ($_[0] eq "initrd") {
-	$pbar->configure( 10, 0, 10 );
+        $pbar->configure( 10, 0, 10 );
     }
     elsif ($_[0] eq "boot") {
-	$pbar->configure( 10, 0, 10 );
+        $pbar->configure( 10, 0, 10 );
     }
     elsif ($_[0] eq "filesystem") {
         $pbar->configure($_[2], 0, $_[2]);
     }
 
-    $pbar->set_value($_[1]); 
-    # Found this at Gnome .. 
+    $pbar->set_value($_[1]);
+    # Found this at Gnome ..
     # http://www.uk.gnome.org/mailing-lists/archives/gtk-list/
     # 1999-October/0401.shtml
     # Also, http://www.gtk.org/faq/  5.14
-    while (Gtk->events_pending) { Gtk->main_iteration; } 
+    while (Gtk->events_pending) { Gtk->main_iteration; }
 
 }
 
@@ -1065,11 +1079,11 @@ sub initrd {
 
     my($kernel,$root_image,$device,$size) = @_;
     my($lib,$what);
-    my $I = "initrd";      
-    
-  my $broot_image = basename($root_image);   
+    my $I = "initrd";
+
+  my $broot_image = basename($root_image);
   open(LC, ">$tmp/linuxrc") or die "Couldn't write linuxrc to loop device\n";
-  print LC initrd_heredoc($broot_image); close(LC); 
+  print LC initrd_heredoc($broot_image); close(LC);
   pb($I,1);
   my $size_needed = initrd_size((stat("$tmp/linuxrc"))[12]/2);
   unlink("$tmp/linuxrc");
@@ -1088,14 +1102,14 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $tmp/verbose 2>&1; mount -o loo
 
   #V#print "Putting everything together\n";
   open(LC, ">$tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to loop device\n";
-  print LC initrd_heredoc($broot_image); close(LC); 
+  print LC initrd_heredoc($broot_image); close(LC);
   # I could test this but somebody's system may do permissions differently
   system "chmod 755 $tmp/initrd_mnt/linuxrc >> $tmp/verbose 2>&1";
   system "rmdir $tmp/initrd_mnt/lost+found >> $tmp/verbose 2>&1";
   pb($I,5);
 
   #V#print "... the dirs\n";
-  return if errmk(system "mkdir $tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr} >> $tmp/verbose 2>&1; mkdir $tmp/initrd_mnt/usr/lib >> $tmp/verbose 2>&1") == 2; 
+  return if errmk(system "mkdir $tmp/initrd_mnt/{bin,dev,etc,lib,mnt,proc,sbin,usr} >> $tmp/verbose 2>&1; mkdir $tmp/initrd_mnt/usr/lib >> $tmp/verbose 2>&1") == 2;
   pb($I,6);
 
   return if errcp(system "cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev >> $tmp/verbose 2>&1") == 2;
@@ -1112,26 +1126,26 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $tmp/verbose 2>&1; mount -o loo
 
   # Testing init is sufficient for grabbing the correct libraries for the
   # executables immediately above.  This could be modified to test a
-  # list of executables.  
+  # list of executables.
   #V#print ".. the libs\n";
   open(L,"ldd /sbin/init|") or die "Oops, no init could be found :)\n"; # safe to use ldd
-   while (<L>) { 
-      $lib = (split(/=>/,$_))[0]; 
-      $lib =~ s/\s+//;  
-      $lib = basename($lib); 
-      $lib =~ s/\s+$//; 
-      open (SL,"ls -l /lib/$lib|") or die "humm: $!\n"; 
-        while (<SL>) { 
+   while (<L>) {
+      $lib = (split(/=>/,$_))[0];
+      $lib =~ s/\s+//;
+      $lib = basename($lib);
+      $lib =~ s/\s+$//;
+      open (SL,"ls -l /lib/$lib|") or die "humm: $!\n";
+        while (<SL>) {
           # symbolic link
           if (-l "/lib/$lib") {
-            $what = (split(/\s+/,$_))[10]; 
+            $what = (split(/\s+/,$_))[10];
             return if errcp(system "cp -a /lib/$lib $tmp/initrd_mnt/lib >> $tmp/verbose 2>&1") == 2;
             return if errcp(system "cp -a /lib/$what $tmp/initrd_mnt/lib >> $tmp/verbose 2>&1") == 2;
-          } 
+          }
           # no symbolic link
-          else { 
+          else {
             return if errcp(system "cp -a /lib/$lib $tmp/initrd_mnt/lib >> $tmp/verbose 2>&1") == 2;
-          } 
+          }
         }
    }
 
@@ -1142,7 +1156,7 @@ return if errmk(system "mkdir $tmp/initrd_mnt >> $tmp/verbose 2>&1; mount -o loo
   return if errum(system "umount $tmp/initrd_mnt >> $tmp/verbose 2>&1") == 2;
   system "gzip -f9 $tmp/$initrd >> $tmp/verbose 2>&1";
   pb($I,10); # This takes the longest.
-  
+
   $initrd = $initrd . ".gz";
 
 
@@ -1153,11 +1167,11 @@ sub mtab_window {
     my ($dialog,$error,$count,$pattern) = @_;
 
     if (not defined $mtab) {
-    $mtab = new Gtk::Dialog;                
+    $mtab = new Gtk::Dialog;
     $mtab->signal_connect("destroy", \&destroy_window, \$mtab);
-    $mtab->signal_connect("delete_event", \&destroy_window, \$mtab);                                                           
+    $mtab->signal_connect("delete_event", \&destroy_window, \$mtab);
     $mtab->set_title("gBootRoot: Device check");
-    $mtab->border_width(15);                                
+    $mtab->border_width(15);
     $mtab->set_position('center');
     my $label = new Gtk::Label($dialog);
     $label->set_justify( 'left' );
@@ -1170,7 +1184,7 @@ sub mtab_window {
     $mtab->action_area->pack_start($button, $false, $false,0);
     $button->grab_default;
     $button->show;
-    $button = new Gtk::Button("Cancel"); 
+    $button = new Gtk::Button("Cancel");
     $button->signal_connect("clicked", sub { destroy $mtab} );
     $mtab->action_area->pack_start($button, $false, $false,0);
     $button->show;
@@ -1186,23 +1200,23 @@ sub mtab_window {
 } # end sub mtab_window
 
 sub mtab{
-    
+
 # /proc/mount could be used, but maybe there is no /proc
 # Press OK when drive and storage medium are ready.  The drive should not
-# be mounted. 
+# be mounted.
 
   if ($_[0] == 0) {
     my $dialog = "BOOTDISK:\n"
              ."Press OK when the drive and its storage medium is ready.\n"
              ."The Boot Disk will now be made.  All data already on\n"
-		 ."the storage medium will be erased.";
+                 ."the storage medium will be erased.";
     mtab_window($dialog,1,$_[0],1);
   }
   elsif ($_[0] == 1) {
-    my $dialog = "ROOTDISK:\n" 
-	     ."Press OK when the drive and its storage medium is ready.\n"
+    my $dialog = "ROOTDISK:\n"
+             ."Press OK when the drive and its storage medium is ready.\n"
              ."The Root Disk will now be made.  All data already on\n"
-		 ."the storage medium will be erased.";
+                 ."the storage medium will be erased.";
     mtab_window($dialog,1,$_[0],1);
   }
 
@@ -1230,11 +1244,11 @@ close(MTAB);
 
 mtab_window($dialog,$error,$count) if $error == 0;
 
-  # Make sure the drive and storage medium are accessible 
+  # Make sure the drive and storage medium are accessible
   # Keep asking until they are.
   if ($error == 1) {
    destroy $mtab;
-   system "mke2fs -m0 -i8192 $device $size >> $tmp/verbose 2>&1"; 
+   system "mke2fs -m0 -i8192 $device $size >> $tmp/verbose 2>&1";
    if ($? != 0) {
     $dialog = "gBootRoot: ERROR: You need to insert a disk\n";
      mtab_window($dialog,$error,$count);
@@ -1311,7 +1325,7 @@ backup = /dev/null
 compact
 
 # bootdisk
-image = kernel 
+image = kernel
 append = "load_ramdisk = 1 debug"
 initrd = $initrd
 root = $device
@@ -1319,7 +1333,7 @@ label = bootdisk
 read-write
 
 # normalboot
-image = kernel 
+image = kernel
 root = /dev/$norm_root_device
 label = normalboot
 read-only
@@ -1334,7 +1348,7 @@ sub message {
 # HEREDOC
 my $message = << "MESSAGE";
 
-gBootRoot $version written by Jonathan Rosenbaum $date GNU GPL 
+gBootRoot $version written by Jonathan Rosenbaum $date GNU GPL
 mailto:mttrader\@access.mountain.net
 
 Press [Ctrl] to see the lilo prompt.
@@ -1343,14 +1357,14 @@ Press [Tab] to see a list of boot options.
 
 bootdisk   = This will boot a compressed root filesystem
              on another floppy.
-normalboot = This will boot up a specified filesystem. 
-             default: /dev/$norm_root_device  
+normalboot = This will boot up a specified filesystem.
+             default: /dev/$norm_root_device
              Use root=/dev/(h or s)dXX
                                  h = IDE Drive
                                  s = SCSI Drive
 
 Trouble:  Do not forget boot: option single
-Fix a filesystem:  e2fsck /dev/(h or s)dXX  
+Fix a filesystem:  e2fsck /dev/(h or s)dXX
 Bad superblock:    e2fsck -b 8192 /dev/(h or s)dXX
 
 MESSAGE
@@ -1363,23 +1377,23 @@ sub help {
 
 << "HELP";
 
-gBootRoot $version written by Jonathan Rosenbaum $date GNU GPL 
+gBootRoot $version written by Jonathan Rosenbaum $date GNU GPL
 email:mttrader\@access.mountain.net
 site -> http://the.netpedia.net/gBootRoot.html
 
-gBootRoot is a Gtk+/Perl program useful for both beginners and advanced 
-GNU/Linux users.  It makes the construction/development of emergency and 
-mini distributions simple.  
+gBootRoot is a Gtk+/Perl program useful for both beginners and advanced
+GNU/Linux users.  It makes the construction/development of emergency and
+mini distributions simple.
 
-- A GNU/Linux user can easily create an emergency Boot/Root set.  There 
-are a multitude of pre-existing compressed filesystems readily available.  
-Please check the gBootRoot FAQ at the gBootRoot site listed above.  
-** If you are a developer please send me links to Kernel/Filesystems which 
-I can share with users of gBootRoot. 
+- A GNU/Linux user can easily create an emergency Boot/Root set.  There
+are a multitude of pre-existing compressed filesystems readily available.
+Please check the gBootRoot FAQ at the gBootRoot site listed above.
+** If you are a developer please send me links to Kernel/Filesystems which
+I can share with users of gBootRoot.
 
-- A developer creating a mini distribution can concentrate his efforts on 
-perfecting the filesystem, and then he can use gBootRoot to quickly create a 
-Boot/Root set to run tests.  
+- A developer creating a mini distribution can concentrate his efforts on
+perfecting the filesystem, and then he can use gBootRoot to quickly create a
+Boot/Root set to run tests.
 
 - Disk sets allow for more space to include interesting and necessary things.
 The size of the Kernel is increasing every day making sets advantageous.
@@ -1387,33 +1401,33 @@ The size of the Kernel is increasing every day making sets advantageous.
 How to Use gBootRoot:
 
 gBootRoot is similar to BootRoot, but it is more efficient
-and powerful.  The most important button to familiarize yourself 
+and powerful.  The most important button to familiarize yourself
 with is the Submit button which starts the whole process, dialogs are
 presented as the process continues asking you if you want to continue "OK" or
-stop "Cancel". 
+stop "Cancel".
 
-There are 5 rows.  The boot method column has only one choice "lilo."  
+There are 5 rows.  The boot method column has only one choice "lilo."
 Clicking on the menu on the right selects the method.
 
-The second row allows you to select the kernel for the Boot/Root set.  You 
-may either use the file selector button on the right hand side, or you may 
-type in the location on the left hand side.  
+The second row allows you to select the kernel for the Boot/Root set.  You
+may either use the file selector button on the right hand side, or you may
+type in the location on the left hand side.
 
 NOTE:
 Presently you need to press [Enter] on your keyboard to select what you
-typed in, but one advantage of this is that gBootRoot understands shell 
-notation like ../twobelow/kernel.  The only disadvantage of this is that my 
+typed in, but one advantage of this is that gBootRoot understands shell
+notation like ../twobelow/kernel.  The only disadvantage of this is that my
 program may be written up as an example in a GUI blooper book. :)
 
-The third row allows you to select the compressed filesystem you are 
+The third row allows you to select the compressed filesystem you are
 providing, using either of the two ways mentioned before.
 
 The fourth row allows you to select the device you want to use.  The default
 device is the first floppy disk (/dev/fd0).
 
 The fifth row allows you to choose the size of the device being used.
-If you choose the compressed filesystem with the file selector the program 
-should automatically detect the compression used, otherwise, click on the 
+If you choose the compressed filesystem with the file selector the program
+should automatically detect the compression used, otherwise, click on the
 appropriate radio button to choose either gzip or bzip2 compression.
 
 Little things you may want to know:
@@ -1423,60 +1437,3 @@ Little things you may want to know:
 HELP
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
