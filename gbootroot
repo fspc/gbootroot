@@ -262,9 +262,6 @@ use constant  MOD_STRIP            => 15 ;
 my @original_container;
 my $file_dialog;
 
-# These are used in submit
-my ($size);
-
 my $mtab;
 my ($tmp,$mnt);
 my $norm_root_device;
@@ -2198,7 +2195,7 @@ sub button {
 
 sub submit {
 
-      my($kernel,$root_image,$device);
+      my($kernel, $root_image, $device, $size);
 
       # comment this out for testing
       # Since only one filehandle is now used, this won't work
@@ -2440,7 +2437,7 @@ sub lilo {
   my $kernel = $container[KERNEL];
   my $root_image = $container[ROOT_FS];
   my $device = $container[BOOT_DEVICE];
-  $size = $container[SIZE];
+  my $size = $container[SIZE];
 
   if ($ok == 1 || $ok == 2) {
     my $value = initrd($kernel,$root_image,$device,$size);
@@ -3287,7 +3284,7 @@ mtab_window($dialog,$error,$count) if $error == 0;
   if ($error == 1) {
    destroy $mtab;
    # $size has to be determined by boot disk or root disk
-   sys("mke2fs -F -m0 -i8192 $entry_advanced[0] $size");
+   sys("mke2fs -F -m0 -i8192 $entry_advanced[0] $container[SIZE]");
    if ($? != 0) {
     $dialog = "gBootRoot: ERROR: You need to insert a disk\n";
      mtab_window($dialog,$error,$count);
