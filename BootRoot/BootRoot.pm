@@ -855,8 +855,19 @@ if ( $option{"uml-exclusively"} ) {
     : ($uml_exclusively = 0);
 }
 
+my $preserve_ownership = 0;  # assume no
+if ( $option{"preserve-ownership"} ) {
+    $option{"preserve-ownership"} eq "y" 
+    ? ($preserve_ownership = 1)
+    : ($preserve_ownership = 0);
+}
+
+
+
 $ars->{uml_exclusively} = $uml_exclusively;
 ars2($ars);  #not used in function below    
+$ars->{preserve_ownership} = $uml_exclusively;
+ars2($ars); 
 
 # links_deps()
 # Good defaults
@@ -918,7 +929,7 @@ if ( $method eq "yard" ) {
 
 ######################################################
 
-}  # end if $::commandline
+}  # end if !$::commandline
 
 } # end start
 

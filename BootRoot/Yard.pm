@@ -1542,6 +1542,10 @@ sub create_expect_uml {
 	    while (<EXPECT>) {
 		info(1,"$x_count  $_");
 		$x_count++;
+		# Didn't need this before, but now do.
+		if ( $_ =~/nbd.*module cleaned up/ ) {
+		    last;
+		}
 		while (Gtk->events_pending) { Gtk->main_iteration; }
 	    }
 
