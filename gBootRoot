@@ -2124,8 +2124,10 @@ sub gdkbirdaao
 
   if (-e $lilo_conf and !-d $lilo_conf)
   {
-    open(LIL, $lilo_conf) or die "*** $lilo_conf not found,";
-    my @lilo_lines = <LIL>;
+
+      my @lilo_lines;
+    open(LIL, $lilo_conf) or warn "*** $lilo_conf not found, perhaps because you are not root?";
+    @lilo_lines = <LIL>;
     close(LIL);
     chomp(@lilo_lines);
 
@@ -2203,6 +2205,7 @@ sub gdkbirdaao
 	if !$ret_append;
 
       # do we have a default kernel?
+      if (defined $image_blocks{$image_block_name}{'block_label'}) {
       if ($image_blocks{$image_block_name}{'block_label'} eq $default_label)
       {
         # Found the block match for the default label
@@ -2211,7 +2214,8 @@ sub gdkbirdaao
 	$ret_append = $image_blocks{$image_block_name}{'append'};
         last;
       }
-    }
+  }
+   }
   }
   
   # and some a small portion of paranoia
