@@ -1,4 +1,4 @@
-$Id: README,v 1.13 2002/12/20 19:28:50 freesource Exp $
+$Id: README,v 1.14 2002/12/22 03:15:05 freesource Exp $
 Program:  gBootRoot  pronounced "bOOtrOOt"
 License:  GNU General Public License
 
@@ -32,7 +32,7 @@ These are the build-depends from the debian source package which can
 be used as a guide for other distributions: binutils ((>=
 2.13.90.0.16), fileutils (>= 4.0), gcc (>= 2:2.95.4), make, libc6-dev
 (>= 2.3.1), bin86, wget, mkcramfs, e2fsprogs, reiserfsprog, genromfs,
-util-linux, mtd-tools, m4, libreadline4-dev
+xutil-linux, mtd-tools, m4, libreadline4-dev
 
 INSTALLING
 ----------
@@ -54,8 +54,8 @@ will give a good indication of what is causing the problem.
 
 REQUIREMENTS TO RUN GBOOTROOT
 -----------------------------
-Perl Modules:
-#############
+
+PERL MODULES
 
 Gtk-Perl (Required for GUI)
 --------
@@ -83,8 +83,8 @@ http://www.perl.com/CPAN/modules/by-module/IO/IO-Tty-0.04.tar.gz
 http://sourceforge.net/projects/expectperl
 RPM versions can be found at sf.net/gbootroot.
 
-Boot Methods:
-#############
+
+BOOT METHODS
 
 2 disk compression
 ------------------
@@ -94,8 +94,7 @@ This method will tell you when any of these utilities are missing:
 ash  lilo  bzip2  file
 
 
-Root Methods:
-#############
+ROOT METHODS
 
 Yard
 ----
@@ -106,15 +105,20 @@ missing.  Make sure you have this file installed on your system:
 file
 
 
-Important Configurations:
-#########################
+IMPORTANT CONFIGURATIONS
 
 "chown 0:0 /usr/bin/uml_net; chmod 4755 /usr/bin/uml_net" so normal users can 
 have network capabilities.
 
+Should the host kernel have the skas patch applied?
 
-Documentation:
-#############
+"Yes, I highly recommended it.  It's a great performance improvement,
+and gbootroot-nest1 will run a lot better.  Modes are figured out
+automatically by skas-or-tt so don't add mode={tt,skas} in the UML
+box"
+
+
+DOCUMENTATION
 
 Documentation and FAQ are in doc/html/index.html
 
