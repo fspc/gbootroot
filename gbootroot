@@ -233,9 +233,9 @@ my $separator;
 my $order;
 my $text_window;
 my $verbosity_window;
-my @container;
 
 # Make @container verbose
+my @container;
 use constant  METHOD               => 0  ;
 use constant  KERNEL               => 1  ;
 use constant  ROOT_FS              => 2  ;
@@ -248,7 +248,7 @@ use constant  OBJCOPY_BOOL         => 8  ;
 use constant  ABS_DEVICE           => 9  ;
 use constant  ABS_OPT_DEVICE       => 10 ;
 use constant  ABS_APPEND           => 11 ;
-#
+
 # The Selection values are used for button_fileselect_advanced
 # since it shares fileselect and file_ok_sel with button.
 #
@@ -261,12 +261,16 @@ use constant  MOD_STRIP            => 15 ;
  
 my @original_container;
 my $file_dialog;
-my ($kernel,$root_image,$device,$size,$kernel_version);
+
+# These are used in submit
+my ($kernel, $root_image, $size);
+
 my $mtab;
 my ($tmp,$mnt);
 my $norm_root_device;
 my ($hbox_advanced); 
 my $separator_advanced;
+
 my @entry_advanced;
 my $entry_advanced;
 my ($ea1,$ea2,$ea3,$ea4,$ea5,$ea6); # entry advanced boot  
@@ -286,8 +290,17 @@ my ($bz2_toggle_root,$gz_toggle_root,$compression_off);
 #my ($main::combo); made this totally global
 my ($adj2,$adj3);
 my @strings;
-my ($root_device,$root_filename,$method,$template,$filesystem_size,
-    $root_device_size);
+my $kernel_version;
+#
+# $entry_advanced[3] is the Root Device
+# $filesystem_size and root_device_size are important globals for ARS,
+# there weren't put into entry_advanced because they are spin buttons.
+# $entry_advanced[4] is the Root Filename 
+#
+my ($filesystem_size, $root_device_size);
+#
+# Carrries ARS values to other modules via ars(), another program just has to 
+# export ars and it can capture these values
 my $ars = {}; # anonymous hash
 
 # My own creation - the roots touch the ground if three lines are added.
@@ -1694,7 +1707,7 @@ sub Generate {
     # 3 = Root Device
     # 4 = Root Filename
     # 5 = UML Kernel
-    $method = $entry_advanced[6];         # 6 = Method
+    my $method = $entry_advanced[6];         # 6 = Method
     # 7 = Template
     # 8 = UML xterm
     # 9 = UML options
@@ -1719,8 +1732,8 @@ sub Generate {
 
 
     my $template = $ars->{template};
-    $root_device = $ars->{device};
-    $root_filename = $ars->{filename};
+    my $root_device = $ars->{device};
+    my $root_filename = $ars->{filename};
 
     if (!$root_device || $root_device eq "") {
 	error_window("gBootRoot: ERROR: Root Device not defined");	
@@ -2185,7 +2198,7 @@ sub button {
 
 sub submit {
 
-      my($kernel,$root_image);
+      my($kernel,$root_image,$device);
 
       # comment this out for testing
       # Since only one filehandle is now used, this won't work
@@ -2238,7 +2251,7 @@ if (defined $container[ROOT_FS] && -e $container[ROOT_FS] &&
     }
 }
 elsif (defined $container[METHOD] && defined $container[KERNEL]) {
-    error_window("gBootRoot: ERROR: Rootimage not found");
+    error_window("gBootRoot: ERROR: Root Filesystem not found");
     return;
 }
 # we need to check for this, too.
@@ -2426,7 +2439,7 @@ sub lilo {
 
   $kernel = $container[KERNEL];
   $root_image = $container[ROOT_FS];
-  $device = $container[BOOT_DEVICE];
+  my $device = $container[BOOT_DEVICE];
   $size = $container[SIZE];
 
   if ($ok == 1 || $ok == 2) {
@@ -2475,8 +2488,8 @@ sub lilo_put_it_together {
   return if err(sys("cp -a /dev/{null,fd?,hda1} $mnt/dev")) == 2;
 
   # Hopefully, this works, but have never tested it -- o.k I did
-  if ($device !~ m,/dev/fd\d{1}$,) {
-     return if err(sys("cp -a $device $mnt/dev")) == 2;
+  if ($container[BOOT_DEVICE] !~ m,/dev/fd\d{1}$,) {
+     return if err(sys("cp -a $container[BOOT_DEVICE] $mnt/dev")) == 2;
   }
 
   # This adds that next device
@@ -2501,7 +2514,7 @@ sub lilo_put_it_together {
 
     # Write out the HEREDOCS
     open(LC, ">$mnt/brlilo.conf") or die "Couldn't write $mnt/brlilo.conf\n";
-    print LC brlilo($device); close(LC);
+    print LC brlilo($container[BOOT_DEVICE]); close(LC);
     open(M, ">$mnt/message") or die "Couldn't write $mnt/message\n";
     print M message(); close(M);
     pb($B,5);
@@ -2519,7 +2532,9 @@ sub lilo_put_it_together {
   info(0, "Configuring lilo\n");
   pb($B,7);
   chdir("$mnt"); #"boot_root: ERROR: Could not change directories\n";
-  if ($device eq $entry_advanced[0]) {
+
+  # This enforces SAMENESS
+  if ($container[BOOT_DEVICE] eq $entry_advanced[0]) {
     if (err_custom("lilo -v -C brlilo.conf -r $mnt",
                    "gBootRoot: ERROR: lilo failed") == 2) {
         chdir($pwd); return;
@@ -2542,8 +2557,9 @@ sub lilo_put_it_together {
   }
 
 # Here's where we copy over that compressed filesystem
-# We could separate $device = boot,root allowing two
-# different devices to be used.
+# We could separate $container[BOOT_DEVICE] = boot,root allowing two
+# different devices to be used. -- not there is $entry_advanced[3] which
+# is the ROOT_DEVICE
 if ($um == 0 ) {
     mtab(1);
 }
@@ -2859,9 +2875,19 @@ sub initrd {
     my($lib,$what,$path,$value,$tool);
     my $I = "initrd";
 
+
+    # Basically this means the ARS was never opened or edited and the
+    # default behavior is to use the same device.
+    if ( !$entry_advanced[3] ) {
+	$device = $container[BOOT_DEVICE];
+    }
+    else {
+	$device = $entry_advanced[3];
+    }
+
     my $broot_image = basename($root_image);
     open(LC, ">$tmp/linuxrc") or die "Couldn't write linuxrc to loop device\n";
-    print LC initrd_heredoc($broot_image); close(LC);
+    print LC initrd_heredoc($broot_image,$device); close(LC);
     pb($I,1);
     my $size_needed = initrd_size((stat("$tmp/linuxrc"))[12]/2);
     unlink("$tmp/linuxrc");
@@ -2890,7 +2916,7 @@ sub initrd {
 
     info(0, "Putting everything together\n");
     open(LC, ">$tmp/initrd_mnt/linuxrc") or die "Couldn't write linuxrc to loop device\n";
-    print LC initrd_heredoc($broot_image); close(LC);
+    print LC initrd_heredoc($broot_image,$device); close(LC);
     # I could test this but somebody's system may do permissions differently
     sys("chmod 755 $tmp/initrd_mnt/linuxrc");
     sys("rmdir $tmp/initrd_mnt/lost+found");
@@ -2903,13 +2929,14 @@ sub initrd {
     pb($I,6);
 
     # Hopefully, this works, but have never tested it - o.k I did
-    if ($device !~ m,/dev/fd\d{1}$,) {
-	return if err(sys("cp -a $device $mnt/dev")) == 2;
+    if ($container[BOOT_DEVICE] !~ m,/dev/fd\d{1}$,) {
+	return if err(sys("cp -a $container[BOOT_DEVICE] $mnt/dev")) == 2;
     }
 
     return if errcp(
     sys("cp -a /dev/{console,null,ram0,ram1,tty0} $tmp/initrd_mnt/dev")) == 2;
-    return if errcp(sys("cp -a $device $tmp/initrd_mnt/dev")) == 2;
+    return if errcp(sys("cp -a $container[BOOT_DEVICE] $tmp/initrd_mnt/dev"))
+	== 2;
     pb($I,7);
 
     # This and libs should be user accessible
@@ -3280,7 +3307,7 @@ mtab_window($dialog,$error,$count) if $error == 0;
 # This should be user accessible
 sub initrd_heredoc {
 
-    my($broot_image) = @_;
+    my($broot_image,$root_device) = @_;
 
 # Here's where the initrd is put together using a loop device
 # HEREDOC
@@ -3299,19 +3326,19 @@ mount -t proc none /proc
 echo -n 'Please insert the root floppy, and press [Enter]: '
 read ENTER
 
-echo Mounting $device readonly ...
-mount -o ro -t ext2 $device /mnt
+echo Mounting $root_device readonly ...
+mount -o ro -t ext2 $root_device /mnt
 
 echo -n Copying new root to ramdisk .. please wait ...
 $compress -cd /mnt/$broot_image > /dev/ram1
 echo done.
 
-echo -n Unmounting $device ...
+echo -n Unmounting $root_device ...
 umount /mnt
 echo done.
 
 # Using change_root, eventually may change to pivot_root or
-# give the user to choice.
+# give the user the choice.
 
 echo Changing to the new root.
 echo 257 >/proc/sys/kernel/real-root-dev
