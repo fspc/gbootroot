@@ -1,4 +1,4 @@
-#  $Id: Example.yard,v 1.9 2001/12/04 05:29:47 freesource Exp $
+#  $Id: Example.yard,v 1.10 2001/12/07 02:46:52 freesource Exp $
 #  Example.yard
 #
 #  Creates a minimalistic multi-user runlevel root filesystem with getty.  
@@ -274,6 +274,9 @@ nano
 
 #####  DISK AND FILE SYSTEM UTILITIES
 fdisk
+#
+# ext2 stuff
+# ----------
 e2fsck
 mke2fs
 tune2fs
@@ -281,3 +284,11 @@ dumpe2fs
 debugfs
 e2image
 badblocks
+#
+# reiserfs stuff
+# -------------
+#mkreiserfs
+#reiserfsck
+#debugreiserfs
+#unpack
+#resize_reiserfs
