@@ -50,9 +50,10 @@ my $uml_xterm = "xterm -e";
 
 # I need to remember to edit this
 # and to update scripts/Debian.yard if
-# make_debian has been changed.
-my $version = "1.3.1";
-my $date = "12.25.2001";
+# make_debian has been changed,
+# and to install -s linux.
+my $version = "1.3.2";
+my $date = "01.11.2002";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $home_rootfs = "$home/root_filesystem/";
@@ -91,6 +92,8 @@ my $separator;
 my $order;
 my $text_window;
 my $verbosity_window;
+#my $colormap;
+#my $window;
 
 # Make @container verbose, also look in generate()
 my @container;
@@ -695,6 +698,7 @@ $box2->pack_start( $hbutton, $true, $true, 0 );
 $box2->show();
 
 $window->show();
+
 
 } # end start
 
@@ -1768,8 +1772,10 @@ sub accept_button {
 			}
 
 			info(0,"Done compressing $entry_advanced[4] with $compress\n");
-                        $entry_advanced[4] = "$entry_advanced[4].gz";
-                        $entry3->set_text("$tmp/$entry_advanced[4]");
+			
+			# Actually, keeping the original value is much nicer.
+                        #$entry_advanced[4] = "$entry_advanced[4].gz";
+                        $entry3->set_text("$tmp/$entry_advanced[4].gz");
 			
 		    }
 		}
@@ -1826,8 +1832,12 @@ sub accept_button {
 			}
 
 			info(0,"Done compressing $entry_advanced[4] with $compress\n");
-			$entry_advanced[4] =  "$entry_advanced[4].bz2";
-                        $entry3->set_text("$tmp/$entry_advanced[4]");
+
+
+
+			# Actually, keeping the original value is much nicer.
+                        #$entry_advanced[4] = "$entry_advanced[4].gz";
+                        $entry3->set_text("$tmp/$entry_advanced[4].gz");
 
 		    }
 		}
