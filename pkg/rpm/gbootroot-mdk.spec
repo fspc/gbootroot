@@ -99,8 +99,8 @@ make
 make install
 
 %clean
-make clean
-make clean-sources
+#make clean
+#make clean-sources
 
 # Update this as necessary
 # dswim -ql gbootroot > ~/gbootroot/gbootroot/list

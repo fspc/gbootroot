@@ -75,8 +75,8 @@ my $rpm_packaging_place = "$gbootroot_cvs/pkg/rpm";
 my $SPECS = "/usr/src/rpm/SPECS";
 my $SOURCES = "/usr/src/rpm/SOURCES";
 my $BUILD = "/usr/src/rpm/BUILD";
-#my @rpm_packages = qw(gbootroot.spec gbootroot-mdk.spec);
-my @rpm_packages = qw(gbootroot-mdk.spec);
+my @rpm_packages = qw(gbootroot.spec gbootroot-mdk.spec);
+#my @rpm_packages = qw(gbootroot-mdk.spec);
 
 
 # Other vars
