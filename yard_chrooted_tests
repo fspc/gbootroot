@@ -5,7 +5,8 @@
 ##  YARD_CHROOT_TEST
 ##  Code from CHECK_ROOT_FS by Tom Fawcett
 ##  Copyright (C) 1996,1997,1998  Tom Fawcett (fawcett@croftj.net)
-##  Copyright (C) 2000, 2001 Modifications by the gBootRoot Team
+##  Copyright (C) 2000, 2001 Modifications by Jonathan Rosenbaum
+##                                           <freesource@users.sourceforge.net> 
 ##
 ##  This program is free software; you may redistribute it and/or modify
 ##  it under the terms of the GNU General Public License as published by
