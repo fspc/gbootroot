@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.78 2002/01/11 13:51:56 freesource Exp $</center>
+<center>$Id: index.html,v 1.79 2002/01/14 04:15:46 freesource Exp $</center>
 
 <p>
 
@@ -1119,9 +1119,10 @@ down all the bugs.
 
 <P><a name="12"><b>What does the 2 disk compression method do?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 <P>This Boot Method creates a boot disk with lilo, a kernel and an initrd 
-image.&nbsp;&nbsp;The 
-initrd script mounts another root disk with a compressed (gzip or bzip2) 
-filesystem.</P>
+image.&nbsp;&nbsp;
+The initrd script mounts another root disk with a compressed (gzip or bzip2) 
+filesystem.&nbsp;&nbsp;Note:  This method doesn't use the devfs, so use a
+kernel without this built into it.</P>
 
 <p><a name="13"><b>I've created a root fs.&nbsp;&nbsp;Then I've tried to create the boot disk using the 2 disk compression method.&nbsp;&nbsp;The device selection is /dev/fd0, size is 1440k, but the initrd_image.gz is 715k.&nbsp;&nbsp;I don't know much about boot disks but shouldn't the boot disks contain mainly the kernel?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
 
