@@ -41,6 +41,7 @@ my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
 my ($replacements_window, $filesystem_window, $path_window, $shortcut);
+my $search_window;
 my $Shortcuts;
 my @entry;
 my $file_dialog;
@@ -145,6 +146,12 @@ my @menu_items = ( { path        => '/File',
 		     callback    => \&file_system },
 		   { path        => '/Edit/Replacements',
 		     callback    => \&Replacements },
+                   { path        => '/Edit/edit_separator',
+                     type        => '<Separator>' },
+		   { path        => '/Edit/_Search in Page',
+                     accelerator => '<alt>S',
+		     callback    => \&search },
+
 
                    { path        => '/_Create',
                      type        => '<Branch>' },
@@ -1097,14 +1104,129 @@ sub saved {
 
 } # end sub saved
 
-sub print_hello { 
-    my ($menu_item, $action, $date) = @_;
 
-    $menu_item->set_active($true);
-    print $menu_item; 
+# rindex and index makes things easy
+sub search {
+
+    if (not defined $search_window) {
+
+	$search_window = Gtk::Window->new("toplevel");
+	$search_window->signal_connect("destroy", \&destroy_window,
+					     \$search_window);
+	$search_window->signal_connect("delete_event", \&destroy_window,
+					     \$search_window);
+	$search_window->signal_connect("key_press_event", sub {
+	    my $event = pop @_; 
+	    if ($event->{'keyval'}) {
+		$search_window->destroy if $event->{'keyval'} == 65307;
+	    }
+	},
+	);
+	$search_window->set_policy( $true, $true, $false );
+	$search_window->set_title( "gBootRoot:  Search" );
+	$search_window->border_width(1);    
+	$search_window->set_position('mouse');
+
+	my $main_vbox = Gtk::VBox->new( $false, 0 );
+	$search_window->add( $main_vbox );
+	$main_vbox->show();
+
+	my $table_search = Gtk::Table->new( 4, 3, $true );
+	$main_vbox->pack_start( $table_search, $true, $true, 0 );
+	$table_search->show();
+
+	#_______________________________________
+	# Search keywords
+	label("Search:",0,1,0,1,$table_search);
+	my $search1 = entry(1,3,0,1,0,$table_search);
+	$search1->set_text(""); # if defined $search;
 
 
-}
+	#_______________________________________
+	# Case Sensitive
+
+	my $case_sensitive = new Gtk::CheckButton("Case Sensitive");
+	$table_search->attach($case_sensitive,1,2,1,2, 
+		     ['shrink','fill','expand'],['fill','shrink'],0,0);
+	$case_sensitive->show();
+
+	#$case_sensitive->signal_connect("clicked", \&which_stage, "check"); 
+
+
+	#_______________________________________
+	# Search Backwards
+
+	my $search_backwards = new Gtk::CheckButton("Search Backwards");
+	$table_search->attach($search_backwards,2,3,1,2, 
+		     ['shrink','fill','expand'],['fill','shrink'],0,0);
+	$search_backwards->show();
+
+	#_______________________________________
+	# Separator	
+	my $separator = new Gtk::HSeparator(); 
+	$table_search->attach($separator,0,3,2,3, 
+		     ['shrink','fill','expand'],['fill','shrink'],0,0);
+	$separator->show();
+
+	#_______________________________________
+	# Search button
+	my ($keywords, $old_keywords, $offset);
+	my $submit_b = button(0,1,3,4,"Search",$table_search);
+	$search1->signal_connect("key_press_event", sub {
+	    my $event = pop @_;
+	    if ($event->{'keyval'} == 65293) {
+		$submit_b->clicked();
+	    }
+	});
+	$submit_b->can_default(1);
+	$search_window->set_default($submit_b);
+	$submit_b->grab_default;
+	$submit_b->signal_connect( "clicked", sub {
+	    my $keywords = $search1->get_text();
+
+	    # There may be numbers, ofcourse.
+	    if ($keywords && $keywords ne $old_keywords) {
+		undef $offset;
+	    }
+
+	    # rindex
+	    if ($search_backwards->active) {
+
+	    }
+	    else {
+		if (!$offset) {
+		    $offset = index($changed_text_from_template, $keywords);
+		}
+		else {
+		    $offset = $offset + 1;
+		    $offset = index($changed_text_from_template, $keywords, 
+				    $offset);
+		}
+		print "$offset\n" if $offset;
+
+	    }
+	    $old_keywords = $keywords;	    
+
+	} );
+
+	#_______________________________________
+	# Cancel button
+	my $close_b = button(2,3,3,4,"Cancel",$table_search);
+	$close_b->signal_connect("clicked",
+				 sub {
+				     $search_window->destroy() 
+					 if $search_window;
+				 } );
+
+   }
+   if (!visible $search_window) {
+       $search_window->show();
+   } else {
+       $search_window->destroy;
+   }
+
+
+} # end sub search
 
 sub yard_menu {
 
@@ -1332,6 +1454,8 @@ Motion Shortcuts
  Ctrl-F Forward one character 
  Alt-B Backward one word 
  Alt-F Forward one word 
+ Ctrl-Home Beginning of buffer
+ Ctrl-End End of buffer
 
  Editing Shortcuts 
 
@@ -1347,6 +1471,10 @@ Selection Shortcuts
  Ctrl-X Cut to clipboard 
  Ctrl-C Copy to clipboard 
  Ctrl-V Paste from clipboard
+
+Searching Shortcuts
+
+ Alt-S
 SHORTCUTS
 
 sub path {
