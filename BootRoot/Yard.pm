@@ -3727,7 +3727,7 @@ sub find_nss {
     my $libcc = "libc";
     if ( !$libc ) {
 	$libc = yard_glob("/lib/ld-*");  ## removed 2
-	my $libcc = "ld";
+	$libcc = "ld";
     }
 
     my($libc_version2, $libc_version) = $libc =~ m|/lib/$libcc-(\d)+\.(\d)|; ## changed 2 & . 
