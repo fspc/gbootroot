@@ -403,7 +403,7 @@ sub read_contents_file {
 		  }
 		  else {
 		      info(0, "Using Replacement $replacement because it was" .
-			   "found in an absolute location\n");
+			   " found in an absolute location\n");
 		      $abs_replacement = $replacement;
 		      $replaced_by{$file} = $abs_replacement;
 		      $Included{$file} = 1;
@@ -1721,11 +1721,18 @@ sub find_file_in_path {
 sub make_link_absolute {
   my($file, $target) = @_;
 
+  my $link;
+
   if ($target =~ m|^/|) {
     $target;			# Target is absolute, just return it
   } else {
-    cleanup_link(dirname($file) . "/$target");
+    $link  =cleanup_link(dirname($file) . "/$target");
   }
+
+  $link =~ s,^\.,,;  # When there is one file dir eq .  --freesource
+
+  return $link;
+
 }
 
 
