@@ -380,6 +380,13 @@ bOOTrOOT has become a full blown distribution creation program.</P>
 
 <P><b>How can I test gBootRoot?</b></P>
 
+<p>
+
+(Note:&nbsp;&nbsp;You may run all these tests as a normal user.&nbsp;&nbsp;
+See the exceptions which apply to creating boot disks.)</p>
+
+<center><u>Test an existing mini distribution.</u></center>
+
 <P>1.&nbsp;&nbsp;Download 
 <a href="http://prdownloads.sourceforge.net/user-mode-linux/root_fs_tomrtbt_1.7.205.bz2">
 root_fs_tomrtbt_1.7.205.bz2</a> from 
@@ -396,15 +403,17 @@ $HOME/.gbootroot/root_filesystems. </p>
 <p>
  
 3.&nbsp;&nbsp;Run 
-gbootroot.&nbsp;&nbsp;Click on the Advanced Root Section, click on
+gbootroot.&nbsp;&nbsp;Click on the Advanced Root Section (ARS), click on
 the UML button. &nbsp;&nbsp;Select root_fs_tomrtbt_1.7.205, add devfs=nomount
 to the options, and click on the Submit
 button.</p>
 
+<center><u>Create a boot and root floppy for an existing mini distribution.</u></center>
+
 <p>
 
 4.&nbsp;&nbsp;Click on the Advanced Boot 
-Section.&nbsp;&nbsp;Root_fs_tomrtbt is about 16M, so add ramdisk_size=16384 to
+Section (ABS).&nbsp;&nbsp;Root_fs_tomrtbt is about 16M, so add ramdisk_size=16384 to
 the 'append=' entry.&nbsp;&nbsp;From the main box choose '2 disk compression', and
 press on the Root Filesystem button and select root_fs_tomrtbt_1.7.205.bz2.
 </p> 
@@ -414,10 +423,15 @@ box.&nbsp;&nbsp;Have two floppy disks ready.
 
 <p>
 
-6.&nbsp;&nbsp;When you see Lilo you may access the menu using [Ctrl] and 
-[Tab] to see the available images. 
+6.&nbsp;&nbsp;When you boot the boot disk you will see Lilo, you may access the menu using [Ctrl] and [Tab] to see the available images, or wait for the
+prompt to insert the root disk.</p>
+
+
+<center><u>Test a macro distribution created by make_debian-X11.</u></center>
+
 
 <p>
+
  
 7.&nbsp;&nbsp;Download 
 <a href="http://sourceforge.net/project/showfiles.php?group_id=9513">
@@ -427,9 +441,135 @@ first three steps, but don't add devfs=nomount.&nbsp;&nbsp;This root
 filesystem was created with 
 the make_debian-X11 script from the make-debian-x11 add-on found at 
 <a href="http://sourceforge.net/project/showfiles.php?group_id=9513">
-gbootroot's</a> Sourceforge home.
+gbootroot's</a> Sourceforge home.</p>
+
+
+<center><u>Make your own micro distribution from an existing template.</u></center>
+
+<p>
+
+8.&nbsp;&nbsp;Click on the ARS if its not already opened.&nbsp;&nbsp;
+Choose Yard from the Method pull-down menu.&nbsp;&nbsp;Chosse Example-Mini.yard
+from the pull-down Template menu.&nbsp;&nbsp;Click on the Generate button.
+&nbsp;&nbsp;The Yard Box will pop up.&nbsp;&nbsp;Click on the Continue button
+until you reach the Create check box.&nbsp;&nbsp;You could continue to the
+tests, but they really wouldn't apply to this minimalistic example because
+there are no links or login type files in the template.</p>
+
+<p>
+
+9.&nbsp;&nbsp;Experiment with Edit->Stages from the Yard Box menu.
+&nbsp;&nbsp;Try different types of staging behavior, and notice the 
+differences.</p>
+
+<p>
+
+10.&nbsp;&nbsp;Test your creation with the UML box as explained in step 3.
+&nbsp;&nbsp;You will want to add init=/bin/bash to the Options entry.</p>
+
+<p>
+
+11.&nbsp;&nbsp;At this point you will probably want to play around a little 
+bit.&nbsp;&nbsp;Familiarize yourself with the Format Rules found 
+near the top of the template.&nbsp;&nbsp;You may want to save the template
+with a different name and experiment with changes, or create a new template
+using File->New (Shortcut: Alt-N).</p>
+
+
+<center><u>Make your own mini distribution from an existing template.</u></center>
+
+<p>
+
+12.&nbsp;&nbsp;Choose Example.yard from the Template menu in the ARS.
+&nbsp;&nbsp;Save it with a new name.</p>
+
+<p>
+
+13.&nbsp;&nbsp;There are two types of inittabs provided for each major 
+distribution type.&nbsp;&nbsp;The inittab with nodevfs appended doesn't use 
+the
+device fs, i.e. the devfs=nomount kernel option.&nbsp;&nbsp;Uncomment the 
+inittab, getty, and gettydefs (if required) for
+your distribution type.&nbsp;&nbsp;If you aren't using Debian and make sure to 
+comment (#) out the corresponding stuff for Debian.</p>
+
+<p>
+
+14.&nbsp;&nbsp;The Example.yard template introduces you to Replacements like
+the inittabs described above.&nbsp;&nbsp;
+Replacements can be anywhere as long as they are either in an absolute path
+or found in $PATH
+(Edit->Settings->Path); the default location for users is
+$HOME/.gbootroot/yard/Replacements.&nbsp;&nbsp;For more information see the 
+FAQ question
+"What are all these CVS directories doing in my replacements?"&nbsp;&nbsp;
+Also, this template introduces you to links, $VERSION, 
+how library dependencies are automatically figured for binaries 
+and the automated 
+approach for finding service modules and dependencies for PAM and NSS.
+&nbsp;&nbsp;Once you learn the format rules and how they are interpreted 
+by the program you will find that making your own templates is 
+quite simple.</p>
+
+<p>
+
+15&nbsp;&nbsp;Click on the Continue button until you finish the Space Left 
+stage.&nbsp;&nbsp;Adjust the Filesystem Size in the ARS to a size larger than 
+the Total space shown in the verbosity box.&nbsp;&nbsp;Create your 
+root_fs, 
+and make sure there was enough room left.&nbsp;&nbsp;You may have to adjust the
+size and run Create again.</p>
+
+<p>
+
+16&nbsp;&nbsp;Now that you have a root filesystem you may continue to 
+the Test stage and observe what is missing.&nbsp;&nbsp;Next run the root_fs 
+from the UML box.&nbsp;&nbsp;
+If things don't work correctly you will have to hunt down the cause,
+make the appropriate changes and proceed through the stages again.&nbsp;&nbsp
+If you only make a change to a Replacement, you only have to run
+the Create stage again.&nbsp;&nbsp;If you make a change to the template you 
+have to run at least the Check, Links & Deps, and Create stages again.</p>
+
+
+<center><u>Make your own root filesystems from your own templates.</u></center>
+
+<p>
+
+17.&nbsp;&nbsp;Now that you have done your homework, I set you free to create
+your own root filesystems from your own templates with replacements
+of your own choice.&nbsp;&nbsp;Create a root_fs which can fit on a block 
+device, and then create an emergency disk customized for your own system, 
+or create your own customized macro distribution and run it from the 
+UML box to try things you never would have dreamed of doing on your host 
+system.&nbsp;&nbsp;And that is just the beginning of the things you can do.
+
+
 
 <P>
+
+<b>What are all these CVS directories doing in my replacements?</b></p>
+
+<P>
+
+<b>Can I use a program linked to uClibc in the template?</b></p>
+
+<p>
+
+<b>What is make_debian, and how do I use it?</b></p>
+
+
+<p>
+
+<b>How am I able to create root filesystems as a normal user?</b></p>
+
+
+<p>
+
+<b>How can I create boot disks as a normal user?</b></p>
+
+
+<p>
 
 <b>My root filesystem doesn't start in single mode when started like
 this:&nbsp;&nbsp&quot;bootdisk 1?&quot;</b></P>
