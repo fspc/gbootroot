@@ -44,21 +44,29 @@ my $lilo_conf = "/etc/lilo.conf";
 
 # CHANGES
 #
-#       1.0.3b - 08.24.2000 cretzu
-#               * replaced 35 occurences of "$tmp/verbose" with the new
-#                 variable $verbosefn
-#               * some lines contained > 1 rmdir statement separated by ','
-#                 and not ';'; splitted those
-#
-#       1.0.3a - 08.23.2000 cretzu
-#               * corrected bugs in norm_root_device (returned always 'hda1')
-#                 a) now closes LIL
-#                 b) chomps all lines in one go
-#                 c) the 'default' value is just a label, not a dev
-#                 d) sane regexp magic
-#                 e) "there's one more bug(tm)": does not cope with multiple
-#                    root device occurences (which might be present in each
-#                    'image=' block
+#       1.2.2 - 09/03/2000
+#                * Development is now at sourceforge.net/projects/gbootroot.
+#                * Cristian Ionescu-Idbohrn 'cretzu' added as developer 
+#                  08/13/2000.
+#                * Advanced Section GUI added.
+#                * Stripping (new) is now the default behavior.  Stripping 
+#                  options are in AS.
+#                * Cretzu's gdkbirdaao() " Guess Default Kernel Boot Image 
+#                  Root Device And Append Options" is incorporated both in 
+#                  beginner section and AS.
+#                * Cameron Caffee <Cameron_C_Caffee@AtlanticMutual.com> sends
+#                  detailed reports and helps with testing.  This leads to 
+#                  the discovery of the need for stripping, as well as a 
+#                  version check being incorporated into the program.
+#                * Option for additional devices in boot disk added to AS.
+#                * 'Changed' signal replaces 'activate' in entry widgets.
+#                * Hard wired coding changes in initrd_heredoc(); 
+#                  development drive can be different than boot drive;  
+#                  added as an option to AS.
+#                * Step increment changed for device size spinner button.
+#                * New documentation and grammar corrections.
+#                * Bugs closed: 111579, 112555, 112949, 111580, 11636, 12073,
+#                   12215, 13385, 13453, 13455.
 #
 #       1.0.3 - 08.09.2000
 #               * Tmp and mnt are now created on the fly,
