@@ -1460,7 +1460,7 @@ sub kernel_version {
     #info (0, "Kernel setup header version is 0x");
 
 
-	# 2.4.0 kernels are now 0x202 
+	# 2.4.0 kernels now use Start Text 0x202 
 	sprintf("%04x",$str)." (expected 0x201 or 0x202).\n" 
 	    unless ($str == 0x201
 		    || $str == 0x0202);
