@@ -36,7 +36,7 @@ use File::Basename;
 my $item_factory;
 my $true = 1;
 my $false = 0;
-my $error;
+#my $error;
 my ($continue_button,$close_button,$save_button);
 my($check,$dep,$space,$create,$test);
 my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
@@ -227,8 +227,9 @@ my @menu_items = ( { path        => '/File',
 ###### 
 sub yard {
 
+    my $error;
 
-      # Error handling in Yard will take some strategy
+    # Error handling in Yard will take some strategy
     if (!-d $kernel && -f $kernel) {
         $error = kernel_version_check($kernel);  
                                               # Yard: kernel,kernel version
@@ -579,14 +580,14 @@ sub continue {
 
 sub check {
 
-    $error = read_contents_file("$template_dir$template", $tmp);
+    my $error = read_contents_file("$template_dir$template", $tmp);
     return if $error && $error eq "ERROR";
 
 }
 
 sub links_deps {
 
-    $error = extra_links($changed_text);
+    my $error = extra_links($changed_text);
     return if $error && $error eq "ERROR";
 
     $error = hard_links();
@@ -603,7 +604,7 @@ sub space_left {
     $bin_bool = "" if $bin_bool eq 0;
     $mod_bool = "" if $mod_bool eq 0;
 
-    $error = space_check($filesystem_size, 
+    my $error = space_check($filesystem_size, 
               $lib_bool, $bin_bool, $mod_bool,
 		$strip_bool, $tmp);
     return if $error && $error eq "ERROR";
@@ -616,11 +617,11 @@ sub create {
     $bin_bool = "" if $bin_bool eq 0;
     $mod_bool = "" if $mod_bool eq 0;
 
-#    $error = create_filesystem($filename,$filesystem_size,$filesystem_type,
+#    my $error = create_filesystem($filename,$filesystem_size,$filesystem_type,
 #			       $inode_size,$tmp,$lib_bool,$bin_bool,
 #			       $mod_bool,$strip_bool);
 
-    $error = create_filesystem($filename,$filesystem_size,$tmp,$lib_bool,
+    my $error = create_filesystem($filename,$filesystem_size,$tmp,$lib_bool,
 			       $bin_bool,$mod_bool,$strip_bool);
     return if $error && $error eq "ERROR";
 
@@ -672,7 +673,7 @@ sub tests {
 
 sub test { 
 
-    $error = which_tests(\%tests); 
+    my $error = which_tests(\%tests); 
     return if $error && $error eq "ERROR";
 }
 
