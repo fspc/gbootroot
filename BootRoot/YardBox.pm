@@ -25,9 +25,10 @@ package BootRoot::YardBox;
 use vars qw(@ISA @EXPORT %EXPORT_TAGS);
 use Exporter;
 @ISA = qw(Exporter);
-@EXPORT =  qw(yard ars);
+@EXPORT =  qw(yard ars filesystem_size);
 
 use strict;
+use BootRoot::BootRoot;
 use BootRoot::Yard;
 use BootRoot::Error;
 use BootRoot::lsMode;
@@ -43,7 +44,7 @@ my($filename,$filesystem_size,$kernel,$template_dir,$template,$tmp,$mnt);
 my ($text, $changed_text, $changed_text_from_template);
 my $save_as;
 my ($replacements_window, $filesystem_window, $path_window, $tutorial, 
-    $shortcut);
+    $shortcut, $uml_exclusively);
 my ($search_window, $question_window, $offset);
 my $Shortcuts;
 my @entry;
@@ -269,6 +270,51 @@ sub yard {
 ###############
 # File System #
 ###############
+
+my %uml_expect;
+
+# What to do if file_system is never called,
+# Receives values when ARS is opened from BootRoot.
+sub filesystem_size {
+
+	if ( $> == 0 ) {
+	    $uml_expect{uml_exclusively} = 0  if 
+		!$uml_expect{uml_exclusively};
+	    $uml_expect{preserve_permissions} = 1 if 
+		!$uml_expect{preserve_permissions};
+	}
+	else {
+
+	    # When the user opens the filesystem box it is
+	    # assumed that he wants to take over setting the
+	    # check boxes, however, if he closes it, the defaults
+	    # come back to play for uml_exclusively if the size is
+	    # changed, but only if it is greater than 8192.
+	    if ( !$uml_exclusively ) {
+		if ( $filesystem_size > 8192 ) {
+		    $uml_expect{uml_exclusively} = 1;
+		}
+		else {
+		    $uml_expect{uml_exclusively} = 0;
+		}
+	    }
+	    else {
+		if ( $filesystem_size > 8192 ) {
+		    $uml_expect{uml_exclusively} = 1 if 
+			!$uml_expect{uml_exclusively};
+		}
+		else {
+		    $uml_expect{uml_exclusively} = 0 if 
+			!$uml_expect{uml_exclusively};
+		}
+	    }
+
+	    $uml_expect{preserve_permissions} = 0 if
+		!$uml_expect{preserve_permissions};
+	}
+
+} # end fileystem_size
+
 # This allows the user to choose a different filesystem besides ext2.
 # The space_check inode percentage formula can be altered.  Default 2%.
 sub file_system {
@@ -280,6 +326,16 @@ sub file_system {
 					     \$filesystem_window);
 	$filesystem_window->signal_connect("delete_event", \&destroy_window,
 					     \$filesystem_window);
+	$filesystem_window->signal_connect("key_press_event", sub {
+	    my $event = pop @_; 
+	    if ($event->{'keyval'}) {
+		if ($event->{'keyval'} == 65307) {
+		    $filesystem_window->destroy;
+		    undef $offset;
+		}
+	    }
+	},
+	);
 	$filesystem_window->set_policy( $true, $true, $false );
 	$filesystem_window->set_default_size( 300, 90 ); 
 	$filesystem_window->set_title( "Filesystem Box" );
@@ -306,8 +362,25 @@ sub file_system {
 
 	#_______________________________________
 	# UML Exclusively
-	my $uml_exclusively = new Gtk::CheckButton("UML Exclusively");
-	#$uml_exclusively->signal_connect("clicked", \&which_stage, "check"); 
+	#
+	# root = not selected
+	# normal user = forced selected if $fs_size > 8192 otherwise
+	#               not selected.
+	#
+
+	$uml_exclusively = new Gtk::CheckButton("UML Exclusively");
+	$uml_exclusively->active($uml_expect{uml_exclusively});
+	$uml_exclusively->signal_connect("button_press_event", 
+		       sub {  
+			   if ( $uml_exclusively->get_active() == 1 ) {
+			       $uml_expect{uml_exclusively} = 0;
+			   }
+			   else {
+			       $uml_expect{uml_exclusively} = 1;
+
+			   }
+
+		       });
 	$table_filesystem->attach($uml_exclusively,0,1,1,2,['expand'],
 				  ['fill','shrink'],0,0);
 	$uml_exclusively->show;       
@@ -315,11 +388,27 @@ sub file_system {
 
 	#_______________________________________
 	# Preserve Permissions
+	#
+	# root = selected
+	# normal user = not selected
+	#
 	my $preserve_permissions = new 
 	  Gtk::CheckButton("Preserve Permissions");
 	#$uml_exclusively->signal_connect("clicked", \&which_stage, "check"); 
 	$table_filesystem->attach($preserve_permissions,2,3,1,2,['expand'],
 				  ['fill','shrink'],0,0);
+	$preserve_permissions->active($uml_expect{preserve_permissions});
+        $preserve_permissions->signal_connect("button_press_event", 
+                          sub { 
+			      if ( $preserve_permissions->get_active() == 1 ) {
+				  $uml_expect{preserve_permissions} = 0;
+			      }
+			      else {
+				  $uml_expect{preserve_permissions} = 1;
+	    
+			      }
+	
+			  });
 	$preserve_permissions->show;       
 
 
@@ -633,8 +722,8 @@ sub continue {
 
 sub check {
 
-    my $error = read_contents_file("$template_dir$template", $tmp,
-				   $filesystem_size);
+    my $error = read_contents_file( "$template_dir$template", $tmp,
+				    $filesystem_size );
     return if $error && $error eq "ERROR";
 
 }
@@ -705,7 +794,7 @@ sub create {
 #			       $mod_bool,$strip_bool);
 
     my $error = create_filesystem($filename,$filesystem_size,$tmp,$lib_bool,
-			       $bin_bool,$mod_bool,$strip_bool);
+			       $bin_bool,$mod_bool,$strip_bool, \%uml_expect);
     return if $error && $error eq "ERROR";
 
 }
@@ -885,6 +974,9 @@ sub yard_box {
     $table->set_col_spacing( 0, 2 );
     $vbox->pack_start( $table, $true, $true, 0 );
     $table->show( );
+
+    # This is necessary because the symbols are dependent on %ars for now.
+    ##filesystem_size();
     
     #_______________________________________ 
     # Manipulate Gtk::ItemFactory - 
@@ -2268,15 +2360,3 @@ sub file_ok_sel {
 
 
 1;
-
-
-
-
-
-
-
-
-
-
-
-

@@ -3837,7 +3837,7 @@ sub mtab_window {
 
 } # end sub mtab_window
 
-sub mtab{
+sub mtab {
 
 # /proc/mount could be used, but maybe there is no /proc
 # Press OK when drive and storage medium are ready.  The drive should not
