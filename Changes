@@ -1,0 +1,301 @@
+1.3.0 - 12/07/2001
+------------------
+
+Improved the sizing of the UML box.
+
+Added New Template (Alt-N) capability to the Yard Box.
+
+Added several new FAQ questions,  added a lot more information on
+"How do I use gBootRoot?"  Updated the graphics for the documentation.
+
+Updated to version 2.4.14 of user-mode-linux.  Note: 2.4.15 was buggy
+in respect to rebooting, and produced an address number at login, it appears 
+to be a bad compile. 
+
+The Yard Box has new check buttons which allows the parsing behavior of
+the nss and pam configuration files to be turned off and on (default). 
+
+Pam.conf and pam.d/{service names or *} can now be checked for their
+specified service modules.  The service modules are located either in
+/lib/security or /usr/lib/security and included with the file set if they 
+are found on the host system.  The modules are then checked for their 
+dependencies which are included if they haven't previously been specified.
+Therefore, the user no longer needs to specify pam modules and dependencies 
+in the template if the pam parsing option in turned on.
+ 
+Nsswitch.conf can now be checked for the service modules it specifies.  The
+service modules pertaining to the host systems libc6 are located and 
+automatically included.  The modules are then checked for their 
+dependencies which are included if they haven't previously been specified.
+Therefore, the user no longer needs to specify nss modules and dependencies 
+in the template if the pam parsing option in turned on.
+
+$ENV{RELEASE} is now initialized every time a check is run on the template.
+Information can come from three sources, the kernel version returned from
+a selected kernel in the main section, the user defined kernel version
+in the ABS, or `uname -r`.  User defined kernel version overrides the kernel.
+The root_fs needs to be built in relation to the actual kernel modules 
+it will run on.  Previously the $RELEASE value wasn't returned properly
+because of some bugs in kernel_version_check.  This has been fixed. 
+
+The proper ldd check is now used if a dynamically linked binary is detected
+to require uClibc rather than libc6.  The ldd from the default location of 
+/usr/i386-linux-uclibc/bin is used for uClibc.  The old behavior of
+automatically including the default loader for the host system has 
+been removed.
+
+Fixed pam test so that the 3rd field rather than the 4th field is being 
+checked in the service-name files found in /etc/pam.d/.  The 4th field is 
+acceptable for pam.conf.  If a path is specified in either conf format, 
+that path will be checked, otherwise, either the pam default path of 
+/usr/lib/security or the FSSTD location /lib/security will be checked 
+for a match.
+
+Fixed nss test so that it checks for the right libnss_(service).so.$version 
+if glibc 2.2 is used.  Glibc 2.0 and 2.1 used 1 and 2 respectively, but 2.2
+uses 2.
+
+Experimental busybox and uClibc functionality included for boot_fs.
+
+Many improvements to the verbosity output.
+
+Replacements path is set just once.
+
+The Path Box only allowed extra paths to be added before the first generation 
+of a root_fs creation, this was because the values weren't allowed to be 
+changed after they were defined.  This has been fixed.
+
+Symlinks have been vastly improved.  Fictional or real links can now be 
+specified, and links always follow the link -> (file | directory ) format 
+where either side can be existing dirs/files or fictional dirs/files on the 
+system.
+
+All of Tom's templates have been replaced with new templates clearly
+marked as Examples.  
+
+Example.yard takes advantage of the automated NSS and PAM feature, and can 
+create a devfs or nondevfs root filesystem, and has many new replacements.  
+The inittabs reflect modern versions of dpkg, rpm, and slackware based 
+distributions.  
+
+Example-Mini.yard demonstrates the bare minimum required to create a
+working root_fs.  
+
+The documentation in the new templates has been improved 
+to respect the way gbootroot's Yard now works, since it has been greatly 
+modified from the original, and some old features deemed unnecessary have
+been removed.  
+
+The Debian.yard example has had a name change to Example-Debian.yard,
+and has additional documentation so the user understands its prerequisites.
+The FAQ covers make_debian usage.
+
+Chrooted tests in the Yard Box are disabled and removed when a non-root 
+user runs the box. 
+
+ARS and YardBox error handling is much better because $error has been made
+private, before it was mostly global in YardBox.pm which meant an error 
+value remained ERROR even when the problem was fixed which caused the 
+YardBox to fail to work properly after certain errors.
+
+When the ARS hadn't been opened yet, the program reported that the root 
+device hadn't been umounted yet, this was observed with genext2fs but was
+certainly a global bug.  This has been fixed.
+
+The majority of add-on replacements except for passwd*, shadow, and 
+ld.so.conf have $Id$ and "make_debian replacement".  
+
+Original CVS information is now preserved so
+that non-root users and root can't edit global replacements, the basic idea 
+is that root will usually be using an editor like Emacs in 
+$HOME/.gbootroot/yard/Replacements which respects that CVS versioned files 
+outside of the repository are read-only (essentially because the date has 
+changed).  Users should make copies of versioned replacements which they 
+want to edit, for instance: fstab.debian-1000  Also, they shouldn't defeat
+the mechanism by removing the CVS directories, although, only root has
+write permissions. 
+
+All replacements are now symlinks which is helpful to maintain static 
+information for add-ons, anotherwards, this allows the author to know that 
+all his replacements are updated in user workspaces when he releases a new 
+add-on.  Because of this change symlinks will now be respected in the 
+Replacements directory since the file being pointed to will be used instead 
+of the actual link when constructing the root filesystem.
+
+Non-root users may now create boot disks.  Boot Loaders may required root 
+permissions for some methods, and the fstab may need to be edited, see FAQ.  
+And some /lib/modules/`uname -r`/modules  may need to be given world read 
+permissions.
+
+Non-root users may now create root filesystems up to 8192k in size using
+genext2fs.  FAQ explains how to exceed this limit as a normal user.
+
+Added sources.list replacement.
+
+Added /swapfile to fstab.debian.
+
+1.2.14 - 10/24/2001
+-------------------
+
+Append field in the ABS now saves state for non-root users.  Before it only
+remembered state if lilo.conf could actually be read, ofcourse, this wasn't
+an option for non-root users.  The beginnings of non-root boot and root_fs
+creation capabilities have been put into place, but haven't been fully
+implemented.  The end result of this is that directories created in
+$tmp are now static for non-root users and now use the userid number to 
+keep track of different non-root users.
+
+The author of swim came out with a new version he now calls dswim.  This
+means Debian System Wide Information Manager, but the "d" could also stand 
+for different.  Changes have been made to make_debian to facilitate this 
+much more stable version of swim, and better non-installed package checks 
+have been implemented in make_debian.
+
+The control dependencies have been vastly improved, and reflect the change
+from swim to dswim.  Yard_chrooted_tests is now put in a gbootroot specific
+directory since it is unique to gbootroot.
+
+The lastest user-mode-linux is included: 2.4.12
+
+Updated the documentation, and it includes a better explanation in step 7
+for "How can I test gBootRoot?"
+
+Added checks for the existence of ash, lilo, bzip2, and file for the 2 
+disk compression method.
+
+1.2.13 - 09/28/2001
+-------------------
+ 
+Renamed "lilo" Boot method to "2 disk compression." 
+
+Added three new entry fields and one radio button to manage
+ kernel modules, and made important changes to the 2 disk 
+ compression code.
+
+Advanced Section is now Advanced Boot Section (ABS).
+
+Properly handles two different block devices with two 
+ different sizes.  Tested on /dev/fd?.
+
+Advanced Root Section (ARS) added. Includes root device and
+size, root filesystem name with Save or Save As, filesystem
+size, gzip/bzip2/none compression, user-mode-linux kernel
+selection, Root Method and optional associated Template.
+
+Yard Incorporation Tasks closed: 19556, 22668, 22496.
+
+Yard Method added to ARS which generates the new well
+featured Yard Box.
+
+Yard Box includes alterable staging behavior for root
+filesystem creation, template text search, adjustable
+stripping behavior, editable filesystem and replacements,
+$PATH appending, testing choices, Save and Save As.    
+
+Seamlessly integrated Verbosity Box and slider bar
+to control the verbosity level added to the main box.
+
+Several bug fixes and enhancements to the original Yard 
+scripts, including a choice of stripping features for
+libraries, binaries, modules with corresponding sizing
+checks, link -> file is now literal, unneccessary situations
+for ../ x path_length removed, testing improvements.
+
+Localized directories provided for users under 
+$HOME/.gbootroot
+
+Wrote make_debian to automate the creation of a Debian
+template for the Yard Method.  This spawned the 
+make-debian-x11 add-on which is simply the make_debian
+script with easily made user modifications.
+
+UML button added to ARS.  UML (user-mode-linux) Box
+provides a testing bed for root filesystems.  Previous
+Options are remembered to save typing, Abort button 
+provides excellent process clean-up.       
+
+Wrote an automated package creation script which can
+be modified for other packages.  This script can be found
+in CVS.
+
+Added user definable resources file "gbootrootrc" for Gtk.
+
+Bugs closed: 422436, 225252
+
+
+1.2.2 - 09/03/2000
+------------------
+
+Development is now at sourceforge.net/projects/gbootroot.
+
+Cristian Ionescu-Idbohrn 'cretzu' added as developer 
+08/13/2000.
+
+Advanced Section GUI added.
+
+Stripping (new) is now the default behavior.  Stripping 
+options are in AS.
+
+Cretzu's gdkbirdaao() " Guess Default Kernel Boot Image 
+Root Device And Append Options" is incorporated both in 
+beginner section and AS.
+
+Cameron Caffee <Cameron_C_Caffee@AtlanticMutual.com> sends
+detailed reports and helps with testing.  This leads to 
+the discovery of the need for stripping, as well as a 
+version check being incorporated into the program.
+
+Option for additional devices in boot disk added to AS.
+
+'Changed' signal replaces 'activate' in entry widgets.
+
+Hard wired coding changes in initrd_heredoc(); 
+development drive can be different than boot drive;  
+added as an option to AS.
+
+Step increment changed for device size spinner button.
+
+New documentation and grammar corrections.
+
+Bugs closed: 111579, 112555, 112949, 111580, 11636, 12073,
+12215, 13385, 13453, 13455.
+
+
+1.0.3 - 08.09.2000
+------------------
+
+Tmp and mnt are now created on the fly,
+along with a new error function for mkdir(),
+Gtk clean-up for this, and clean-up by signal handler
+which should please Perlish and helpful Cristian.
+
+
+1.0.2 - 08.06.2000
+------------------
+
+Changed logic slightly in submit() with returns rather
+than a scalar to resolve a minor bug caused by some
+changes in the previous version.
+
+
+1.0.1 - 08.05.2000
+------------------
+
+Zas provided a correction for a Perl 5.6 error complaint.
+
+Zas found some unecessary GDK lines causing some Gtk
+warnings; these were commented out.
+
+Cristian Ionescu-Idbohrn found a bug caused by putting
+the Kernel or RootImage below the mount point.  An error
+check and error dialog were added.
+
+
+1.0.0 - 08.02.2000
+------------------
+
+First public release
+
+
+
+
