@@ -18,6 +18,10 @@ install:
 	cp -fa gbootrootrc $(DESTDIR)/etc/gbootroot/gbootrootrc
 	install -d $(DESTDIR)/usr/X11R6/include/X11/pixmaps
 	cp -fa gbootroot.xpm $(DESTDIR)/usr/X11R6/include/X11/pixmaps/gbootroot.xpm
+	install -d $(DESTDIR)/usr/share/doc/gbootroot/html/images	
+	cp -fa doc/html/*html $(DESTDIR)/usr/share/doc/gbootroot/html
+	cp -fa doc/html/images/* $(DESTDIR)/usr/share/doc/gbootroot/html/images
+
 
 remove:
 	rm /usr/bin/gbootroot
@@ -30,5 +34,6 @@ remove:
 	rm /usr/bin/linux
 	rm /etc/gbootroot/gbootrootrc
 	rmdir /etc/gbootroot
-
+	rm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm
+	rm -rf /usr/share/doc/gbootroot
 

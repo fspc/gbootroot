@@ -14,13 +14,16 @@ install:
 	rm yard/replacements/dev/ubd0
 	install -d /usr/share/gbootroot/yard/templates
 	chmod 444 yard/templates/*.yard
-	cp -fa yard/templates/*.yard /usr/share/gbootroot/yard/templates	
+	cp -fa yard/templates/*.yard /usr/share/gbootroot/yard/templates
 	cp -fa user-mode-linux/usr/bin/uml_* /usr/bin
 	cp -fa user-mode-linux/usr/bin/linux /usr/bin/linux
 	install -d /etc/gbootroot
 	cp -fa gbootrootrc /etc/gbootroot/gbootrootrc
 	install -d /usr/X11R6/include/X11/pixmaps
 	cp -fa gbootroot.xpm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm
+	install -d /usr/share/doc/gbootroot/html/images
+	cp -fa doc/html/*html /usr/share/doc/gbootroot/html
+	cp -fa doc/html/images/* /usr/share/doc/gbootroot/html/images
 
 remove:
 	rm /usr/bin/gbootroot
@@ -33,5 +36,6 @@ remove:
 	rm /usr/bin/linux
 	rm /etc/gbootroot/gbootrootrc
 	rmdir /etc/gbootroot
-
+	rm /usr/X11R6/include/X11/pixmaps/gbootroot.xpm
+	rm -rf /usr/share/doc/gbootroot
 
