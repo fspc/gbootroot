@@ -5,10 +5,7 @@
 #  Tested on Debian unstable/testing,  but should work on other distributions 
 #  (Mandrake,  RedHat, etc.) by using the proper inittab (edit) and getty.
 # 
-#  Create either as a normal user or root.  [ When using genext2fs it's
-#  necessary to specify a root filesystem slightly larger than the actual 
-#  size shown in Space Left because genext2fs uses different accounting 
-#  information than mke2fs. ] ?
+#  Create either as a normal user or root.
 #
 #  Works both with and without devfs, i.e devfs=nomount, assuming the correct
 #  replacement inittab is used.
@@ -166,8 +163,8 @@ telinit
 # Choose the *-nodevfs version if you don't want to use the device fs (devfs=nomount)
 #
 #===== DEBIAN uses a program called "getty" which is actually agetty in disguise:
-#/etc/inittab	<= Replacements/etc/inittab.example-deb
-/etc/inittab	<= Replacements/etc/inittab.example-deb-nodevfs
+/etc/inittab	<= Replacements/etc/inittab.example-deb
+#/etc/inittab	<= Replacements/etc/inittab.example-deb-nodevfs
 /sbin/getty
 #
 #===== MANDRAKE uses mingetty
