@@ -35,7 +35,7 @@ use Exporter;
 @ISA = qw(Exporter);
 @EXPORT =  qw(start_logging_output info kernel_version_check verbosity 
               read_contents_file extra_links library_dependencies hard_links 
-              space_check create_filesystem find_file_in_path sys 
+              space_check create_filesystem find_file_in_path sys device_table 
               text_insert error logadj *LOGFILE which_tests create_fstab);
 
 use strict;
@@ -198,35 +198,45 @@ sub read_contents_file {
 		  
 		  ,x ) {
 
-	      my $expr;
-	      my @line;	      
+	      my ($expr, $tmp_line);
 	      for $expr (split(' ', $line)) {
-		  if (  m,^/dev$|^/dev/, ) {
+		  if (  $expr && $expr =~ m,^/dev$|^/dev/, ) {
+
+		      # Do something here		      
+		      my(@globbed) = yard_glob($expr);
+		      if ($#globbed == -1) {
+			  cf_warn($contents_file, $expr, 
+				  "Warning: No files matched $expr");
+		      } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
+			  info(1, "Expanding $expr to @globbed\n");
+		      }
 		      
-		      # Do something here
+		      # make device table
+		      device_table(@globbed);
 
 		  }
 		  else {
-		      push(@line,$expr);		      
+
+		      if ( $tmp_line ) {
+			  $tmp_line  = $tmp_line . " $expr";
+		      }
+		      else {
+			  $tmp_line = $expr;
+		      }
+		      
 		  }
+		  
+	      }
 
+	      if ( $tmp_line ) {
+		  $line = $tmp_line;
+		  info(0,"D $line\n");
+	      }
+	      else {
+		  next LINE;
 	      }
 
 	  }
-
-=pod
-	  my($expr);
-	  for $expr (split(' ', $line)) {
-	      my(@globbed) = yard_glob($expr);
-	      if ($#globbed == -1) {
-		  cf_warn($contents_file, $expr, 
-			  "Warning: No files matched $expr");
-	      } elsif (!($#globbed == 0 and $globbed[0] eq $expr)) {
-		  info(1, "Expanding $expr to @globbed\n");
-	      }
-	      push(@files, @globbed);
-	  }
-=cut
 
       }
 
@@ -1669,6 +1679,14 @@ sub yard_glob {
 
 } # end yard_glob
 
+# build device table for genext2fs
+sub device_table {
+
+
+
+
+
+} # end sub device_table
 
 sub mount_device {
     
