@@ -1,3 +1,14 @@
+Updated to 2.4.18-2um and the latest uml tools 20020212, including tunctl from
+CVS, because it was missing from the uml_utilities tar.bz2.  This is a nice
+patch, and an earlier compilier issue has disappeared.
+
+Added the MTD Emulation section to the UML Box.  This allows filesystems to
+be run on a simulated Memory Technology Device via mtdram or blkmtd.  This
+is most useful for running jffs2 fs (compressed journaling fs designed for
+flash memory).  This is handy for shipping and running jffs2 images, and to
+test this and other fs ultimately designated for a MTD device.  With a little 
+tweaking they should run well on an x86 MTD.
+
 If a fs is being made with mkcramfs, genromfs, mkfs.jffs or mkfs.jffs2 and
 the directories /dev or /initrd don't exist, they are automatically are
 created during the create stage.  Initrd dir is needed for mtd emulation 
