@@ -1,4 +1,4 @@
-# $Id: Example-EmptyFS.yard,v 1.1 2002/03/10 21:07:03 freesource Exp $
+# $Id: Example-EmptyFS.yard,v 1.2 2002/03/11 02:40:17 freesource Exp $
 # Example-EmptyFS.yard
 
 # The recommended way for creating empty filesystems is to run gbootroot as
@@ -8,7 +8,7 @@
 #
 # If you just created a filesytem with stuff in it, you will want to choose
 # the check stage along with the create state or you can take a look at 
-# /tmp/gboot_non_root_`ud -u`/loopback, if there is stuff in it you can just 
+# /tmp/gboot_non_root_`ud -u`/loopback.  If there is stuff in there you can just 
 # delete it by hand, and then proceed with the create stage.
 #
 # Notes: jffs/jffs2, cramfs, and romfs filesystems always have the /initrd and 
