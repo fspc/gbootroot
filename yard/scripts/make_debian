@@ -61,6 +61,7 @@ perl perl-modules libwrap0 ipchains whiptail libnewt0 libpopt0 debconf-utils);
 # Before starting make sure dswim and file-rc are present.
 start_up();
 
+print STDERR "Required packages:\n";
 system "swim --search \"Priority: required\" --no";
 my $swim_packages = "swim -qS|";
 my $swim_list = "swim -qSl|"; # Not using --df for empty directories.

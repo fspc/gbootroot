@@ -67,7 +67,7 @@ flwm libfltk1 xnest make-debian-x11 ash);
 # Before starting make sure dswim and file-rc are present.
 start_up();
 
-print STDERR "Required packages found:\n";
+print STDERR "Required packages:\n";
 system "swim --search \"Priority: required\" --no";
 my $swim_packages = "swim -qS|";
 my $swim_list = "swim -qSl|"; # Not using --df for empty directories.
