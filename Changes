@@ -2,9 +2,9 @@
 ------------------
 
 Updated linux and modules to 2.4.17-4um.  Made jffs and jffs2 part of the 
-kernel, and had to comment out the get_mtd_device function in jffs_fm.c and
-super.c to accomplish this.  Looking forward to more support from the uml 
-project for mtd devices
+kernel, and had to comment out the get_mtd_device function call in jffs_fm.c 
+and super.c to accomplish this.  Looking forward to more support from the uml 
+project for mtd devices.
 
 Updated to the 20020104 uml tools, this includes port-helper which is the new 
 helper for allowing uml devices to be attached to a specified host port.
