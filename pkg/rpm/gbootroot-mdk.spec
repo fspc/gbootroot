@@ -91,7 +91,10 @@ as mdk.
 %prep
 %setup -n gbootroot-%{version}
 #chown -R root:root .
-if [ ! -e /tmp/gbootroot ] ; then
+if [ -e /tmp/gbootroot ] ; then
+    rm -rf /tmp/gbootroot;
+    mkdir /tmp/gbootroot;
+elif [ ! -e /tmp/gbootroot ] ; then
     mkdir /tmp/gbootroot;
 fi;
 install -d $HOME/gbootroot/RPMS/i386

@@ -415,9 +415,6 @@ if ( $ARGV[0] eq "both" || $ARGV[0] eq "rpm" ) {
 
         "/usr/share/doc-base/gbootroot\n", 1,
         "/usr/lib/menu/gbootroot\n", 1, 
-        "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Root\n", 1, 
-        "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Repository\n", 1, 
-        "/usr/lib/bootroot/yard/Replacements/lib/modules/CVS/Entries\n", 1, 
         "/usr/share/doc/gbootroot/Changes.gz\n", 1, 
         "/usr/share/doc/gbootroot/copyright\n", 1, 
         "/usr/share/doc/gbootroot/changelog.Debian.gz\n", 1,
