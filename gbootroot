@@ -118,6 +118,7 @@ $main::makefs = "mke2fs -F -m0 -i8192";
 #                * Wrote an automated package creation script which can
 #                  be modified for other packages.  This script can be found
 #                  in CVS.
+#                * Added user definable resources file "gbootrootrc" for Gtk.
 #                * Bugs closed: 422436, 225252
 #
 #       1.2.2 - 09/03/2000
