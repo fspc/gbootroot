@@ -262,15 +262,10 @@ BEGIN {
 
 use strict;
 use BootRoot::BootRoot;
-#use BootRoot::Options;
-#use Getopt::Long;
 
 $main::editor = "emacs --font 6x13";
 $main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
 $main::sudo = "sudo";
-
-#print $option{"stdout"};
-#print %option;
 
 start();
 
@@ -283,13 +278,3 @@ if ( !%option ) {
  
     }
 }
-
-
-
-
-
-
-
-
-
-
