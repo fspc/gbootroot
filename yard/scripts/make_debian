@@ -123,8 +123,8 @@ sub status_info {
 $/ = "";
 open(STATUS,"$status") or die "Can't find /var/lib/dpkg/status: $!\n";
 home_builder("$home_yard_replacements/var/lib/dpkg");
-system "touch $home_yard_replacements/var/lib/dpkg/available"
-    or die "Couldn't create Replacements/var/lib/dpkg/available: $!\n";
+system "touch $home_yard_replacements/var/lib/dpkg/available";
+    #or die "Couldn't create Replacements/var/lib/dpkg/available: $!\n";
 open(NEW_STATUS,">$home_yard_replacements/var/lib/dpkg/status")
     or die "Couldn't open $home_yard_replacements/var/lib/dpkg/status: $!\n";
 while (<STATUS>) { # keep the order
