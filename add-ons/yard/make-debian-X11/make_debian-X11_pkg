@@ -181,58 +181,6 @@ foreach (@changelog) {
     }
 }
 
-# Ask some questions first.
-if (!$stop) {
-    print "\nWrite what you want to be put in the changelog, and I'll\n" .
-	"prettify everything.  End with a newline and .\n";
-    print "  * ";
-    my $save_doc;
-    $save_doc = "  * ";
-    $count = 0;
-    my $mc = 0;
-    while (<STDIN>) {
-	my $doc_reply = $_;
-	if ($doc_reply ne "\n") {
-	    print "    ";
-	    $doc_reply = "$doc_reply" if $count != 0 && $mc == 1;
-	    $doc_reply = "    $doc_reply" if $count != 0 && $mc != 1;
-	    $mc = 0;
-	}
-	else {
-	    print "  * ";
-	    if ( $count != 0 && $doc_reply eq "\n" ) {
-		$mc = 0;
-		$doc_reply = "\n  * "; 
-		$mc++;
-	    }
-	    $doc_reply = "$doc_reply" if $count != 0 && $mc == 1;
-	    $doc_reply = "    $doc_reply" if $count != 0 && $mc != 1;
-	}
-	last if $doc_reply =~ /^\s*\.\s*$/;
-	if ($doc_reply) {
-	    $save_doc = $save_doc . $doc_reply;
-	}
-	$count++;	
-
-    }
-
-
-    # We need to print at the top.
-    open(CHANGELOG,">$packaging_defaults/changelog") 
-	or die "Couldn't open check: $!\n";
-    print CHANGELOG "$prog ($version-$revision) $dist; urgency=$urgency\n\n";
-    print CHANGELOG "$save_doc\n";
-    print CHANGELOG " -- $name <$email>  " . `822-date`;
-    print CHANGELOG "\n";
-    print CHANGELOG @changelog;
-    close(CHANGELOG);
-    print "\n";
-
-system "chown $real_uid $packaging_defaults/changelog";
-system "chgrp $real_gid $packaging_defaults/changelog";
-
-} # end if !$stop
-
 # Set-up the copyright
 open(COPYRIGHT,">$packaging_defaults/copyright") 
     or die "Couldn't open up $packaging_defaults/copyright: $!\n";
@@ -247,9 +195,52 @@ system "chown $real_uid $packaging_defaults/copyright";
 system "chgrp $real_gid $packaging_defaults/copyright";
 
 system "rm $packaging_place/debian/*";
+system "chown $real_uid:$real_gid $packaging_defaults/changelog";
 system "cp -fa $packaging_defaults/* $packaging_place/debian";
 
+
 chdir($packaging_place);
+
+# Using dch for the changelog .. very convenient and debian proper.
+if (!$stop) {
+
+    $ENV{MAIL} = $email;
+    $ENV{DEBFULLNAME} = $name;
+
+    system "chown $real_uid:$real_gid $packaging_place/debian/changelog";
+
+    $/ = ""; 
+    open(CHANGES, "$gbootroot_cvs/Changes") 
+	or die "Couldn't open $gbootroot_cvs/Changes: $!\n"; 
+
+    my $change_watch = 0;
+    while (<CHANGES>) { 
+	if (!m,^-+$,m ) { 
+	    last if $what == 2;  
+	    $_  =~ s/\n/ /gm; 
+	    if ( $change_watch == 0 ) {
+		system "dch", "--newversion", "$version-$revision", "$_"; 
+	    }
+	    else {		
+		system "dch",  "$_";
+	    }
+	    $change_watch++;
+	}  
+	
+	else { 
+	    $what++; 
+	}
+    }
+    close(CHANGES);
+
+    $/ = "\n";
+
+    system "cp -a $packaging_place/debian/changelog $packaging_defaults";
+
+
+} # end if !$stop
+
+
 system "debuild";
 
 sub home_builder {
