@@ -121,8 +121,9 @@ my $home_uml_kernel = "$home/uml_kernel/";
 my $home_yard = "$home/yard";
 my $template_dir = "$home_yard/templates/";
 my $home_yard_replacements = "$home_yard/replacements";
-my $global_yard_replacements = "/usr/share/gbootroot/yard/replacements";
-my $global_yard_templates = "/usr/share/gbootroot/yard/templates";
+$main::global_yard = "/usr/share/gbootroot/yard";
+my $global_yard_replacements = "$main::global_yard/replacements";
+my $global_yard_templates = "$main::global_yard/templates";
 
 my $initrd;
 my $compress;
