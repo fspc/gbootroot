@@ -1122,7 +1122,9 @@ sub space_check {
 ########################
 
 # This is really copy for normal users, uml_exclusively, and genext2fs
-# since everything goes into a source directory.
+# since everything goes into a source directory.  I've also moved dd
+# to create_expect_uml which is really create for uml_exclusively.
+# fs creation on loopback devices occurs ..
 sub create_filesystem {
 
     my ($filename, $fs_size, $mnt, $strip_lib, 
@@ -1144,7 +1146,7 @@ sub create_filesystem {
     # normal user as ubd1, then a <=8192 root_fs created by the
     # user can be booted as ubd0, and the ubd1 is given a filesystem,  
     # after which everything is copied over from loopback to
-    # the new mounted filesystem ubd1.  I'll automate this in the future.
+    # the new mounted filesystem ubd1.
     # --freesource
 
 
@@ -1160,22 +1162,23 @@ sub create_filesystem {
 
 
     # Allow smaller than 8192 if exclusive.
-    if ( $uml_exclusively == 1 ) {
+##    if ( $uml_exclusively == 1 ) {
+##	sync();
+##	info(1,"dd if=/dev/zero of=$device bs=1k count=$fs_size\n");
+##	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
+##	sync();
+##   }
+##    elsif ( $> != 0 && $fs_size > 8192 && $fs_type eq "genext2fs" ) {
+##	sync();
+##	info(1,"dd if=/dev/zero of=$device bs=1k count=$fs_size\n");
+##	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
+##	sync();
+##   }
+    if ( $fs_type ne "genext2fs" && $uml_exclusively != 1) {
 	sync();
-	info(1,"dd if=/dev/zero of=$device bs=1k count=$fs_size\n");
-	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
-	sync();
-    }
-    elsif ( $> != 0 && $fs_size > 8192 && $fs_type eq "genext2fs" ) {
-	sync();
-	info(1,"dd if=/dev/zero of=$device bs=1k count=$fs_size\n");
-	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
-	sync();
-    }
-    elsif ( $fs_type ne "genext2fs" ) {
-	sync();
-	info(1,"dd if=/dev/zero of=$device bs=1k count=$fs_size\n");
-	sys("dd if=/dev/zero of=$device bs=1k count=$fs_size");
+	info(0,"Making sparse file for loopback at $device\n");
+	info(1,"dd if=/dev/zero of=$device bs=1k count=1 seek=$fs_size\n");
+	sys("dd if=/dev/zero of=$device bs=1k count=1 seek=$fs_size");
 	sync();
     }
 
@@ -1408,7 +1411,7 @@ sub create_filesystem {
 # For root loop devices this will just ldconfig and umount.
 sub create_expect_uml {
 
-    my ($fs_size, $mnt) = @_;
+    my ($fs_size, $mnt, $filename) = @_;
 
     my $fs_type = (split(/\s/,$main::makefs))[0];
     my $error;
@@ -1435,6 +1438,25 @@ sub create_expect_uml {
 
     if ( $uml_exclusively == 0 ) {
 	info(0, "\nFinished creating root filesystem.\n");
+    }
+
+
+    # From this point things have failed for a normal user
+    # in the previous function if they tried to create a fs > 8192 using
+    # genext2fs or something else.  Now uml_exclusively comes to the rescue,
+    # or genext2fs which doesn't require a dd image for ubd/0.
+
+    if (  basename($mount_point) ne "loopback" ) {
+	$mount_point = "$mnt/loopback";
+    }
+
+    if ( $uml_exclusively == 1 ) {
+	$device = "$mnt/$filename";
+	sync();
+	info(0,"Making sparse file for /dev/ubd/0 at $device\n");
+	info(1,"dd if=/dev/zero of=$device bs=1k count=1 seek=$fs_size\n");
+	sys("dd if=/dev/zero of=$device bs=1k count=1 seek=$fs_size");
+	sync();
     }
 
 
@@ -1480,7 +1502,7 @@ sub create_expect_uml {
 	    info(0,"$command_line\n\n");
 
 	    # add error correction
-	    # I'll allow the GUI to lock-xup for big copies and fs creation.
+	    # I'll allow the GUI to lock-up for big copies and fs creation.
 	    open(EXPECT,"$command_line|");
 	    while (<EXPECT>) {
 		info(1,"$x_count  $_");
@@ -1488,6 +1510,7 @@ sub create_expect_uml {
 		while (Gtk->events_pending) { Gtk->main_iteration; }
 	    }
 
+	    # This will just keep appending, but that's o.k.
 
 	    if ( $fs_type eq "mkcramfs" || $fs_type eq "genromfs" ||
 		 $fs_type eq "mkfs.jffs" || $fs_type eq "mkfs.jffs2") {

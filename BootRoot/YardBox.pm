@@ -902,7 +902,7 @@ sub create {
 
 sub create_uml {
 
-    create_expect_uml($filesystem_size, $tmp);
+    create_expect_uml($filesystem_size, $tmp, $filename);
 
 
 }

@@ -1,4 +1,12 @@
 
+Now files for uml_exclusively are made in create_expect_uml which is
+effectively known as the create stage.  This avoids the unecessary previous 
+requirement of having to select the copy stage again just to create a file
+for /dev/ubd/0.  The file created is sparse, got this idea from a discussion 
+Jeff had with a user on uml-user.
+
+Made dd create sparse files.
+
 Added jffs/jffs2 image construction.
 
 1.3.5 - 02/13/2002
