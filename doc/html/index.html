@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.115 2003/02/11 07:50:08 freesource Exp $</center>
+<center>$Id: index.html,v 1.116 2003/02/12 00:33:42 freesource Exp $</center>
 
 <p>
 
@@ -1749,10 +1749,7 @@ Usage: gbootroot [OPTION]...
     ---------
 
     \
-    if ( getty )
-	 /etc/inittab	<= Replacements/etc/inittab.example-deb
-	 /sbin/getty
-    elsif ( mingetty )
+    if ( mingetty )
 	 /etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm
 	 /sbin/mingetty
 	 /etc/gettydefs
@@ -1760,6 +1757,9 @@ Usage: gbootroot [OPTION]...
 	 /etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
 	 /sbin/agetty
 	 /etc/gettydefs
+    elsif ( getty )
+	 /etc/inittab	<= Replacements/etc/inittab.example-deb
+	 /sbin/getty
     \ 
 
     Example 2

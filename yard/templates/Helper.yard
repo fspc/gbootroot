@@ -1,4 +1,4 @@
-# $Id: Helper.yard,v 1.4 2003/02/11 03:17:28 freesource Exp $
+# $Id: Helper.yard,v 1.5 2003/02/11 18:33:30 freesource Exp $
 #  Helper.yard
 #
 #############################################################################
@@ -99,31 +99,33 @@ telinit
 # Choose the *-nodevfs version if you don't want to use the device fs 
 # (devfs=nomount)
 #
-#===== DEBIAN uses a program called "getty" which is actually agetty in 
-#===== disguise:
-
-\
-if ( getty )
-	/etc/inittab	<= Replacements/etc/inittab.example-helper
-	/sbin/getty
-
-#
 #===== MANDRAKE, REDHAT  and many other modern RH based DISTS use mingetty:
 
-elsif ( mingetty )
+\
+if ( mingetty )
 
-	/etc/inittab	<= Replacements/etc/inittab.example-mingetty-helper
+	/etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm
+	#/etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm-nodevfs
 	/sbin/mingetty
 	/etc/gettydefs
-
 #
 #===== SLACKWARE uses agetty:
 
 elsif ( agetty )
 
-	/etc/inittab	<= Replacements/etc/inittab.example-agetty-helper
+	/etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
+	#/etc/inittab	<= Replacements/etc/inittab.example.agetty-slack-nodevfs
 	/sbin/agetty
 	/etc/gettydefs
+#
+#===== DEBIAN uses a program called "getty" which is actually agetty in 
+#===== disguise:
+
+elsif ( getty )
+
+	/etc/inittab	<= Replacements/etc/inittab.example-deb
+	#/etc/inittab	<= Replacements/etc/inittab.example-deb-nodevfs
+	/sbin/getty
 \
 
 

@@ -1,4 +1,4 @@
-#  $Id: Example-Mini.yard,v 1.4 2003/02/07 19:07:08 freesource Exp $
+#  $Id: Example-Mini.yard,v 1.5 2003/02/07 19:12:30 freesource Exp $
 #  Example-Mini.yard
 #
 #  Creates a minimalistic S runlevel root filesystem with not much more than 
@@ -72,10 +72,7 @@
 #    ---------
 #
 #    \
-#    if ( getty )
-#	 /etc/inittab	<= Replacements/etc/inittab.example-deb
-#	 /sbin/getty
-#    elsif ( mingetty )
+#    if ( mingetty )
 #	 /etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm
 #	 /sbin/mingetty
 #	 /etc/gettydefs
@@ -83,6 +80,9 @@
 #	 /etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
 #	 /sbin/agetty
 #	 /etc/gettydefs
+#    elsif ( getty )
+#	 /etc/inittab	<= Replacements/etc/inittab.example-deb
+#	 /sbin/getty
 #    \ 
 #
 #    Example 2
