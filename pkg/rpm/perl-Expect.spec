@@ -7,7 +7,7 @@
 
 
 Summary:      Expect.pm (%{version}) - Perl Expect interface
-Name:         Expect
+Name:         perl-Expect
 Version:      %{version}
 Release:      %{release}
 Copyright:    GPL
@@ -52,13 +52,36 @@ make
 
 %install
 make install
-
+install -d /usr/share/doc/perl-Expect/examples/kibitz
+cp -fa README /usr/share/doc/perl-Expect/README
+gzip -9c Changes > /usr/share/doc/perl-Expect/changelog.gz
+cp Expect.pod /usr/share/doc/perl-Expect/Expect.pod
+cp -fa tutorial/* /usr/share/doc/perl-Expect/examples
+cp -fa examples/kibitz/* /usr/share/doc/perl-Expect
 
 # nothing to clean
 %clean
 
 
 %files
+%docdir /usr/share/doc/perl-Expect
+/usr/share/doc/perl-Expect/README
+/usr/share/doc/perl-Expect/changelog.gz
+/usr/share/doc/perl-Expect/Expect.pod
+/usr/share/doc/perl-Expect/examples/1.A.Intro
+/usr/share/doc/perl-Expect/examples/2.A.ftp
+/usr/share/doc/perl-Expect/examples/2.B.rlogin
+/usr/share/doc/perl-Expect/examples/3.A.debugging
+/usr/share/doc/perl-Expect/examples/4.A.top
+/usr/share/doc/perl-Expect/examples/5.A.top
+/usr/share/doc/perl-Expect/examples/5.B.top
+/usr/share/doc/perl-Expect/examples/6.A.smtp-verify
+/usr/share/doc/perl-Expect/examples/6.B.modem-init
+/usr/share/doc/perl-Expect/examples/README
+/usr/share/doc/perl-Expect/examples/kibitz/Changelog
+/usr/share/doc/perl-Expect/examples/kibitz/README
+/usr/share/doc/perl-Expect/examples/kibitz/kibitz
+/usr/share/doc/perl-Expect/examples/kibitz/kibitz.man
 /usr/lib/perl5/site_perl/Expect.pm
 /usr/lib/perl5/site_perl/Expect.pod
 /usr/share/man/man3/Expect.3pm
