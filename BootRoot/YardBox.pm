@@ -1184,7 +1184,7 @@ sub saved {
 	}
     }
     elsif ($whoami == 101 || $whoami == 103) {
-	save_as();
+	save_as($whoami);
     }
 
 } # end sub saved
@@ -1587,7 +1587,8 @@ my $write_over;
 sub save_as {
 
 # Will just use a dialog box.
-    my ($error,$count,$pattern) = @_;
+    my ($whoami) = @_;
+    my $error;
 
     if (not defined $save_as) {
     $save_as = Gtk::Dialog->new();
@@ -1602,7 +1603,9 @@ sub save_as {
 	}
     },
 			     );
-    $save_as->set_title("Save As");
+    
+    $whoami == 101 ? $save_as->set_title("Save As") : 
+	$save_as->set_title("New Template");
     $save_as->border_width(12);
     $save_as->set_position('center');
 
@@ -1630,25 +1633,31 @@ sub save_as {
 	# check
 	my $new = "$template_dir$new_template" if $new_template;
 
-	if (!$new_template) {
-	    if ( file_mode("$template_dir$template") =~ /l/ ) {
-		error_window("gBootRoot: ERROR: " . 
-			     "$template_dir$template is not " .
-			     "writable.\nUse [ File->Save As ] or " .
-			     "[Alt-S] with the yard suffix.");		     
-		$save_as->destroy;
-		return;
+	if ( $whoami == 101 ) {
+
+	    if (!$new_template) {
+		if ( file_mode("$template_dir$template") =~ /l/ ) {
+		    error_window("gBootRoot: ERROR: " . 
+				 "$template_dir$template is not " .
+				 "writable.\nUse [ File->Save As ] or " .
+				 "[Alt-S] with the yard suffix.");
+
+		    $save_as->destroy;
+		    return;
+		}
+		elsif ( file_mode("$template_dir$template") !~ /w/ ) {
+		    error_window("gBootRoot: ERROR: " . 
+				 "$template_dir$template is not " .
+				 "writable.\nUse [ File->Save As ] or " .
+				 "[Alt-S] with the yard suffix.");
+
+		    $save_as->destroy;
+		    return;
+		}
+
 	    }
-	    elsif ( file_mode("$template_dir$template") !~ /w/ ) {
-		error_window("gBootRoot: ERROR: " . 
-			     "$template_dir$template is not " .
-			     "writable.\nUse [ File->Save As ] or " .
-			     "[Alt-S] with the yard suffix.");		     
-		$save_as->destroy;
-		return;
-		#save_as();
-	    }
-	}
+
+	} # $whoami == 101 
 
 	# An open template should just be saved not saved_as.
 	if (!$new_template) {
@@ -1665,7 +1674,15 @@ sub save_as {
 	    open(NEW,">$new") or 
 		($error = error("Can't create $new"));
 	    return if $error && $error eq "ERROR";    
-	    print NEW $changed_text_from_template;
+	    if ( $whoami == 101 ) {
+		print NEW $changed_text_from_template;
+	    }
+	    elsif ( $whoami == 103 ) {
+		my $text_length = $text->get_length();
+		$text->set_point($text_length);
+		$text->backward_delete($text->get_length());
+		print NEW "";
+	    }
 	    close(NEW);
 	    $template = $new_template;
 
