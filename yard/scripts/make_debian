@@ -352,6 +352,7 @@ foreach (@alternatives) {
 }
 
 close(DEBIAN);
+print "All done making your $debian_yard template.\n";
 
 #########################
 # END TEMPLATE CREATION #
@@ -575,6 +576,8 @@ sub home_builder {
 
 } # end home_builder
 
+# The least important function,
+# so therefore probably the most important function.
 sub start_up {
 
     # existence of dpkg
@@ -640,10 +643,6 @@ sub start_up {
 	    die "The script requires that file-rc be installed. " .
 		"Please install it first.\n";
 	    }
-	}
-	else {
-	    die "The script requires that file-rc be installed. " .
-		"Please install it first.\n";
 	}
     }
     close(DPKG);
