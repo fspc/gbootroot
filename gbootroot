@@ -1134,7 +1134,8 @@ sub uml_box {
 	$eab2->entry->signal_connect("changed", sub {
 	    $entry_advanced[9] = $eab2->entry->get_text();
 	    open(OPTIONS,">$home_uml_kernel/.options");
-	    $entry_advanced[9] =~ s/\n/ /g;
+	    $entry_advanced[9] =~ s/\n//g;
+	    $entry_advanced[9] =~ s/\s+$//g;
 	    print OPTIONS "$entry_advanced[9]\n";
 	    foreach (@initial_options) {
 		if ($_ ne "$entry_advanced[9]") {
@@ -1147,6 +1148,7 @@ sub uml_box {
                            "Enter uml command-line options.", 
                            "" );
 	$eab2->show();
+
 
 	#_______________________________________
 	# Root Filesystem defaults to generated one if found.
