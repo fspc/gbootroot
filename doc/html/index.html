@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.62 2002/01/06 09:52:52 freesource Exp $</center>
+<center>$Id: index.html,v 1.63 2002/01/07 19:05:25 freesource Exp $</center>
 
 <p>
 
@@ -486,7 +486,9 @@ and things should become more clear.
 <br>
 16.&nbsp;&nbsp;<a href="#16">If you roll the floppy density counter down to 0 and then try go back up towards 1440 and 1722, you get very funny figures.</a>
 </a>
-
+<br>
+17.&nbsp;&nbsp;<a href="#17">Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</a>
+<br>
 
 <P><a name="1"><b>What's the advantage of using this program?</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></P>
 
@@ -1231,6 +1233,28 @@ page up with the second button to 1440 and step with the first button to
       <LI> Ctrl-C   Copy to clipboard </LI>
       <LI> Ctrl-V   Paste from clipboard </LI>
     </UL>
+
+<p><a name="17"><b>Changing from gz to bz2 compression for the boot image in the main section has no effect and gzip is still exectuted.</b></a>&nbsp;&nbsp;<a href="#FAQ">[back]</a></p>
+
+<p>
+
+In the main section to two check boxes are just indicators of what
+compression has been used on the root filesystem.&nbsp;&nbsp;
+Gz if gzipped, and bz2
+in bzip2ed, and gz if uncompressed.&nbsp;&nbsp;
+Usually, the compression is
+auto-detected, but if it isn't you can manually choose the compression
+type, or override the real compression type.&nbsp;&nbsp;
+In the ARS you can actually
+compress a root filesystem after it has been created by turning
+compression on, choosing a compression type, and pressing the Accept
+button.&nbsp;&nbsp;
+Basically, the main section just assumes you already have a
+compressed filesystem, this will change in the future; however, actual
+compression is done either in the ABS (not yet) or the ARS, the main
+section is just used to put together the parts.
+
+<p>
 
 <IMG ALT="Larry Ewing's Penguin celebrates in gBootRoot." SRC="images/peng-movie.4.gif">
 
