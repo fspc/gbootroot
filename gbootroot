@@ -207,13 +207,11 @@
 
 # Here's the program:
 
-use Gtk;
-use strict;
-use BootRoot::BootRoot;
-init Gtk;
-set_locale Gtk; 
-
 # For distributions that don't adhere to the most recent FHS.
+# I always thought the BEGIN statements were executed before everything else,
+# but I have discovered that in this case it has to be placed before the
+# use statements if exec /usr/bin/gbootroot is done via $PATH .. I guess
+# that makes sense because $PATH is established in the BEGIN.
 BEGIN {
 
     my $fhs = grep(/\/usr\/share\/perl5/,@INC);
@@ -235,6 +233,11 @@ BEGIN {
 
 }
 
+use Gtk;
+use strict;
+use BootRoot::BootRoot;
+init Gtk;
+set_locale Gtk; 
 
 $main::editor = "emacs --font 6x13";
 $main::makefs = "mke2fs -F -m0 -i8192"; # Root Disk
