@@ -1418,20 +1418,21 @@ sub create_filesystem {
 		while (Gtk->events_pending) { Gtk->main_iteration; }
 	    }
 
-	    if ( $fs_type eq "mkcramfs" ) {
+	    if ( $fs_type eq "mkcramfs" || $fs_type eq "genromfs" ) {
 		# Will just keep appending _cramfs .. leaving it to the
 		# user to realize this is happening, that way the user
 		# has control over the dd file.
-		$device = $device . "_cramfs";
-		my $cramfs_name = basename($device);
+		$fs_type eq "mkcramfs" ? ($device = $device . "_cramfs") : 
+		    ($device = $device . "_romfs");
+	        my $cramfs_name = basename($device);
 		# If somebody closes ARS, this won't get updated,
 		# but that is a minor matter.
-		$ear2->set_text($cramfs_name) if $ear2;
+	        $ear2->set_text($cramfs_name) if $ear2;
 		$mount_point = dirname($device);
 	    }
-	    
 
-	}
+	    
+        }
 	elsif (
 	       sys("/usr/lib/bootroot/$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
 	       /^0$/ ) {
