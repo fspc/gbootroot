@@ -1461,9 +1461,11 @@ sub kernel_version {
 
 
 	# 2.4.0 kernels now use Start Text 0x202 
-	sprintf("%04x",$str)." (expected 0x201 or 0x202).\n" 
 	    unless ($str == 0x201
-		    || $str == 0x0202);
+		    || $str == 0x0202) {
+		print sprintf("%04x",$str);
+		print "(expected 0x201 or 0x202).\n"; 
+	    } 
 
     # get ofset of version string (indirect) and read version string
     seek(DATA, 526, 0);
