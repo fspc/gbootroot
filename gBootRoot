@@ -141,6 +141,7 @@ my ($spinner_advanced,$spinner_size);
 my $button_count = 0;
 my $button_count_root = 0;
 my $obj_count = 0;
+my $obj_count_root = 0;
 my ($lib_strip_check,$bin_strip_check);
 my ($lib_strip_check_root,$bin_strip_check_root,$module_strip_check_root);
 my ($bz2_toggle,$gz_toggle);
@@ -329,7 +330,7 @@ button("Kernel Selection",$entry2,"Kernel Selection",1);
 # Third row
 hbox();
 my $entry3 = entry($true,2);
-button("Compressed Filesystem",$entry3,"Compressed Filesystem",2);
+button("Root Filesystem",$entry3,"Root Filesystem",2);
 
 # In the future, if experimenters send in data, there will be two
 # different devices.
@@ -410,7 +411,7 @@ $vbox_advanced->show();
 hbox_advanced($vbox_advanced);
 my $button_advanced = new Gtk::Button("Advanced Boot Section");
 $tooltips->set_tip( $button_advanced, 
-                    "Change settings for the bootdisk.", "" );
+                    "Change settings for the Boot Disk Image.", "" );
 $button_advanced->signal_connect("clicked",\&advanced_boot_section );
 $hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
 $button_advanced->show();
@@ -424,7 +425,7 @@ $vbox_advanced_root->show();
 hbox_advanced($vbox_advanced_root);
 $button_advanced = new Gtk::Button("Advanced Root Section");
 $tooltips->set_tip( $button_advanced, 
-          "Generate a root system and/or use a different root device.", "" );
+          "Generate a Root Filesystem and/or use a different Root Device.", "" );
 $button_advanced->signal_connect("clicked",\&advanced_root_section );
 $hbox_advanced->pack_start( $button_advanced, $true, $true, 0 );
 $button_advanced->show();
@@ -518,26 +519,46 @@ sub objcopy_right_click_advanced {
   if ( ( defined( $event->{'type'} ) ) 
       and ( $event->{'type'} eq 'button_press' ) ) {
       if ( $event->{'button'} == 3 ) {
-	  if ($obj_count == 0) {
-             $tooltips->set_tip( $lib_strip_check, 
-                           "This is generally a good idea.  Press the" .
-                           " right mouse button to change from" .
-                           " [objcopy --strip-all] to" .
-                           " [objcopy --strip-debug].", "" );
-             $obj_count++;
+	  if (defined $lib_strip_check) {
+	      if ($obj_count == 0) {
+		  $tooltips->set_tip( $lib_strip_check, 
+				      "This is generally a good idea." .
+				      " Press the right mouse button to" .
+				      " change from [objcopy --strip-all]" .
+				      " to [objcopy --strip-debug].", "" );
+		  $obj_count++;
+	      }
+	      else {
+		  $tooltips->set_tip( $lib_strip_check, 
+				      "This is generally a good idea." .
+				      " Press the right mouse button to" .
+				      " change from [objcopy --strip-debug]". 
+				      " to [objcopy --strip-all].", "" );
+		  $obj_count--;
+	      }
           }
-          else {
-              $tooltips->set_tip( $lib_strip_check, 
-                           "This is generally a good idea.  Press the" .
-                           " right mouse button to change from" .
-                           " [objcopy --strip-debug] to" . 
-                           " [objcopy --strip-all].", "" );
-	      $obj_count--;
+	  if (defined $lib_strip_check_root) {
+	      if ($obj_count_root == 0) {
+		  $tooltips->set_tip( $lib_strip_check_root, 
+				      "This is generally a good idea." .
+				      " Press the right mouse button to" .
+				      " change from [objcopy --strip-all]" .
+				      " to [objcopy --strip-debug].", "" );
+		  $obj_count_root++;
+	      }
+	      else {
+		  $tooltips->set_tip( $lib_strip_check_root, 
+				      "This is generally a good idea." .
+				      " Press the right mouse button to" .
+				      " change from [objcopy --strip-debug]". 
+				      " to [objcopy --strip-all].", "" );
+		  $obj_count_root--;
+	      }
           }
       }
   }
 
-}
+} # end obj_right_click_advanced
 
 sub advanced_boot_section {
 
@@ -771,9 +792,11 @@ sub advanced_root_section {
        $compression_off->show();
 
 
+       # This whole section will be relocated to the Yard box,
+       # since stripping isn't universal amongst methods.
        #_______________________________________ 
        # lib_strip_check
-       # $::strip_objfiles 1 - yes 0 - no  altered Yard.pm to take
+       # $strip_objfiles 1 - yes 0 - no  altered Yard.pm to take
        # into account adjustable library stripping
 
        my $hbox_between2 = new Gtk::HBox(1,1);
@@ -997,8 +1020,6 @@ sub yard {
     #my @stuff = <YARD>;
     #print @stuff;
 
-    #start_logging_output($yard_temp,$verbosity); 
-
     # Error handling in Yard will take some strategy
     if (!-d $container[1] && -f $container[1]) {
         kernel_version_check($container[1]);  # Yard: kernel,kernel version
@@ -1008,12 +1029,19 @@ sub yard {
 	error_window("Kernel Selection required");
         return;
     }
+
     read_contents_file("$template_dir$template");
 
     extra_links("$template_dir$template");
+
     library_dependencies("$template_dir$template");
+
     hard_links();
-    space_check($tmp);
+
+    space_check($filesystem_size, $lib_strip_check_root->get_active(),
+		$bin_strip_check_root->get_active(), 
+		$module_strip_check_root->get_active(), 
+		$obj_count_root, $tmp);
 
 } # end sub yard
 
