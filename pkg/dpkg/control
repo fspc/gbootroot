@@ -6,7 +6,7 @@ Build-Depends: debhelper (>> 3.0.0)
 Standards-Version: 3.5.2
 
 Package: gbootroot
-Architecture: all
+Architecture: i386 
 Depends:  ${perl:Depends}, perl-modules, libgtk-perl (>= 0.7002), libc6 ( >= 2.1.2), ash, file, binutils, bzip2
 Recommends: dswim, lilo
 Suggests: make-debian-x11
