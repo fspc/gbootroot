@@ -1,3 +1,17 @@
+make-debian-x11 (1.1-1) unstable; urgency=low
+
+  * The author of swim came out with a new version he now calls dswim.  This
+    means Debian System Wide Information Manager, but the "d" could also stand 
+    for different.  Changes have been made to make_debian to facilitate this 
+    much more stable version of swim, and better non-installed package checks 
+    have been implemented in make_debian.
+
+  * Where to edit the script is now more obvious to the non-programmer.
+
+  * The dependencies have been updated to reflect the change from swim to dswim.
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Tue, 23 Oct 2001 22:59:09 -0400
+
 make-debian-x11 (1.0-2) unstable; urgency=low
 
   * Added file-rc to the Depends in the control.
