@@ -147,6 +147,7 @@ my ($bz2_toggle_root,$gz_toggle_root);
 my ($combo);
 my ($adj2,$adj3);
 
+
 # My own creation - the roots touch the ground if three lines are added.
        my @xpm_data = (
 "32 45 3 1",
@@ -236,7 +237,16 @@ if (!-d "$tmp1/gbootroot_mnt$$") {
         "mkdir $tmp1/gbootroot_mnt$$",
         "gBootRoot: ERROR: Could not make mount directory") != 2;
 }
-my $verbosefn = "$tmp/verbose";
+
+# Verbosity should probably be controlled separately for each
+# method. 
+
+# Yard 
+#  0 --> only the important messages.
+#  1 --> all messages.
+my $verbosity = 1;
+my $verbosefn = "$tmp/verbose"; # gBootRoot
+my $yard_temp = "$tmp/yard_verbose;  # Yard
 
 
 # Right now >= 0.7000 is o.k.
@@ -1354,8 +1364,10 @@ sub error_window {
 
     if (not defined $error_window) {
     $error_window = new Gtk::Dialog;
-    $error_window->signal_connect("destroy", \&destroy_window, \$error_window);
-    $error_window->signal_connect("delete_event", \&destroy_window, \$error_window);
+    $error_window->signal_connect("destroy", \&destroy_window,
+                                  \$error_window);
+    $error_window->signal_connect("delete_event", \&destroy_window, 
+                                  \$error_window);
     $error_window->set_title("gBootRoot ERROR");
     $error_window->border_width(15);
     my $label = new Gtk::Label($error);
