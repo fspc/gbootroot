@@ -1,4 +1,4 @@
-#  $Id: Example-Mini.yard,v 1.2 2001/12/04 05:24:58 freesource Exp $
+#  $Id: Example-Mini.yard,v 1.3 2002/03/11 04:29:06 freesource Exp $
 #  Example-Mini.yard
 #
 #  Creates a minimalistic S runlevel root filesystem with not much more than 
@@ -47,9 +47,52 @@
 #    a user defined kernel version in the ABS, or the value of `uname -r` 
 #    returned automatically when the other two sources aren't specified.
 #
-#    You don't need to specify shared libraries or loaders because
+#  - You don't need to explicitly specify intermediate directories unless you
+#    just want to make sure they exist.
+#
+#  - You don't need to specify shared libraries or loaders because
 #    necessary libraries are detected automatically.  
-
+#
+#    Control Structures
+#    ------------------
+#    The if/elsif operator may be used to test for the existence of an
+#    absolute or relative file condition.  If the condition is true
+#    than the following statements will be parsed, otherwise additional
+#    conditions are examined.  The statements can be specified by any
+#    of the formats rules.  The \ deliminator is used at the beginning
+#    and ending of the control structure so that the parser knows how to
+#    properly treat the logic.
+#
+#    This is especially useful for creating templates that work
+#    properly for different distributions allowing portability.
+#    Consider these examples:
+#
+#    Example 1
+#    ---------
+#
+#    \
+#    if ( getty )
+#	 /etc/inittab	<= Replacements/etc/inittab.example-deb
+#	 /sbin/getty
+#    elsif ( mingetty )
+#	 /etc/inittab	<= Replacements/etc/inittab.example.mingetty-rpm
+#	 /sbin/mingetty
+#	 /etc/gettydefs
+#    elsif ( agetty )
+#	 /etc/inittab	<= Replacements/etc/inittab.example.agetty-slack
+#	 /sbin/agetty
+#	 /etc/gettydefs
+#    \ 
+#
+#    Example 2
+#    ---------
+#
+#    \ if ( /etc/pam.d/system-auth )
+#	 /etc/pam.d/system-auth \
+#
+#
+#    NSS and PAM
+#    -----------
 #    You may choose between two behaviors for the treatment of NSS and PAM 
 #    libraries.  The old Yard behavior assumes that only the user knows which
 #    service modules they want to include in the file set, and tests 
@@ -71,9 +114,6 @@
 #    requirements are already included in the template.  If desired, the old 
 #    behavior may be regained by switching off Edit->Settings->"NSS Conf" 
 #    and Edit->Settings->"PAM Conf".
-#
-#    You don't need to explicitly specify intermediate directories unless you
-#    just want to make sure they exist.
 #
 ##############################################################################
 
