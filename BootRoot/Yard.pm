@@ -140,7 +140,7 @@ sub kernel_version_check {
 ## REQUIRES $contents_file
 sub read_contents_file {
 
-    my ($contents_file) = @_;
+    my ($contents_file, $mnt) = @_;
     my $error;
 
     # It's a good idea to clear the text buffer in the verbosity box
@@ -157,6 +157,7 @@ sub read_contents_file {
 	undef %strippable;
 	undef %lib_needed_by;
 	undef @Libs;
+	unlink("$mnt/device_table.txt") if -e "$mnt/device_table.txt";
     }
     $contents_file_tmp = $contents_file;
 
@@ -212,7 +213,7 @@ sub read_contents_file {
 		      }
 		      
 		      # make device table
-		      device_table(@globbed);
+		      device_table($mnt,@globbed);
 
 		  }
 		  else {
@@ -230,7 +231,6 @@ sub read_contents_file {
 
 	      if ( $tmp_line ) {
 		  $line = $tmp_line;
-		  info(0,"D $line\n");
 	      }
 	      else {
 		  next LINE;
@@ -1045,8 +1045,7 @@ sub create_filesystem {
 	# genextfs modified by BusyBox maintainer Erick Andersen
 	# August 20, 2001.
 
-	my $device_table; # to be removed once device table creation is 
-	                  # added.
+	my $device_table  = "$mnt/device_table.txt";
 
 	if (
 	    sys("/usr/lib/bootroot/$main::makefs -b $fs_size -d $mount_point -D $device_table $device") !~ 
@@ -1682,8 +1681,22 @@ sub yard_glob {
 # build device table for genext2fs
 sub device_table {
 
+    my ( @devices ) = @_;
+    my $mnt = shift @devices;
+    my $error;
 
+    # /dev is always made automatically
+    open(DEVICE_TABLE, ">>$mnt/device_table.txt") or
+	($error = error("$mnt/device_table.txt: $!"));
+    return "ERROR"if $error && $error eq "ERROR";
+    
+    #<path>  <type>  <mode>  <uid>  <gid>  <major>  <minor>  <start>  <inc> 
+    # start and inc are the tricky parts with the glob
+    foreach (@devices) {
+	info(1,"$_\n");
+    }
 
+    close(DEVICE_TABLE);
 
 
 } # end sub device_table
