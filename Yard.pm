@@ -743,7 +743,9 @@ sub space_check {
 
 sub create_filesystem {
 
-    my ($filename,$fs_size,$fs_type, $inode_size, $mnt) = @_;
+    my ($filename, $fs_size,$ fs_type, $inode_size, $mnt, $strip_lib, 
+	$strip_bin, $strip_module, $obj_count) = @_;
+        
     my $device = "$mnt/$filename";
     my $mount_point = "$mnt/loopback";
 
@@ -875,7 +877,8 @@ sub create_filesystem {
 		}
 	    }
 	    info(1, "$file -> $floppy_file\n");
-	    copy_strip_file($file, $floppy_file);
+	    copy_strip_file($file, $floppy_file, $obj_count, $strip_lib, 
+			    $strip_bin, $strip_module);
 
 	} elsif (-d $file) {
 	    #####  A directory.
@@ -995,10 +998,6 @@ sub cf_warn {
 #  objcopy program exists.
 sub copy_strip_file {
     
-    # Obviously create_filesytem's @_ will have to be modified 4 the last 4
-    # check for off or on, not undef    
-    my () = @_;
-
     my($from, $to, $strip_objfiles, 
        $strip_lib, $strip_bin, $strip_module) = @_;
     my $error;
@@ -1006,12 +1005,18 @@ sub copy_strip_file {
     if ($strip_objfiles and defined($objcopy) and $strippable{$from}) {
 	#  Copy it stripped
 
-	if (defined($lib_needed_by{$from}) && $strip_lib) {
-	    #  It's a library
-	    info(1, "Copy/stripping library $from to $to\n");
-	    sys("$objcopy --strip-all $from $to");
 
-	} elsif (defined($is_module{$from}) && $strip_module) {
+	if (defined($lib_needed_by{$from}) && $strip_lib) {
+		#  It's a library
+	    if ($strip_objfiles == 1) {
+		info(1, "Copy/stripping library $from to $to\n");
+		sys("$objcopy --strip-all $from $to");
+	    }
+	    elsif ($strip_objfiles == 0) {
+		info(1, "Copy/stripping library $from to $to\n");
+		sys("$objcopy --strip-debug $from $to");
+	    }
+	 }   elsif (defined($is_module{$from}) && $strip_module) {
 	    info(1, "Copy/stripping module $from to $to\n");
 	    sys("$objcopy --strip-debug $from $to");
 
