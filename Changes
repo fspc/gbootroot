@@ -1,3 +1,12 @@
+Liav Asseraf <liav_a@yahoo.com> points out a problem in 1.3.1.  I reply to
+him with this answer: "Indeed, you have found a bug.  Bootroot adheres to the 
+most recent Filesystem Hierarchy Standard (2.1); in previous bootroot versions
+a big chunk of the source code was included in /usr/bin/gbootroot, but I 
+decided to reorganize and move most of that code to BootRoot/BootRoot.pm, in 
+the process I also moved a statement which executes before the rest of the
+program does to set up a proper @INC.  What this all means is that
+gbootroot couldn't find the required modules."  This bug has been fixed.
+
 Altered tooltip text for the Options entry to recognize that the umid needs
 to be switched in the mconsole box in order for the new Linux virtual machine
 to be controlled via the buttons and the mconsole.  The behavior could be 
