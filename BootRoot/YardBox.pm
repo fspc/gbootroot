@@ -45,6 +45,7 @@ my $search_window;
 my $Shortcuts;
 my @entry;
 my $file_dialog;
+my $search_text;
 
 #my $filesystem_type = "ext2";
 #my $inode_size = 8192;
@@ -1140,7 +1141,10 @@ sub search {
 	# Search keywords
 	label("Search:",0,1,0,1,$table_search);
 	my $search1 = entry(1,3,0,1,0,$table_search);
-	$search1->set_text(""); # if defined $search;
+	$search1->signal_connect("changed", sub { 
+	    $search_text = $search1->get_text(); });
+	$search1->set_text($search_text) if defined $search_text;
+	$search1->select_region(0,length($search1->get_text));
 
 
 	#_______________________________________
@@ -1150,8 +1154,6 @@ sub search {
 	$table_search->attach($case_sensitive,1,2,1,2, 
 		     ['shrink','fill','expand'],['fill','shrink'],0,0);
 	$case_sensitive->show();
-
-	#$case_sensitive->signal_connect("clicked", \&which_stage, "check"); 
 
 
 	#_______________________________________
@@ -1567,7 +1569,12 @@ Selection Shortcuts
 
 Searching Shortcuts
 
- Alt-S
+ Alt-S Search Template
+
+File Shortcuts
+
+ Ctrl-S Save File
+ Alt-A Save As File
 SHORTCUTS
 
 sub path {
