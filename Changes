@@ -1,10 +1,24 @@
-1.4.0 - 12/12/2002
+1.4.0 - 12/20/2002
 ------------------
 
-Had to add user-mode-linux/usr/lib/uml to the path to allow --home to
+The MTD Emulator doesn't work as nicely as before.  Blkmtd seems
+mostly broken, and mtdram needs more careful tweaking for total size,
+though mtdram definitely still works.  This is due to changes in uml
+which will have to be addressed since the code for the mtd modules
+didn't change.
+
+Had to add user-mode-linux/usr/lib/uml to the PATH to allow --home to
 find port-helper, or otherwise root_fs complain.  Have no idea why
-this change exists with port-helper because wasn't the case before.
-Also, added path for user-mode-linux/usr/bin to find the other tools.
+this change exists with the new port-helper because wasn't the case
+before.  Also, added path for user-mode-linux/usr/bin to find the
+other tools.
+
+The biggest change is the command-line interface with the yard root
+method.  Now distribute your template and let others easily recreate
+your root_fs without entering the gui by running "gbootroot --template
+your_template" and this is a nice way to manage a distribution you are
+developing.  This all means the source packages are completely
+automated now, which is quite awesome.
 
 When root_fs_helper was running with the newer Expect.pm, and
 consequentially the newer uml kernel it became necessary to get out

@@ -3,7 +3,7 @@
 <body  text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E"
 alink="#FF0000">
 
-<center>$Id: index.html,v 1.103 2002/12/16 03:46:53 freesource Exp $</center>
+<center>$Id: index.html,v 1.104 2002/12/16 04:51:36 freesource Exp $</center>
 
 <p>
 
@@ -19,8 +19,11 @@ alt="SourceForge Logo"> </A></p>
 <img src="images/rateit80x18.gif" HEIGHT=18 WIDTH=80 BORDER=1></A></p>
 
 
-<p align="center"><A HREF="http://www.softlandmark.com/linux/Administration1.htm">
-<img src="images/Editorspick.gif" HEIGHT=34 WIDTH=99 BORDER=0></A></p>
+<!-- <p align="center"><A HREF="http://www.softlandmark.com/linux/Administration1.htm">
+<img src="images/Editorspick.gif" HEIGHT=34 WIDTH=99 BORDER=0></A></p> -->
+
+<p align="center"><A HREF="http://search.freefind.com/find.html?id=6996492&pid=r&mode=ALL&n=0&query=gbootroot">
+<img src="images/Editorspick.gif" HEIGHT=34 WIDTH=99 BORDER=0></A></p> 
 
 <p></p>
 
@@ -37,7 +40,7 @@ Download gBootRoot</h3>
 
 <b>Newest version</b><br>
 
-<em>1.3.6</em> available in tar.gz, deb, and rpm formats.
+<em>1.4.0</em> available in tar.gz, deb, and rpm formats.
 
 <br>
 
@@ -54,7 +57,7 @@ hometown!
 <b>Slackware or just doing it by hand</b><br>
 <a href="http://freshmeat.net/redir/gbootroot/3075/url_tgz/gbootroot.orig.tar.gz">gbootroot source</a><br>
 <em>Instructions:</em><br>
-README and type make to install
+README
 
 
 <p>
@@ -67,7 +70,9 @@ apt-get --yes install gbootroot or dswim -qxyz gbootroot<br>
 after adding these lines to your sources.list where ${country} is one of
 easynews, unc, telia, umn, twtelecom, belnet, cesnet, or switch.  ex: telia.dl.sourceforge.net:<br>
 <code>deb http://${country}.dl.sourceforge.net/gbootroot ./<br>
-deb http://${country}.dl.sourceforge.net/avd ./</code><br></p>
+deb http://${country}.dl.sourceforge.net/avd .<br>
+deb-src http://${country}.dl.sourceforge.net/gbootroot ./<br>
+deb-src http://${country}.dl.sourceforge.net/avd ./</code><br></p>
 
 <p>
 
@@ -122,8 +127,21 @@ make-debian-x11 debian package</a>
 </P>
 
 <P align="center">
-<b>How to Use gBootRoot's UI</b></P>
-<P><IMG ALT="" SRC="images/gBS.jpg" align="right">The most important button to 
+<b>How to Use gBootRoot's CLI</b></P>
+
+It's recommended to use the GUI for prototyping, but if you already
+have an existing template in your $HOME/.gbootroot/yard/template
+directory you can reference it with "gbootroot --template
+template_name" and this will create the corresponding root_fs in
+/tmp/gboot_non_root_`id -u`/.  If you want the root_fs to have a
+different name use the --root-filename option.  All these options and
+more can be found with -h or --help or see the <a
+href="#cli-help">reference</a>.
+
+<P align="center">
+<b>How to Use gBootRoot's GUI</b></P>
+<P><IMG ALT="" SRC="images/gBS.jpg" align="right">Start gbootroot without 
+any command-line arguments.  The most important button to 
 familiarize yourself with is the Submit button which starts the whole process;
 dialogs are presented as the process continues asking you if you want to 
 continue &quot;OK&quot; or stop &quot;Cancel&quot;.</P>
@@ -1573,6 +1591,37 @@ compressed filesystem, this will change in the future; however, actual
 compression is done either in the ABS (not yet) or the ARS, the main
 section is just used to put together the parts.
 
+
+<a name="cli-help"><h2><a name="links">CLI Help</h2></a>
+
+<pre>
+Usage: gbootroot [OPTION]...
+  --help -h                 help
+  --template=name           required option - template in default template dir
+                            $HOME/.gbootroot/yard/templates/[name]
+
+                           (defaults)
+  --method=name             yard
+  --root-filename=name      root_fs
+  --filesystem-size=size    8192
+  --filesystem-command=c    "genext2fs -z -r0"
+  --uml-exclusively=on|off  off
+  --uml-kernel=path         $HOME/.gbootroot/uml_kernel/linuxbr
+  --preserve-ownership=y|n  n
+  --genext2fs-dir=dir       /usr/lib/bootroot/
+  --expect-program=path     /usr/lib/bootroot/expect_uml
+  --root-fs-helper=path     /usr/lib/bootroot/root_filesystem/root_fs_helper
+  --home=dir                gui mode = without other options
+                            cl mode  = with other options
+                                       min: --template
+
+                           (system kernel options)
+  --kernel=path             specify different system kernel
+  --kernel-version=version  specify alternative version
+
+                           (print options)
+  --no-stdout               don't print to console
+</pre>
 
 <h2><a name="links">Links</h2>
 
