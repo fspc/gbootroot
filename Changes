@@ -1,14 +1,20 @@
+1.3.5 - 02/13/2002
+------------------
 
-** not yet
-Now the templated called Helper.yard used to create the root_fs_helper is
+Now the template called Helper.yard used to create the root_fs_helper is
 included with root_fs_helper.
+
+1.3.4 was awarded Editor's pick by SoftLandMark, but I recommend upgrading 
+to 1.3.5 because of my oversight with the root_fs_helper issue, as well as
+the improved initrd testing capability of the specially patched 
+2.4.17-10um kernel.  I also recommend running gbootroot as a normal user, at 
+least that's what I usually do. :)
 
 Root_fs_helper was working fine, but because I hadn't committed, let alone 
 copied the new changes to CVS I didn't notice any aberrations until I 
 installed the new released version of gbootroot.  This is related to the new
 securretty requirements of uml.  Problem fixed.  
 
-*** Better check on this below
 Initrd was not working with any fs other than ext2.  After 
 contacting the trinux-uml project, Matthew Franz <mfranz@cisco.com> confirmed
 that he was having problems creating a working uml for the initrd created
@@ -18,11 +24,10 @@ known bugs as documented in the kernel sources.  Because cramfs was placed
 before just about every fs in the VFS check order, and trinux-uml's initrd 
 was minix, the kernel failed, but an ext2 initrd didn't.  Changing the order 
 in which filesystems are checked during the VFS stage by editing fs/Makefile 
-solves the problem.  Thanks for Henrik Nordstrom <hno@marasystems.com> for
+solves the problem.  Thanks to Henrik Nordstrom <hno@marasystems.com> for
 pointing out how to do this at user-mode-linux-devel.  I am hoping the patch 
-I posted at -devel becomes part of uml.  This should have been corrected 
-ages ago in the standard Linux kernel.
-** not yet
+found in user-mode-linux/usr/lib/uml/cramfs-vfs-oder.patch becomes part of 
+uml.  This should have been corrected ages ago in the standard Linux kernel.
 
 Removed unecessary warning which warned that left-hand side replacements 
 couldn't be a directory if it happened to find that directory on the hostfs.
