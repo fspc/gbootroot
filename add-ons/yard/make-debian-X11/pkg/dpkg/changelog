@@ -1,3 +1,16 @@
+make-debian-x11 (1.2-1) unstable; urgency=low
+
+  * setup-debian-X11 script improved slightly.
+  * The majority of replacements except for passwd*, shadow, and
+    ld.so.conf have Id and made by make_debian.  Since non-root users
+    can't edit global replacements, the basic idea is that root won't
+    edit replacements either,  because usually root will be using an
+    editor like Emacs which respects  that CVS versioned files outside
+    of the repository are read-only.  Users should make copies of
+    versioned replacements which they want to edit: fstab.debian-1000
+
+ -- Jonathan Rosenbaum <freesource@users.sourceforge.net>  Sun,  9 Dec 2001 03:19:26 -0500
+
 make-debian-x11 (1.1-1) unstable; urgency=low
 
   * The author of swim came out with a new version he now calls dswim.  This

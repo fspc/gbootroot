@@ -29,7 +29,7 @@ my $nodename = `uname -n`; chomp $nodename;
 my $debian_yard = "Debian-X11.yard";
 my $status = "/var/lib/dpkg/status";
 my $info = "/var/lib/dpkg/info";
-my $version  = "1.1";
+my $version  = "1.2";
 
 # You need file-rc, and you may add other extra stuff (@extra_packages).  
 # These packages were chosen for woody, so you may need something different.  
@@ -254,7 +254,7 @@ return $stuff;
 use strict;
 use File::Basename;
 my $rm = "\$";
-$main::Id = "# \$Id: make_debian-X11,v 1.33 2001/11/07 18:48:15 freesource Exp $rm"; 
+$main::Id = "# \$Id: make_debian-X11,v 1.34 2001/11/09 20:02:53 freesource Exp $rm"; 
 my $sbin = grep(/\/usr\/sbin/,$ENV{'PATH'});
 if ($sbin == 0) {
     $ENV{'PATH'} = "/usr/sbin:" . $ENV{'PATH'};

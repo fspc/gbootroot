@@ -4,8 +4,11 @@ all: install
 install:
 	install -d $(DESTDIR)/usr/bin
 	cp -fa make_debian-X11 $(DESTDIR)/usr/bin/make_debian-X11 
-	install -d $(DESTDIR)/usr/share/gbootroot/yard/Replacements
-	cp -fa replacements/* $(DESTDIR)/usr/share/gbootroot/yard/Replacements
+	install -d $(DESTDIR)/usr/share/gbootroot/yard/Replacements/root
+	cp -fa replacements/root/*debian-X11 $(DESTDIR)/usr/share/gbootroot/yard/Replacements/root
+	install -d $(DESTDIR)/usr/share/gbootroot/yard/Replacements/usr/X11R6/bin
+	cp -fa replacements/usr/X11R6/bin/* $(DESTDIR)/usr/share/gbootroot/yard/Replacements/usr/X11R6/bin
+
 
 
 
