@@ -114,7 +114,7 @@ my $date = "09.03.2000";
 my $gtk_perl_version = "0.7002";
 my $pwd = `pwd`; chomp $pwd;
 my $template_dir = "./";
-my $home_rootfs = "$home/root_filesystem";
+my $home_rootfs = "$home/root_filesystem/";
 
 my $initrd;
 my $compress;
@@ -397,7 +397,7 @@ button("Kernel Selection",$entry2,"Kernel Selection",1);
 # Third row
 hbox();
 my $entry3 = entry($true,2);
-button("Root Filesystem",$entry3,"Root Filesystem",2);
+button("Root Filesystem",$entry3,"Root Filesystem",2,$home_rootfs);
 
 # In the future, if experimenters send in data, there will be two
 # different devices.
@@ -406,7 +406,7 @@ hbox();
 my $entry4 = entry($true,3);
 $container[BOOT_DEVICE] = "/dev/fd0";
 $entry4->set_text($container[BOOT_DEVICE]);
-button("Device Selection",$entry4,"Device Selection",3,$true);
+button("Device Selection",$entry4,"Device Selection",3,"/dev/fd0");
 
 # Fifth row
 hbox("what");
@@ -1378,7 +1378,7 @@ sub fileselect {
         # Connect the cancel_button to destroy the widget
         $file_dialog->cancel_button->signal_connect( "clicked",
                                               sub { destroy $file_dialog } );
-         $file_dialog->set_filename( "/dev/fd0" ) if defined $device;
+         $file_dialog->set_filename( $device ) if defined $device;
          $file_dialog->set_position('mouse');
 
      }
